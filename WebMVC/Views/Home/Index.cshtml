@@ -4,6 +4,18 @@
 @model TokenModel
 <div class="text-center">
     <h1 class="display-4">Welcome subscriber <b>@Model.id</b></h1>
-    <h2>Token: @Model.token</h2>
-    <h2>Script: @Model.script</h2>
+    <h1 id="visitorId">Loading visitorId...</h1>
+    <p></p>
+    <h3>Token: @Model.token</h3>
 </div>
+
+<script>
+    @Html.Raw(@Model.script);
+
+    var promise = GlobalFingerPrint.getGFPId();
+    promise.then((result) => {
+        document.getElementById("visitorId").innerHTML = "VisitorId: " + result.Id;
+    }).catch((err) => {
+
+    });
+</script>

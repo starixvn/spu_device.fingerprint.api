@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,12 @@ namespace WebApi.Controllers
     [Route("api/[controller]")]
     public class TokenController : ControllerBase
     {
+        private readonly IHostingEnvironment _hostingEnvironment;
+        public TokenController(IHostingEnvironment hostingEnvironment)
+        {
+            _hostingEnvironment = hostingEnvironment;
+        }
+
         [HttpGet]
         public ActionResult<TokenDto> Get()
         {
@@ -47,10 +54,17 @@ namespace WebApi.Controllers
             return key.ToString();
         }
 
-        static string GetScript(int subscriberId)
+        private string GetScript(int subscriberId)
         {
-            string key = "alert('Test Script subscriberId " + subscriberId + "!');";
-            return key.ToString();
+            var path = GetFilePath();
+            path += "\\js\\gfp.min.js";
+            return System.IO.File.ReadAllText(path);
+        }
+        private string GetFilePath()
+        {
+            string webRootPath = _hostingEnvironment.WebRootPath;
+            string contentRootPath = _hostingEnvironment.ContentRootPath;
+            return contentRootPath;
         }
     }
 }
