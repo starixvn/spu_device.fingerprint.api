@@ -1,4 +1,4 @@
-var GlobalFingerPrint = (function (exports) {
+var globalFP = (function (exports) {
 	'use strict';
 
 	var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
@@ -1465,143 +1465,6 @@ var GlobalFingerPrint = (function (exports) {
 
 	}));
 	}(encBase64));
-
-	var encBase64url = {exports: {}};
-
-	(function (module, exports) {
-	(function (root, factory) {
-		{
-			// CommonJS
-			module.exports = factory(core.exports);
-		}
-	}(commonjsGlobal, function (CryptoJS) {
-
-		(function () {
-		    // Shortcuts
-		    var C = CryptoJS;
-		    var C_lib = C.lib;
-		    var WordArray = C_lib.WordArray;
-		    var C_enc = C.enc;
-
-		    /**
-		     * Base64url encoding strategy.
-		     */
-		    C_enc.Base64url = {
-		        /**
-		         * Converts a word array to a Base64url string.
-		         *
-		         * @param {WordArray} wordArray The word array.
-		         *
-		         * @param {boolean} urlSafe Whether to use url safe
-		         *
-		         * @return {string} The Base64url string.
-		         *
-		         * @static
-		         *
-		         * @example
-		         *
-		         *     var base64String = CryptoJS.enc.Base64url.stringify(wordArray);
-		         */
-		        stringify: function (wordArray, urlSafe=true) {
-		            // Shortcuts
-		            var words = wordArray.words;
-		            var sigBytes = wordArray.sigBytes;
-		            var map = urlSafe ? this._safe_map : this._map;
-
-		            // Clamp excess bits
-		            wordArray.clamp();
-
-		            // Convert
-		            var base64Chars = [];
-		            for (var i = 0; i < sigBytes; i += 3) {
-		                var byte1 = (words[i >>> 2]       >>> (24 - (i % 4) * 8))       & 0xff;
-		                var byte2 = (words[(i + 1) >>> 2] >>> (24 - ((i + 1) % 4) * 8)) & 0xff;
-		                var byte3 = (words[(i + 2) >>> 2] >>> (24 - ((i + 2) % 4) * 8)) & 0xff;
-
-		                var triplet = (byte1 << 16) | (byte2 << 8) | byte3;
-
-		                for (var j = 0; (j < 4) && (i + j * 0.75 < sigBytes); j++) {
-		                    base64Chars.push(map.charAt((triplet >>> (6 * (3 - j))) & 0x3f));
-		                }
-		            }
-
-		            // Add padding
-		            var paddingChar = map.charAt(64);
-		            if (paddingChar) {
-		                while (base64Chars.length % 4) {
-		                    base64Chars.push(paddingChar);
-		                }
-		            }
-
-		            return base64Chars.join('');
-		        },
-
-		        /**
-		         * Converts a Base64url string to a word array.
-		         *
-		         * @param {string} base64Str The Base64url string.
-		         *
-		         * @param {boolean} urlSafe Whether to use url safe
-		         *
-		         * @return {WordArray} The word array.
-		         *
-		         * @static
-		         *
-		         * @example
-		         *
-		         *     var wordArray = CryptoJS.enc.Base64url.parse(base64String);
-		         */
-		        parse: function (base64Str, urlSafe=true) {
-		            // Shortcuts
-		            var base64StrLength = base64Str.length;
-		            var map = urlSafe ? this._safe_map : this._map;
-		            var reverseMap = this._reverseMap;
-
-		            if (!reverseMap) {
-		                reverseMap = this._reverseMap = [];
-		                for (var j = 0; j < map.length; j++) {
-		                    reverseMap[map.charCodeAt(j)] = j;
-		                }
-		            }
-
-		            // Ignore padding
-		            var paddingChar = map.charAt(64);
-		            if (paddingChar) {
-		                var paddingIndex = base64Str.indexOf(paddingChar);
-		                if (paddingIndex !== -1) {
-		                    base64StrLength = paddingIndex;
-		                }
-		            }
-
-		            // Convert
-		            return parseLoop(base64Str, base64StrLength, reverseMap);
-
-		        },
-
-		        _map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
-		        _safe_map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
-		    };
-
-		    function parseLoop(base64Str, base64StrLength, reverseMap) {
-		        var words = [];
-		        var nBytes = 0;
-		        for (var i = 0; i < base64StrLength; i++) {
-		            if (i % 4) {
-		                var bits1 = reverseMap[base64Str.charCodeAt(i - 1)] << ((i % 4) * 2);
-		                var bits2 = reverseMap[base64Str.charCodeAt(i)] >>> (6 - (i % 4) * 2);
-		                var bitsCombined = bits1 | bits2;
-		                words[nBytes >>> 2] |= bitsCombined << (24 - (nBytes % 4) * 8);
-		                nBytes++;
-		            }
-		        }
-		        return WordArray.create(words, nBytes);
-		    }
-		}());
-
-		return CryptoJS.enc.Base64url;
-
-	}));
-	}(encBase64url));
 
 	var md5 = {exports: {}};
 
@@ -6701,6 +6564,144 @@ var GlobalFingerPrint = (function (exports) {
 	}));
 	}(cryptoJs));
 
+
+	var encBase64url = { exports: {} };
+
+	(function (module, exports) {
+		(function (root, factory) {
+			{
+				// CommonJS
+				module.exports = factory(core.exports);
+			}
+		}(commonjsGlobal, function (CryptoJS) {
+
+			(function () {
+				// Shortcuts
+				var C = CryptoJS;
+				var C_lib = C.lib;
+				var WordArray = C_lib.WordArray;
+				var C_enc = C.enc;
+
+				/**
+				 * Base64url encoding strategy.
+				 */
+				C_enc.Base64url = {
+					/**
+					 * Converts a word array to a Base64url string.
+					 *
+					 * @param {WordArray} wordArray The word array.
+					 *
+					 * @param {boolean} urlSafe Whether to use url safe
+					 *
+					 * @return {string} The Base64url string.
+					 *
+					 * @static
+					 *
+					 * @example
+					 *
+					 *     var base64String = CryptoJS.enc.Base64url.stringify(wordArray);
+					 */
+					stringify: function (wordArray, urlSafe = true) {
+						// Shortcuts
+						var words = wordArray.words;
+						var sigBytes = wordArray.sigBytes;
+						var map = urlSafe ? this._safe_map : this._map;
+
+						// Clamp excess bits
+						wordArray.clamp();
+
+						// Convert
+						var base64Chars = [];
+						for (var i = 0; i < sigBytes; i += 3) {
+							var byte1 = (words[i >>> 2] >>> (24 - (i % 4) * 8)) & 0xff;
+							var byte2 = (words[(i + 1) >>> 2] >>> (24 - ((i + 1) % 4) * 8)) & 0xff;
+							var byte3 = (words[(i + 2) >>> 2] >>> (24 - ((i + 2) % 4) * 8)) & 0xff;
+
+							var triplet = (byte1 << 16) | (byte2 << 8) | byte3;
+
+							for (var j = 0; (j < 4) && (i + j * 0.75 < sigBytes); j++) {
+								base64Chars.push(map.charAt((triplet >>> (6 * (3 - j))) & 0x3f));
+							}
+						}
+
+						// Add padding
+						var paddingChar = map.charAt(64);
+						if (paddingChar) {
+							while (base64Chars.length % 4) {
+								base64Chars.push(paddingChar);
+							}
+						}
+
+						return base64Chars.join('');
+					},
+
+					/**
+					 * Converts a Base64url string to a word array.
+					 *
+					 * @param {string} base64Str The Base64url string.
+					 *
+					 * @param {boolean} urlSafe Whether to use url safe
+					 *
+					 * @return {WordArray} The word array.
+					 *
+					 * @static
+					 *
+					 * @example
+					 *
+					 *     var wordArray = CryptoJS.enc.Base64url.parse(base64String);
+					 */
+					parse: function (base64Str, urlSafe = true) {
+						// Shortcuts
+						var base64StrLength = base64Str.length;
+						var map = urlSafe ? this._safe_map : this._map;
+						var reverseMap = this._reverseMap;
+
+						if (!reverseMap) {
+							reverseMap = this._reverseMap = [];
+							for (var j = 0; j < map.length; j++) {
+								reverseMap[map.charCodeAt(j)] = j;
+							}
+						}
+
+						// Ignore padding
+						var paddingChar = map.charAt(64);
+						if (paddingChar) {
+							var paddingIndex = base64Str.indexOf(paddingChar);
+							if (paddingIndex !== -1) {
+								base64StrLength = paddingIndex;
+							}
+						}
+
+						// Convert
+						return parseLoop(base64Str, base64StrLength, reverseMap);
+
+					},
+
+					_map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
+					_safe_map: 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_',
+				};
+
+				function parseLoop(base64Str, base64StrLength, reverseMap) {
+					var words = [];
+					var nBytes = 0;
+					for (var i = 0; i < base64StrLength; i++) {
+						if (i % 4) {
+							var bits1 = reverseMap[base64Str.charCodeAt(i - 1)] << ((i % 4) * 2);
+							var bits2 = reverseMap[base64Str.charCodeAt(i)] >>> (6 - (i % 4) * 2);
+							var bitsCombined = bits1 | bits2;
+							words[nBytes >>> 2] |= bitsCombined << (24 - (nBytes % 4) * 8);
+							nBytes++;
+						}
+					}
+					return WordArray.create(words, nBytes);
+				}
+			}());
+
+			return CryptoJS.enc.Base64url;
+
+		}));
+	}(encBase64url));
+
 	var CryptoJS = cryptoJs.exports;
 
 	function Encrypting(data, key) {
@@ -9334,7 +9335,7 @@ var GlobalFingerPrint = (function (exports) {
 	        };
 	    });
 	}
-	function getGFPId() {
+	function getDI() {
 	    let visitorId;
 	    let properties;
 	    const fpPromise = FingerprintJS.load();
@@ -9352,8 +9353,43 @@ var GlobalFingerPrint = (function (exports) {
 	    }));
 	}
 
-	exports.Encrypting = Encrypting;
-	exports.getGFPId = getGFPId;
+	var key = "wNvK6fr8JX+vVnYI0YrguI/PmrtH6B3fEm8YCMEBhYo=";
+	var apiUrl = "__apiUrl__";
+	var token = "__token__";
+	function set(appKey, appAPIUrl, appToken) {
+	    key = appKey;
+	    apiUrl = appAPIUrl;
+	    token = appToken;
+	}
+
+	function config(key, apiUrl, token) {
+	    set(key, apiUrl, token);
+	    return this;
+	}
+	function getFP(isDebug = false) {
+	    return getDI().then((result) => {
+	        if (isDebug) {
+	            console.log(result.Id);
+	            console.log(result.Properties);
+	        }
+	        else {
+	            const data = Encrypting(JSON.stringify({ di: result.Id, attributes: result.Properties }), key);
+	            console.log(data);
+	            post(apiUrl, token, data);
+	        }
+	    });
+	}
+	function post(url, token, data) {
+	    var xhr = new XMLHttpRequest();
+	    xhr.open("POST", url, true);
+	    xhr.setRequestHeader("Accept", "application/json");
+	    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+	    xhr.setRequestHeader("Content-Type", "application/json");
+	    xhr.send(data);
+	}
+
+	exports.config = config;
+	exports.getFP = getFP;
 
 	Object.defineProperty(exports, '__esModule', { value: true });
 

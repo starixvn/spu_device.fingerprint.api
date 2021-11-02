@@ -1,0 +1,12 @@
+[
+  {
+    "outputFileName": "js/gfp.min.js",
+    "inputFiles": [
+      "js/gfp.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": false
+    }
+  }
+]
