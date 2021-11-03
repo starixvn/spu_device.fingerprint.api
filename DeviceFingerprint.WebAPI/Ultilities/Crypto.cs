@@ -15,7 +15,7 @@ namespace DeviceFingerprint.WebAPI.Ultilities
             myRijndael.BlockSize = 128;
             myRijndael.KeySize = 128;
             myRijndael.IV = HexStringToByteArray(ivHexString ?? "c3eef06037e837f4ee390bda69c05023");
-
+            
 
             myRijndael.Padding = PaddingMode.PKCS7;
             myRijndael.Mode = CipherMode.CBC;

@@ -26,8 +26,20 @@ namespace DeviceFingerprint.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var appSettings = new AppSettings(this.Configuration);
 
-            services.AddControllers();
+            services.AddSingleton<IAppSettings>(appSettings);
+
+            services.AddCors();
+
+            services.AddControllers(options =>
+            {
+                var jsonInputFormatter = options.InputFormatters
+                    .OfType<Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter>()
+                    .Single();
+                jsonInputFormatter.SupportedMediaTypes.Add("application/json");
+            });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DeviceFingerprint.WebAPI", Version = "v1" });
@@ -46,8 +58,14 @@ namespace DeviceFingerprint.WebAPI
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DeviceFingerprint.WebAPI v1"));
             }
 
+            app.UseCors(options => options
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .SetIsOriginAllowed(origin => true)
+            .AllowCredentials());
+
             app.UseRouting();
-                       
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

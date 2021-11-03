@@ -1,0 +1,19 @@
+{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+<<<<<<< HEAD
+  "FixedKey": "wNvK6fr8JX+vVnYI0YrguI/PmrtH6B3fEm8YCMEBhYo="
+=======
+  "AppConfig": {
+    "ApiUrl": "http://localhost:41592",
+    "EncryptPassword": "wNvK6fr8JX+vVnYI0YrguI/PmrtH6B3fEm8YCMEBhYo="
+  }
+
+>>>>>>> c15c30d... get encrypted data
+}
