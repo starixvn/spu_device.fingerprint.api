@@ -9,8 +9,6 @@ namespace DeviceFingerprint.WebAPI.Models
     {
         public string EncryptedKey { get; set; }
 
-        public string JsScript { get; set; }
-
         public string Token { get; set; }
     }
 }

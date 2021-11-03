@@ -1,13 +1,8 @@
-﻿using DeviceFingerprint.WebAPI.Models;
-using DeviceFingerprint.WebAPI.Ultilities;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using DeviceFingerprint.WebAPI.Services;
+using Microsoft.Extensions.Configuration;
+using DeviceFingerprint.WebAPI.Models;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -15,31 +10,25 @@ namespace DeviceFingerprint.WebAPI.Controllers
     [ApiController]
     public class TokenController : ControllerBase
     {
+        public IConfiguration Configuration;
         private readonly IWebHostEnvironment environment;
+        private readonly IJWTAuthenticationManager JWTAuthenticationManager;
 
-        public TokenController(IWebHostEnvironment Environment)
+        public TokenController(IWebHostEnvironment Environment, IJWTAuthenticationManager JWTAuthenticationManager, IConfiguration configuration)
         {
             this.environment = Environment;
+            this.JWTAuthenticationManager = JWTAuthenticationManager;
+            this.Configuration = configuration;
         }
 
         [HttpGet]
         public ActionResult<TokenResultModel> Get(int subscriberId)
         {
-            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
-
-            var scriptContent = bundleFile.Content;
-
-            if(!string.IsNullOrWhiteSpace(scriptContent))
+            var tokenJWT = JWTAuthenticationManager.GenerateToken(subscriberId);
+            return new TokenResultModel
             {
-                var bundleContent = new BundleContent(scriptContent);
-
-                return new TokenResultModel
-                {
-                    JsScript = bundleContent.Content
-                };
-            }
-
-            return null;
+                Token = tokenJWT
+            };
         }
     }
 }

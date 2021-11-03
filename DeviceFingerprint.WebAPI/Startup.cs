@@ -1,3 +1,4 @@
+using DeviceFingerprint.WebAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -31,6 +32,8 @@ namespace DeviceFingerprint.WebAPI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "DeviceFingerprint.WebAPI", Version = "v1" });
             });
+            var FixedKey = Configuration.GetSection("FixedKey").Value;
+            services.AddSingleton<IJWTAuthenticationManager>(new JWTAuthenticationManager(FixedKey));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
