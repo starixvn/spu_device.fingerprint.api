@@ -3,6 +3,7 @@ using DeviceFingerprint.WebAPI.Ultilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -17,12 +18,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
         {
             this.environment = Environment;
             this.appSettings = appSettings;
-        }
-
-        [HttpGet("GetToken")]
-        public ActionResult<string> GetToken(int subscriberId)
-        {
-            return Tools.GenerateRandomKey(subscriberId);
         }
 
         [HttpGet("GetScript")]
@@ -48,7 +43,14 @@ namespace DeviceFingerprint.WebAPI.Controllers
             var scrypto = new Crypto(appSettings.EncryptPassword);
                         
             var decryptedData = scrypto.Decrypt(data);
+
             return decryptedData;
+        }
+
+        [HttpPost("Transaction")]
+        public bool Transaction(Dictionary<string, string> data)
+        {
+            return true;
         }
     }
 }
