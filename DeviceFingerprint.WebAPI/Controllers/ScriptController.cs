@@ -1,5 +1,4 @@
 ﻿using DeviceFingerprint.WebAPI.Models;
-using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -13,12 +12,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
     {
         public IConfiguration Configuration;
         private readonly IWebHostEnvironment environment;
-        private readonly IJWTAuthenticationManager JWTAuthenticationManager;
 
-        public ScriptController(IWebHostEnvironment Environment, IJWTAuthenticationManager JWTAuthenticationManager, IConfiguration configuration)
+        public ScriptController(IWebHostEnvironment Environment, IConfiguration configuration)
         {
             this.environment = Environment;
-            this.JWTAuthenticationManager = JWTAuthenticationManager;
             this.Configuration = configuration;
         }
 
