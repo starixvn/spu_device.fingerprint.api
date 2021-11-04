@@ -28,4 +28,9 @@ Sẽ thấy kết quả trả về token và script
 Sẽ thấy trang web lấy được kết quả của API 
 
 
-
+JWT tutorial:
+- Đối với những API có check authorization, khi client gọi API sẽ bị trả về Status code 401
+- Cách sử dụng JWT:
+	+ Client sẽ nhận được JWT từ server thông qua API getToken
+	+ Add header: "Authorization: Bearer <JWT>"
+	+ Nếu JWT vẫn còn thời hạn thì sẽ server sẽ trả về dữ liệu
