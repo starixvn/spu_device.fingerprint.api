@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebApi", "WebApi\WebApi.csproj", "{DB430872-FD72-40F9-8D7E-5D3527CE3440}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceFingerprint.WebAPI", "DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebMVC", "WebMVC\WebMVC.csproj", "{9657DF79-7D43-4028-A83C-54E3491D7D27}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Client", "FPS.Device.FingerPrint.Client\FPS.Device.FingerPrint.Client.csproj", "{AD61E3E0-65A3-4A74-B361-76812657CF10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeviceFingerprint.WebAPI", "DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,18 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{DB430872-FD72-40F9-8D7E-5D3527CE3440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DB430872-FD72-40F9-8D7E-5D3527CE3440}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DB430872-FD72-40F9-8D7E-5D3527CE3440}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DB430872-FD72-40F9-8D7E-5D3527CE3440}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9657DF79-7D43-4028-A83C-54E3491D7D27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9657DF79-7D43-4028-A83C-54E3491D7D27}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9657DF79-7D43-4028-A83C-54E3491D7D27}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9657DF79-7D43-4028-A83C-54E3491D7D27}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

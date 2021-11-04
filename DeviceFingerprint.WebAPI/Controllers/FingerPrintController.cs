@@ -10,6 +10,7 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Collections.Generic;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -58,6 +59,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
             var scrypto = new Crypto(appSettings.EncryptPassword);
                         
             var decryptedData = scrypto.Decrypt(data);
+
             return decryptedData;
         }
 
@@ -80,6 +82,12 @@ namespace DeviceFingerprint.WebAPI.Controllers
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
+        }
+        
+        [HttpPost("Transaction")]
+        public bool Transaction(Dictionary<string, string> data)
+        {
+            return true;
         }
     }
 }

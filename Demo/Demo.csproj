@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FPS.Device.FingerPrint.Client\FPS.Device.FingerPrint.Client.csproj" />
+  </ItemGroup>
+
+</Project>
