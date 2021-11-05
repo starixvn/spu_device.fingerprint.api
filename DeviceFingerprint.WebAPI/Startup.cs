@@ -81,9 +81,7 @@ namespace DeviceFingerprint.WebAPI
                     ValidateAudience = false,
                     ValidateLifetime = false,
                     ValidateIssuerSigningKey = false,
-                    //ValidIssuer = Configuration["Jwt:Issuer"],
-                    //ValidAudience = Configuration["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["AppConfig:EncryptPassword"]))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.EncryptPassword))
                 };
             });
             #endregion

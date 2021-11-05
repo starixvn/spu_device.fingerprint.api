@@ -11,13 +11,13 @@ namespace DeviceFingerprint.WebAPI.Middleware
 {
     public class JWTMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly IConfiguration _configuration;
+        private readonly RequestDelegate next;
+        private readonly IAppSettings appSettings;
 
         public JWTMiddleware(RequestDelegate next, IConfiguration configuration)
         {
-            _next = next;
-            _configuration = configuration;
+            this.next = next;
+            this.appSettings = new AppSettings(configuration);
         }
 
         public async Task Invoke(HttpContext context)
@@ -27,7 +27,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
              if (token != null)
                 ValidateToken(context, token);
 
-            await _next(context);
+            await next(context);
         }
 
         private void ValidateToken(HttpContext context, string token)
@@ -35,7 +35,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_configuration["AppConfig:EncryptPassword"]);
+                var key = Encoding.ASCII.GetBytes(appSettings.EncryptPassword);
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = false,
@@ -47,7 +47,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
 
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var accountId = jwtToken.Claims.First(x => x.Type == "id").Value;
-                context.Items["key"] = "AcceptAuthor";
+                context.Items["key"] = "Accepted";
             }
             catch(Exception e)
             {
