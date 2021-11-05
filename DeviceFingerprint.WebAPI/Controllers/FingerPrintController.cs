@@ -13,6 +13,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using DeviceFingerprint.WebAPI.Services;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -31,15 +32,9 @@ namespace DeviceFingerprint.WebAPI.Controllers
             this.configuration = configuration;
         }
 
-        [HttpGet("GetToken")]
-        public ActionResult<string> GetToken(int subscriberId)
-        {
-            return Tools.GenerateRandomKey(subscriberId);
-        }
-
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("GetScript")]
-        public ActionResult<string> Script()
+       //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("{subscriberId}")]
+        public ActionResult<string> Script(int subscriberId)
         {
             var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
 

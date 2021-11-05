@@ -1,4 +1,4 @@
-﻿namespace DeviceFingerprint.WebAPI.Ultilities
+﻿namespace DeviceFingerprint.WebAPI.Services
 {
     public class BundleContent
     {
