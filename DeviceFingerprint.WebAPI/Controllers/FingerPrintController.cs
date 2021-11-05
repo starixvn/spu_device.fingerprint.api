@@ -1,4 +1,5 @@
 ﻿using DeviceFingerprint.WebAPI.Models;
+using DeviceFingerprint.WebAPI.Models.FingerPrint;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -59,8 +61,13 @@ namespace DeviceFingerprint.WebAPI.Controllers
             var scrypto = new Crypto(appSettings.EncryptPassword);
                         
             var decryptedData = scrypto.Decrypt(data);
+            
+            
+            var fingerPrint = JsonConvert.DeserializeObject<FingerPrintModel>(decryptedData);
 
-            return decryptedData;
+           var attributes = JsonConvert.DeserializeObject<AttributeModel>(fingerPrint.Attribute);
+
+           return decryptedData;
         }
 
         [HttpGet("GetJWT")]
