@@ -25,12 +25,12 @@ namespace DeviceFingerprint.WebAPI.Middleware
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
              if (token != null)
-                attachAccountToContext(context, token);
+                ValidateToken(context, token);
 
             await _next(context);
         }
 
-        private void attachAccountToContext(HttpContext context, string token)
+        private void ValidateToken(HttpContext context, string token)
         {
             try
             {
