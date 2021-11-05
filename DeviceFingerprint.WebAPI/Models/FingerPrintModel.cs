@@ -7,123 +7,90 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public List<string> Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class DomBlockers
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public List<string> Value { get; set; }
     }
 
     public class Audio
     {
         [JsonProperty("value")]
         public double Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class OsCpu
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public string Value { get; set; }
     }
 
     public class Languages
     {
         [JsonProperty("value")]
         public List<List<string>> Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class ColorDepth
     {
         [JsonProperty("value")]
         public int Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class DeviceMemory
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public int Value { get; set; }
     }
 
     public class HardwareConcurrency
     {
         [JsonProperty("value")]
         public int Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class Timezone
     {
         [JsonProperty("value")]
         public string Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class SessionStorage
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class LocalStorage
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class IndexedDB
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class OpenDatabase
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class CpuClass
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public string Value { get; set; }
     }
 
     public class Platform
     {
         [JsonProperty("value")]
         public string Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class MimeType
@@ -139,9 +106,6 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public List<PluginValue> Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class PluginValue
@@ -160,9 +124,6 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public TouchSupportValue Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class TouchSupportValue
@@ -181,90 +142,81 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public string Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class VendorFlavors
     {
         [JsonProperty("value")]
         public List<string> Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class CookiesEnabled
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class ColorGamut
     {
         [JsonProperty("value")]
         public string Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class InvertedColors
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public bool Value { get; set; }
     }
 
     public class ForcedColors
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class Monochrome
     {
         [JsonProperty("value")]
         public int Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class Contrast
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public ContrastValue Value { get; set; }
+    }
+
+    public class ContrastValue
+    {
+        [JsonProperty("less")]
+        public int Less { get; set; }
+
+        [JsonProperty("none")]
+        public int None { get; set; }
+
+        [JsonProperty("more")]
+        public int More { get; set; }
+
+        [JsonProperty("forcedcolors")]
+        public int ForcedColors { get; set; }
     }
 
     public class ReducedMotion
     {
         [JsonProperty("value")]
         public bool Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class Hdr
     {
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
+        [JsonProperty("value")]
+        public bool Value { get; set; }
     }
 
     public class Math
     {
         [JsonProperty("value")]
         public MathValue Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class MathValue
@@ -346,9 +298,6 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public ScreenPrintValue Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class ScreenPrintValue
@@ -364,9 +313,6 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public CanvasPrintValue Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class CanvasPrintValue
@@ -385,9 +331,6 @@ namespace DeviceFingerprint.WebAPI.Models.FingerPrint
     {
         [JsonProperty("value")]
         public FontPreferencePrintValue Value { get; set; }
-
-        [JsonProperty("duration")]
-        public int Duration { get; set; }
     }
 
     public class FontPreferencePrintValue

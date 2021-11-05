@@ -33,21 +33,21 @@ namespace DeviceFingerprint.WebAPI.Controllers
         }
 
        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpGet("{subscriberId}")]
-        public ActionResult<string> Script(int subscriberId)
+        [HttpGet]
+        public ActionResult<string> Script()
         {
             var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
 
             var scriptContent = bundleFile.Content;
 
-            if(!string.IsNullOrWhiteSpace(scriptContent))
+            if (!string.IsNullOrWhiteSpace(scriptContent))
             {
                 var bundleContent = new BundleContent(scriptContent, appSettings);
 
                 return bundleContent.Content;
             }
 
-            return null;
+            return "Cannot get script.";
         }
 
         [HttpPost]
