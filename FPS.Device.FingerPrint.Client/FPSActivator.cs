@@ -6,20 +6,20 @@ using System.Threading.Tasks;
 
 namespace FPS.Device.FingerPrint.Client
 {
-    public interface IFPSActivator
+    public interface IFpsActivator
     {
-        string GenerateRoutingKey();
+        string GenerateKey();
 
         Task PushTransaction(string url, string username, string fpsKey);
     }
 
-    public class FPSActivator : IFPSActivator
+    public class FpsActivator : IFpsActivator
     {
         private readonly int subscriber = 0;
         private readonly ICores cores;
         private readonly HttpClient httpClient;
 
-        public FPSActivator(int subscriber)
+        public FpsActivator(int subscriber)
         {
             this.subscriber = subscriber;
 
@@ -27,9 +27,9 @@ namespace FPS.Device.FingerPrint.Client
             httpClient = new HttpClient();
         }
 
-        public string GenerateRoutingKey()
+        public string GenerateKey()
         {
-            return cores.GenerateRandomKey(subscriber);
+            return cores.GenerateGUID();
         }
 
         public async Task PushTransaction(string url, string username, string fpsKey)

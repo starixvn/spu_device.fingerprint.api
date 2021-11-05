@@ -103,7 +103,7 @@ namespace DeviceFingerprint.WebAPI
             .SetIsOriginAllowed(origin => true)
             .AllowCredentials());
 
-            app.UseMiddleware<JWTMiddleware>();
+            //app.UseMiddleware<JWTMiddleware>();
 
             app.UseRouting();
 

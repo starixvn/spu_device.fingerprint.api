@@ -13,16 +13,16 @@ namespace Demo.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly IFPSActivator fpsService;
+        private readonly IFpsActivator fpsService;
 
         public LoginController()
         {
-            fpsService = new FPSActivator(1);
+            fpsService = new FpsActivator(1);
         }
 
         public IActionResult Index()
         {
-            var fpsKey = fpsService.GenerateRoutingKey();
+            var fpsKey = fpsService.GenerateKey();
 
             TempData["fpsKey"] = fpsKey;
 

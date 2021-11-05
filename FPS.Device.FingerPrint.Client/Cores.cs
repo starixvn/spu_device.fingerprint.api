@@ -9,6 +9,8 @@ namespace FPS.Device.FingerPrint.Client
     interface ICores
     {
         string GenerateRandomKey(int subscriberId);
+
+        string GenerateGUID();
     }
 
     class Cores : ICores
@@ -23,6 +25,11 @@ namespace FPS.Device.FingerPrint.Client
             key.Append(rand.Next(1000, 999999));
 
             return key.ToString();
+        }
+
+        public string GenerateGUID()
+        {
+            return Guid.NewGuid().ToString("N");
         }
     }
 }
