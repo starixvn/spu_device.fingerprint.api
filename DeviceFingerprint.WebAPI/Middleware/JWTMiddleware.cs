@@ -5,7 +5,6 @@ using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DeviceFingerprint.WebAPI.Middleware
@@ -25,14 +24,11 @@ namespace DeviceFingerprint.WebAPI.Middleware
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-            if (token != null)
+            if (token != null && !ValidateToken(context, token))
             {
-                if (!ValidateToken(context, token))
-                {
-                    context.Response.Clear();
-                    context.Response.StatusCode = (int)StatusCodes.Status401Unauthorized;
-                    return;
-                }
+                context.Response.Clear();
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
             }
 
             await next(context);
@@ -54,7 +50,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
                 }, out SecurityToken validatedToken);
                 context.Items["key"] = "Accepted";
             }
-            catch(Exception e)
+            catch (Exception)
             {
                 return false;
             }

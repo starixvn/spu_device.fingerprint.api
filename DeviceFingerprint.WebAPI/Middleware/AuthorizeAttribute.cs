@@ -10,8 +10,8 @@ namespace DeviceFingerprint.WebAPI.Middleware
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var account = context.HttpContext.Items["key"];
-            if (account == null)
+            var key = context.HttpContext.Items["key"];
+            if (key == null)
             {
                 context.Result = new JsonResult(new { message = "Unauthorized" }) { StatusCode = StatusCodes.Status401Unauthorized };
             }
