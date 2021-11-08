@@ -1,11 +1,8 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceFingerprint.WebAPI.Services
 {
@@ -23,7 +20,7 @@ namespace DeviceFingerprint.WebAPI.Services
             var key = Encoding.ASCII.GetBytes(appSettings.EncryptPassword);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", appSettings.EncryptPassword) }),
+                Subject = new ClaimsIdentity(new[] { new Claim("id", appSettings.ApiUrl) }),
                 Expires = DateTime.UtcNow.AddMinutes(1),
                 Issuer = appSettings.ApiUrl,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)

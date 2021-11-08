@@ -27,7 +27,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
         }
 
-       //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet]
         public ActionResult<string> Script()
         {
@@ -59,13 +58,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
            var attributes = JsonConvert.DeserializeObject<AttributeModel>(fingerPrint.Attribute);
 
            return decryptedData;
-        }
-
-        [HttpGet("GetJWT")]
-        public ActionResult<string> GetJWT()
-        {
-            var JWTService = new JWT(appSettings);
-            return Ok(new { Token = JWTService.GenerateJwtToken(), Message = "Success" });
         }
         
         [HttpPost("Transaction")]
