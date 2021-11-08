@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using DeviceFingerprint.WebAPI.Services;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -24,32 +25,43 @@ namespace DeviceFingerprint.WebAPI.Middleware
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-             if (token != null)
-                ValidateToken(context, token);
+            if (token != null)
+            {
+                if (!ValidateToken(context, token))
+                {
+                    context.Response.Clear();
+                    context.Response.StatusCode = (int)StatusCodes.Status401Unauthorized;
+                    return;
+                }
+            }
 
             await next(context);
         }
 
-        private void ValidateToken(HttpContext context, string token)
+        private bool ValidateToken(HttpContext context, string token)
         {
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(appSettings.EncryptPassword);
+                var JWTService = new JWT(appSettings);
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT),
                     ValidateIssuer = false,
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
+
+                var jwtToken = (JwtSecurityToken)validatedToken;
+                var accountId = jwtToken.Claims.First(x => x.Type == "id").Value;
                 context.Items["key"] = "Accepted";
             }
-            catch (Exception)
+            catch(Exception e)
             {
-                throw;
+                return false;
             }
+            return true;
         }
     }
 }
