@@ -17,7 +17,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
         public JWTMiddleware(RequestDelegate next, IConfiguration configuration)
         {
             this.next = next;
-            this.appSettings = new AppSettings(configuration);
+            appSettings = new AppSettings(configuration);
         }
 
         public async Task Invoke(HttpContext context)
@@ -48,9 +48,8 @@ namespace DeviceFingerprint.WebAPI.Middleware
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
-                context.Items["key"] = "Accepted";
             }
-            catch (Exception)
+            catch
             {
                 return false;
             }

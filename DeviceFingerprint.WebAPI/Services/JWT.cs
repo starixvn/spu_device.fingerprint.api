@@ -11,10 +11,10 @@ namespace DeviceFingerprint.WebAPI.Services
         private readonly IAppSettings appSettings;
         public readonly byte[] keyJWT;
 
-        public JWT(IAppSettings appSetting)
+        public JWT(IAppSettings appSettings)
         {
-            this.appSettings = appSetting;
-            this.keyJWT = Encoding.ASCII.GetBytes(appSettings.EncryptPassword);
+            this.appSettings = appSettings;
+            keyJWT = Encoding.ASCII.GetBytes(appSettings.EncryptPassword);
         }
         public string GenerateJwtToken()
         {
