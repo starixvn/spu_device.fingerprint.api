@@ -52,9 +52,6 @@ namespace DeviceFingerprint.WebAPI.Middleware
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
                 }, out SecurityToken validatedToken);
-
-                var jwtToken = (JwtSecurityToken)validatedToken;
-                var accountId = jwtToken.Claims.First(x => x.Type == "id").Value;
                 context.Items["key"] = "Accepted";
             }
             catch(Exception e)
