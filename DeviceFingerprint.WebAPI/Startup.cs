@@ -1,4 +1,5 @@
 using DeviceFingerprint.WebAPI.Middleware;
+using DeviceFingerprint.WebAPI.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -25,6 +26,7 @@ namespace DeviceFingerprint.WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+            var JWTService = new JWT(appSettings);
 
             services.AddSingleton<IAppSettings>(appSettings);
 
@@ -81,7 +83,7 @@ namespace DeviceFingerprint.WebAPI
                     ValidateAudience = false,
                     ValidateLifetime = false,
                     ValidateIssuerSigningKey = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.EncryptPassword))
+                    IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
                 };
             });
             #endregion
@@ -103,7 +105,7 @@ namespace DeviceFingerprint.WebAPI
             .SetIsOriginAllowed(origin => true)
             .AllowCredentials());
 
-            //app.UseMiddleware<JWTMiddleware>();
+            app.UseMiddleware<JWTMiddleware>();
 
             app.UseRouting();
 
