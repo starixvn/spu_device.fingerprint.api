@@ -1,16 +1,11 @@
-﻿using DeviceFingerprint.WebAPI.Models.FingerPrint;
+﻿using DeviceFingerprint.WebAPI.Models;
+using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using System.Collections.Generic;
-using DeviceFingerprint.WebAPI.Services;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -44,7 +39,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
             return "Cannot get script.";
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+       // [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public ActionResult<string> FingerPrint([FromBody] string data)
         {
@@ -54,10 +49,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
             
             
             var fingerPrint = JsonConvert.DeserializeObject<FingerPrintModel>(decryptedData);
+                       
+            var attributes = JsonConvert.DeserializeObject<AttributeModel>(fingerPrint.Attributes);
 
-           var attributes = JsonConvert.DeserializeObject<AttributeModel>(fingerPrint.Attribute);
-
-           return decryptedData;
+            return decryptedData;
         }
         
         [HttpPost("Transaction")]
