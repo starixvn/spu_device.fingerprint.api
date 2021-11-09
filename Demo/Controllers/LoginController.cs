@@ -22,14 +22,7 @@ namespace Demo.Controllers
 
         public IActionResult Index()
         {
-            var fpsKey = fpsService.GenerateKey();
-
-            TempData["fpsKey"] = fpsKey;
-
-            return View(new LoginModel
-            {
-                FpsKey = fpsKey
-            });
+            return View();
         }
 
         [HttpPost]
@@ -37,9 +30,9 @@ namespace Demo.Controllers
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
             {
-                var fpsKey = TempData["fpsKey"];
+                var fpsKey = HttpContext.Request.Form["__fk"];
 
-                fpsService.PushTransaction("http://localhost:5000/api/fp/Transaction", loginModel.Username, fpsKey.ToString());
+                fpsService.PushTransaction("http://localhost:5000/api/fp/Transaction", loginModel.Username, fpsKey);
 
                 return RedirectToAction("index", "home");
             }

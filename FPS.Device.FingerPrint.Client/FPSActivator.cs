@@ -8,7 +8,7 @@ namespace FPS.Device.FingerPrint.Client
 {
     public interface IFpsActivator
     {
-        string GenerateKey();
+        
 
         Task PushTransaction(string url, string username, string fpsKey);
     }
@@ -16,24 +16,18 @@ namespace FPS.Device.FingerPrint.Client
     public class FpsActivator : IFpsActivator
     {
         private readonly int subscriber = 0;
-        private readonly ICores cores;
+        
         private readonly HttpClient httpClient;
 
         public FpsActivator(int subscriber)
         {
             this.subscriber = subscriber;
 
-            cores = new Cores();
             httpClient = new HttpClient();
         }
 
-        public string GenerateKey()
-        {
-            return cores.GenerateGUID();
-        }
-
         public async Task PushTransaction(string url, string username, string fpsKey)
-        {
+        {            
             if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(fpsKey))
             {
                 var data = new Dictionary<string, string>
