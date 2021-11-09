@@ -1,8 +1,9 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace DeviceFingerprint.WebAPI.Models
-{    
+{
     public class CanvasPrint
     {
         [JsonProperty("winding")]
@@ -168,19 +169,19 @@ namespace DeviceFingerprint.WebAPI.Models
         public string ColorGamut { get; set; }
 
         [JsonProperty("contrast")]
-        public object Contrast { get; set; }
+        public object Contrast { get; set; }               
 
         [JsonProperty("cookiesEnabled")]
         public bool CookiesEnabled { get; set; }
 
         [JsonProperty("cpuClass")]
-        public object CpuClass { get; set; }
+        public object CpuClass { get; set; }        
 
         [JsonProperty("deviceMemory")]
-        public object DeviceMemory { get; set; }
+        public object DeviceMemory { get; set; }        
 
         [JsonProperty("domBlockers")]
-        public object DomBlockers { get; set; }
+        public object DomBlockers { get; set; }               
 
         [JsonProperty("fontPreferencePrint")]
         public FontPreferencePrint FontPreferencePrint { get; set; }
@@ -195,7 +196,7 @@ namespace DeviceFingerprint.WebAPI.Models
         public int HardwareConcurrency { get; set; }
 
         [JsonProperty("hdr")]
-        public object Hdr { get; set; }
+        public object Hdr { get; set; }                
 
         [JsonProperty("indexedDB")]
         public bool IndexedDB { get; set; }
