@@ -39,7 +39,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
             return "Cannot get script.";
         }
 
-       // [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public ActionResult<string> FingerPrint([FromBody] string data)
         {
