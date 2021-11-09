@@ -1,23 +1,21 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FPS.Device.FingerPrint.Client
 {
     public interface IFpsActivator
-    {
-        
+    {        
 
-        Task PushTransaction(string url, string username, string fpsKey);
+        Task PushTransaction(string url, string username, Microsoft.AspNetCore.Http.HttpContext httpContext);
     }
 
     public class FpsActivator : IFpsActivator
     {
         private readonly int subscriber = 0;
         
-        private readonly HttpClient httpClient;
+        private readonly HttpClient httpClient;        
 
         public FpsActivator(int subscriber)
         {
@@ -26,14 +24,16 @@ namespace FPS.Device.FingerPrint.Client
             httpClient = new HttpClient();
         }
 
-        public async Task PushTransaction(string url, string username, string fpsKey)
+        public async Task PushTransaction(string url, string username, Microsoft.AspNetCore.Http.HttpContext httpContext )
         {            
-            if (!string.IsNullOrEmpty(username) && !string.IsNullOrEmpty(fpsKey))
+
+            if (!string.IsNullOrEmpty(username))
             {
-                var data = new Dictionary<string, string>
+                var data = new Dictionary<string, object>
                 {
                     { "username", username },
-                    { "fpsKey", fpsKey }
+                    { "subscriberId", subscriber },
+                    { "fpsKey", httpContext.Request.Form["__fk"].ToString()}
                 };
 
                 var result = await httpClient.PostAsJsonAsync(url, data);

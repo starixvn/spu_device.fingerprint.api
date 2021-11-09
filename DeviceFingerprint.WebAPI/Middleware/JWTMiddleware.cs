@@ -24,7 +24,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
         {
             var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
-            if (token != null && !ValidateToken(context, token))
+            if (token != null && !ValidateToken(token))
             {
                 context.Response.Clear();
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -34,7 +34,7 @@ namespace DeviceFingerprint.WebAPI.Middleware
             await next(context);
         }
 
-        private bool ValidateToken(HttpContext context, string token)
+        private bool ValidateToken(string token)
         {
             try
             {

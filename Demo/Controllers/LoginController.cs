@@ -29,10 +29,8 @@ namespace Demo.Controllers
         public IActionResult OnPost(LoginModel loginModel)
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
-            {
-                var fpsKey = HttpContext.Request.Form["__fk"];
-
-                fpsService.PushTransaction("http://localhost:5003/api/fp/Transaction", loginModel.Username, fpsKey);
+            {                
+                fpsService.PushTransaction("http://localhost:5003/api/fp/Transaction", loginModel.Username, HttpContext);
 
                 return RedirectToAction("index", "home");
             }

@@ -56,7 +56,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
         }
         
         [HttpPost("Transaction")]
-        public bool Transaction(Dictionary<string, string> data)
+        public bool Transaction(Dictionary<string, object> data)
         {
             return true;
         }
