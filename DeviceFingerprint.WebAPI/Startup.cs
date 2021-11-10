@@ -1,5 +1,7 @@
 using DeviceFingerprint.WebAPI.Middleware;
 using DeviceFingerprint.WebAPI.Services;
+using Fanex.Data;
+using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -69,6 +71,7 @@ namespace DeviceFingerprint.WebAPI
                 });
             });
             #endregion
+
             #region Authentication
             services.AddAuthentication(option =>
             {
@@ -87,6 +90,9 @@ namespace DeviceFingerprint.WebAPI
                 };
             });
             #endregion
+
+            services.RegisterService();
+            FanexDataConfig(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -115,6 +121,25 @@ namespace DeviceFingerprint.WebAPI
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private void FanexDataConfig(IAppSettings appSettings)
+        {
+            var connections = Configuration
+                                  .GetSection("AppConfig:Connections")
+                                  .GetChildren()
+                                  .AsEnumerable()
+                                  .ToDictionary(
+                                           x => x.GetValue<string>("Name"),
+                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+                                   );
+
+            DbSettingProviderManager
+              .StartNewSession()
+              .Use(connections)
+              .WithMySql()
+              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
+              .Run();
         }
     }
 }

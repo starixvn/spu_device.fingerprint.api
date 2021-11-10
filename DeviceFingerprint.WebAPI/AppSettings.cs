@@ -12,6 +12,8 @@ namespace DeviceFingerprint.WebAPI
         string ApiUrl { get; }
 
         string EncryptPassword { get; }
+
+        string SPName { get; }
     }
 
     public class AppSettings: IAppSettings
@@ -19,6 +21,7 @@ namespace DeviceFingerprint.WebAPI
         private readonly IConfiguration configuration;
 
         private readonly string apiUrl;
+        private readonly string spName;
         private readonly string encryptPassword;
 
         public AppSettings(IConfiguration configuration)
@@ -28,12 +31,15 @@ namespace DeviceFingerprint.WebAPI
             apiUrl = GetValue<string>("AppConfig:ApiUrl");
 
             encryptPassword = GetValue<string>("AppConfig:EncryptPassword");
+
+            spName = GetValue<string>("AppConfig:SPName");
         }
 
         public string ApiUrl => apiUrl;
 
         public string EncryptPassword => encryptPassword;
 
+        public string SPName => spName;
 
         public T GetValue<T>(string key)
         {
