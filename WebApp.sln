@@ -5,9 +5,11 @@ VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceFingerprint.WebAPI", "DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Client", "FPS.Device.FingerPrint.Client\FPS.Device.FingerPrint.Client.csproj", "{AD61E3E0-65A3-4A74-B361-76812657CF10}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.Device.FingerPrint.Model", "FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj", "{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fps.Device.FingerPrint.Client", "Fps.Device.FingerPrint.Client\Fps.Device.FingerPrint.Client.csproj", "{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -19,14 +21,18 @@ Global
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CBC104C-FFD8-4929-8069-069D7C40F391}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AD61E3E0-65A3-4A74-B361-76812657CF10}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

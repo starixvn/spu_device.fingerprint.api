@@ -5,7 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Client\FPS.Device.FingerPrint.Client.csproj" />
+    <ProjectReference Include="..\Fps.Device.FingerPrint.Client\Fps.Device.FingerPrint.Client.csproj" />
+    <ProjectReference Include="..\FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj" />
   </ItemGroup>
 
 </Project>

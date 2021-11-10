@@ -1,5 +1,6 @@
 ﻿using Demo.Models;
-using FPS.Device.FingerPrint.Client;
+using Fps.Device.FingerPrint.Client;
+using FPS.Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -13,11 +14,11 @@ namespace Demo.Controllers
 {
     public class LoginController : Controller
     {
-        private readonly IFpsActivator fpsService;
+        private readonly IFpsService fpsService;
 
         public LoginController()
         {
-            fpsService = new FpsActivator(1);
+            fpsService = new FpsService();
         }
 
         public IActionResult Index()
@@ -30,7 +31,11 @@ namespace Demo.Controllers
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
             {                
-                fpsService.PushTransaction("http://localhost:5003/api/fp/Transaction", loginModel.Username, HttpContext);
+                fpsService.InsertTransaction("http://localhost:5003/api/fp/Transaction", new TransactionModel { 
+                    LoginName = loginModel.Username,
+                    SessionKey = HttpContext.Request.Form["__fk"],
+                    SubscriberId = 1
+                });
 
                 return RedirectToAction("index", "home");
             }

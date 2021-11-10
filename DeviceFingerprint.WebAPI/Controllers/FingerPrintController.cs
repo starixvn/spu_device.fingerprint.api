@@ -1,6 +1,7 @@
 ﻿using DeviceFingerprint.WebAPI.Models;
 using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
+using FPS.Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -56,8 +57,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
         }
         
         [HttpPost("Transaction")]
-        public bool Transaction(Dictionary<string, object> data)
+        public bool Transaction([FromBody] TransactionModel data)
         {
+            var request = data;
+
             return true;
         }
     }
