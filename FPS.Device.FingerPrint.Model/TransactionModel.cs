@@ -9,5 +9,9 @@ namespace FPS.Device.FingerPrint.Model
         public string LoginName { get; set; }        
 
         public string SessionKey { get; set; }
+
+        public string ClientIp { get; set; }
+
+        public string UserAgent { get; set; }
     }
 }
