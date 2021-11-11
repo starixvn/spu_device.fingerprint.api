@@ -139,7 +139,24 @@ namespace DeviceFingerprint.WebAPI.Models
         public string CurrentResolution { get; set; }
 
         [JsonProperty("pixelDepth")]
-        public string PixelDepth { get; set; }
+        public int PixelDepth { get; set; }
+    }
+    public class LanguagesPrint
+    {
+        [JsonProperty("language")]
+        public string Language { get; set; }
+
+        [JsonProperty("languages")]
+        public string Languages { get; set; }
+
+        [JsonProperty("userLanguage")]
+        public string UserLanguage { get; set; }
+
+        [JsonProperty("browserLanguage")]
+        public string BrowserLanguage { get; set; }
+
+        [JsonProperty("systemLanguage")]
+        public string SystemLanguage { get; set; }
     }
 
     public class TouchSupport
@@ -169,19 +186,19 @@ namespace DeviceFingerprint.WebAPI.Models
         public string ColorGamut { get; set; }
 
         [JsonProperty("contrast")]
-        public object Contrast { get; set; }               
+        public object Contrast { get; set; }
 
         [JsonProperty("cookiesEnabled")]
         public bool CookiesEnabled { get; set; }
 
         [JsonProperty("cpuClass")]
-        public object CpuClass { get; set; }        
+        public object CpuClass { get; set; }
 
         [JsonProperty("deviceMemory")]
-        public object DeviceMemory { get; set; }        
+        public object DeviceMemory { get; set; }
 
         [JsonProperty("domBlockers")]
-        public object DomBlockers { get; set; }               
+        public object DomBlockers { get; set; }
 
         [JsonProperty("fontPreferencePrint")]
         public FontPreferencePrint FontPreferencePrint { get; set; }
@@ -196,7 +213,7 @@ namespace DeviceFingerprint.WebAPI.Models
         public int HardwareConcurrency { get; set; }
 
         [JsonProperty("hdr")]
-        public object Hdr { get; set; }                
+        public object Hdr { get; set; }
 
         [JsonProperty("indexedDB")]
         public bool IndexedDB { get; set; }
@@ -204,8 +221,8 @@ namespace DeviceFingerprint.WebAPI.Models
         [JsonProperty("invertedColors")]
         public object InvertedColors { get; set; }
 
-        [JsonProperty("languages")]
-        public List<List<string>> Languages { get; set; }
+        [JsonProperty("languagesPrint")]
+        public LanguagesPrint LanguagesPrint { get; set; }
 
         [JsonProperty("localStorage")]
         public bool LocalStorage { get; set; }
