@@ -30,11 +30,13 @@ namespace Demo.Controllers
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
             {
-                fpsServiceCore.InsertTransaction("http://localhost:5003/api/fp/Transaction", new TransactionModel { 
-                    LoginName = loginModel.Username,
-                    SessionKey = HttpContext.Request.Form["__fk"],
-                    SubscriberId = 1
-                });
+                //fpsService.InsertTransaction("http://localhost:5003/api/fp/Transaction", new TransactionModel { 
+                //    LoginName = loginModel.Username,
+                //    SessionKey = HttpContext.Request.Form["__fk"],
+                //    SubscriberId = 1
+                //});
+                HttpContext.Items["SubscriberId"] = 1;
+                fpsServiceFramework.InsertTransaction("http://localhost:5003/api/fp/Transaction", HttpContext);
 
                 return RedirectToAction("index", "home");
             }
