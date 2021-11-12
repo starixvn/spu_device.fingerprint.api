@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fps.Device.FingerPrint.Clie
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fps.Device.FingerPrint.Client.Net.Core", "Fps.Device.FingerPrint.Client.Net.Core\Fps.Device.FingerPrint.Client.Net.Core.csproj", "{3685CB60-9DCA-45A0-82B0-184BEFFEC08F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Net.Framework", "Demo.Net.Framework\Demo.Net.Framework.csproj", "{0BD9F415-25FF-4253-8563-213D1187F0A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{3685CB60-9DCA-45A0-82B0-184BEFFEC08F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3685CB60-9DCA-45A0-82B0-184BEFFEC08F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3685CB60-9DCA-45A0-82B0-184BEFFEC08F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BD9F415-25FF-4253-8563-213D1187F0A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BD9F415-25FF-4253-8563-213D1187F0A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BD9F415-25FF-4253-8563-213D1187F0A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BD9F415-25FF-4253-8563-213D1187F0A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
