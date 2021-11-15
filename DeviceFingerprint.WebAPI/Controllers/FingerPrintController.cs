@@ -14,7 +14,7 @@ using System.Collections.Generic;
 namespace DeviceFingerprint.WebAPI.Controllers
 {
     [Route("api/fp")]
-    [ApiController]    
+    [ApiController]
     public class FingerPrintController : ControllerBase
     {
         private readonly IWebHostEnvironment environment;
@@ -55,13 +55,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
         public ActionResult<string> FingerPrint([FromBody] string data)
         {
             var scrypto = new Crypto(appSettings.EncryptPassword);
-                        
+
             var decryptedData = scrypto.Decrypt(data);
-            
-            
+
             var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
-                       
-            var attributes = JsonConvert.DeserializeObject<AttributeModel>(fingerPrint.Attributes);
 
             if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.DI))
             {
@@ -74,11 +71,11 @@ namespace DeviceFingerprint.WebAPI.Controllers
             }
             return decryptedData;
         }
-        
+
         [HttpPost("Transaction")]
         public bool Transaction([FromBody] TransactionModel data)
         {
-           if(data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
+            if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
             {
                 transactionService.InsertTransaction(data);
 
