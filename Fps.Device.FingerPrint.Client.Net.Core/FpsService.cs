@@ -21,14 +21,17 @@ namespace Fps.Device.FingerPrint.Client.Net.Core
                 var SessionKey = context.Request.Form["__fk"].ToString();
                 var UserAgent = context.Request.Headers["User-Agent"].ToString();
                 var ClientIp = context.Request.HttpContext.Connection.RemoteIpAddress.ToString();
-                TransactionModel transaction = new()
+
+                var transaction = new TransactionModel
                 {
                     LoginName = LoginName,
                     SessionKey = SessionKey,
                     SubscriberId = SubscriberId,
                     UserAgent = UserAgent,
-                    ClientIp = ClientIp
+                    ClientIp = ClientIp,
+                    TransTime = DateTime.Now
                 };
+
                 using var client = new HttpClient();
                 client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
                 var content = JsonContent.Create(transaction);

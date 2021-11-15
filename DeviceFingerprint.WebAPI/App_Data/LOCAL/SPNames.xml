@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <Functions>
-	<Function Name="JobSerice">
-		<Setting Key="abc" SpName="DCS_DC_Transform_UserAgent_GetNullBrowserOSList" DbName="MySQL.FPS_FingerPrint.ctsService"/>		
+	<Function Name="Transaction">
+		<Setting Key="FP_InsertTransaction" SpName="FP_InsertTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>		
 	</Function>
 </Functions>

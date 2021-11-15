@@ -9,9 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\Transaction\Criterias\" />
-    <Folder Include="Features\Transaction\Model\" />
-    <Folder Include="Features\Transaction\Services\" />
+    <ProjectReference Include="..\FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj" />
   </ItemGroup>
 
 </Project>
