@@ -2,6 +2,7 @@
 using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
+using Fps.Device.FingerPrint.Features.Transaction.Services;
 using FPS.Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -18,12 +19,17 @@ namespace DeviceFingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly IFingerPrintService fingerPrintService;
+        private readonly ITransactionService transactionService;
 
-        public FingerPrintController(IWebHostEnvironment Environment, IAppSettings appSettings, IFingerPrintService fingerPrintService)
+        public FingerPrintController(IWebHostEnvironment Environment,
+            IAppSettings appSettings,
+            IFingerPrintService fingerPrintService,
+            ITransactionService transactionService)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
             this.fingerPrintService = fingerPrintService;
+            this.transactionService = transactionService;
         }
 
         [HttpGet]
@@ -62,9 +68,14 @@ namespace DeviceFingerprint.WebAPI.Controllers
         [HttpPost("Transaction")]
         public bool Transaction([FromBody] TransactionModel data)
         {
-            var request = data;
+           if(data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
+            {
+                transactionService.InsertTransaction(data);
 
-            return true;
+                return true;
+            }
+
+            return false;
         }
     }
 }

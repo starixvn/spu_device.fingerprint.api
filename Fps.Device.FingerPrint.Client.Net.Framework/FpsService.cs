@@ -21,14 +21,16 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
                 var SessionKey = HttpContext.Current.Request.Form["__fk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
-                TransactionModel transaction = new TransactionModel()
+                var transaction = new TransactionModel()
                 {
                     LoginName = LoginName,
                     SessionKey = SessionKey,
                     SubscriberId = SubscriberId,
                     UserAgent = UserAgent,
-                    ClientIp = ClientIp
+                    ClientIp = ClientIp,
+                    TransTime = DateTime.Now
                 };
+
                 using (var client = new HttpClient())
                 {
                     client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
