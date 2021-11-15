@@ -29,17 +29,12 @@ namespace Fps.Device.FingerPrint.Client.Net.Core
                     UserAgent = UserAgent,
                     ClientIp = ClientIp
                 };
-                if (transaction != null)
-                {
-                    using var client = new HttpClient();
-                    client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
+                using var client = new HttpClient();
+                client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
+                var content = JsonContent.Create(transaction);
+                var response = await client.PostAsync(url, content);
 
-                    var content = JsonContent.Create(transaction);
-                    var response = await client.PostAsync(url, content);
-
-                    return response.IsSuccessStatusCode;
-
-                }
+                return response.IsSuccessStatusCode;
             }
 
             return false;
