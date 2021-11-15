@@ -1,8 +1,11 @@
-﻿namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
+﻿using Fps.Device.FingerPrint.Features.FingerPrint.Model;
+using FPS.Device.FingerPrint.Model;
+
+namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
 {
     public interface IFingerPrintService
     {
-        void InsertFingerPrint(string deviceIdentify, long attributeId);
+        void InsertFingerPrint(FingerPrintEntity fingerPrint);
     }
 
     public class FingerPrintService : IFingerPrintService
@@ -14,9 +17,9 @@
             this.fingerPrintDataAccess = fingerPrintDataAccess;
         }
 
-        public void InsertFingerPrint(string deviceIdentify, long attributeId)
+        public void InsertFingerPrint(FingerPrintEntity fingerPrint)
         {
-            fingerPrintDataAccess.InsertFingerPrint(deviceIdentify, attributeId);
+            fingerPrintDataAccess.InsertFingerPrint(fingerPrint);
         }
     }
 }

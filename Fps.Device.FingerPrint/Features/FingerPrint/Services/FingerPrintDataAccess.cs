@@ -1,11 +1,12 @@
 ﻿using Fanex.Data.Repository;
 using Fps.Device.FingerPrint.Features.FingerPrint.Criterias;
+using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 
 namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
 {
    public interface IFingerPrintDataAccess
     {
-        void InsertFingerPrint(string deviceIdentify, long attributeId);
+        void InsertFingerPrint(FingerPrintEntity fingerPrint);
     }
 
     public class FingerPrintDataAccess : IFingerPrintDataAccess
@@ -17,12 +18,13 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
             repository = new DynamicRepository();
         }
 
-        public void InsertFingerPrint(string deviceIdentify, long attributeId)
+        public void InsertFingerPrint(FingerPrintEntity fingerPrint)
         {
             var criteria = new InsertFingerPrintCriteria
             {
-                DeviceIndentify = deviceIdentify,
-                AttributeId = attributeId
+                DeviceIdentify = fingerPrint.DeviceIdentify,
+                RoutingKey = fingerPrint.RoutingKey,
+                Attributes = fingerPrint.Attributes
             };
 
             repository.Execute(criteria);

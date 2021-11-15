@@ -1,6 +1,7 @@
 ﻿using DeviceFingerprint.WebAPI.Models;
 using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
+using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
 using Fps.Device.FingerPrint.Features.Transaction.Services;
 using FPS.Device.FingerPrint.Model;
@@ -58,10 +59,19 @@ namespace DeviceFingerprint.WebAPI.Controllers
             var decryptedData = scrypto.Decrypt(data);
             
             
-            var fingerPrint = JsonConvert.DeserializeObject<FingerPrintModel>(decryptedData);
+            var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                        
             var attributes = JsonConvert.DeserializeObject<AttributeModel>(fingerPrint.Attributes);
 
+            if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.DI))
+            {
+                fingerPrintService.InsertFingerPrint(new FingerPrintEntity
+                {
+                    DeviceIdentify = fingerPrint.DI,
+                    Attributes = fingerPrint.Attributes,
+                    RoutingKey = fingerPrint.Key
+                });
+            }
             return decryptedData;
         }
         

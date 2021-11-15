@@ -8,6 +8,8 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Model
     {
         public string DeviceIdentify { get; set; }
 
-        public long AttributeId { get; set; }                
+        public string RoutingKey { get; set; }
+
+        public string Attributes { get; set; }
     }
 }
