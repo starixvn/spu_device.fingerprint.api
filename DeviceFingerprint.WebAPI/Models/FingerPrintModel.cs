@@ -271,7 +271,8 @@ namespace DeviceFingerprint.WebAPI.Models
     public class FingerPrintModel
     {
         [JsonProperty("subs")]
-        public string SubscriberId { get; set; }
+        public int SubscriberId { get; set; }
+
         [JsonProperty("di")]
         public string FingerPrint { get; set; }
 

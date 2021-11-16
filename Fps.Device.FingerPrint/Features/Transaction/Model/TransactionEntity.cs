@@ -10,7 +10,7 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Model
 
         public int SubscriberId { get; set; }
 
-        public string RoutingKey { get; set; }
+        public string SessionKey { get; set; }
 
         public DateTime TransTime { get; set; }
 

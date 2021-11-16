@@ -27,7 +27,7 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
             {
                 LoginName = transaction.LoginName,
                 SubscriberId = transaction.SubscriberId,
-                RoutingKey = transaction.RoutingKey,
+                SessionKey = transaction.SessionKey,
                 ClientIp = transaction.ClientIp,
                 TransTime = transaction.TransTime,
                 UserAgent = transaction.UserAgent

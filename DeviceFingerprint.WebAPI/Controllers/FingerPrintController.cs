@@ -1,5 +1,4 @@
-﻿using DeviceFingerprint.WebAPI.Models;
-using DeviceFingerprint.WebAPI.Services;
+﻿using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
@@ -12,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using System;
-using System.Collections.Generic;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -27,7 +25,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
         private readonly ITransactionService transactionService;
         private readonly ISubscriberServices subscriberServices;
 
-        public FingerPrintController(ISentryClient sentryClient, 
+        public FingerPrintController(ISentryClient sentryClient,
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             IFingerPrintService fingerPrintService,
@@ -45,21 +43,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
         [HttpGet("{subscriberId}")]
         public ActionResult<string> Script(int subscriberId = 0)
         {
-            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");                        
+            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var subscriber = subscriberServices.GetSubscriber(subscriberId);
-
-                if(subscriber != null && subscriber.SubscriberId != 0 && subscriber.DCSStatus)
-                {
-                    subscriberId = subscriber.SubscriberId;
-                }
-                else
-                {
-                    subscriberId = -1;
-                }
-
                 var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings);
 
                 return bundleContent.Content;
@@ -82,13 +69,12 @@ namespace DeviceFingerprint.WebAPI.Controllers
 
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
-                    int subscriberId = string.IsNullOrWhiteSpace(fingerPrint.SubscriberId) ? 0 : int.Parse(fingerPrint.SubscriberId);
                     fingerPrintService.InsertFingerPrint(new FingerPrintEntity
                     {
                         FingerPrint = fingerPrint.FingerPrint,
                         Attributes = fingerPrint.Attributes,
                         SessionKey = fingerPrint.Key,
-                        SubscriberId = subscriberId
+                        SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId)
                     });
                 }
 
@@ -109,17 +95,39 @@ namespace DeviceFingerprint.WebAPI.Controllers
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
                 {
-                    transactionService.InsertTransaction(data);
-                }               
+                    var transaction = new TransactionModel
+                    {
+                        SubscriberId = CheckExistSubscriber(data.SubscriberId),
+                        ClientIp = data.ClientIp,
+                        LoginName = data.LoginName,
+                        SessionKey = data.SessionKey,
+                        TransTime = data.TransTime,
+                        UserAgent = data.UserAgent
+                    };
+
+                    transactionService.InsertTransaction(transaction);
+                }
 
                 return true;
             }
             catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
-            }           
+            }
 
             return false;
+        }
+
+        private int CheckExistSubscriber(int subscriberId)
+        {
+            var subscriber = subscriberServices.GetSubscriber(subscriberId);
+
+            if (subscriber != null && subscriber.SubscriberId != 0 && subscriber.DCSStatus)
+            {
+                return subscriber.SubscriberId;
+            }
+
+            return -1;
         }
     }
 }

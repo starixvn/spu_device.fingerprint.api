@@ -12,8 +12,8 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_SubscriberId")]
         public int SubscriberId { get; set; }
 
-        [SpParam(SqlParamName = "ip_RoutingKey")]
-        public string RoutingKey { get; set; }
+        [SpParam(SqlParamName = "ip_SessionKey")]
+        public string SessionKey { get; set; }
 
         [SpParam(SqlParamName = "ip_TransTime")]
         public DateTime TransTime { get; set; }
