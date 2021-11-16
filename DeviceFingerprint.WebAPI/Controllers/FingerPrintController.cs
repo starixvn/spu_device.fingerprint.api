@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Sentry;
+using System;
 using System.Collections.Generic;
 
 namespace DeviceFingerprint.WebAPI.Controllers
@@ -17,16 +19,19 @@ namespace DeviceFingerprint.WebAPI.Controllers
     [ApiController]
     public class FingerPrintController : ControllerBase
     {
+        private readonly ISentryClient sentryClient;
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly IFingerPrintService fingerPrintService;
         private readonly ITransactionService transactionService;
 
-        public FingerPrintController(IWebHostEnvironment Environment,
+        public FingerPrintController(ISentryClient sentryClient, 
+            IWebHostEnvironment Environment,
             IAppSettings appSettings,
             IFingerPrintService fingerPrintService,
             ITransactionService transactionService)
         {
+            this.sentryClient = sentryClient;
             this.environment = Environment;
             this.appSettings = appSettings;
             this.fingerPrintService = fingerPrintService;
@@ -54,33 +59,50 @@ namespace DeviceFingerprint.WebAPI.Controllers
         [HttpPost]
         public ActionResult<string> FingerPrint([FromBody] string data)
         {
-            var scrypto = new Crypto(appSettings.EncryptPassword);
-
-            var decryptedData = scrypto.Decrypt(data);
-
-            var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
-
-            if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.DI))
+            try
             {
-                fingerPrintService.InsertFingerPrint(new FingerPrintEntity
+                var scrypto = new Crypto(appSettings.EncryptPassword);
+
+                var decryptedData = scrypto.Decrypt(data);
+
+                var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
+
+                if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.DI))
                 {
-                    DeviceIdentify = fingerPrint.DI,
-                    Attributes = fingerPrint.Attributes,
-                    RoutingKey = fingerPrint.Key
-                });
+                    fingerPrintService.InsertFingerPrint(new FingerPrintEntity
+                    {
+                        DeviceIdentify = fingerPrint.DI,
+                        Attributes = fingerPrint.Attributes,
+                        RoutingKey = fingerPrint.Key
+                    });
+                }
+
+                return decryptedData;
             }
-            return decryptedData;
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+
+            return string.Empty;
         }
 
         [HttpPost("Transaction")]
         public bool Transaction([FromBody] TransactionModel data)
         {
-            if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
+            try
             {
-                transactionService.InsertTransaction(data);
+                if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
+                {
+                    transactionService.InsertTransaction(data);
+                }               
 
                 return true;
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }           
 
             return false;
         }

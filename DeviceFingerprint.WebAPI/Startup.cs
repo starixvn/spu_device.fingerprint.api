@@ -2,6 +2,8 @@ using DeviceFingerprint.WebAPI.Middleware;
 using DeviceFingerprint.WebAPI.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
+using Fanex.Logging;
+using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -10,6 +12,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Sentry;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -93,6 +97,7 @@ namespace DeviceFingerprint.WebAPI
 
             services.RegisterService();
             FanexDataConfig(appSettings);
+            RegisterLogging(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -140,6 +145,19 @@ namespace DeviceFingerprint.WebAPI
               .WithMySql()
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
+        }
+
+        private void RegisterLogging(IAppSettings appSettings)
+        {
+            LogManager
+                .SetDefaultLogCategory("DeviceFingerPrintWebAPI")
+                .Use(new List<ILogEngine>
+                {
+                     new SentryLogging(new SentryEngineOptions {
+                        Dsn = new Dsn(appSettings.SentryDsn),
+                        Environment = appSettings.Environment
+                     })
+                });
         }
     }
 }
