@@ -7,4 +7,7 @@
   <Function Name="FingerPrint">
     <Setting Key="FP_InsertFingerPrint" SpName="FP_InsertFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
+	<Function Name="Subscriber">
+		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberId" SpName="CTS_AD_Subscriber_GetInfoBySubscriberId" DbName="MySQL.CTS_Admin.APIAdmin"/>
+	</Function>
 </Functions>

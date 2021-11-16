@@ -1,4 +1,5 @@
 ﻿using Fps.Device.FingerPrint.Features.FingerPrint.Services;
+using Fps.Device.FingerPrint.Features.Subscriber.Services;
 using Fps.Device.FingerPrint.Features.Transaction.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ namespace DeviceFingerprint.WebAPI.Services
         {
             RegisterFingerPrintService(services);
             RegisterTransactionService(services);
+            RegisterSubscriberService(services);
         }
 
         private static void RegisterFingerPrintService(this IServiceCollection services)
@@ -22,6 +24,12 @@ namespace DeviceFingerprint.WebAPI.Services
         {
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
+        }
+
+        private static void RegisterSubscriberService(this IServiceCollection services)
+        {
+            services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
+            services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
         }
     }
 }
