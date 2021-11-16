@@ -11,6 +11,8 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
     {
 
         Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, TimeSpan? timeout = null);
+
+        string GenerateSessionKey();
     }
     public class FpsService : IFpsService
     {
@@ -44,7 +46,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
             return false;
         }
 
-        public static String GetIP()
+        private string GetIP()
         {
             String ip = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
@@ -54,6 +56,11 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
             }
 
             return ip;
+        }
+
+        public string GenerateSessionKey()
+        {
+            return Guid.NewGuid().ToString("N");
         }
     }
 }

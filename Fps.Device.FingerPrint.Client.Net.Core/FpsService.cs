@@ -9,11 +9,17 @@ namespace Fps.Device.FingerPrint.Client.Net.Core
 {
     public interface IFpsService
     {
-
         Task<bool> InsertTransaction(HttpContext context, string url, string LoginName, int SubscriberId, TimeSpan? timeout = null);
+
+        string GenerateSessionKey();
     }
     public class FpsService : IFpsService
     {
+        public string GenerateSessionKey()
+        {
+            return Guid.NewGuid().ToString("N");
+        }
+
         public async Task<bool> InsertTransaction(HttpContext context, string url, string LoginName, int SubscriberId, TimeSpan? timeout = null)
         {
             if(!string.IsNullOrWhiteSpace(LoginName) && SubscriberId != 0)
