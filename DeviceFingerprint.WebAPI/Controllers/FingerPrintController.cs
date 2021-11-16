@@ -3,6 +3,7 @@ using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
+using Fps.Device.FingerPrint.Features.Subscriber.Services;
 using Fps.Device.FingerPrint.Features.Transaction.Services;
 using FPS.Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -24,30 +25,42 @@ namespace DeviceFingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly IFingerPrintService fingerPrintService;
         private readonly ITransactionService transactionService;
+        private readonly ISubscriberServices subscriberServices;
 
         public FingerPrintController(ISentryClient sentryClient, 
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             IFingerPrintService fingerPrintService,
-            ITransactionService transactionService)
+            ITransactionService transactionService,
+            ISubscriberServices subscriberServices)
         {
             this.sentryClient = sentryClient;
             this.environment = Environment;
             this.appSettings = appSettings;
             this.fingerPrintService = fingerPrintService;
             this.transactionService = transactionService;
+            this.subscriberServices = subscriberServices;
         }
 
         [HttpGet("{subscriberId}")]
-        public ActionResult<string> Script(int subscriberId)
+        public ActionResult<string> Script(int subscriberId = 0)
         {
-            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
+            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");                        
 
-            var scriptContent = bundleFile.Content;
-
-            if (!string.IsNullOrWhiteSpace(scriptContent))
+            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var bundleContent = new BundleContent(subscriberId, scriptContent, appSettings);
+                var subscriber = subscriberServices.GetSubscriber(subscriberId);
+
+                if(subscriber != null && subscriber.SubscriberId != 0 && subscriber.DCSStatus)
+                {
+                    subscriberId = subscriber.SubscriberId;
+                }
+                else
+                {
+                    subscriberId = -1;
+                }
+
+                var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings);
 
                 return bundleContent.Content;
             }

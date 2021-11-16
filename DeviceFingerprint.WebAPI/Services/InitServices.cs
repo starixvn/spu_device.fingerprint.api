@@ -29,7 +29,7 @@ namespace DeviceFingerprint.WebAPI.Services
         private static void RegisterSubscriberService(this IServiceCollection services)
         {
             services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
-            services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
+            services.AddSingleton<ISubscriberServices, SubscriberServices>();
         }
     }
 }
