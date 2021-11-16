@@ -6,9 +6,11 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Model
 {
    public class FingerPrintEntity
     {
-        public string DeviceIdentify { get; set; }
+        public string FingerPrint { get; set; }
 
-        public string RoutingKey { get; set; }
+        public string SessionKey { get; set; }
+
+        public int SubscriberId { get; set; }
 
         public string Attributes { get; set; }
     }

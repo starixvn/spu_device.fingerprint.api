@@ -38,8 +38,8 @@ namespace DeviceFingerprint.WebAPI.Controllers
             this.transactionService = transactionService;
         }
 
-        [HttpGet]
-        public ActionResult<string> Script()
+        [HttpGet("{subscriberId}")]
+        public ActionResult<string> Script(int subscriberId)
         {
             var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
 
@@ -47,7 +47,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
 
             if (!string.IsNullOrWhiteSpace(scriptContent))
             {
-                var bundleContent = new BundleContent(scriptContent, appSettings);
+                var bundleContent = new BundleContent(subscriberId, scriptContent, appSettings);
 
                 return bundleContent.Content;
             }
@@ -67,13 +67,15 @@ namespace DeviceFingerprint.WebAPI.Controllers
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
 
-                if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.DI))
+                if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
+                    int subscriberId = string.IsNullOrWhiteSpace(fingerPrint.SubscriberId) ? 0 : int.Parse(fingerPrint.SubscriberId);
                     fingerPrintService.InsertFingerPrint(new FingerPrintEntity
                     {
-                        DeviceIdentify = fingerPrint.DI,
+                        FingerPrint = fingerPrint.FingerPrint,
                         Attributes = fingerPrint.Attributes,
-                        RoutingKey = fingerPrint.Key
+                        SessionKey = fingerPrint.Key,
+                        SubscriberId = subscriberId
                     });
                 }
 

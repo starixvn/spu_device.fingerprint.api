@@ -22,8 +22,9 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
         {
             var criteria = new InsertFingerPrintCriteria
             {
-                DeviceIdentify = fingerPrint.DeviceIdentify,
-                RoutingKey = fingerPrint.RoutingKey,
+                FingerPrint = fingerPrint.FingerPrint,
+                SessionKey = fingerPrint.SessionKey,
+                SubscriberId = fingerPrint.SubscriberId,
                 Attributes = fingerPrint.Attributes
             };
 
