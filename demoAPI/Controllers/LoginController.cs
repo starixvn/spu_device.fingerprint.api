@@ -15,7 +15,11 @@ namespace demoAPI.Controllers
         // GET: Login
         public ActionResult Index()
         {
-            return View();
+            if (Session["Username"] == null)
+            {
+                return View();
+            }
+            return Redirect("Home");
         }
 
         [HttpPost]
@@ -37,7 +41,6 @@ namespace demoAPI.Controllers
         {
             Session.Clear();
             return RedirectToAction("");
-
         }
     }
 }
