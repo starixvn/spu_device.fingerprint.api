@@ -20,6 +20,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
         {
             if (!string.IsNullOrWhiteSpace(LoginName) && SubscriberId != 0)
             {
+                var apiUrl = $"{url}/api/fp/Transaction";
                 var SessionKey = HttpContext.Current.Request.Form["__fk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
@@ -37,7 +38,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
                 {
                     client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
                     var content = JsonContent.Create(transaction);
-                    var response = await client.PostAsync(url, content);
+                    var response = await client.PostAsync(apiUrl, content);
 
                     return response.IsSuccessStatusCode;
                 }

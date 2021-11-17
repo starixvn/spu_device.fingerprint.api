@@ -24,7 +24,7 @@ namespace Demo.Controllers
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
             {
                 int SubscriberId = 1;
-                string url = "http://localhost:5003/api/fp/Transaction";
+                string url = "http://localhost:5003";
                 fpsService.InsertTransaction(HttpContext, url, loginModel.Username, SubscriberId);
 
                 return RedirectToAction("index", "home");

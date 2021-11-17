@@ -23,10 +23,9 @@ namespace Demo.Net.Framework.Controllers
         public ActionResult OnPost(LoginModel loginModel)
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
-            {
-                int SubscriberId = 2;
-                string url = "http://localhost:5003/api/fp/Transaction";
-                fpsService.InsertTransaction(url, loginModel.Username, SubscriberId);
+            {                
+                string url = "http://localhost:5003";
+                fpsService.InsertTransaction(url, loginModel.Username, 2);
 
                 return RedirectToAction("index", "home");
             }
