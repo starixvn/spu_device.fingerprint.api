@@ -19,12 +19,11 @@ namespace Demo.Controllers
         }
 
         [HttpPost]
-        public IActionResult OnPost(LoginModel loginModel)
+        public IActionResult OnPost(LoginModel loginModel, int SubscriberId = 2)
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
             {
-                int SubscriberId = 1;
-                string url = "http://localhost:5003";
+                string url = "http://localhost:5003/api/fp/Transaction";
                 fpsService.InsertTransaction(HttpContext, url, loginModel.Username, SubscriberId);
 
                 return RedirectToAction("index", "home");
