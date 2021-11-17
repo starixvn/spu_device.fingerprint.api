@@ -5,8 +5,6 @@
 <div class="text-center">
     <h1 class="display-4">Welcome</h1>
     <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    @{
-        <span>@TempData["fpsKey"]</span>
-        TempData.Keep();
-    }
+   <input type="hidden" id="__fk" name="__fk" value="@TempData["fpsSessionKey"]" />
 </div>
+<script async defer src="http://localhost:5003/api/fp/2"></script>

@@ -10,18 +10,18 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
     public interface IFpsService
     {
 
-        Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, TimeSpan? timeout = null);
+        Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, string sessionKey = null, TimeSpan? timeout = null);
 
         string GenerateSessionKey();
     }
     public class FpsService : IFpsService
     {
-        public async Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, TimeSpan? timeout = null)
+        public async Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, string sessionKey = null, TimeSpan? timeout = null)
         {
             if (!string.IsNullOrWhiteSpace(LoginName) && SubscriberId != 0)
             {
                 var apiUrl = $"{url}/api/fp/Transaction";
-                var SessionKey = HttpContext.Current.Request.Form["__fk"].ToString();
+                var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__fk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
                 var transaction = new TransactionModel()

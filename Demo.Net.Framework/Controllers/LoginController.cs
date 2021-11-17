@@ -22,9 +22,9 @@ namespace Demo.Net.Framework.Controllers
         [HttpPost]
         public ActionResult OnPost(LoginModel loginModel, int SubscriberId = 2)
         {
-            if (loginModel.Username == "test" && loginModel.Password == "1234aa")
+            if ((loginModel.Username == "test" || loginModel.Username == "test1" || loginModel.Username == "test2") && loginModel.Password == "1234aa")
             {
-                string url = "http://localhost:5003/api/fp/Transaction";
+                string url = "http://localhost:5003";
                 fpsService.InsertTransaction(url, loginModel.Username, SubscriberId);
 
                 return RedirectToAction("index", "home");
