@@ -40,20 +40,37 @@ namespace DeviceFingerprint.WebAPI.Controllers
             this.subscriberServices = subscriberServices;
         }
 
-        [HttpGet("{subscriberId}")]
-        public ActionResult<string> Script(int subscriberId = 0)
+        [HttpGet("scr/{subscriberId}")]
+        public ActionResult Script(int subscriberId = 0)
         {
-            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.min.js");
+            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.js");
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
                 var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings);
 
-                return bundleContent.Content;
+                return new JavascriptResult(bundleContent.Content);
             }
+                       
 
-            return "Cannot get script.";
+            return null;
         }
+
+        [HttpGet("conf")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult<ScriptConfigModel> AppConfig()
+        {
+            var JWTService = new JWT(appSettings);
+
+            return Ok(new ScriptConfigModel
+            {
+                EncryptedKey = appSettings.EncryptPassword,
+                SessionKey = Guid.NewGuid().ToString("N"),
+                Token = JWTService.GenerateJwtToken()
+            });            
+        }
+
+
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]

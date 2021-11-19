@@ -7,12 +7,14 @@ using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sentry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -38,6 +40,8 @@ namespace DeviceFingerprint.WebAPI
 
             services.AddCors();
 
+            services.AddResponseCaching();
+
             services.AddControllers(options =>
             {
                 var jsonInputFormatter = options.InputFormatters
@@ -45,6 +49,7 @@ namespace DeviceFingerprint.WebAPI
                     .Single();
                 jsonInputFormatter.SupportedMediaTypes.Add("application/json");
             });
+
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>
             {
@@ -118,7 +123,25 @@ namespace DeviceFingerprint.WebAPI
 
             app.UseMiddleware<JWTMiddleware>();
 
+            app.UseStaticFiles();
+
             app.UseRouting();
+
+            app.UseResponseCaching();
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+                    {
+                        Private = true,
+                        MaxAge = TimeSpan.FromSeconds(600)
+                    };
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
+                    new string[] { "Accept-Encoding" };
+
+                await next();
+            });
 
             app.UseAuthorization();
 

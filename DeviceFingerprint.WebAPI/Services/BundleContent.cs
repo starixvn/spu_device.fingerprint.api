@@ -5,28 +5,24 @@ namespace DeviceFingerprint.WebAPI.Services
 {
     public class BundleContent
     {
-        private readonly int subscriberId;
         private readonly string scriptContent;
         private readonly IAppSettings appSettings;
+        private readonly int subscriberId;
 
         public BundleContent(int subscriberId, string scriptContent, IAppSettings appSettings)
         {
-            this.subscriberId = subscriberId;
             this.scriptContent = scriptContent;
             this.appSettings = appSettings;
+            this.subscriberId = subscriberId;
         }
 
         public string Content
         {
             get
             {
-                var JWTService = new JWT(appSettings);
                 var script = this.scriptContent
                     .Replace("__subscriberId__", subscriberId.ToString())
-                    .Replace("__key__", appSettings.EncryptPassword)
-                    .Replace("__apiUrl__", $"{appSettings.ApiUrl}/api/fp")
-                    .Replace("__token__", JWTService.GenerateJwtToken())
-                    .Replace("__fpsKey__", Guid.NewGuid().ToString("N"));
+                    .Replace("__apiUrl__", $"{appSettings.ApiUrl}/api/fp");
 
                 return script;
             }
