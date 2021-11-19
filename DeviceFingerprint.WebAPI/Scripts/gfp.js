@@ -9398,12 +9398,16 @@ var globalFP = (function (exports) {
         container.appendChild(fkInput);
     }
     function getFP() {
+        let start = Date.now();
         getDI().then((result) => {
             if (_isDebug) {
                 console.log(result.Id);
                 console.log(result.Properties);
             }
             else {
+                let end = Date.now() - start;
+                console.log(`milliseconds elapsed of collect fp = ${end}`);
+                start = Date.now();
                 let sessionKeyElement = document.getElementById("__fk");
                 if (sessionKeyElement) {
                     let sessionKeyValue = sessionKeyElement.value;
@@ -9418,6 +9422,8 @@ var globalFP = (function (exports) {
                                     subs: subscriberId,
                                 }, response.encryptedKey);
                                 postData(encryptedFP, response.token);
+                                end = Date.now() - start;
+                                console.log(`milliseconds elapsed of post fp = ${end}`);
                             }
                         }));
                     }
@@ -9435,6 +9441,8 @@ var globalFP = (function (exports) {
                             postData(encryptedFP, response.token).then((res) => {
                                 if (res.ok) {
                                     injectSessionKey(response.sessionKey);
+                                    end = Date.now() - start;
+                                    console.log(`milliseconds elapsed of post fp = ${end}`);
                                 }
                             });
                         }
