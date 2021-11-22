@@ -1,0 +1,4 @@
+include:
+  - project: "ci/repos-ci/spu_nap_fps_web_api_job_service"
+    ref: master
+    file: "gitlab-ci.yml"
