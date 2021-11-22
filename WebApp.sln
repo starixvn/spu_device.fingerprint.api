@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceFingerprint.WebAPI", "DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DeviceFingerprint.WebAPI", "src\DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "Demo\Demo.csproj", "{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Demo", "src\Demo\Demo.csproj", "{7FBDD0B0-0AFA-4CFA-B3E2-F6BE7F279F39}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Model", "FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj", "{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Model", "src\FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj", "{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fps.Device.FingerPrint.Client", "Fps.Device.FingerPrint.Client\Fps.Device.FingerPrint.Client.csproj", "{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fps.Device.FingerPrint.Client", "src\Fps.Device.FingerPrint.Client\Fps.Device.FingerPrint.Client.csproj", "{BDEAF69E-81DC-4C6F-A13C-5B8C9617D817}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fps.Device.FingerPrint", "Fps.Device.FingerPrint\Fps.Device.FingerPrint.csproj", "{85AD9E4B-646E-486F-8257-BB8852A8947D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fps.Device.FingerPrint", "src\Fps.Device.FingerPrint\Fps.Device.FingerPrint.csproj", "{85AD9E4B-646E-486F-8257-BB8852A8947D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fps.Device.FingerPrint.Client.Net.Framework", "Fps.Device.FingerPrint.Client.Net.Framework\Fps.Device.FingerPrint.Client.Net.Framework.csproj", "{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fps.Device.FingerPrint.Client.Net.Framework", "src\Fps.Device.FingerPrint.Client.Net.Framework\Fps.Device.FingerPrint.Client.Net.Framework.csproj", "{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fps.Device.FingerPrint.Client.Net.Core", "Fps.Device.FingerPrint.Client.Net.Core\Fps.Device.FingerPrint.Client.Net.Core.csproj", "{3685CB60-9DCA-45A0-82B0-184BEFFEC08F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fps.Device.FingerPrint.Client.Net.Core", "src\Fps.Device.FingerPrint.Client.Net.Core\Fps.Device.FingerPrint.Client.Net.Core.csproj", "{3685CB60-9DCA-45A0-82B0-184BEFFEC08F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Net.Framework", "Demo.Net.Framework\Demo.Net.Framework.csproj", "{6DC0AA48-6918-4D99-8BBF-053602AA4F94}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.Net.Framework", "src\Demo.Net.Framework\Demo.Net.Framework.csproj", "{6DC0AA48-6918-4D99-8BBF-053602AA4F94}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demoAPI", "demoAPI\demoAPI.csproj", "{BAF8E613-D69E-44C6-8FB4-E22E70B99559}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demoAPI", "src\demoAPI\demoAPI.csproj", "{BAF8E613-D69E-44C6-8FB4-E22E70B99559}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
