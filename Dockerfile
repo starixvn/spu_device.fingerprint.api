@@ -3,7 +3,7 @@ FROM registry.nexdev.net:5050/docker/dotnet/core/sdk:5.0.102-ca-patch-buster-sli
 WORKDIR /src
 
 COPY ["./src/DeviceFingerprint.WebAPI", "DeviceFingerprint.WebAPI/"]
-COPY ["./src/DeviceFingerprint.WebAPI/DeviceFingerprint.WebAPI.csproj.csproj", "DeviceFingerprint.WebAPI/"]
+COPY ["./src/DeviceFingerprint.WebAPI/DeviceFingerprint.WebAPI.csproj", "DeviceFingerprint.WebAPI/"]
 
 WORKDIR "/src/DeviceFingerprint.WebAPI"
 
