@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using System;
+using System.Text.Json;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -62,12 +63,14 @@ namespace DeviceFingerprint.WebAPI.Controllers
         {
             var JWTService = new JWT(appSettings);
 
-            return Ok(new ScriptConfigModel
+            string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
             {
                 EncryptedKey = appSettings.EncryptPassword,
                 SessionKey = Guid.NewGuid().ToString("N"),
                 Token = JWTService.GenerateJwtToken()
-            });            
+            });
+
+            return Ok(jsonString);            
         }
 
 
@@ -85,7 +88,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
 
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
-                {
+                {                  
                     fingerPrintService.InsertFingerPrint(new FingerPrintEntity
                     {
                         FingerPrint = fingerPrint.FingerPrint,

@@ -9420,8 +9420,8 @@ var globalFP = (function (exports) {
                                     attr: result.Properties,
                                     fk: sessionKeyValue,
                                     subs: subscriberId,
-                                }, response.encryptedKey);
-                                postData(encryptedFP, response.token);
+                                }, response.a);
+                                postData(encryptedFP, response.b);
                                 end = Date.now() - start;
                                 console.log(`milliseconds elapsed of post fp = ${end}`);
                             }
@@ -9432,15 +9432,16 @@ var globalFP = (function (exports) {
                     getConfig().then((res) => __awaiter(this, void 0, void 0, function* () {
                         if (res.ok) {
                             let response = yield res.json();
+                            console.log(result.Properties);
                             let encryptedFP = Encrypting({
                                 di: result.Id,
                                 attr: result.Properties,
-                                fk: response.sessionKey,
+                                fk: response.c,
                                 subs: subscriberId,
-                            }, response.encryptedKey);
-                            postData(encryptedFP, response.token).then((res) => {
+                            }, response.a);
+                            postData(encryptedFP, response.b).then((res) => {
                                 if (res.ok) {
-                                    injectSessionKey(response.sessionKey);
+                                    injectSessionKey(response.c);
                                     end = Date.now() - start;
                                     console.log(`milliseconds elapsed of post fp = ${end}`);
                                 }
