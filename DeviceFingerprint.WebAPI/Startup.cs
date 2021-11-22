@@ -6,6 +6,7 @@ using Fanex.Logging;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -49,6 +50,8 @@ namespace DeviceFingerprint.WebAPI
                     .Single();
                 jsonInputFormatter.SupportedMediaTypes.Add("application/json");
             });
+
+            services.AddHealthChecks();
 
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>
@@ -124,6 +127,11 @@ namespace DeviceFingerprint.WebAPI
             app.UseMiddleware<JWTMiddleware>();
 
             app.UseStaticFiles();
+
+            app.UseHealthChecks("/healthz", new HealthCheckOptions
+            {
+                Predicate = _ => true
+            });
 
             app.UseRouting();
 
