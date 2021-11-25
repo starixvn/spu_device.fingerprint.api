@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace FPS.Device.FingerPrint.Model
+namespace FPS.Device.FingerPrint.Model.Framework
 {
     public class TransactionModel
     {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace FPS.Device.FingerPrint.Model
+namespace FPS.Device.FingerPrint.Model.Framework
 {
     public class SubscriberModel
     {

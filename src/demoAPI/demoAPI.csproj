@@ -163,6 +163,13 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Login\Index.cshtml" />
+    <Content Include="Web.LOCAL.config" />
+    <Content Include="Web.LOCAL.Debug.config">
+      <DependentUpon>Web.LOCAL.config</DependentUpon>
+    </Content>
+    <Content Include="Web.LOCAL.Release.config">
+      <DependentUpon>Web.LOCAL.config</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

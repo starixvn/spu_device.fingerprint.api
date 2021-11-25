@@ -13,7 +13,7 @@ namespace demoAPI.Controllers
         }
 
         public ActionResult Index()
-        {          
+        {
             if (Session["Username"] == null)
             {
                 return Redirect("Login");
@@ -24,15 +24,15 @@ namespace demoAPI.Controllers
                 {
                     var fpsSessionKey = fpsService.GenerateSessionKey();
 
-                    string url = "http://localhost:5003";
+                    string url = System.Configuration.ConfigurationManager.AppSettings["apiUrl"];
 
                     fpsService.InsertTransaction(url, Session["Username"].ToString(), 2, fpsSessionKey);
 
-                    TempData["fpsSessionKey"] = Session["fpsSessionKey"] = fpsSessionKey;                    
+                    TempData["fpsSessionKey"] = Session["fpsSessionKey"] = fpsSessionKey;
                 }
 
                 return View();
-            }            
+            }
         }
     }
 }

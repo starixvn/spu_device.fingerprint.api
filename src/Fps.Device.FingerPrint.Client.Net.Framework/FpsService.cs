@@ -1,4 +1,4 @@
-﻿using FPS.Device.FingerPrint.Model;
+﻿using FPS.Device.FingerPrint.Model.Framework;
 using System;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -24,7 +24,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
                 var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__fk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
-                var transaction = new TransactionModel()
+                var transaction = new TransactionModel
                 {
                     LoginName = LoginName,
                     SessionKey = SessionKey,
