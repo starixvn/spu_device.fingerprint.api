@@ -1,6 +1,7 @@
 ﻿using Demo.Models;
 using Fps.Device.FingerPrint.Client.Net.Core;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace Demo.Controllers
 {
@@ -23,8 +24,7 @@ namespace Demo.Controllers
         {
             if (loginModel.Username == "test" && loginModel.Password == "1234aa")
             {
-                string url = "http://localhost:5003/api/fp/Transaction";
-                fpsService.InsertTransaction(HttpContext, url, loginModel.Username, SubscriberId);
+                HttpContext.Session.SetString("username", loginModel.Username);
 
                 return RedirectToAction("index", "home");
             }

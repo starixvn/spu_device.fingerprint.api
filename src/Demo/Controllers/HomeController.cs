@@ -1,11 +1,8 @@
 ﻿using Demo.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Demo.Controllers
 {
@@ -15,12 +12,30 @@ namespace Demo.Controllers
 
         public HomeController(ILogger<HomeController> logger)
         {
+            
+
             _logger = logger;
         }
 
         public IActionResult Index()
         {
-            
+            if (HttpContext.Session.GetString("username") != null)
+            {
+                return Redirect("login");
+            }
+            else
+            {
+                if (HttpContext.Session.GetString("fpsSessionKey") == null)
+                {
+                    //var fpsSessionKey = fpsService.GenerateSessionKey();
+
+                    //string url = "http://localhost:5003";
+
+                    //fpsService.InsertTransaction(url, Session["Username"].ToString(), 2, fpsSessionKey);
+
+                    //TempData["fpsSessionKey"] = Session["fpsSessionKey"] = fpsSessionKey;
+                }
+            }
 
             return View();
         }

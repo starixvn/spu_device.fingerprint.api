@@ -91,14 +91,14 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj">
-      <Project>{97542DBF-9FB0-4ADA-AF6B-2464142F10DF}</Project>
-      <Name>FPS.Device.FingerPrint.Model</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\FPS.Device.FingerPrint.Model.Framework\FPS.Device.FingerPrint.Model.Framework.csproj">
+      <Project>{554ddb77-b15b-434a-a1de-9a737343a103}</Project>
+      <Name>FPS.Device.FingerPrint.Model.Framework</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Text.Json.6.0.0\build\System.Text.Json.targets" Condition="Exists('..\packages\System.Text.Json.6.0.0\build\System.Text.Json.targets')" />
