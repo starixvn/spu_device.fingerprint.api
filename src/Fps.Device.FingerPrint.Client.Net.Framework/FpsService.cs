@@ -1,5 +1,7 @@
 ﻿using FPS.Device.FingerPrint.Model.Framework;
 using System;
+using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -10,17 +12,28 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
     public interface IFpsService
     {
 
-        Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, string sessionKey = null, TimeSpan? timeout = null);
+        bool InsertTransaction(string LoginName, string sessionKey = null, TimeSpan? timeout = null);
 
         string GenerateSessionKey();
+
+        string GetScriptUrl();
     }
     public class FpsService : IFpsService
     {
-        public async Task<bool> InsertTransaction(string url, string LoginName, int SubscriberId, string sessionKey = null, TimeSpan? timeout = null)
+        private readonly int subscriberId;
+        private readonly string apiUrl;
+
+        public FpsService(int subscriberId, string apiUrl)
         {
-            if (!string.IsNullOrWhiteSpace(LoginName) && SubscriberId != 0)
+            this.subscriberId = subscriberId;
+            this.apiUrl = apiUrl;
+        }
+
+        public bool InsertTransaction(string LoginName, string sessionKey = null, TimeSpan? timeout = null)
+        {
+            if (!string.IsNullOrWhiteSpace(LoginName) && subscriberId != 0)
             {
-                var apiUrl = $"{url}/api/fp/Transaction";
+                var url = new Uri(apiUrl).Combine("api/fp/Transaction");
                 var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__fk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
@@ -28,7 +41,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
                 {
                     LoginName = LoginName,
                     SessionKey = SessionKey,
-                    SubscriberId = SubscriberId,
+                    SubscriberId = subscriberId,
                     UserAgent = UserAgent,
                     ClientIp = ClientIp,
                     TransTime = DateTime.Now
@@ -38,7 +51,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
                 {
                     client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
                     var content = JsonContent.Create(transaction);
-                    var response = await client.PostAsync(apiUrl, content);
+                    var response = client.PostAsync(url, content).Result;
 
                     return response.IsSuccessStatusCode;
                 }
@@ -62,6 +75,14 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
         public string GenerateSessionKey()
         {
             return Guid.NewGuid().ToString("N");
+        }
+
+        public string GetScriptUrl()
+        {
+            var uri = new Uri(apiUrl).Combine("api/fp/scr", subscriberId.ToString());
+
+            return uri.ToString();
+
         }
     }
 }

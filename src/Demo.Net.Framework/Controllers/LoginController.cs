@@ -10,7 +10,7 @@ namespace Demo.Net.Framework.Controllers
 
         public LoginController()
         {
-            fpsService = new FpsService();
+            fpsService = new FpsService(2, );
         }
 
         // GET: Login
@@ -25,7 +25,7 @@ namespace Demo.Net.Framework.Controllers
             if ((loginModel.Username == "test" || loginModel.Username == "test1" || loginModel.Username == "test2") && loginModel.Password == "1234aa")
             {
                 string url = "http://localhost:5003";
-                fpsService.InsertTransaction(url, loginModel.Username, SubscriberId);
+                fpsService.InsertTransaction(url, loginModel.Username);
 
                 return RedirectToAction("index", "home");
             }

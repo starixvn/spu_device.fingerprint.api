@@ -1,15 +1,16 @@
 ﻿using Fps.Device.FingerPrint.Client.Net.Framework;
+using System;
+using System.Configuration;
 using System.Web.Mvc;
 
 namespace demoAPI.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly IFpsService fpsService;
-
+        
         public HomeController()
         {
-            fpsService = new FpsService();
+            
         }
 
         public ActionResult Index()
@@ -22,11 +23,17 @@ namespace demoAPI.Controllers
             {
                 if (Session["fpsSessionKey"] == null)
                 {
+                    var subscriperId = int.Parse(ConfigurationManager.AppSettings["subscriberId"]);
+
+                    var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
+
+                    var fpsService = new FpsService(subscriperId, apiUrl);
+
+                    ViewBag.fpsScript = fpsService.GetScriptUrl();
+
                     var fpsSessionKey = fpsService.GenerateSessionKey();
 
-                    string url = System.Configuration.ConfigurationManager.AppSettings["apiUrl"];
-
-                    fpsService.InsertTransaction(url, Session["Username"].ToString(), 2, fpsSessionKey);
+                    fpsService.InsertTransaction(Session["Username"].ToString(), fpsSessionKey);
 
                     TempData["fpsSessionKey"] = Session["fpsSessionKey"] = fpsSessionKey;
                 }
