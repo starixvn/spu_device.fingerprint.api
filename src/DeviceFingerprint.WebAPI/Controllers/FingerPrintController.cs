@@ -44,6 +44,8 @@ namespace DeviceFingerprint.WebAPI.Controllers
         [HttpGet("scr/{subscriberId}")]
         public ActionResult Script(int subscriberId = 0)
         {
+            sentryClient.CaptureMessage($"test - {subscriberId}");
+
             var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.js");
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
