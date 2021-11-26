@@ -6,6 +6,9 @@ using Fanex.Logging;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -18,6 +21,7 @@ using Microsoft.OpenApi.Models;
 using Sentry;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -39,6 +43,10 @@ namespace DeviceFingerprint.WebAPI
             var JWTService = new JWT(appSettings);
 
             services.AddSingleton<IAppSettings>(appSettings);
+
+            services
+                .AddDataProtection()
+                .DisableAutomaticKeyGeneration();
 
             services.AddCors();
 
