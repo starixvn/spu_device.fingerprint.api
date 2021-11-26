@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using System;
+using System.IO;
 using System.Text.Json;
 
 namespace DeviceFingerprint.WebAPI.Controllers
@@ -44,11 +45,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
         [HttpGet("scr/{subscriberId}")]
         public ActionResult Script(int subscriberId = 0)
         {
-
-            var fileInfo = new System.IO.FileInfo($"{environment.ContentRootPath}/Scripts/gfp.js");
-
-            sentryClient.CaptureMessage(fileInfo.FullName);
-
             var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.js");
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
