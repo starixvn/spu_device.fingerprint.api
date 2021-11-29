@@ -15,5 +15,7 @@ namespace FPS.Device.FingerPrint.Model
         public string UserAgent { get; set; }
 
         public DateTime TransTime { get; set; }
+
+        public string Url { get; set; }
     }
 }

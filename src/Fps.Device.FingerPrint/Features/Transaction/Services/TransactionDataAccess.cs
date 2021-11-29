@@ -30,7 +30,8 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
                 SessionKey = transaction.SessionKey,
                 ClientIp = transaction.ClientIp,
                 TransTime = transaction.TransTime,
-                UserAgent = transaction.UserAgent
+                UserAgent = transaction.UserAgent,
+                Url = transaction.Url
             };
 
             repository.Execute(criteria);

@@ -45,7 +45,14 @@ namespace DeviceFingerprint.WebAPI.Controllers
         [HttpGet("scr/{subscriberId}")]
         public ActionResult Script(int subscriberId = 0)
         {
-            var bundleFile = new BundleFile($"{environment.ContentRootPath}/Scripts/gfp.js");
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
+
+            if (appSettings.Environment != "DEV")
+            {
+                scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
+            }
+
+            var bundleFile = new BundleFile(scriptPath);
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
@@ -123,7 +130,9 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         LoginName = data.LoginName,
                         SessionKey = data.SessionKey,
                         TransTime = data.TransTime,
-                        UserAgent = data.UserAgent
+                        UserAgent = data.UserAgent,
+                        Url = data.Url
+                       
                     };
 
                     transactionService.InsertTransaction(transaction);

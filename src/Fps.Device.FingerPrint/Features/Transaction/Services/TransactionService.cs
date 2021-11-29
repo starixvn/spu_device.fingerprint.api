@@ -26,7 +26,8 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
                 SessionKey = transaction.SessionKey,
                 SubscriberId = transaction.SubscriberId,
                 TransTime = transaction.TransTime,
-                UserAgent = transaction.UserAgent
+                UserAgent = transaction.UserAgent,
+                Url = transaction.Url
             });
         }
     }

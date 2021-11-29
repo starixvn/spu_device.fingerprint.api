@@ -44,7 +44,8 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
                     SubscriberId = subscriberId,
                     UserAgent = UserAgent,
                     ClientIp = ClientIp,
-                    TransTime = DateTime.Now
+                    TransTime = DateTime.Now,
+                    Url = HttpContext.Current.Request.Url.AbsoluteUri
                 };
 
                 using (var client = new HttpClient())

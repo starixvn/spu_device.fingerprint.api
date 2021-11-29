@@ -18,5 +18,7 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Model
 
         public string UserAgent { get; set; }
 
+        public string Url { get; set; }
+
     }
 }

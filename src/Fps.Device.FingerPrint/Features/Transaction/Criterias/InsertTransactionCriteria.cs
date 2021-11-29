@@ -24,6 +24,9 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_UserAgent")]
         public string UserAgent { get; set; }
 
+        [SpParam(SqlParamName = "ip_Url")]
+        public string Url { get; set; }
+
 
         public override string GetSettingKey()
         {
