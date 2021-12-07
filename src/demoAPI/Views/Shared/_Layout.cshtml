@@ -10,38 +10,39 @@
 <body>
     @if (Session["Username"] != null)
     {
-        <div class="navbar navbar-inverse navbar-fixed-top">
-            <div class="container">
-                <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                        <span class="icon-bar"></span>
-                    </button>
-                </div>
-                <div class="navbar-collapse collapse">
-                    @Html.AntiForgeryToken()
-                    <ul class="nav navbar-nav navbar-right">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="">Username: <b>@Session["Username"].ToString()</b></a>
-                        </li>
-                        <li><a href="@Url.Action("Logout","Login")" class="btn ">Logout</a></li>
-                    </ul>
-                </div>
-            </div>
+<div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
         </div>
-    }
-        <div class="container body-content">
-            @RenderBody()
-            <hr />
-            <footer>
-                <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-            </footer>
+        <div class="navbar-collapse collapse">
+            @Html.AntiForgeryToken()
+            <ul class="nav navbar-nav navbar-right">
+                <li class="nav-item">
+                    <a class="nav-link text-dark" asp-area="">Username: <b>@Session["Username"].ToString()</b></a>
+                </li>
+                <li><a href="@Url.Action("Logout","Login")" class="btn ">Logout</a></li>
+            </ul>
         </div>
+    </div>
+</div>}
+    <div class="container body-content">
+        @RenderBody()
+        <hr />
+        <footer>
+            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            <input type="hidden" id="__sk" name="__sk" value="@Session["fpsSessionKey"]" />
+        </footer>
+    </div>
 
-        @Scripts.Render("~/bundles/jquery")
-        @Scripts.Render("~/bundles/bootstrap")
-        @RenderSection("scripts", required: false)
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @RenderSection("scripts", required: false)
+    <script async defer src="@ViewBag.fpsScript" type="text/javascript"></script>
 
-    </body>
+</body>
 </html>

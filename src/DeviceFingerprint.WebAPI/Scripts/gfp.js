@@ -9381,6 +9381,7 @@ var globalFP = (function (exports) {
     }
 
     var _isDebug = false;
+    var _hiddenName = "__sk";
     function isDebug(isDebug) {
         _isDebug = isDebug;
         return this;
@@ -9392,8 +9393,8 @@ var globalFP = (function (exports) {
         var container = document.forms[0] || document.body;
         var fkInput = document.createElement("input");
         fkInput.setAttribute("type", "hidden");
-        fkInput.setAttribute("name", "__fk");
-        fkInput.setAttribute("id", "__fk");
+        fkInput.setAttribute("name", _hiddenName);
+        fkInput.setAttribute("id", _hiddenName);
         fkInput.setAttribute("value", value);
         container.appendChild(fkInput);
     }
@@ -9408,7 +9409,7 @@ var globalFP = (function (exports) {
                 // let end = Date.now() - start;
                 // console.log(`milliseconds elapsed of collect fp = ${end}`);
                 // start = Date.now();
-                let sessionKeyElement = document.getElementById("__fk");
+                let sessionKeyElement = document.getElementById(_hiddenName);
                 if (sessionKeyElement) {
                     let sessionKeyValue = sessionKeyElement.value;
                     if (sessionKeyValue != null && sessionKeyValue != "") {

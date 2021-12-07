@@ -31,9 +31,9 @@ namespace demoAPI.Controllers
         {
             if (Session["fpsSessionKey"] == null)
             {
-                var subscriperId = int.Parse(ConfigurationManager.AppSettings["subscriberId"]);
+                var subscriberId = int.Parse(ConfigurationManager.AppSettings["subscriberId"]);
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
-                var fpsService = new FpsService(subscriperId, apiUrl);
+                var fpsService = new FpsService(subscriberId, apiUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
@@ -41,7 +41,7 @@ namespace demoAPI.Controllers
 
                 fpsService.InsertTransaction(loginName, fpsSessionKey);
 
-                TempData["fpsSessionKey"] = Session["fpsSessionKey"] = fpsSessionKey;
+                Session["fpsSessionKey"] = fpsSessionKey;
             }
         }
     }

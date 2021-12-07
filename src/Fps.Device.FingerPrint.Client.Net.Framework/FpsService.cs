@@ -34,7 +34,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
             if (!string.IsNullOrWhiteSpace(LoginName) && subscriberId != 0)
             {
                 var url = new Uri(apiUrl).Combine("api/fp/Transaction");
-                var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__fk"].ToString();
+                var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__sk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
                 var transaction = new TransactionModel
