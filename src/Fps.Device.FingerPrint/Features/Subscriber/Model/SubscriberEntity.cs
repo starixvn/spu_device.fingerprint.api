@@ -8,12 +8,12 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Model
 
         public string SubscriberName { get; set; }
 
-        public bool SubscriberType { get; set; }
+        public int DomainId { get; set; }
 
-        public bool DCSStatus { get; set; }
+        public string DomainName { get; set; }
 
-        public bool SubscriberStatus { get; set; }
+        public bool IsActived { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+        public bool IsMain { get; set; }
     }
 }

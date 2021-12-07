@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net Core", "Net Core", "{40
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{28D8DFFC-C657-4735-B2B5-A8D571BF4667}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.Integration.Site", "Device.FingerPrint.Integration.Site\Device.FingerPrint.Integration.Site.csproj", "{9689FF73-3EE6-4B2D-A2F9-DC78B731918F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{554DDB77-B15B-434A-A1DE-9A737343A103}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{554DDB77-B15B-434A-A1DE-9A737343A103}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{554DDB77-B15B-434A-A1DE-9A737343A103}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9689FF73-3EE6-4B2D-A2F9-DC78B731918F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9689FF73-3EE6-4B2D-A2F9-DC78B731918F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9689FF73-3EE6-4B2D-A2F9-DC78B731918F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9689FF73-3EE6-4B2D-A2F9-DC78B731918F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -76,6 +82,7 @@ Global
 		{3685CB60-9DCA-45A0-82B0-184BEFFEC08F} = {409F3A45-B313-42FB-9089-D19FE12FF97D}
 		{BAF8E613-D69E-44C6-8FB4-E22E70B99559} = {BB6F1568-7665-4D03-9B5A-E55BF88C3441}
 		{554DDB77-B15B-434A-A1DE-9A737343A103} = {BB6F1568-7665-4D03-9B5A-E55BF88C3441}
+		{9689FF73-3EE6-4B2D-A2F9-DC78B731918F} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}

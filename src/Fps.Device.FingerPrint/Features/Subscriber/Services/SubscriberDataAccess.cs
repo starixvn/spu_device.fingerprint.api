@@ -9,7 +9,7 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberDataAccess
     {
-        SubscriberEntity GetSubscriber(int subscriberId);
+        IEnumerable<SubscriberEntity> GetSubscriber(int subscriberId);
     }
     public class SubscriberDataAccess : ISubscriberDataAccess
     {
@@ -20,15 +20,14 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
             repository = new DynamicRepository();
         }
 
-        public SubscriberEntity GetSubscriber(int subscriberId)
+        public IEnumerable<SubscriberEntity> GetSubscriber(int subscriberId)
         {
             var criteria = new GetSubscriberInfoCriteria
             {
                 SubscriberId = subscriberId
             };
 
-
-            return repository.Get<SubscriberEntity>(criteria);
+            return repository.Fetch<SubscriberEntity>(criteria);
         }
     }
 }

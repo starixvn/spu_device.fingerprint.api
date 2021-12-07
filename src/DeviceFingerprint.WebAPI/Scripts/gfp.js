@@ -9375,7 +9375,7 @@ var globalFP = (function (exports) {
 
     var apiUrl = "__apiUrl__";
     var subscriberId = "__subscriberId__";
-    function set(appAPIUrl, appToken, subscriber) {
+    function set(appAPIUrl, subscriber) {
         apiUrl = appAPIUrl;
         subscriberId = subscriber.toString();
     }
@@ -9385,8 +9385,8 @@ var globalFP = (function (exports) {
         _isDebug = isDebug;
         return this;
     }
-    function config(apiUrl, token, subscriberId) {
-        set(apiUrl, token, subscriberId);
+    function config(apiUrl, subscriberId) {
+        set(apiUrl, subscriberId);
     }
     function injectSessionKey(value) {
         var container = document.forms[0] || document.body;
@@ -9398,63 +9398,66 @@ var globalFP = (function (exports) {
         container.appendChild(fkInput);
     }
     function getFP() {
-        let start = Date.now();
+        //let start = Date.now();
         getDI().then((result) => {
             if (_isDebug) {
                 console.log(result.Id);
                 console.log(result.Properties);
             }
             else {
-                let end = Date.now() - start;
-                console.log(`milliseconds elapsed of collect fp = ${end}`);
-                start = Date.now();
+                // let end = Date.now() - start;
+                // console.log(`milliseconds elapsed of collect fp = ${end}`);
+                // start = Date.now();
                 let sessionKeyElement = document.getElementById("__fk");
                 if (sessionKeyElement) {
                     let sessionKeyValue = sessionKeyElement.value;
                     if (sessionKeyValue != null && sessionKeyValue != "") {
-                        getConfig().then((res) => __awaiter(this, void 0, void 0, function* () {
-                            if (res.ok) {
-                                let response = yield res.json();
-                                let encryptedFP = Encrypting({
-                                    di: result.Id,
-                                    attr: result.Properties,
-                                    fk: sessionKeyValue,
-                                    subs: subscriberId,
-                                }, response.a);
-                                postData(encryptedFP, response.b);
-                                end = Date.now() - start;
-                                console.log(`milliseconds elapsed of post fp = ${end}`);
-                            }
-                        }));
+                        processData(result, false, sessionKeyValue);
                     }
                 }
                 else {
-                    getConfig().then((res) => __awaiter(this, void 0, void 0, function* () {
-                        if (res.ok) {
-                            let response = yield res.json();
-                            console.log(result.Properties);
+                    processData(result, true, null);
+                }
+            }
+        });
+    }
+    function processData(result, isInject, sessionKey) {
+        getDomain()
+            .then((res) => res.text())
+            .then((req) => {
+            var requests = JSON.parse(req).map(function (url) {
+                return fetch(url + "/api/fp/hc", {
+                    cache: "no-cache",
+                });
+            });
+            Promise.race(requests).then((res) => {
+                if (res.status == 200) {
+                    var str = res.url;
+                    var index = str.lastIndexOf("/");
+                    var url = str.substring(0, index);
+                    getConfig(url).then((conf) => __awaiter(this, void 0, void 0, function* () {
+                        if (conf.ok) {
+                            let response = yield conf.json();
                             let encryptedFP = Encrypting({
                                 di: result.Id,
                                 attr: result.Properties,
-                                fk: response.c,
+                                fk: isInject ? response.c : sessionKey,
                                 subs: subscriberId,
                             }, response.a);
-                            postData(encryptedFP, response.b).then((res) => {
-                                if (res.ok) {
+                            postData(url, encryptedFP, response.b).then((data) => {
+                                if (data.ok && isInject) {
                                     injectSessionKey(response.c);
-                                    end = Date.now() - start;
-                                    console.log(`milliseconds elapsed of post fp = ${end}`);
                                 }
                             });
                         }
                     }));
                 }
-            }
+            });
         });
     }
-    function postData(data, token) {
+    function postData(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
-            return fetch(apiUrl, {
+            return fetch(url, {
                 method: "POST",
                 cache: "no-cache",
                 credentials: "include",
@@ -9468,8 +9471,14 @@ var globalFP = (function (exports) {
             });
         });
     }
-    function getConfig() {
-        return fetch(apiUrl + "/conf", {
+    function getConfig(url) {
+        return fetch(url + "/conf", {
+            method: "GET",
+            redirect: "follow",
+        });
+    }
+    function getDomain() {
+        return fetch(apiUrl + "/subscriber/" + subscriberId, {
             method: "GET",
             redirect: "follow",
         });

@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using System;
-using System.IO;
-using System.Text.Json;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -60,7 +60,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
 
                 return new JavascriptResult(bundleContent.Content);
             }
-                       
+
 
             return null;
         }
@@ -78,7 +78,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
                 Token = JWTService.GenerateJwtToken()
             });
 
-            return Ok(jsonString);            
+            return Ok(jsonString);
         }
 
 
@@ -96,7 +96,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
 
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
-                {                  
+                {
                     fingerPrintService.InsertFingerPrint(new FingerPrintEntity
                     {
                         FingerPrint = fingerPrint.FingerPrint,
@@ -132,7 +132,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         TransTime = data.TransTime,
                         UserAgent = data.UserAgent,
                         Url = data.Url
-                       
+
                     };
 
                     transactionService.InsertTransaction(transaction);
@@ -148,13 +148,42 @@ namespace DeviceFingerprint.WebAPI.Controllers
             return false;
         }
 
+        [HttpGet("subscriber/{subscriberId}")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult<IEnumerable<string>> GetSubscriberInfo(int subscriberId)
+        {
+            var subscribers = subscriberServices.GetSubscriber(subscriberId);
+
+            if(subscribers != null && subscribers.Any())
+            {
+                var domains = subscribers
+                .Where(x => x.IsActived)
+                .Select(x => x.DomainName);
+
+                return Ok(domains);
+            }
+
+            return null;
+        }
+
+        [HttpGet("hc")]       
+        public void HealthCheck()
+        {
+            // Method intentionally left empty.
+        }
+
         private int CheckExistSubscriber(int subscriberId)
         {
-            var subscriber = subscriberServices.GetSubscriber(subscriberId);
+            var subscribers = subscriberServices.GetSubscriber(subscriberId);
 
-            if (subscriber != null && subscriber.SubscriberId != 0 && subscriber.DCSStatus)
+            if (subscribers != null && subscribers.Any())
             {
-                return subscriber.SubscriberId;
+                var subscriber = subscribers.FirstOrDefault(x => x.IsActived && x.IsMain);
+
+                if (subscriber != null)
+                {
+                    return subscriber.SubscriberId;
+                }
             }
 
             return -1;

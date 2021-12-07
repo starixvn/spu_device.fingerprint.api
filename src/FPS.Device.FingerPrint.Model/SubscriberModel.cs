@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FPS.Device.FingerPrint.Model
+﻿namespace FPS.Device.FingerPrint.Model
 {
     public class SubscriberModel
     {
@@ -10,12 +6,12 @@ namespace FPS.Device.FingerPrint.Model
 
         public string SubscriberName { get; set; }
 
-        public bool SubscriberType { get; set; }
+        public int DomainId { get; set; }
 
-        public bool DCSStatus { get; set; }
+        public string DomainName { get; set; }
 
-        public bool SubscriberStatus { get; set; }
+        public bool IsActived { get; set; }
 
-        public DateTime CreatedDate { get; set; }
+        public bool IsMain { get; set; }
     }
 }

@@ -1,13 +1,14 @@
 ﻿using FPS.Device.FingerPrint.Model;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Fps.Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberServices
     {
-        SubscriberModel GetSubscriber(int subscriberId);
+       IEnumerable<SubscriberModel> GetSubscriber(int subscriberId);
     }
 
     public class SubscriberServices : ISubscriberServices
@@ -20,24 +21,23 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
             this.subscriberDataAccess = subscriberDataAccess;
         }
 
-        public SubscriberModel GetSubscriber(int subscriberId)
+        public IEnumerable<SubscriberModel> GetSubscriber(int subscriberId)
         {
-            var subcriber = subscriberDataAccess.GetSubscriber(subscriberId);
+            var subcribers = subscriberDataAccess.GetSubscriber(subscriberId);
 
-            if(subcriber != null && subcriber.SubscriberId != 0)
+            if(subcribers != null && subcribers.Any())
             {
-                return new SubscriberModel
-                {
-                    SubscriberId = subcriber.SubscriberId,
-                    SubscriberName = subcriber.SubscriberName,
-                    SubscriberStatus = subcriber.SubscriberStatus,
-                    DCSStatus = subcriber.DCSStatus,
-                    CreatedDate = subcriber.CreatedDate,
-                    SubscriberType = subcriber.SubscriberType
-                };
+                return subcribers.Select(x => new SubscriberModel {
+                    DomainId = x.DomainId,
+                    DomainName = x.DomainName,
+                    IsActived = x.IsActived,
+                    IsMain = x.IsMain,
+                    SubscriberId  = x.SubscriberId,
+                    SubscriberName =x.SubscriberName
+                });
             }
 
-            return new SubscriberModel();
+            return new List<SubscriberModel>();
         }
     }
 }
