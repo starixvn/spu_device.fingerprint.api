@@ -9389,6 +9389,11 @@ var globalFP = (function (exports) {
     function config(apiUrl, subscriberId) {
         set(apiUrl, subscriberId);
     }
+    const promiseAny = (iterable) => __awaiter(void 0, void 0, void 0, function* () {
+        return Promise.all([...iterable].map((promise) => {
+            return new Promise((resolve, reject) => Promise.resolve(promise).then(reject, resolve));
+        })).then((errors) => Promise.reject(errors), (value) => Promise.resolve(value));
+    });
     function injectSessionKey(value) {
         var container = document.forms[0] || document.body;
         var fkInput = document.createElement("input");
@@ -9399,15 +9404,13 @@ var globalFP = (function (exports) {
         container.appendChild(fkInput);
     }
     function getFP() {
-        //let start = Date.now();
+        let start = Date.now();
         getDI().then((result) => {
             if (_isDebug) {
                 console.log(result.Id);
                 console.log(result.Properties);
             }
             else {
-                // let end = Date.now() - start;
-                // console.log(`milliseconds elapsed of collect fp = ${end}`);
                 // start = Date.now();
                 let sessionKeyElement = document.getElementById(_hiddenName);
                 if (sessionKeyElement) {
@@ -9421,6 +9424,8 @@ var globalFP = (function (exports) {
                 }
             }
         });
+        let end = Date.now() - start;
+        console.log(`milliseconds elapsed of collect fp = ${end}`);
     }
     function processData(result, isInject, sessionKey) {
         getDomain()
@@ -9431,7 +9436,7 @@ var globalFP = (function (exports) {
                     cache: "no-cache",
                 });
             });
-            Promise.race(requests).then((res) => {
+            promiseAny(requests).then((res) => {
                 if (res.status == 200) {
                     var str = res.url;
                     var index = str.lastIndexOf("/");
