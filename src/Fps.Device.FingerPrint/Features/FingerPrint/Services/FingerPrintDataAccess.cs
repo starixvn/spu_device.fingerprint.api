@@ -25,7 +25,9 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
                 FingerPrint = fingerPrint.FingerPrint,
                 SessionKey = fingerPrint.SessionKey,
                 SubscriberId = fingerPrint.SubscriberId,
-                Attributes = fingerPrint.Attributes
+                Attributes = fingerPrint.Attributes,
+                Device = fingerPrint.Device,
+                DeviceCode = fingerPrint.DeviceCode
             };
 
             repository.Execute(criteria);

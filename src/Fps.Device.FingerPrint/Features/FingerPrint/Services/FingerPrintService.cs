@@ -19,6 +19,7 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
 
         public void InsertFingerPrint(FingerPrintEntity fingerPrint)
         {
+
             fingerPrintDataAccess.InsertFingerPrint(fingerPrint);
         }
     }

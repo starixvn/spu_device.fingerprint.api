@@ -42,7 +42,7 @@ namespace DeviceFingerprint.WebAPI
 
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
-            environment = GetValue<string>("Sentry:Environment");
+            environment = GetValue<string>("AppConfig:Environment");
         }
 
         public string ApiUrl => apiUrl;

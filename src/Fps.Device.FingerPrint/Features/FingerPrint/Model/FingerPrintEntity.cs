@@ -13,5 +13,9 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Model
         public int SubscriberId { get; set; }
 
         public string Attributes { get; set; }
+
+        public string Device { get; set; }
+
+        public string DeviceCode { get; set; }
     }
 }

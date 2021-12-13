@@ -274,12 +274,18 @@ namespace DeviceFingerprint.WebAPI.Models
         public int SubscriberId { get; set; }
 
         [JsonProperty("di")]
-        public string FingerPrint { get; set; }
+        public string FingerPrintCode { get; set; }
 
         [JsonProperty("fk")]
-        public string Key { get; set; }
+        public string SessionKey { get; set; }
 
         [JsonProperty("attr")]
-        public string Attributes { get; set; }
+        public string FingerPrint { get; set; }
+
+        [JsonProperty("dev")]
+        public string Device { get; set; }
+
+        [JsonProperty("devCode")]
+        public string DeviceCode { get; set; }
     }
 }

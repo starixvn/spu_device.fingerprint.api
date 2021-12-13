@@ -85,7 +85,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
-        public ActionResult<string> FingerPrint([FromBody] string data)
+        public void FingerPrint([FromBody] string data)
         {
             try
             {
@@ -99,21 +99,19 @@ namespace DeviceFingerprint.WebAPI.Controllers
                 {
                     fingerPrintService.InsertFingerPrint(new FingerPrintEntity
                     {
-                        FingerPrint = fingerPrint.FingerPrint,
-                        Attributes = fingerPrint.Attributes,
-                        SessionKey = fingerPrint.Key,
-                        SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId)
+                        FingerPrint = fingerPrint.FingerPrintCode,
+                        Attributes = fingerPrint.FingerPrint,
+                        SessionKey = fingerPrint.SessionKey,
+                        SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
+                        Device = fingerPrint.Device,
+                        DeviceCode = fingerPrint.DeviceCode
                     });
-                }
-
-                return decryptedData;
+                }                                
             }
             catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
-            }
-
-            return string.Empty;
+            }                        
         }
 
         [HttpPost("Transaction")]
