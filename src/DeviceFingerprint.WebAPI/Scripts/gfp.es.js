@@ -173,7 +173,8 @@ function injectSessionKey(value) {
 }
 function getFP() {
     let start = Date.now();
-    getDI().then((result) => {
+    getDI()
+        .then((result) => {
         if (_isDebug) {
             console.log(result.Id);
             console.log(result.Properties);
@@ -190,9 +191,11 @@ function getFP() {
                 processData(result, true, null);
             }
         }
+    })
+        .then(() => {
+        let end = Date.now() - start;
+        console.log(`milliseconds elapsed of collect fp = ${end}`);
     });
-    let end = Date.now() - start;
-    console.log(`milliseconds elapsed of collect fp = ${end}`);
 }
 function processData(result, isInject, sessionKey) {
     getDomain()
