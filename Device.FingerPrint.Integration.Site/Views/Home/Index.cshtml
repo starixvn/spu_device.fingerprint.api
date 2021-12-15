@@ -1,8 +1,47 @@
-﻿@{
+﻿@model SubscriberModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center row">
+    <div class="col-md-8">
+        <section>
+            <form method="post" role="form" class="form-horizontal" action="@Url.Action("OnPost")">
+                @Html.AntiForgeryToken()
+                <h4>Use a local account to log in.</h4>
+                <hr />
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="row">
+                    <div class="form-group col-md-10">
+                        <div>
+                            @Html.DropDownListFor(m => m.Id, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </div>
+            </form>
+            <div class="col-md-10 control-label boder">
+                Front-end
+            </div>
+            <span class="form-control boder h-50">
+                @*@ViewBag.FrontEnd*@
+                @Html.DisplayFor(@ViewBag.FrontEnd)
+            </span>
+            <div class="col-md-10 control-label">
+                Back-end
+            </div>
+            <span class="form-control boder h-50">
+                @ViewBag.BackEnd
+            </span>
+            @*@Html.TextArea("FrontEnd", ViewBag.FrontEnd as String, new { @class = "form-control" })*@
+
+            @*<div class="col-md-10 control-label">
+            Back-end
+        </div>
+        @Html.TextArea("BackEnd", ViewBag.BackEnd as String, new { @class = "form-control" })*@
+        </section>
+    </div>
 </div>
