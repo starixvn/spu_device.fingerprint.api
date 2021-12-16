@@ -7,3 +7,4 @@ WebMVC/obj/*
 obj/
 bin/
 .vs/*
+publish/*

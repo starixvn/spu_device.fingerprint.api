@@ -24,29 +24,29 @@ namespace Device.FingerPrint.Integration.Site.Controllers
         }
 
         [HttpPost]
-        public IActionResult OnPost(string Id)
+        public IActionResult OnPost(string SubscriberId)
         {
             ViewBag.SubscriberList = GetSubscriberList();
             string strFrontEnd = @"<input type=""hidden"" id=""__sk"" name=""__sk"" value=""@Session[""fpsSessionKey""]"" />
 <script async defer src=""@ViewBag.fpsScript"" type=""text / javascript""></script>";
             ViewBag.FrontEnd = strFrontEnd;
             ViewBag.BackEnd = @"private void FpsIntegration(string loginName)
-        {
-                if (Session[""fpsSessionKey""] == null)
-                {
-                    var subscriberId = "+ Id + @";
-                    var apiUrl = https://spu-fps-api-base.nexdev.net;
-                    var fpsService = new FpsService(subscriberId, apiUrl);
+    {
+            if (Session[""fpsSessionKey""] == null)
+            {
+                var subscriberId = "+ SubscriberId + @";
+                var apiUrl = https://spu-fps-api-base.nexdev.net;
+                var fpsService = new FpsService(subscriberId, apiUrl);
 
-                    ViewBag.fpsScript = fpsService.GetScriptUrl();
+                ViewBag.fpsScript = fpsService.GetScriptUrl();
 
-                    var fpsSessionKey = fpsService.GenerateSessionKey();
+                var fpsSessionKey = fpsService.GenerateSessionKey();
 
-                    fpsService.InsertTransaction(loginName, fpsSessionKey);
+                fpsService.InsertTransaction(loginName, fpsSessionKey);
 
-                    Session[""fpsSessionKey""] = fpsSessionKey;
-                }
+                Session[""fpsSessionKey""] = fpsSessionKey;
             }
+        }
             ";
             return View("Index");
         }
@@ -54,9 +54,9 @@ namespace Device.FingerPrint.Integration.Site.Controllers
         private SelectList GetSubscriberList()
         {
             List<SubscriberModel> MyList = new List<SubscriberModel>();
-            MyList.Add(new SubscriberModel { Id = 1, Name = "Subscriber 1" });
-            MyList.Add(new SubscriberModel { Id = 2, Name = "Subscriber 2" });
-            SelectList SubscriberList = new SelectList(MyList, "Id", "Name");
+            MyList.Add(new SubscriberModel { SubscriberId = 1, SubscriberName = "Subscriber 1" });
+            MyList.Add(new SubscriberModel { SubscriberId = 2, SubscriberName = "Subscriber 2" });
+            SelectList SubscriberList = new SelectList(MyList, "SubscriberId", "SubscriberName");
             return SubscriberList;
         }
 

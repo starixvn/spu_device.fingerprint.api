@@ -15,7 +15,7 @@
                 <div class="row">
                     <div class="form-group col-md-10">
                         <div>
-                            @Html.DropDownListFor(m => m.Id, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
+                            @Html.DropDownListFor(m => m.SubscriberId, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -23,24 +23,27 @@
                     </div>
                 </div>
             </form>
-            <div class="col-md-10 control-label boder">
-                Front-end
-            </div>
-            <span class="form-control boder h-50">
-                @ViewBag.FrontEnd
-            </span>
-            <div class="col-md-10 control-label">
-                Back-end
-            </div>
-            <span class="form-control boder h-50">
-                @ViewBag.BackEnd
-            </span>
-            @*@Html.TextArea("FrontEnd", ViewBag.FrontEnd as String, new { @class = "form-control" })*@
+            <form name="FrontEndForm">
+                <div class="d-flex control-label text-left border bg-info">
+                    <div class="mr-auto p-2 text-white">
+                        Front-end
+                    </div>
+                    <div class="p-2">
+                        <input name="button" onclick="javascript:this.form.FrontEnd.focus();this.form.FrontEnd.select();" type="button" value="Select all" />
+                    </div>
+                </div>
+                @Html.TextArea("FrontEnd", ViewBag.FrontEnd as String, new { @class = "form-control", @readonly = "readonly" })
 
-            @*<div class="col-md-10 control-label">
-            Back-end
-        </div>
-        @Html.TextArea("BackEnd", ViewBag.BackEnd as String, new { @class = "form-control" })*@
+                <div class="d-flex mt-2 control-label text-left border bg-info">
+                    <div class="mr-auto p-2 text-white">
+                        Back-end
+                    </div>
+                    <div class="p-2">
+                        <input name="button" onclick="javascript:this.form.BackEnd.focus();this.form.BackEnd.select();" type="button" value="Select all" />
+                    </div>
+                </div>
+                @Html.TextArea("BackEnd", ViewBag.BackEnd as String, new { @class = "form-control", @rows = 10, @readonly = "readonly" })
+            </form>
         </section>
     </div>
 </div>
