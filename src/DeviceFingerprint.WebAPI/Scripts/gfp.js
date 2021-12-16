@@ -6802,14 +6802,14 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v3.3.0 - Copyright (c) FingerprintJS, Inc, 2021 (https://fingerprintjs.com)
+     * FingerprintJS v3.3.1 - Copyright (c) FingerprintJS, Inc, 2021 (https://fingerprintjs.com)
      * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
      *
      * This software contains code from open-source projects:
      * MurmurHash3 by Karan Lyons (https://github.com/karanlyons/murmurHash3.js)
      */
 
-    var version = "3.3.0";
+    var version = "3.3.1";
 
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
@@ -7466,7 +7466,7 @@ var globalFP = (function (exports) {
         return (countTruthy([
             'buildID' in navigator,
             'MozAppearance' in ((_b = (_a = document.documentElement) === null || _a === void 0 ? void 0 : _a.style) !== null && _b !== void 0 ? _b : {}),
-            'MediaRecorderErrorEvent' in w,
+            'onmozfullscreenchange' in w,
             'mozInnerScreenX' in w,
             'CSSMozDocumentRule' in w,
             'CanvasCaptureMediaStream' in w,
@@ -7521,7 +7521,8 @@ var globalFP = (function (exports) {
         return (countTruthy([
             'MediaSource' in window,
             !!Element.prototype.webkitRequestFullscreen,
-            screenRatio > 2 / 3 && screenRatio < 3 / 2,
+            // iPhone 4S that runs iOS 9 matches this. But it won't match the criteria above, so it won't be detected as iPad.
+            screenRatio > 0.65 && screenRatio < 1.53,
         ]) >= 2);
     }
     /**
@@ -7557,7 +7558,7 @@ var globalFP = (function (exports) {
         return (countTruthy([
             'onorientationchange' in w,
             'orientation' in w,
-            isItChromium && 'SharedWorker' in w,
+            isItChromium && !('SharedWorker' in w),
             isItGecko && /android/i.test(navigator.appVersion),
         ]) >= 2);
     }
@@ -7722,7 +7723,16 @@ var globalFP = (function (exports) {
                         _d.label = 4;
                     case 4:
                         _d.trys.push([4, , 10, 11]);
-                        return [4 /*yield*/, new Promise(function (resolve, reject) {
+                        return [4 /*yield*/, new Promise(function (_resolve, _reject) {
+                                var isComplete = false;
+                                var resolve = function () {
+                                    isComplete = true;
+                                    _resolve();
+                                };
+                                var reject = function (error) {
+                                    isComplete = true;
+                                    _reject(error);
+                                };
                                 iframe.onload = resolve;
                                 iframe.onerror = reject;
                                 var style = iframe.style;
@@ -7743,6 +7753,12 @@ var globalFP = (function (exports) {
                                 // See https://github.com/fingerprintjs/fingerprintjs/issues/645
                                 var checkReadyState = function () {
                                     var _a, _b;
+                                    // The ready state may never become 'complete' in Firefox despite the 'load' event being fired.
+                                    // So an infinite setTimeout loop can happen without this check.
+                                    // See https://github.com/fingerprintjs/fingerprintjs/pull/716#issuecomment-986898796
+                                    if (isComplete) {
+                                        return;
+                                    }
                                     // Make sure iframe.contentWindow and iframe.contentWindow.document are both loaded
                                     // The contentWindow.document can miss in JSDOM (https://github.com/jsdom/jsdom).
                                     if (((_b = (_a = iframe.contentWindow) === null || _a === void 0 ? void 0 : _a.document) === null || _b === void 0 ? void 0 : _b.readyState) === 'complete') {
@@ -7793,7 +7809,7 @@ var globalFP = (function (exports) {
     // We test using 48px font size, we may use any size. I guess larger the better.
     var textSize = '48px';
     // A font will be compared against all the three default fonts.
-    // And if it doesn't match all 3 then that font is not available.
+    // And if for any default fonts it doesn't match, then that font is available.
     var baseFonts = ['monospace', 'sans-serif', 'serif'];
     var fontList = [
         // This is android-specific font from "Roboto" family
@@ -8026,7 +8042,7 @@ var globalFP = (function (exports) {
             context.fill();
         }
         // Canvas winding
-        // http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
+        // https://web.archive.org/web/20130913061632/http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
         // http://jsfiddle.net/NDYV8/19/
         context.fillStyle = '#f9c';
         context.arc(60, 60, 60, 0, Math.PI * 2, true);
@@ -8407,7 +8423,7 @@ var globalFP = (function (exports) {
         ],
         abpvn: [
             '#quangcaomb',
-            '.i-said-no-thing-can-stop-me-warning.dark',
+            '.iosAdsiosAds-layout',
             '.quangcao',
             '[href^="https://r88.vn/"]',
             '[href^="https://zbet.vn/"]',
@@ -8426,34 +8442,22 @@ var globalFP = (function (exports) {
             'TABLE[width="140px"]',
             '#divAgahi',
         ],
-        adBlockWarningRemoval: [
-            '#adblock_message',
-            '.adblockInfo',
-            '.deadblocker-header-bar',
-            '.no-ad-reminder',
-            '#AdBlockDialog',
-        ],
+        adBlockWarningRemoval: ['#adblock-honeypot', '.adblocker-root', '.wp_adblock_detect'],
         adGuardAnnoyances: ['amp-embed[type="zen"]', '.hs-sosyal', '#cookieconsentdiv', 'div[class^="app_gdpr"]', '.as-oil'],
-        adGuardBase: [
-            '#ad-fullbanner2-billboard-outer',
-            '.stky-ad-footer',
-            '.BetterJsPopOverlay',
-            '#ad_300X250',
-            '#bannerfloat22',
-        ],
+        adGuardBase: ['#ad-after', '#ad-p3', '.BetterJsPopOverlay', '#ad_300X250', '#bannerfloat22'],
         adGuardChinese: [
             '#piao_div_0[style*="width:140px;"]',
             'a[href*=".ttz5.cn"]',
             'a[href*=".yabovip2027.com/"]',
             '.tm3all2h4b',
-            '#duilian_left',
+            '.cc5278_banner_ad',
         ],
         adGuardFrench: [
-            '#anAdScGp300x25',
-            'a[href*=".kfiopkln.com/"]',
-            'a[href^="https://jsecoin.com/o/?"]',
-            'a[href^="https://www.clickadu.com/?"]',
-            '.bandeauClosePub',
+            '.zonepub',
+            '[class*="_adLeaderboard"]',
+            '[id^="block-xiti_oas-"]',
+            'a[href^="http://ptapjmp.com/"]',
+            'a[href^="https://go.alvexo.com/"]',
         ],
         adGuardGerman: [
             '.banneritemwerbung_head_1',
@@ -8464,12 +8468,12 @@ var globalFP = (function (exports) {
         ],
         adGuardJapanese: [
             '#kauli_yad_1',
-            '.adArticleSidetile',
-            '.ads_entrymore',
+            '#ad-giftext',
+            '#adsSPRBlock',
             'a[href^="http://ad2.trafficgate.net/"]',
             'a[href^="http://www.rssad.jp/"]',
         ],
-        adGuardMobile: ['amp-auto-ads', '#mgid_iframe', '.amp_ad', 'amp-sticky-ad', '.plugin-blogroll'],
+        adGuardMobile: ['amp-auto-ads', '#mgid_iframe', '.amp_ad', 'amp-embed[type="24smi"]', '#mgid_iframe1'],
         adGuardRussian: [
             'a[href^="https://ya-distrib.ru/r/"]',
             'a[href^="https://ad.letmeads.com/"]',
@@ -8505,8 +8509,8 @@ var globalFP = (function (exports) {
             'a[href^="http://izlenzi.com/campaign/"]',
             'a[href^="http://www.installads.net/"]',
         ],
-        bulgarian: ['td#freenet_table_ads', '#newAd', '#ea_intext_div', '.lapni-pop-over', '#xenium_hot_offers'],
-        easyList: ['#adlabelheader', '#anAdScGame300x250', '#adTakeOverLeft', '#ad_LargeRec01', '#adundergame'],
+        bulgarian: ['td#freenet_table_ads', '#adbody', '#ea_intext_div', '.lapni-pop-over', '#xenium_hot_offers'],
+        easyList: ['#AD_banner_bottom', '#Ads_google_02', '#N-ad-article-rightRail-1', '#ad-fullbanner2', '#ad-zone-2'],
         easyListChina: [
             'a[href*=".wensixuetang.com/"]',
             'A[href*="/hth107.com/"]',
@@ -8514,21 +8518,21 @@ var globalFP = (function (exports) {
             '.frontpageAdvM',
             '#taotaole',
         ],
-        easyListCookie: ['#Button_Cookie', '#CWCookie', '#CookieCon', '#DGPR', '#PnlCookie'],
+        easyListCookie: ['#adtoniq-msg-bar', '#CoockiesPage', '#CookieModal_cookiemodal', '#DO_CC_PANEL', '#ShowCookie'],
         easyListCzechSlovak: ['#onlajny-stickers', '#reklamni-box', '.reklama-megaboard', '.sklik', '[id^="sklikReklama"]'],
         easyListDutch: [
             '#advertentie',
             '#vipAdmarktBannerBlock',
             '.adstekst',
-            'a[href^="http://adserver.webads.nl/adclick/"]',
+            'a[href^="https://xltube.nl/click/"]',
             '#semilo-lrectangle',
         ],
         easyListGermany: [
-            '#nativendo-hometop',
-            'a[href^="http://www.kontakt-vermittler.de/?wm="]',
-            '#gwerbung',
-            'a[href^="https://marketing.net.brillen.de/"]',
-            '.werbenbox',
+            'a[href^="http://www.hw-area.com/?dp="]',
+            'a[href^="https://ads.sunmaker.com/tracking.php?"]',
+            '.werbung-skyscraper2',
+            '.bannergroup_werbung',
+            '.ads_rechts',
         ],
         easyListItaly: [
             '.box_adv_annunci',
@@ -8556,7 +8560,7 @@ var globalFP = (function (exports) {
         fanboyEnhancedTrackers: [
             '.open.pushModal',
             '#issuem-leaky-paywall-articles-zero-remaining-nag',
-            'div[style*="box-shadow: rgb(136, 136, 136) 0px 0px 12px; color: "]',
+            '#sovrn_container',
             'div[class$="-hide"][zoompage-fontsize][style="display: block;"]',
             '.BlockNag__Card',
         ],
@@ -8651,8 +8655,6 @@ var globalFP = (function (exports) {
             '.yt.btn-link.btn-md.btn',
         ],
     };
-    /** Just a syntax sugar */
-    var filterNames = Object.keys(filters);
     /**
      * The order of the returned array means nothing (it's always sorted alphabetically).
      *
@@ -8665,7 +8667,7 @@ var globalFP = (function (exports) {
     function getDomBlockers(_a) {
         var debug = (_a === void 0 ? {} : _a).debug;
         return __awaiter(this, void 0, void 0, function () {
-            var allSelectors, blockedSelectors, activeBlockers;
+            var filterNames, allSelectors, blockedSelectors, activeBlockers;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -8673,6 +8675,7 @@ var globalFP = (function (exports) {
                         if (!isApplicable()) {
                             return [2 /*return*/, undefined];
                         }
+                        filterNames = Object.keys(filters);
                         allSelectors = (_b = []).concat.apply(_b, filterNames.map(function (filterName) { return filters[filterName]; }));
                         return [4 /*yield*/, getBlockedSelectors(allSelectors)];
                     case 1:
@@ -8750,11 +8753,11 @@ var globalFP = (function (exports) {
     }
     function printDebug(blockedSelectors) {
         var message = 'DOM blockers debug:\n```';
-        for (var _i = 0, filterNames_1 = filterNames; _i < filterNames_1.length; _i++) {
-            var filterName = filterNames_1[_i];
+        for (var _i = 0, _a = Object.keys(filters); _i < _a.length; _i++) {
+            var filterName = _a[_i];
             message += "\n" + filterName + ":";
-            for (var _a = 0, _b = filters[filterName]; _a < _b.length; _a++) {
-                var selector = _b[_a];
+            for (var _b = 0, _c = filters[filterName]; _b < _c.length; _b++) {
+                var selector = _c[_b];
                 message += "\n  " + selector + " " + (blockedSelectors[selector] ? '🚫' : '➡️');
             }
         }
@@ -8891,37 +8894,37 @@ var globalFP = (function (exports) {
 
     var M = Math; // To reduce the minified code size
     var fallbackFn = function () { return 0; };
-    // Native operations
-    var acos = M.acos || fallbackFn;
-    var acosh = M.acosh || fallbackFn;
-    var asin = M.asin || fallbackFn;
-    var asinh = M.asinh || fallbackFn;
-    var atanh = M.atanh || fallbackFn;
-    var atan = M.atan || fallbackFn;
-    var sin = M.sin || fallbackFn;
-    var sinh = M.sinh || fallbackFn;
-    var cos = M.cos || fallbackFn;
-    var cosh = M.cosh || fallbackFn;
-    var tan = M.tan || fallbackFn;
-    var tanh = M.tanh || fallbackFn;
-    var exp = M.exp || fallbackFn;
-    var expm1 = M.expm1 || fallbackFn;
-    var log1p = M.log1p || fallbackFn;
-    // Operation polyfills
-    var powPI = function (value) { return M.pow(M.PI, value); };
-    var acoshPf = function (value) { return M.log(value + M.sqrt(value * value - 1)); };
-    var asinhPf = function (value) { return M.log(value + M.sqrt(value * value + 1)); };
-    var atanhPf = function (value) { return M.log((1 + value) / (1 - value)) / 2; };
-    var sinhPf = function (value) { return M.exp(value) - 1 / M.exp(value) / 2; };
-    var coshPf = function (value) { return (M.exp(value) + 1 / M.exp(value)) / 2; };
-    var expm1Pf = function (value) { return M.exp(value) - 1; };
-    var tanhPf = function (value) { return (M.exp(2 * value) - 1) / (M.exp(2 * value) + 1); };
-    var log1pPf = function (value) { return M.log(1 + value); };
     /**
      * @see https://gitlab.torproject.org/legacy/trac/-/issues/13018
      * @see https://bugzilla.mozilla.org/show_bug.cgi?id=531915
      */
     function getMathFingerprint() {
+        // Native operations
+        var acos = M.acos || fallbackFn;
+        var acosh = M.acosh || fallbackFn;
+        var asin = M.asin || fallbackFn;
+        var asinh = M.asinh || fallbackFn;
+        var atanh = M.atanh || fallbackFn;
+        var atan = M.atan || fallbackFn;
+        var sin = M.sin || fallbackFn;
+        var sinh = M.sinh || fallbackFn;
+        var cos = M.cos || fallbackFn;
+        var cosh = M.cosh || fallbackFn;
+        var tan = M.tan || fallbackFn;
+        var tanh = M.tanh || fallbackFn;
+        var exp = M.exp || fallbackFn;
+        var expm1 = M.expm1 || fallbackFn;
+        var log1p = M.log1p || fallbackFn;
+        // Operation polyfills
+        var powPI = function (value) { return M.pow(M.PI, value); };
+        var acoshPf = function (value) { return M.log(value + M.sqrt(value * value - 1)); };
+        var asinhPf = function (value) { return M.log(value + M.sqrt(value * value + 1)); };
+        var atanhPf = function (value) { return M.log((1 + value) / (1 - value)) / 2; };
+        var sinhPf = function (value) { return M.exp(value) - 1 / M.exp(value) / 2; };
+        var coshPf = function (value) { return (M.exp(value) + 1 / M.exp(value)) / 2; };
+        var expm1Pf = function (value) { return M.exp(value) - 1; };
+        var tanhPf = function (value) { return (M.exp(2 * value) - 1) / (M.exp(2 * value) + 1); };
+        var log1pPf = function (value) { return M.log(1 + value); };
         // Note: constant values are empirical
         return {
             acos: acos(0.123124234234234242),
@@ -9103,7 +9106,8 @@ var globalFP = (function (exports) {
         // READ FIRST:
         // See https://github.com/fingerprintjs/fingerprintjs/blob/master/contributing.md#how-to-make-an-entropy-source
         // to learn how entropy source works and how to make your own.
-        // The sources run in this exact order. The asynchronous sources are at the start to run in parallel with other sources.
+        // The sources run in this exact order.
+        // The asynchronous sources are at the start to run in parallel with other sources.
         fonts: getFonts,
         domBlockers: getDomBlockers,
         fontPreferences: getFontPreferences,
@@ -9276,17 +9280,40 @@ var globalFP = (function (exports) {
         };
     }
     /**
+     * Sends an unpersonalized AJAX request to collect installation statistics
+     */
+    function monitor() {
+        // The FingerprintJS CDN (https://github.com/fingerprintjs/cdn) replaces `window.__fpjs_d_m` with `true`
+        if (window.__fpjs_d_m) {
+            return;
+        }
+        try {
+            var request = new XMLHttpRequest();
+            request.open('get', "https://openfpcdn.io/fingerprintjs/v" + version + "/npm-monitoring", true);
+            request.send();
+        }
+        catch (error) {
+            // console.error is ok here because it's an unexpected error handler
+            // eslint-disable-next-line no-console
+            console.error(error);
+        }
+    }
+    /**
      * Builds an instance of Agent and waits a delay required for a proper operation.
      */
     function load(_a) {
-        var _b = _a === void 0 ? {} : _a, delayFallback = _b.delayFallback, debug = _b.debug;
+        var _b = _a === void 0 ? {} : _a, delayFallback = _b.delayFallback, debug = _b.debug, _c = _b.monitoring, monitoring = _c === void 0 ? true : _c;
         return __awaiter(this, void 0, void 0, function () {
             var getComponents;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0: return [4 /*yield*/, prepareForSources(delayFallback)];
+            return __generator(this, function (_d) {
+                switch (_d.label) {
+                    case 0:
+                        if (monitoring) {
+                            monitor();
+                        }
+                        return [4 /*yield*/, prepareForSources(delayFallback)];
                     case 1:
-                        _c.sent();
+                        _d.sent();
                         getComponents = loadBuiltinSources({ debug: debug });
                         return [2 /*return*/, makeAgent(getComponents, debug)];
                 }
@@ -10309,7 +10336,7 @@ var globalFP = (function (exports) {
         })
             .then(() => {
             let end = Date.now() - start;
-            console.log(`milliseconds elapsed of collect fp = ${end}`);
+            console.log(`milliseconds elapsed of collect fp = ${end}ms`);
         });
     }
     function processData(result, isInject, sessionKey) {

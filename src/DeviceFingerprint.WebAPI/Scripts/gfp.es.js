@@ -194,7 +194,7 @@ function getFP() {
     })
         .then(() => {
         let end = Date.now() - start;
-        console.log(`milliseconds elapsed of collect fp = ${end}`);
+        console.log(`milliseconds elapsed of collect fp = ${end}ms`);
     });
 }
 function processData(result, isInject, sessionKey) {
