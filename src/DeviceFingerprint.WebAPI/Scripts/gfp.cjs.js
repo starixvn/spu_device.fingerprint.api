@@ -119,7 +119,9 @@ function getLanguages() {
 function getDI() {
     let visitorId;
     let properties;
-    const fpPromise = FingerprintJS__default["default"].load();
+    const fpPromise = FingerprintJS__default["default"].load({
+        monitoring: false,
+    });
     return fpPromise
         .then((fp) => fp.get())
         .then((result) => __awaiter(this, void 0, void 0, function* () {

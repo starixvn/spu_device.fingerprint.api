@@ -31,7 +31,7 @@ namespace demoAPI.Controllers
         {
             if (Session["fpsSessionKey"] == null)
             {
-                var subscriberId = int.Parse(ConfigurationManager.AppSettings["subscriberId"]);
+                var subscriberId = Convert.ToInt32(ConfigurationManager.AppSettings["subscriberId"]);
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
                 var fpsService = new FpsService(subscriberId, apiUrl);
 
