@@ -25,24 +25,41 @@ namespace Device.FingerPrint.Integration.Site.Controllers
 
         public IActionResult Index()
         {
-            //var subscribers = subscriberServices.GetSubscriber(2);
             ViewBag.SubscriberList = GetSubscriberList();
             return View();
+        }
+
+        private SelectList GetSubscriberList()
+        {
+            var subscribers = subscriberServices.GetSubscriberList();
+            SelectList selectList = new SelectList(subscribers, "SubscriberId", "SubscriberName");
+            return selectList;
         }
 
         [HttpPost]
         public IActionResult OnPost(string SubscriberId)
         {
             ViewBag.SubscriberList = GetSubscriberList();
-            string strFrontEnd = @"<input type=""hidden"" id=""__sk"" name=""__sk"" value=""@Session[""fpsSessionKey""]"" />
+            ViewBag.FrontEnd = GetScriptFrontEnd();
+            ViewBag.BackEnd = GetScriptBackEnd(SubscriberId);
+            return View("Index");
+        }
+
+        private string GetScriptFrontEnd()
+        {
+            string strResult = @"<input type=""hidden"" id=""__sk"" name=""__sk"" value=""@Session[""fpsSessionKey""]"" />
 <script async defer src=""@ViewBag.fpsScript"" type=""text / javascript""></script>";
-            ViewBag.FrontEnd = strFrontEnd;
-            ViewBag.BackEnd = @"private void FpsIntegration(string loginName)
+            return strResult;
+        }
+
+        private string GetScriptBackEnd(string SubscriberId)
+        {
+            string strResult = @"private void FpsIntegration(string loginName)
     {
             if (Session[""fpsSessionKey""] == null)
             {
-                var subscriberId = "+ SubscriberId + @";
-                var apiUrl = """+ appSettings.ApiUrl + @""";
+                var subscriberId = " + SubscriberId + @";
+                var apiUrl = """ + appSettings.ApiUrl + @""";
                 var fpsService = new FpsService(subscriberId, apiUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
@@ -55,16 +72,7 @@ namespace Device.FingerPrint.Integration.Site.Controllers
             }
         }
             ";
-            return View("Index");
-        }
-
-        private SelectList GetSubscriberList()
-        {
-            List<SubscriberModel> subscriberList = new List<SubscriberModel>();
-            subscriberList.Add(new SubscriberModel { SubscriberId = 1, SubscriberName = "Subscriber 1" });
-            subscriberList.Add(new SubscriberModel { SubscriberId = 2, SubscriberName = "Subscriber 2" });
-            SelectList selectList = new SelectList(subscriberList, "SubscriberId", "SubscriberName");
-            return selectList;
+            return strResult;
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

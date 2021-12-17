@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Functions>
+  <Function Name="Subscriber">
+    <Setting Key="FP_GetSubscriberList" SpName="FP_GetSubscriberList" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
+</Functions>

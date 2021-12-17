@@ -10,6 +10,7 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
     public interface ISubscriberDataAccess
     {
         IEnumerable<SubscriberEntity> GetSubscriber(int subscriberId);
+        IEnumerable<SubscriberEntity> GetSubscriberList();
     }
     public class SubscriberDataAccess : ISubscriberDataAccess
     {
@@ -26,6 +27,13 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
             {
                 SubscriberId = subscriberId
             };
+
+            return repository.Fetch<SubscriberEntity>(criteria);
+        }
+
+        public IEnumerable<SubscriberEntity> GetSubscriberList()
+        {
+            var criteria = new GetSubscriberListCriteria();
 
             return repository.Fetch<SubscriberEntity>(criteria);
         }

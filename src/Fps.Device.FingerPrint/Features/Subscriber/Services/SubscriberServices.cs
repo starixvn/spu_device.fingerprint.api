@@ -9,6 +9,7 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
     public interface ISubscriberServices
     {
        IEnumerable<SubscriberModel> GetSubscriber(int subscriberId);
+        IEnumerable<SubscriberModel> GetSubscriberList();
     }
 
     public class SubscriberServices : ISubscriberServices
@@ -34,6 +35,26 @@ namespace Fps.Device.FingerPrint.Features.Subscriber.Services
                     IsMain = x.IsMain,
                     SubscriberId  = x.SubscriberId,
                     SubscriberName =x.SubscriberName
+                });
+            }
+
+            return new List<SubscriberModel>();
+        }
+
+        public IEnumerable<SubscriberModel> GetSubscriberList()
+        {
+            var subcribers = subscriberDataAccess.GetSubscriberList();
+
+            if (subcribers != null && subcribers.Any())
+            {
+                return subcribers.Select(x => new SubscriberModel
+                {
+                    DomainId = x.DomainId,
+                    DomainName = x.DomainName,
+                    IsActived = x.IsActived,
+                    IsMain = x.IsMain,
+                    SubscriberId = x.SubscriberId,
+                    SubscriberName = x.SubscriberName
                 });
             }
 
