@@ -1,9 +1,11 @@
 ﻿using Device.FingerPrint.Integration.Site.Models;
+using Fps.Device.FingerPrint.Features.Subscriber.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 
 namespace Device.FingerPrint.Integration.Site.Controllers
@@ -11,14 +13,19 @@ namespace Device.FingerPrint.Integration.Site.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ISubscriberServices subscriberServices;
+        private readonly IAppSettings appSettings;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ISubscriberServices subscriberServices, IAppSettings appSettings)
         {
             _logger = logger;
+            this.subscriberServices = subscriberServices;
+            this.appSettings = appSettings;
         }
 
         public IActionResult Index()
         {
+            //var subscribers = subscriberServices.GetSubscriber(2);
             ViewBag.SubscriberList = GetSubscriberList();
             return View();
         }
@@ -35,7 +42,7 @@ namespace Device.FingerPrint.Integration.Site.Controllers
             if (Session[""fpsSessionKey""] == null)
             {
                 var subscriberId = "+ SubscriberId + @";
-                var apiUrl = https://spu-fps-api-base.nexdev.net;
+                var apiUrl = """+ appSettings.ApiUrl + @""";
                 var fpsService = new FpsService(subscriberId, apiUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
@@ -53,11 +60,11 @@ namespace Device.FingerPrint.Integration.Site.Controllers
 
         private SelectList GetSubscriberList()
         {
-            List<SubscriberModel> MyList = new List<SubscriberModel>();
-            MyList.Add(new SubscriberModel { SubscriberId = 1, SubscriberName = "Subscriber 1" });
-            MyList.Add(new SubscriberModel { SubscriberId = 2, SubscriberName = "Subscriber 2" });
-            SelectList SubscriberList = new SelectList(MyList, "SubscriberId", "SubscriberName");
-            return SubscriberList;
+            List<SubscriberModel> subscriberList = new List<SubscriberModel>();
+            subscriberList.Add(new SubscriberModel { SubscriberId = 1, SubscriberName = "Subscriber 1" });
+            subscriberList.Add(new SubscriberModel { SubscriberId = 2, SubscriberName = "Subscriber 2" });
+            SelectList selectList = new SelectList(subscriberList, "SubscriberId", "SubscriberName");
+            return selectList;
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

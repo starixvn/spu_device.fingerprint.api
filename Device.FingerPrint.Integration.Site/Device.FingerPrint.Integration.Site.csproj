@@ -15,4 +15,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="5.0.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\src\FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj" />
+    <ProjectReference Include="..\src\Fps.Device.FingerPrint\Fps.Device.FingerPrint.csproj" />
+  </ItemGroup>
+
 </Project>
