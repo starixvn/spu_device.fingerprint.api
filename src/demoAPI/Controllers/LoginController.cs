@@ -20,7 +20,7 @@ namespace demoAPI.Controllers
         {
             if ((loginModel.Username == "test" || loginModel.Username == "test1" || loginModel.Username == "test2") && loginModel.Password == "1234aa")
             {
-                Session.Clear();
+                
                 Session["Username"] = loginModel.Username;               
 
                 return RedirectToAction("index", "home");
