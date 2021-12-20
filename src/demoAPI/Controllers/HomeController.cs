@@ -19,12 +19,10 @@ namespace demoAPI.Controllers
             {
                 return Redirect("Login");
             }
-            else
-            {
-                FpsIntegration(Session["Username"].ToString());
 
-                return View();
-            }
+            FpsIntegration(Session["Username"].ToString());
+
+            return View();
         }
 
         private void FpsIntegration(string loginName)

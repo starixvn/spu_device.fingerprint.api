@@ -1,10 +1,7 @@
 ﻿using FPS.Device.FingerPrint.Model.Framework;
 using System;
-using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Threading.Tasks;
 using System.Web;
 
 namespace Fps.Device.FingerPrint.Client.Net.Framework
@@ -33,7 +30,8 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
         {
             if (!string.IsNullOrWhiteSpace(LoginName) && subscriberId != 0)
             {
-                var url = new Uri(apiUrl).Combine("api/fp/Transaction");
+                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
+                
                 var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__sk"].ToString();
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
@@ -60,10 +58,16 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
 
             return false;
         }
+        private string GetUrl(string baseUrl, string relativeUrl, object param = null)
+        {
+            var url = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
+
+            return url + relativeUrl + param;
+        }
 
         private string GetIP()
         {
-            String ip = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
+            var ip = HttpContext.Current.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
             if (string.IsNullOrEmpty(ip))
             {
@@ -80,10 +84,7 @@ namespace Fps.Device.FingerPrint.Client.Net.Framework
 
         public string GetScriptUrl()
         {
-            var uri = new Uri(apiUrl).Combine("api/fp/scr", subscriberId.ToString());
-
-            return uri.ToString();
-
+            return GetUrl(apiUrl, "api/fp/scr/", subscriberId);
         }
     }
 }
