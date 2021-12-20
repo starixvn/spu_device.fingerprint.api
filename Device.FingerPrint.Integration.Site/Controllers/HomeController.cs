@@ -75,6 +75,8 @@ namespace Device.FingerPrint.Integration.Site.Controllers
             return strResult;
         }
 
+        
+
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
