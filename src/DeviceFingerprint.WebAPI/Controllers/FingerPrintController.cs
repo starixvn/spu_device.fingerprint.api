@@ -106,12 +106,19 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         Device = fingerPrint.Device,
                         DeviceCode = fingerPrint.DeviceCode
                     });
-                }                                
+
+                    fingerPrintService.UpdateFingerPrintCookie(new FingerPrintCookieEntity
+                    {
+                        CookieId = fingerPrint.CookieId,
+                        FingerPrint = fingerPrint.FingerPrintCode
+
+                    });
+                }
             }
             catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
-            }                        
+            }
         }
 
         [HttpPost("Transaction")]
@@ -152,7 +159,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
         {
             var subscribers = subscriberServices.GetSubscriber(subscriberId);
 
-            if(subscribers != null && subscribers.Any())
+            if (subscribers != null && subscribers.Any())
             {
                 var domains = subscribers
                 .Where(x => x.IsActived)
@@ -164,10 +171,33 @@ namespace DeviceFingerprint.WebAPI.Controllers
             return null;
         }
 
-        [HttpGet("hc")]       
+        [HttpGet("hc")]
         public void HealthCheck()
         {
             // Method intentionally left empty.
+        }
+
+        [HttpGet("getCookie/{cookie?}")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult<string> GetCookie(string cookie)
+        {
+            var code = string.IsNullOrWhiteSpace(cookie) ? GenCookie() : cookie;
+
+            var id = fingerPrintService.UpdateCookie(code);
+
+            return Ok(new
+            {
+                Id = id,
+                Code = code
+            });
+        }
+
+
+        private string GenCookie()
+        {
+            Guid guiId = Guid.NewGuid();
+
+            return guiId.ToString();
         }
 
         private int CheckExistSubscriber(int subscriberId)

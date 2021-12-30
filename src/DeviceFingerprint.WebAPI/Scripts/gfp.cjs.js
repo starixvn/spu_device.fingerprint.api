@@ -5,11 +5,13 @@ Object.defineProperty(exports, '__esModule', { value: true });
 var CryptoJS = require('crypto-js');
 var FingerprintJS = require('@fingerprintjs/fingerprintjs');
 var uaParserJs = require('ua-parser-js');
+var localForage = require('localforage');
 
 function _interopDefaultLegacy (e) { return e && typeof e === 'object' && 'default' in e ? e : { 'default': e }; }
 
 var CryptoJS__default = /*#__PURE__*/_interopDefaultLegacy(CryptoJS);
 var FingerprintJS__default = /*#__PURE__*/_interopDefaultLegacy(FingerprintJS);
+var localForage__default = /*#__PURE__*/_interopDefaultLegacy(localForage);
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -219,8 +221,88 @@ function isMobileIOS(ua) {
     return false;
 }
 
+function initStorage() {
+    let localForageDrives = [];
+    if (isIndexDB()) {
+        localForageDrives.push(localForage__default["default"].INDEXEDDB);
+    }
+    if (isWebSQL()) {
+        localForageDrives.push(localForage__default["default"].WEBSQL);
+    }
+    if (isLocalStorage()) {
+        localForageDrives.push(localForage__default["default"].LOCALSTORAGE);
+    }
+    return Promise.resolve(localForageDrives);
+}
+function isWebSQL() {
+    const supports_webSQL = "openDatabase" in window;
+    return supports_webSQL;
+}
+function isIndexDB() {
+    if (window.indexedDB)
+        return true;
+    return false;
+}
+function isLocalStorage() {
+    if (window.localStorage)
+        return true;
+    return false;
+}
+function cookieHandler(cookieValue) {
+    var value = cookieValue != null ? "/" + cookieValue : "";
+    return fetch(apiUrl + "/getCookie" + value, {
+        method: "GET",
+        redirect: "follow",
+    })
+        .then((res) => res.json())
+        .then((res) => {
+        return res;
+    });
+}
+function setStorage(name, value) {
+    initStorage().then((drivers) => {
+        drivers.forEach((drive) => {
+            var storageDriver = localForage__default["default"].createInstance({
+                driver: drive,
+                name: drive + "-EC",
+                storeName: "ec",
+            });
+            storageDriver.setItem(name, value);
+        });
+    });
+}
+function storageHandler(name) {
+    return initStorage()
+        .then((driver) => {
+        return driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
+            var storageDriver = localForage__default["default"].createInstance({
+                driver: drive,
+                name: drive + "-EC",
+                storeName: "ec",
+            });
+            return yield storageDriver.getItem(name);
+        }));
+    })
+        .then((res) => {
+        return Promise.all(res).then((cookies) => {
+            var latestCookie = null;
+            for (const cookie of cookies) {
+                if (cookie != null) {
+                    latestCookie = cookie;
+                    break;
+                }
+            }
+            return cookieHandler(latestCookie).then((result) => {
+                setStorage(name, result.code);
+                return result.id;
+            });
+        });
+    });
+}
+
 var _isDebug = false;
 var _hiddenName = "__sk";
+var _cookieName = "__fp";
 function isDebug(isDebug) {
     _isDebug = isDebug;
     return this;
@@ -244,31 +326,33 @@ function injectSessionKey(value) {
 }
 function getFP() {
     let start = Date.now();
-    getDI()
-        .then((result) => {
-        if (_isDebug) {
-            console.log(result.Id);
-            console.log(result.Properties);
-        }
-        else {
-            let sessionKeyElement = document.getElementById(_hiddenName);
-            if (sessionKeyElement) {
-                let sessionKeyValue = sessionKeyElement.value;
-                if (sessionKeyValue != null && sessionKeyValue != "") {
-                    processData(result, false, sessionKeyValue);
-                }
+    storageHandler(_cookieName).then((cookieId) => {
+        getDI()
+            .then((result) => {
+            if (_isDebug) {
+                console.log(result.Id);
+                console.log(result.Properties);
             }
             else {
-                processData(result, true, null);
+                let sessionKeyElement = document.getElementById(_hiddenName);
+                if (sessionKeyElement) {
+                    let sessionKeyValue = sessionKeyElement.value;
+                    if (sessionKeyValue != null && sessionKeyValue != "") {
+                        processData(result, false, sessionKeyValue, cookieId);
+                    }
+                }
+                else {
+                    processData(result, true, null, cookieId);
+                }
             }
-        }
-    })
-        .then(() => {
-        let end = Date.now() - start;
-        console.log(`milliseconds elapsed of collect fp = ${end}ms`);
+        })
+            .then(() => {
+            let end = Date.now() - start;
+            console.log(`milliseconds elapsed of collect fp = ${end}ms`);
+        });
     });
 }
-function processData(result, isInject, sessionKey) {
+function processData(result, isInject, sessionKey, cookieId) {
     getDomain()
         .then((res) => res.text())
         .then((req) => {
@@ -294,6 +378,7 @@ function processData(result, isInject, sessionKey) {
                             subs: subscriberId,
                             dev: device,
                             devCode: HashMD5(device),
+                            cookieId: cookieId,
                         }, response.a);
                         postData(url, encryptedFP, response.b).then((data) => {
                             if (data.ok && isInject) {

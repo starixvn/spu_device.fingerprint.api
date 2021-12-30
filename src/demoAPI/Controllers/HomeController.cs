@@ -7,10 +7,10 @@ namespace demoAPI.Controllers
 {
     public class HomeController : Controller
     {
-        
+
         public HomeController()
         {
-            
+
         }
 
         public ActionResult Index()
@@ -37,7 +37,7 @@ namespace demoAPI.Controllers
 
                 var fpsSessionKey = fpsService.GenerateSessionKey();
 
-                fpsService.InsertTransaction(loginName, fpsSessionKey);
+                fpsService.InsertTransaction(loginName, "Login", fpsSessionKey);
 
                 Session["fpsSessionKey"] = fpsSessionKey;
             }
