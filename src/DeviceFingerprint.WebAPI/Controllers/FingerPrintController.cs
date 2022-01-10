@@ -104,15 +104,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
                         Device = fingerPrint.Device,
-                        DeviceCode = fingerPrint.DeviceCode
+                        DeviceCode = fingerPrint.DeviceCode,
+                        CookieId = fingerPrint.CookieId
                     });
-
-                    fingerPrintService.UpdateFingerPrintCookie(new FingerPrintCookieEntity
-                    {
-                        CookieId = fingerPrint.CookieId,
-                        FingerPrint = fingerPrint.FingerPrintCode
-
-                    });
+                    
                 }
             }
             catch (Exception ex)

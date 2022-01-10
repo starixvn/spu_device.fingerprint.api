@@ -23,6 +23,10 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Criterias
         [SpParam(SqlParamName = "ip_DeviceCode")]
         public string DeviceCode { get; set; }
 
+        [SpParam(SqlParamName = "ip_CookieId")]
+        public long CookieId { get; set; }
+
+
         public override string GetSettingKey()
         {
             return "FP_InsertFingerPrint";

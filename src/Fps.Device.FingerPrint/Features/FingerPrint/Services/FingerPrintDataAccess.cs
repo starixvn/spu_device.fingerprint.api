@@ -31,7 +31,8 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
                 SubscriberId = fingerPrint.SubscriberId,
                 Attributes = fingerPrint.Attributes,
                 Device = fingerPrint.Device,
-                DeviceCode = fingerPrint.DeviceCode
+                DeviceCode = fingerPrint.DeviceCode,
+                CookieId = fingerPrint.CookieId
             };
 
             repository.Execute(criteria);

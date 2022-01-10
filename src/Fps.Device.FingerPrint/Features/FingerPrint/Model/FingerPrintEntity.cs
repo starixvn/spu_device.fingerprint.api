@@ -17,5 +17,7 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Model
         public string Device { get; set; }
 
         public string DeviceCode { get; set; }
+
+        public long CookieId { get; set; }
     }
 }
