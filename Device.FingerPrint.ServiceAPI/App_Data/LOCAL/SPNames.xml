@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Functions>
+	<Function Name="Transaction">
+		<Setting Key="FP_RecoverDevice" SpName="FP_RecoverDevice" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>		
+	</Function>  
+</Functions>

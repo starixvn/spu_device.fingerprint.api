@@ -44,10 +44,6 @@ namespace DeviceFingerprint.WebAPI
 
             services.AddSingleton<IAppSettings>(appSettings);
 
-            //services
-            //    .AddDataProtection()
-            //    .DisableAutomaticKeyGeneration();
-
             services.AddCors();
 
             services.AddResponseCaching();
