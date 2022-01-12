@@ -18,6 +18,9 @@ namespace DeviceFingerprint.WebAPI
         string SentryDsn { get; }
 
         string Environment { get; }
+
+        string TransactionTopicName { get; }
+        string FingerprintTopicName { get; }
     }
 
     public class AppSettings: IAppSettings
@@ -29,6 +32,8 @@ namespace DeviceFingerprint.WebAPI
         private readonly string encryptPassword;
         private readonly string sentryDsn;
         private readonly string environment;
+        private readonly string transactionTopicname;
+        private readonly string fingerprintTopicname;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -43,6 +48,10 @@ namespace DeviceFingerprint.WebAPI
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
             environment = GetValue<string>("AppConfig:Environment");
+
+            transactionTopicname = GetValue<string>("KafkaConfig:TransactionTopicName");
+
+            fingerprintTopicname = GetValue<string>("KafkaConfig:FingerprintTopicName");
         }
 
         public string ApiUrl => apiUrl;
@@ -54,6 +63,9 @@ namespace DeviceFingerprint.WebAPI
         public string SentryDsn => sentryDsn;
 
         public string Environment => environment;
+
+        public string TransactionTopicName => transactionTopicname;
+        public string FingerprintTopicName => fingerprintTopicname;
 
         public T GetValue<T>(string key)
         {

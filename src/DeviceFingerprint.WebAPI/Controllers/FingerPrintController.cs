@@ -1,4 +1,5 @@
-﻿using DeviceFingerprint.WebAPI.Services;
+﻿using Confluent.Kafka;
+using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
@@ -12,7 +13,9 @@ using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Xml.Serialization;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -97,17 +100,18 @@ namespace DeviceFingerprint.WebAPI.Controllers
 
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
-                    fingerPrintService.InsertFingerPrint(new FingerPrintEntity
+                    FingerPrintEntity fingerPrintEntity = new FingerPrintEntity
                     {
                         FingerPrint = fingerPrint.FingerPrintCode,
                         Attributes = fingerPrint.FingerPrint,
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
-                        Device = fingerPrint.Device,
+                        DeviceInfo = fingerPrint.Device,
                         DeviceCode = fingerPrint.DeviceCode,
                         CookieId = fingerPrint.CookieId
-                    });
-                    
+                    };
+                    var kafkaServices = new KafkaServices(appSettings);
+                    kafkaServices.SendFingerprintToKafka(fingerPrintEntity);
                 }
             }
             catch (Exception ex)
@@ -132,10 +136,10 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         TransTime = data.TransTime,
                         UserAgent = data.UserAgent,
                         Url = data.Url
-
                     };
-
-                    transactionService.InsertTransaction(transaction);
+                    var kafkaServices = new KafkaServices(appSettings);
+                    kafkaServices.SendTransactionToKafka(transaction);
+                    //transactionService.InsertTransaction(transaction);
                 }
 
                 return true;

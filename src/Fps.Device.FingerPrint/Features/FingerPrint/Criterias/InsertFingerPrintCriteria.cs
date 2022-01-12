@@ -17,8 +17,8 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Criterias
         [SpParam(SqlParamName = "ip_Attributes")]
         public string Attributes { get; set; }
 
-        [SpParam(SqlParamName = "ip_Device")]
-        public string Device { get; set; }
+        [SpParam(SqlParamName = "ip_DeviceInfo")]
+        public string DeviceInfo { get; set; }
 
         [SpParam(SqlParamName = "ip_DeviceCode")]
         public string DeviceCode { get; set; }

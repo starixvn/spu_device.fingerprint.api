@@ -1,5 +1,7 @@
 ﻿using Fps.Device.FingerPrint.Features.Transaction.Model;
 using FPS.Device.FingerPrint.Model;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Fps.Device.FingerPrint.Features.Transaction.Services
 {

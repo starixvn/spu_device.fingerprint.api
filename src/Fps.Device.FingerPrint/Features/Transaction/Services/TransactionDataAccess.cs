@@ -1,6 +1,7 @@
 ﻿using Fanex.Data.Repository;
 using Fps.Device.FingerPrint.Features.Transaction.Criterias;
 using Fps.Device.FingerPrint.Features.Transaction.Model;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Text;

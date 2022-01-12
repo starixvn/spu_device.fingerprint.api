@@ -1,12 +1,13 @@
 ﻿using Fps.Device.FingerPrint.Features.FingerPrint.Model;
-using FPS.Device.FingerPrint.Model;
-using System.Numerics;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
 {
     public interface IFingerPrintService
     {
         void InsertFingerPrint(FingerPrintEntity fingerPrint);
+        void InsertListFingerPrint(List<FingerPrintEntity> listFingerPrint);
 
         long UpdateCookie(string code);
 
@@ -24,8 +25,12 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
 
         public void InsertFingerPrint(FingerPrintEntity fingerPrint)
         {
-
             fingerPrintDataAccess.InsertFingerPrint(fingerPrint);
+        }
+        public void InsertListFingerPrint(List<FingerPrintEntity> listFingerPrint)
+        {
+            string JsonFingerPrint = JsonConvert.SerializeObject(listFingerPrint);
+            fingerPrintDataAccess.InsertJsonFingerPrint(JsonFingerPrint);
         }
 
         public long UpdateCookie(string code)

@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Functions>
+  <Function Name="Fingerprint">
+    <Setting Key="FP_InsertFingerPrint_New" SpName="FP_InsertFingerPrint_New" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
+</Functions>
