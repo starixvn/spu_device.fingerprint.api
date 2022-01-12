@@ -8,6 +8,7 @@ namespace KafkaConsumerCore
     {
         string ApiUrl { get; }
         string SPName { get; }
+        string SentryDsn { get; }
         string Environment { get; }
         string TopicName { get; }
         string ConsumerGroupName { get; }
@@ -19,6 +20,7 @@ namespace KafkaConsumerCore
         private readonly IConfiguration configuration;
         private readonly string spName;
         private readonly string apiUrl;
+        private readonly string sentryDsn;
         private readonly string environment;
         private readonly string topicName;
         private readonly string consumerGroupName;
@@ -28,6 +30,7 @@ namespace KafkaConsumerCore
             this.configuration = configuration;
             apiUrl = GetValue<string>("AppConfig:ApiUrl");
             spName = GetValue<string>("AppConfig:SPName");
+            sentryDsn = GetValue<string>("Sentry:Dsn");
             environment = GetValue<string>("AppConfig:Environment");
             topicName = GetValue<string>("KafkaConfig:TopicName");
             consumerGroupName = GetValue<string>("KafkaConfig:ConsumerGroupName");
@@ -35,6 +38,7 @@ namespace KafkaConsumerCore
         }
         public string ApiUrl => apiUrl;
         public string SPName => spName;
+        public string SentryDsn => sentryDsn;
         public string Environment => environment;
         public string TopicName => topicName;
         public string ConsumerGroupName => consumerGroupName;

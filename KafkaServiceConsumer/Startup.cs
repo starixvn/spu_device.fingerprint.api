@@ -1,14 +1,18 @@
 using Fanex.Data;
 using Fanex.Data.MySql;
+using Fanex.Logging;
+using Fanex.Logging.Sentry;
 using Fps.Device.FingerPrint.Features.Transaction.Services;
 using KafkaConsumerCore;
 using KafkaConsumerTransaction.Handlers;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sentry;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace KafkaConsumerTransaction
@@ -30,7 +34,10 @@ namespace KafkaConsumerTransaction
             services.AddSingleton<ITransactionService, TransactionService>();
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
+
+            services.AddHealthChecks();
             FanexDataConfig(appSettings);
+            RegisterLogging(appSettings);
         }
         private void FanexDataConfig(IAppSettings appSettings)
         {
@@ -51,6 +58,19 @@ namespace KafkaConsumerTransaction
               .Run();
         }
 
+        private void RegisterLogging(IAppSettings appSettings)
+        {
+            LogManager
+                .SetDefaultLogCategory("DeviceFingerPrintWebAPI")
+                .Use(new List<ILogEngine>
+                {
+                     new SentryLogging(new SentryEngineOptions {
+                        Dsn = new Dsn(appSettings.SentryDsn),
+                        Environment = appSettings.Environment
+                     })
+                });
+        }
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -59,14 +79,16 @@ namespace KafkaConsumerTransaction
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseHealthChecks("/healthz", new HealthCheckOptions
+            {
+                Predicate = _ => true
+            });
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                endpoints.MapControllers();
             });
         }
     }

@@ -48,7 +48,7 @@ namespace KafkaConsumerTransaction.Handlers
                         TransactionModel transactionModel = SerializationHelper.DeserializeJson<TransactionModel>(value);
                         count++;
                         listTransaction.Add(transactionModel);
-                        if (count == 5)
+                        if (count == 3)
                         {
                             transactionService.InsertListTransaction(listTransaction);
                             count = 0;

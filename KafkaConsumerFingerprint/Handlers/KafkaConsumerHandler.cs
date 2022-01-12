@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
+using KafkaConsumerCore;
 using KafkaConsumerCore.Ultilities;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -46,7 +47,7 @@ namespace KafkaConsumerFingerprint.Handlers
                         FingerPrintEntity fingerPrintEntity = SerializationHelper.DeserializeJson<FingerPrintEntity>(value);
                         count++;
                         listFingerPrint.Add(fingerPrintEntity);
-                        if (count == 5)
+                        if (count == 1)
                         {
                             fingerPrintService.InsertListFingerPrint(listFingerPrint);
                             count = 0;
