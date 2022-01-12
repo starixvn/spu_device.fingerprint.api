@@ -11,6 +11,7 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
     public interface ITransactionDataAccess
     {
         void InsertTransaction(TransactionEntity transaction);
+        void InsertJsonTransaction(string jsonTransaction);
 
         void RecoverDevice(int batchSize);
     }
@@ -35,6 +36,15 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
                 TransTime = transaction.TransTime,
                 UserAgent = transaction.UserAgent,
                 Url = transaction.Url
+            };
+
+            repository.Execute(criteria);
+        }
+        public void InsertJsonTransaction(string jsonTransaction)
+        {
+            var criteria = new InsertJsonTransactionCriteria
+            {
+                Transaction = jsonTransaction
             };
 
             repository.Execute(criteria);
