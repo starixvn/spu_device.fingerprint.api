@@ -4,7 +4,7 @@ using Fanex.Logging;
 using Fanex.Logging.Sentry;
 using Fps.Device.FingerPrint.Features.Transaction.Services;
 using KafkaConsumerCore;
-using KafkaConsumerTransaction.Handlers;
+using Device.Fingerprint.InsertRawTransaction.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -15,7 +15,7 @@ using Sentry;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace KafkaConsumerTransaction
+namespace Device.Fingerprint.InsertRawTransaction
 {
     public class Startup
     {

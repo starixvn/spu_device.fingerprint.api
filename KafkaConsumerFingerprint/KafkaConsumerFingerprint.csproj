@@ -9,7 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KafkaServiceConsumer\KafkaConsumerTransaction.csproj" />
+    <ProjectReference Include="..\KafkaServiceConsumer\Device.Fingerprint.InsertRawTransaction.csproj" />
     <ProjectReference Include="..\src\DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj" />
     <ProjectReference Include="..\src\Fps.Device.FingerPrint\Fps.Device.FingerPrint.csproj" />
   </ItemGroup>

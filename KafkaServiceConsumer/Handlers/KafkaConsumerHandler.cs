@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace KafkaConsumerTransaction.Handlers
+namespace Device.Fingerprint.InsertRawTransaction.Handlers
 {
     public class KafkaConsumerHandler : IHostedService
     {

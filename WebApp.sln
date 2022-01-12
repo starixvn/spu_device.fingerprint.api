@@ -31,7 +31,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.ServiceA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{0C21901F-35FB-4596-BB44-DE9851EE94C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaConsumerTransaction", "KafkaServiceConsumer\KafkaConsumerTransaction.csproj", "{BAB66A01-718F-4A49-B72D-4036381E1449}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InsertRawTransaction", "KafkaServiceConsumer\Device.Fingerprint.InsertRawTransaction.csproj", "{BAB66A01-718F-4A49-B72D-4036381E1449}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaConsumerFingerprint", "KafkaConsumerFingerprint\KafkaConsumerFingerprint.csproj", "{00BE878A-6264-4150-B863-9E00A6BD73B8}"
 EndProject
