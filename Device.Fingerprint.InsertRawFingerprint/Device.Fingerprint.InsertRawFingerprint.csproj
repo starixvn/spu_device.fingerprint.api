@@ -5,8 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\KafkaConsumerCore\KafkaConsumerCore.csproj" />
-    <ProjectReference Include="..\src\FPS.Device.FingerPrint.Model\FPS.Device.FingerPrint.Model.csproj" />
+    <PackageReference Include="Confluent.Kafka" Version="1.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Device.FingerPrint.Kafka\Device.FingerPrint.Kafka.csproj" />
+    <ProjectReference Include="..\src\DeviceFingerprint.WebAPI\DeviceFingerprint.WebAPI.csproj" />
     <ProjectReference Include="..\src\Fps.Device.FingerPrint\Fps.Device.FingerPrint.csproj" />
   </ItemGroup>
 

@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "KafkaConsumerFingerprint": {
+    "Device.Fingerprint.InsertRawFingerprint": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

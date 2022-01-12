@@ -1,32 +1,31 @@
 ﻿using Confluent.Kafka;
-using Fps.Device.FingerPrint.Features.Transaction.Services;
-using FPS.Device.FingerPrint.Model;
-using KafkaConsumerCore;
-using KafkaConsumerCore.Ultilities;
-using KafkaConsumerCore.Handlers;
+using Device.FingerPrint.Kafka;
+using Device.FingerPrint.Kafka.Ultilities;
+using Fps.Device.FingerPrint.Features.FingerPrint.Model;
+using Fps.Device.FingerPrint.Features.FingerPrint.Services;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Device.Fingerprint.InsertRawTransaction.Handlers
+namespace Device.Fingerprint.InsertRawFingerprint.Handlers
 {
     public class KafkaConsumerHandler : IHostedService
     {
-        private readonly ILogger<KafkaConsumerHandler> _logger;
-        private readonly ITransactionService transactionService;
+        private readonly IFingerPrintService fingerPrintService;
         private readonly IAppSettings appSettings;
-        public KafkaConsumerHandler(ILogger<KafkaConsumerHandler> logger, ITransactionService transactionService, IAppSettings appSettings)
+        private readonly ISentryClient sentryClient;
+
+        public KafkaConsumerHandler(IFingerPrintService fingerPrintService, IAppSettings appSettings, ISentryClient sentryClient)
         {
-            _logger = logger;
-            this.transactionService = transactionService;
+            this.fingerPrintService = fingerPrintService;
             this.appSettings = appSettings;
+            this.sentryClient = sentryClient;
         }
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Transaction worker start at: {time}", DateTimeOffset.Now);
             var conf = new ConsumerConfig
             {
                 GroupId = appSettings.ConsumerGroupName,
@@ -40,28 +39,25 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
                 try
                 {
                     int count = 0;
-                    List<TransactionModel> listTransaction = new List<TransactionModel>();
+                    List<FingerPrintEntity> listFingerPrint = new List<FingerPrintEntity>();
                     while (true)
                     {
                         var consumer = builder.Consume(cancelToken.Token);
                         var value = consumer.Message.Value;
-                        TransactionModel transactionModel = SerializationHelper.DeserializeJson<TransactionModel>(value);
+                        FingerPrintEntity fingerPrintEntity = SerializationHelper.DeserializeJson<FingerPrintEntity>(value);
                         count++;
-                        listTransaction.Add(transactionModel);
-                        if (count == 3)
+                        listFingerPrint.Add(fingerPrintEntity);
+                        if (count == 5)
                         {
-                            transactionService.InsertListTransaction(listTransaction);
+                            fingerPrintService.InsertListFingerPrint(listFingerPrint);
                             count = 0;
-                            listTransaction = new List<TransactionModel>();
-                            _logger.LogInformation("Inserting Transaction at: {time}, count: {count}", DateTimeOffset.Now, count);
+                            listFingerPrint = new List<FingerPrintEntity>();
                         }
                     }
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    builder.Close();
-                    string errorMessage = e.ToString();
-                    Console.WriteLine($"Error Message: {errorMessage}");
+                    sentryClient.CaptureException(ex);
                 }
             }
             return Task.CompletedTask;

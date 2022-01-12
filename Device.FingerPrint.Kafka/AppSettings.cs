@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 
-namespace KafkaConsumerCore
+namespace Device.FingerPrint.Kafka
 {
     public interface IAppSettings
     {
@@ -57,13 +57,6 @@ namespace KafkaConsumerCore
             {
                 throw new InvalidCastException($"Key: {key}", ex);
             }
-        }
-
-        public T GetSection<T>(string key)
-        {
-            var schedulerSection = configuration.GetSection(key);
-
-            return schedulerSection.Get<T>();
         }
     }
 }

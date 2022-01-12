@@ -2,9 +2,8 @@ using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
-using Fps.Device.FingerPrint.Features.FingerPrint.Services;
-using KafkaConsumerCore;
-using KafkaConsumerFingerprint.Handlers;
+using Fps.Device.FingerPrint.Features.Transaction.Services;
+using Device.Fingerprint.InsertRawTransaction.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -14,8 +13,11 @@ using Microsoft.Extensions.Hosting;
 using Sentry;
 using System.Collections.Generic;
 using System.Linq;
+using Device.FingerPrint.Kafka;
+using Device.FingerPrint.Kafka.Handlers;
+using Microsoft.AspNetCore.Http;
 
-namespace KafkaConsumerFingerprint
+namespace Device.Fingerprint.InsertRawTransaction
 {
     public class Startup
     {
@@ -24,13 +26,14 @@ namespace KafkaConsumerFingerprint
         {
             Configuration = configuration;
         }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
-            services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
-            services.AddSingleton<IFingerPrintService, FingerPrintService>();
+            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
+            services.AddSingleton<ITransactionService, TransactionService>();
             services.AddSingleton<IAppSettings, AppSettings>();
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
@@ -78,18 +81,9 @@ namespace KafkaConsumerFingerprint
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting();
-
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
                 Predicate = _ => true
-            });
-
-            app.UseRouting();
-
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
             });
         }
     }

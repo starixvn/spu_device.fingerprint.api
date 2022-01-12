@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml.Serialization;
 
-namespace KafkaConsumerCore.Ultilities
+namespace Device.FingerPrint.Kafka.Ultilities
 {
     public static class SerializationHelper
     {

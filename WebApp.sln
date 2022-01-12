@@ -31,11 +31,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.ServiceA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{0C21901F-35FB-4596-BB44-DE9851EE94C3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InsertRawTransaction", "KafkaServiceConsumer\Device.Fingerprint.InsertRawTransaction.csproj", "{BAB66A01-718F-4A49-B72D-4036381E1449}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InsertRawTransaction", "Device.Fingerprint.InsertRawTransaction\Device.Fingerprint.InsertRawTransaction.csproj", "{BAB66A01-718F-4A49-B72D-4036381E1449}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaConsumerFingerprint", "KafkaConsumerFingerprint\KafkaConsumerFingerprint.csproj", "{00BE878A-6264-4150-B863-9E00A6BD73B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InsertRawFingerprint", "Device.Fingerprint.InsertRawFingerprint\Device.Fingerprint.InsertRawFingerprint.csproj", "{00BE878A-6264-4150-B863-9E00A6BD73B8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KafkaConsumerCore", "KafkaConsumerCore\KafkaConsumerCore.csproj", "{99ECDA82-AC6C-4426-8394-F9AB370F7A6A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.Kafka", "Device.FingerPrint.Kafka\Device.FingerPrint.Kafka.csproj", "{6C1B7A82-D655-4F72-B60C-6445076C144A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,10 +91,10 @@ Global
 		{00BE878A-6264-4150-B863-9E00A6BD73B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{00BE878A-6264-4150-B863-9E00A6BD73B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{00BE878A-6264-4150-B863-9E00A6BD73B8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99ECDA82-AC6C-4426-8394-F9AB370F7A6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99ECDA82-AC6C-4426-8394-F9AB370F7A6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99ECDA82-AC6C-4426-8394-F9AB370F7A6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99ECDA82-AC6C-4426-8394-F9AB370F7A6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6C1B7A82-D655-4F72-B60C-6445076C144A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6C1B7A82-D655-4F72-B60C-6445076C144A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6C1B7A82-D655-4F72-B60C-6445076C144A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6C1B7A82-D655-4F72-B60C-6445076C144A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -112,7 +112,7 @@ Global
 		{1E60CA39-50F9-4410-AF80-927D08B2B38D} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 		{BAB66A01-718F-4A49-B72D-4036381E1449} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 		{00BE878A-6264-4150-B863-9E00A6BD73B8} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
-		{99ECDA82-AC6C-4426-8394-F9AB370F7A6A} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{6C1B7A82-D655-4F72-B60C-6445076C144A} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace KafkaConsumerFingerprint
+namespace Device.Fingerprint.InsertRawFingerprint
 {
     public class Program
     {
