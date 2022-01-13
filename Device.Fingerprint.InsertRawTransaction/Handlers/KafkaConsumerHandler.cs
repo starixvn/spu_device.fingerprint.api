@@ -30,7 +30,8 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
             {
                 GroupId = appSettings.ConsumerGroupName,
                 BootstrapServers = appSettings.BootstrapServers,
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnableAutoCommit = false
             };
             using (var builder = new ConsumerBuilder<Ignore, string>(conf).Build())
             {
@@ -47,9 +48,10 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
                         TransactionModel transactionModel = SerializationHelper.DeserializeJson<TransactionModel>(value);
                         count++;
                         listTransaction.Add(transactionModel);
-                        if (count == 5)
+                        if (count == 10)
                         {
                             transactionService.InsertListTransaction(listTransaction);
+                            builder.Commit(consumer);
                             count = 0;
                             listTransaction = new List<TransactionModel>();
                         }

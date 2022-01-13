@@ -30,7 +30,8 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
             {
                 GroupId = appSettings.ConsumerGroupName,
                 BootstrapServers = appSettings.BootstrapServers,
-                AutoOffsetReset = AutoOffsetReset.Earliest
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                EnableAutoCommit = false
             };
             using (var builder = new ConsumerBuilder<Ignore, string>(conf).Build())
             {
@@ -47,9 +48,10 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
                         FingerPrintEntity fingerPrintEntity = SerializationHelper.DeserializeJson<FingerPrintEntity>(value);
                         count++;
                         listFingerPrint.Add(fingerPrintEntity);
-                        if (count == 5)
+                        if (count == 10)
                         {
                             fingerPrintService.InsertListFingerPrint(listFingerPrint);
+                            builder.Commit(consumer);
                             count = 0;
                             listFingerPrint = new List<FingerPrintEntity>();
                         }
