@@ -1,22 +1,35 @@
+using Fanex.Logging;
+using Fanex.Logging.Sentry;
 using Hangfire;
 using Hangfire.MySql;
 using HangfireBasicAuthenticationFilter;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sentry;
 using System;
+using System.Collections.Generic;
 using System.Transactions;
 
 namespace Device.FingerPrint.JobManagement
 {
     public class Startup
     {
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            var appSettings = new AppSettings(this.Configuration);
+
             services.AddHangfire((provider, configuration) => configuration
                         .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                         .UseSimpleAssemblyNameTypeSerializer());
@@ -25,7 +38,7 @@ namespace Device.FingerPrint.JobManagement
             services.AddHangfireServer(options =>
             {
                 options.StopTimeout = TimeSpan.FromSeconds(15);
-                options.ShutdownTimeout = TimeSpan.FromSeconds(30);
+                options.ShutdownTimeout = TimeSpan.FromSeconds(30);                                
             });
 
             GlobalConfiguration.Configuration.UseStorage(
@@ -43,6 +56,7 @@ namespace Device.FingerPrint.JobManagement
                     TablesPrefix = "fp_"
                 }));
 
+            RegisterLogging(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,31 +69,35 @@ namespace Device.FingerPrint.JobManagement
 
             app.UseHangfireDashboard("/jobs", new DashboardOptions
             {
-                Authorization = new[] { new HangfireCustomBasicAuthenticationFilter { User = "admin", Pass = "admin" } }
+                Authorization = new[] { new HangfireCustomBasicAuthenticationFilter { User = "admin", Pass = "admin" } },
+                DisplayStorageConnectionString = false,
+                DashboardTitle = "ASP.Net Core Hangfire Management",
+                StatsPollingInterval = 5000
             });
 
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("/", context => {
+                endpoints.MapGet("/", context =>
+                {
                     context.Response.Redirect("/jobs");
                     return System.Threading.Tasks.Task.CompletedTask;
                 });
             });
         }
 
-        //private void RegisterLogging(IAppSettings appSettings)
-        //{
-        //    LogManager
-        //        .SetDefaultLogCategory("DeviceFingerPrintWebAPI")
-        //        .Use(new List<ILogEngine>
-        //        {
-        //             new SentryLogging(new SentryEngineOptions {
-        //                Dsn = new Dsn(appSettings.SentryDsn),
-        //                Environment = appSettings.Environment
-        //             })
-        //        });
-        //}
+        private void RegisterLogging(IAppSettings appSettings)
+        {
+            LogManager
+                .SetDefaultLogCategory("DeviceFingerPrintJobManagement")
+                .Use(new List<ILogEngine>
+                {
+                     new SentryLogging(new SentryEngineOptions {
+                        Dsn = new Dsn(appSettings.SentryDsn),
+                        Environment = appSettings.Environment
+                     })
+                });
+        }
     }
 }
