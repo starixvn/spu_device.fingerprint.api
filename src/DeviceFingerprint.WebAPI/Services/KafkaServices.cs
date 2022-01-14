@@ -9,11 +9,12 @@ namespace DeviceFingerprint.WebAPI.Services
     public class KafkaServices
     {
         private readonly IAppSettings appSettings;
-        private readonly ProducerConfig producerConfig = new ProducerConfig { BootstrapServers = "localhost:9092" };
+        private readonly ProducerConfig producerConfig;
 
         public KafkaServices(IAppSettings appSettings)
         {
             this.appSettings = appSettings;
+            producerConfig = new ProducerConfig { BootstrapServers = appSettings.BootstrapServers };
         }
         public Object SendTransactionToKafka(TransactionModel model)
         {

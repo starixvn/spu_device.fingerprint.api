@@ -19,6 +19,7 @@ namespace DeviceFingerprint.WebAPI
 
         string Environment { get; }
 
+        string BootstrapServers { get; }
         string TransactionTopicName { get; }
         string FingerprintTopicName { get; }
     }
@@ -32,6 +33,8 @@ namespace DeviceFingerprint.WebAPI
         private readonly string encryptPassword;
         private readonly string sentryDsn;
         private readonly string environment;
+
+        private readonly string bootstrapServers;
         private readonly string transactionTopicname;
         private readonly string fingerprintTopicname;
 
@@ -49,8 +52,8 @@ namespace DeviceFingerprint.WebAPI
 
             environment = GetValue<string>("AppConfig:Environment");
 
+            bootstrapServers = GetValue<string>("KafkaConfig:BootstrapServers");
             transactionTopicname = GetValue<string>("KafkaConfig:TransactionTopicName");
-
             fingerprintTopicname = GetValue<string>("KafkaConfig:FingerprintTopicName");
         }
 
@@ -64,6 +67,7 @@ namespace DeviceFingerprint.WebAPI
 
         public string Environment => environment;
 
+        public string BootstrapServers => bootstrapServers;
         public string TransactionTopicName => transactionTopicname;
         public string FingerprintTopicName => fingerprintTopicname;
 

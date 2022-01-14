@@ -139,7 +139,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
                     };
                     var kafkaServices = new KafkaServices(appSettings);
                     kafkaServices.SendTransactionToKafka(transaction);
-                    //transactionService.InsertTransaction(transaction);
                 }
 
                 return true;
