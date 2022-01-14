@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Device.FingerPrint.Kafka;
+using Device.FingerPrint.Kafka.Handlers;
 using Device.FingerPrint.Kafka.Ultilities;
 using Fps.Device.FingerPrint.Features.Transaction.Services;
 using FPS.Device.FingerPrint.Model;
@@ -14,60 +15,25 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
 {
     public class KafkaConsumerHandler : IHostedService
     {
-        private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
-        private readonly ISentryClient sentryClient;
+        private readonly ITransactionService transactionService;
+        private readonly IKafkaHandler kafkaHandler;
 
-        public KafkaConsumerHandler(ITransactionService transactionService, IAppSettings appSettings, ISentryClient sentryClient)
+        public KafkaConsumerHandler(IAppSettings appSettings, ITransactionService transactionService, IKafkaHandler kafkaHandler)
         {
             this.transactionService = transactionService;
+            this.kafkaHandler = kafkaHandler;
             this.appSettings = appSettings;
-            this.sentryClient = sentryClient;
         }
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var conf = new ConsumerConfig
-            {
-                GroupId = appSettings.ConsumerGroupName,
-                BootstrapServers = appSettings.BootstrapServers,
-                AutoOffsetReset = AutoOffsetReset.Earliest,
-                EnableAutoCommit = false
-            };
-            using (var builder = new ConsumerBuilder<Ignore, string>(conf).Build())
-            {
-                builder.Subscribe(appSettings.TopicName);
-                var cancelToken = new CancellationTokenSource();
-                try
-                {
-                    int count = 0;
-                    List<TransactionModel> listTransaction = new List<TransactionModel>();
-                    while (true)
-                    {
-                        var consumer = builder.Consume(cancelToken.Token);
-                        var value = consumer.Message.Value;
-                        TransactionModel transactionModel = SerializationHelper.DeserializeJson<TransactionModel>(value);
-                        count++;
-                        listTransaction.Add(transactionModel);
-                        if (count == 10)
-                        {
-                            transactionService.InsertListTransaction(listTransaction);
-                            builder.Commit(consumer);
-                            count = 0;
-                            listTransaction = new List<TransactionModel>();
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-                }
-            }
-            return Task.CompletedTask;
+            var callback = new CallBack<TransactionModel>((list) => transactionService.InsertListTransaction(list));
+            return kafkaHandler.StartAsync<TransactionModel>(cancellationToken, appSettings, callback);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            return Task.CompletedTask;
+            return kafkaHandler.StopAsync(cancellationToken);
         }
     }
 }

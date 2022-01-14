@@ -14,6 +14,7 @@ using Sentry;
 using System.Collections.Generic;
 using System.Linq;
 using Device.FingerPrint.Kafka;
+using Device.FingerPrint.Kafka.Handlers;
 
 namespace Device.Fingerprint.InsertRawFingerprint
 {
@@ -32,6 +33,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
             services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
             services.AddSingleton<IFingerPrintService, FingerPrintService>();
             services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddSingleton<IKafkaHandler, KafkaHandler>();
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
             services.AddHealthChecks();

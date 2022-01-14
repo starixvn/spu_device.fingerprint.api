@@ -35,6 +35,7 @@ namespace Device.Fingerprint.InsertRawTransaction
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
             services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddSingleton<IKafkaHandler, KafkaHandler>();
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
             services.AddHealthChecks();
