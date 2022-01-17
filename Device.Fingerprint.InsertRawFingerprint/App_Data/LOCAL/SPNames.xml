@@ -2,6 +2,6 @@
 
 <Functions>
   <Function Name="Fingerprint">
-    <Setting Key="FP_InsertFingerPrint_New" SpName="FP_InsertFingerPrint_New" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FP_InsertFingerPrint" SpName="FP_InsertFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 </Functions>

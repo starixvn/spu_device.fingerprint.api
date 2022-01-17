@@ -3,6 +3,5 @@
 <Functions>
   <Function Name="Transaction">
     <Setting Key="FP_InsertTransaction" SpName="FP_InsertTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FP_InsertTransaction_New" SpName="FP_InsertTransaction_New" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 </Functions>

@@ -6,7 +6,6 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
 {
     public interface IFingerPrintDataAccess
     {
-        void InsertFingerPrint(FingerPrintEntity fingerPrint);
         void InsertJsonFingerPrint(string jsonFingerPrint);
 
         long UpdateCookie(string code);
@@ -21,22 +20,6 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Services
         public FingerPrintDataAccess()
         {
             repository = new DynamicRepository();
-        }
-
-        public void InsertFingerPrint(FingerPrintEntity fingerPrint)
-        {
-            var criteria = new InsertFingerPrintCriteria
-            {
-                FingerPrint = fingerPrint.FingerPrint,
-                SessionKey = fingerPrint.SessionKey,
-                SubscriberId = fingerPrint.SubscriberId,
-                Attributes = fingerPrint.Attributes,
-                DeviceInfo = fingerPrint.DeviceInfo,
-                DeviceCode = fingerPrint.DeviceCode,
-                CookieId = fingerPrint.CookieId
-            };
-
-            repository.Execute(criteria);
         }
 
         public void InsertJsonFingerPrint(string jsonFingerPrint)

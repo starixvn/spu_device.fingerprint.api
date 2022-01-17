@@ -10,7 +10,7 @@ namespace Fps.Device.FingerPrint.Features.FingerPrint.Criterias
 
         public override string GetSettingKey()
         {
-            return "FP_InsertFingerPrint_New";
+            return "FP_InsertFingerPrint";
         }
 
         public override bool IsValid()

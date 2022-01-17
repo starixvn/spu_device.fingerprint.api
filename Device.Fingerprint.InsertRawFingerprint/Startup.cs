@@ -38,6 +38,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
             services.AddHealthChecks();
+
             FanexDataConfig(appSettings);
             RegisterLogging(appSettings);
         }
@@ -80,8 +81,6 @@ namespace Device.Fingerprint.InsertRawFingerprint
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseRouting();
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {

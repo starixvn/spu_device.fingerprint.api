@@ -7,7 +7,6 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
-        void InsertTransaction(TransactionModel transaction);
         void InsertListTransaction(List<TransactionModel> transaction);
 
         void RecoverDevice(int batchSize);
@@ -20,20 +19,6 @@ namespace Fps.Device.FingerPrint.Features.Transaction.Services
         public TransactionService(ITransactionDataAccess transactionDataAccess)
         {
             this.transactionDataAccess = transactionDataAccess;
-        }
-
-        public void InsertTransaction(TransactionModel transaction)
-        {
-            transactionDataAccess.InsertTransaction(new TransactionEntity
-            {
-                LoginName = transaction.LoginName,
-                ClientIp = transaction.ClientIp,
-                SessionKey = transaction.SessionKey,
-                SubscriberId = transaction.SubscriberId,
-                TransTime = transaction.TransTime,
-                UserAgent = transaction.UserAgent,
-                Url = transaction.Url
-            });
         }
 
         public void InsertListTransaction(List<TransactionModel> listTransaction)
