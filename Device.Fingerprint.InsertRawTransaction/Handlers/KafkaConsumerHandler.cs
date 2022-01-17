@@ -22,8 +22,9 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
         }
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var callback = new CallBack<TransactionModel>((list) => transactionService.InsertListTransaction(list));
-            return kafkaHandler.StartAsync<TransactionModel>(cancellationToken, appSettings, callback);
+            var callback = new CallBack<TransactionModel>(x => transactionService.InsertListTransaction(x));
+
+            return kafkaHandler.StartAsync(cancellationToken, appSettings, callback);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

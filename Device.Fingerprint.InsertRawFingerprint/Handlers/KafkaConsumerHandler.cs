@@ -23,8 +23,9 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            var callback = new CallBack<FingerPrintEntity>((list) => fingerPrintService.InsertListFingerPrint(list));
-            return kafkaHandler.StartAsync<FingerPrintEntity>(cancellationToken, appSettings, callback);
+            var callback = new CallBack<FingerPrintEntity>(x => fingerPrintService.InsertListFingerPrint(x));
+
+            return kafkaHandler.StartAsync(cancellationToken, appSettings, callback);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
