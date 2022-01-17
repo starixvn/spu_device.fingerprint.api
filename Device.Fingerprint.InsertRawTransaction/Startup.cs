@@ -32,13 +32,15 @@ namespace Device.Fingerprint.InsertRawTransaction
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+            services.AddSingleton<IAppSettings>(appSettings);
+
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
-            services.AddSingleton<ITransactionService, TransactionService>();
-            services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddSingleton<ITransactionService, TransactionService>();            
             services.AddSingleton<IKafkaHandler, KafkaHandler>();
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
             services.AddHealthChecks();
+
             FanexDataConfig(appSettings);
             RegisterLogging(appSettings);
         }
@@ -64,7 +66,7 @@ namespace Device.Fingerprint.InsertRawTransaction
         private void RegisterLogging(IAppSettings appSettings)
         {
             LogManager
-                .SetDefaultLogCategory("DeviceFingerPrintWebAPI")
+                .SetDefaultLogCategory("Device.Fingerprint.InsertRawTransaction")
                 .Use(new List<ILogEngine>
                 {
                      new SentryLogging(new SentryEngineOptions {

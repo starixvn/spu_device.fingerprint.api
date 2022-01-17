@@ -10,15 +10,14 @@
   "profiles": {
     "IIS Express": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
+      "nativeDebugging": false,
       "applicationUrl": "http://localhost:5006"
     },
     "Device.Fingerprint.InsertRawTransaction": {
       "commandName": "Project",
-      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

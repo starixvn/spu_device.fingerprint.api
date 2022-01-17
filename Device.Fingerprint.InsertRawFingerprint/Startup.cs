@@ -30,9 +30,10 @@ namespace Device.Fingerprint.InsertRawFingerprint
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+            services.AddSingleton<IAppSettings>(appSettings);
+
             services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
-            services.AddSingleton<IFingerPrintService, FingerPrintService>();
-            services.AddSingleton<IAppSettings, AppSettings>();
+            services.AddSingleton<IFingerPrintService, FingerPrintService>();            
             services.AddSingleton<IKafkaHandler, KafkaHandler>();
             services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
@@ -62,7 +63,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
         private void RegisterLogging(IAppSettings appSettings)
         {
             LogManager
-                .SetDefaultLogCategory("DeviceFingerPrintWebAPI")
+                .SetDefaultLogCategory("Device.Fingerprint.InsertRawFingerprint")
                 .Use(new List<ILogEngine>
                 {
                      new SentryLogging(new SentryEngineOptions {
