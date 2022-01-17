@@ -2,6 +2,7 @@
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using FPS.Device.FingerPrint.Model;
+using Sentry;
 using System;
 
 namespace DeviceFingerprint.WebAPI.Services
@@ -9,11 +10,13 @@ namespace DeviceFingerprint.WebAPI.Services
     public class KafkaServices
     {
         private readonly IAppSettings appSettings;
+        private readonly ISentryClient sentryClient;
         private readonly ProducerConfig producerConfig;
 
-        public KafkaServices(IAppSettings appSettings)
+        public KafkaServices(IAppSettings appSettings, ISentryClient sentryClient)
         {
             this.appSettings = appSettings;
+            this.sentryClient = sentryClient;
             producerConfig = new ProducerConfig { BootstrapServers = appSettings.BootstrapServers };
         }
         public Object SendTransactionToKafka(TransactionModel model)
@@ -27,9 +30,9 @@ namespace DeviceFingerprint.WebAPI.Services
                         .GetAwaiter()
                         .GetResult();
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Oops, something went wrong: {e}");
+                    sentryClient.CaptureException(ex);
                 }
             }
             return null;
@@ -45,9 +48,9 @@ namespace DeviceFingerprint.WebAPI.Services
                         .GetAwaiter()
                         .GetResult();
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    Console.WriteLine($"Oops, something went wrong: {e}");
+                    sentryClient.CaptureException(ex);
                 }
             }
             return null;

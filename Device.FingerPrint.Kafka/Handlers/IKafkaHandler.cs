@@ -1,7 +1,5 @@
 ﻿using Confluent.Kafka;
 using Device.FingerPrint.Kafka.Ultilities;
-using Fps.Device.FingerPrint.Features.FingerPrint.Model;
-using Microsoft.Extensions.Hosting;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -21,6 +19,11 @@ namespace Device.FingerPrint.Kafka.Handlers
     public class KafkaHandler : IKafkaHandler
     {
         private readonly ISentryClient sentryClient;
+
+        public KafkaHandler(ISentryClient sentryClient)
+        {
+            this.sentryClient = sentryClient;
+        }
 
         public Task StartAsync<T>(CancellationToken cancellationToken, IAppSettings appSettings, CallBack<T> callback)
         {

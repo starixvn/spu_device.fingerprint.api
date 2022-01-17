@@ -1,13 +1,8 @@
-﻿using Confluent.Kafka;
-using Device.FingerPrint.Kafka;
+﻿using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers;
-using Device.FingerPrint.Kafka.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
 using Microsoft.Extensions.Hosting;
-using Sentry;
-using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,6 +20,7 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
             this.kafkaHandler = kafkaHandler;
             this.appSettings = appSettings;
         }
+
         public Task StartAsync(CancellationToken cancellationToken)
         {
             var callback = new CallBack<FingerPrintEntity>((list) => fingerPrintService.InsertListFingerPrint(list));
