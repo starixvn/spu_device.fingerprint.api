@@ -2,58 +2,45 @@
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using FPS.Device.FingerPrint.Model;
-using Sentry;
-using System;
 
 namespace DeviceFingerprint.WebAPI.Services
 {
-    public class KafkaServices
+    public interface IKafkaServices
+    {
+        public bool SendTransactionToKafka(TransactionModel model);
+        public void SendFingerprintToKafka(FingerPrintEntity model);
+    }
+    public class KafkaServices : IKafkaServices
     {
         private readonly IAppSettings appSettings;
-        private readonly ISentryClient sentryClient;
         private readonly ProducerConfig producerConfig;
 
-        public KafkaServices(IAppSettings appSettings, ISentryClient sentryClient)
+        public KafkaServices(IAppSettings appSettings)
         {
             this.appSettings = appSettings;
-            this.sentryClient = sentryClient;
             producerConfig = new ProducerConfig { BootstrapServers = appSettings.BootstrapServers };
         }
-        public Object SendTransactionToKafka(TransactionModel model)
+        public bool SendTransactionToKafka(TransactionModel model)
         {
             using (var producer = new ProducerBuilder<Null, string>(producerConfig).Build())
             {
-                try
-                {
-                    string message = SerializationHelper.SerializeJson(model);
-                    return producer.ProduceAsync(appSettings.TransactionTopicName, new Message<Null, string> { Value = message })
-                        .GetAwaiter()
-                        .GetResult();
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-                }
+                var message = SerializationHelper.SerializeJson(model);
+                var result = producer.ProduceAsync(appSettings.TransactionTopicName, new Message<Null, string> { Value = message })
+                            .GetAwaiter()
+                            .GetResult();
+                if (result != null) return true;
+                return false;
             }
-            return null;
         }
-        public Object SendFingerprintToKafka(FingerPrintEntity model)
+        public void SendFingerprintToKafka(FingerPrintEntity model)
         {
             using (var producer = new ProducerBuilder<Null, string>(producerConfig).Build())
             {
-                try
-                {
-                    string message = SerializationHelper.SerializeJson(model);
-                    return producer.ProduceAsync(appSettings.FingerprintTopicName, new Message<Null, string> { Value = message })
-                        .GetAwaiter()
-                        .GetResult();
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-                }
+                var message = SerializationHelper.SerializeJson(model);
+                producer.ProduceAsync(appSettings.FingerprintTopicName, new Message<Null, string> { Value = message })
+                    .GetAwaiter()
+                    .GetResult();
             }
-            return null;
         }
     }
 }

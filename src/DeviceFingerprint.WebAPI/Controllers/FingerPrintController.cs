@@ -1,5 +1,4 @@
-﻿using Confluent.Kafka;
-using DeviceFingerprint.WebAPI.Services;
+﻿using DeviceFingerprint.WebAPI.Services;
 using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
@@ -13,9 +12,7 @@ using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Xml.Serialization;
 
 namespace DeviceFingerprint.WebAPI.Controllers
 {
@@ -29,13 +26,15 @@ namespace DeviceFingerprint.WebAPI.Controllers
         private readonly IFingerPrintService fingerPrintService;
         private readonly ITransactionService transactionService;
         private readonly ISubscriberServices subscriberServices;
+        private readonly IKafkaServices kafkaServices;
 
         public FingerPrintController(ISentryClient sentryClient,
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             IFingerPrintService fingerPrintService,
             ITransactionService transactionService,
-            ISubscriberServices subscriberServices)
+            ISubscriberServices subscriberServices,
+            IKafkaServices kafkaServices)
         {
             this.sentryClient = sentryClient;
             this.environment = Environment;
@@ -43,6 +42,7 @@ namespace DeviceFingerprint.WebAPI.Controllers
             this.fingerPrintService = fingerPrintService;
             this.transactionService = transactionService;
             this.subscriberServices = subscriberServices;
+            this.kafkaServices = kafkaServices;
         }
 
         [HttpGet("scr/{subscriberId}")]
@@ -110,7 +110,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         DeviceCode = fingerPrint.DeviceCode,
                         CookieId = fingerPrint.CookieId
                     };
-                    var kafkaServices = new KafkaServices(appSettings);
                     kafkaServices.SendFingerprintToKafka(fingerPrintEntity);
                 }
             }
@@ -137,18 +136,15 @@ namespace DeviceFingerprint.WebAPI.Controllers
                         UserAgent = data.UserAgent,
                         Url = data.Url
                     };
-                    var kafkaServices = new KafkaServices(appSettings);
-                    kafkaServices.SendTransactionToKafka(transaction);
+                    return kafkaServices.SendTransactionToKafka(transaction);
                 }
-
-                return true;
+                return false;
             }
             catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
+                return false;
             }
-
-            return false;
         }
 
         [HttpGet("subscriber/{subscriberId}")]
