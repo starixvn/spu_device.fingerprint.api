@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers;
+using Microsoft.AspNetCore.Http;
 
 namespace Device.Fingerprint.InsertRawFingerprint
 {
@@ -35,7 +36,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
             services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
             services.AddSingleton<IFingerPrintService, FingerPrintService>();            
             services.AddSingleton<IKafkaHandler, KafkaHandler>();
-            services.AddSingleton<IHostedService, KafkaConsumerHandler>();
+            //services.AddSingleton<IHostedService, KafkaConsumerHandler>();
 
             services.AddHealthChecks();
 
@@ -82,9 +83,19 @@ namespace Device.Fingerprint.InsertRawFingerprint
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseRouting();
+
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
                 Predicate = _ => true
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapGet("/", async context =>
+                {
+                    await context.Response.WriteAsync("Hello World!");
+                });
             });
         }
     }

@@ -88,6 +88,8 @@ namespace Device.Fingerprint.InsertRawTransaction
             {
                 Predicate = _ => true
             });
+
+            app.UseRouting();
         }
     }
 }

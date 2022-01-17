@@ -35,9 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InsertRa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InsertRawFingerprint", "Device.Fingerprint.InsertRawFingerprint\Device.Fingerprint.InsertRawFingerprint.csproj", "{00BE878A-6264-4150-B863-9E00A6BD73B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.Kafka", "Device.FingerPrint.Kafka\Device.FingerPrint.Kafka.csproj", "{6C1B7A82-D655-4F72-B60C-6445076C144A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Kafka", "Device.FingerPrint.Kafka\Device.FingerPrint.Kafka.csproj", "{6C1B7A82-D655-4F72-B60C-6445076C144A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.JobManagement", "Device.FingerPrint.JobManagement\Device.FingerPrint.JobManagement.csproj", "{2FF3C8C6-2EFF-4FF2-9258-E52BF9C57A95}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.JobManagement", "Device.FingerPrint.JobManagement\Device.FingerPrint.JobManagement.csproj", "{2FF3C8C6-2EFF-4FF2-9258-E52BF9C57A95}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

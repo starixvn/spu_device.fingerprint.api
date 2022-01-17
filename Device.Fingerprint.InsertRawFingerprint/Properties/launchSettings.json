@@ -18,9 +18,11 @@
     },
     "Device.Fingerprint.InsertRawFingerprint": {
       "commandName": "Project",
+      "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
+      "ancmHostingModel": "OutOfProcess",
       "dotnetRunMessages": "true",
       "applicationUrl": "https://localhost:5005"
     }
