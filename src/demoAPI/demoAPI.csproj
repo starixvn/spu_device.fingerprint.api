@@ -188,9 +188,9 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Fps.Device.FingerPrint.Client.Net.Framework\Fps.Device.FingerPrint.Client.Net.Framework.csproj">
+    <ProjectReference Include="..\Fps.Device.FingerPrint.Net.Framework.Client\FPS.Device.FingerPrint.Net.Framework.Client.csproj">
       <Project>{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}</Project>
-      <Name>Fps.Device.FingerPrint.Client.Net.Framework</Name>
+      <Name>FPS.Device.FingerPrint.Net.Framework.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>

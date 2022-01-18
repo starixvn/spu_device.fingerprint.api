@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace DeviceFingerprint.WebAPI.Ultilities
+namespace Device.Fingerprint.WebAPI.Ultilities
 {
     public class Crypto
     {

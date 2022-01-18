@@ -2,7 +2,7 @@
 using System.IO;
 using System.Xml.Serialization;
 
-namespace DeviceFingerprint.WebAPI.Ultilities
+namespace Device.Fingerprint.WebAPI.Ultilities
 {
     public static class SerializationHelper
     {

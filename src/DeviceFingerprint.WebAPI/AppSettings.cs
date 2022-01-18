@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeviceFingerprint.WebAPI
+namespace Device.Fingerprint.WebAPI
 {
     public interface IAppSettings
     {

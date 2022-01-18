@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace DeviceFingerprint.WebAPI.Ultilities
+namespace Device.Fingerprint.WebAPI.Ultilities
 {
     public class BundleFile
     {

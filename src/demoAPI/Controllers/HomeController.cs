@@ -1,4 +1,4 @@
-﻿using Fps.Device.FingerPrint.Client.Net.Framework;
+﻿using Fps.Device.FingerPrint.Net.Framework.Client;
 using System;
 using System.Configuration;
 using System.Web.Mvc;

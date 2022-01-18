@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Text;
 
-namespace DeviceFingerprint.WebAPI.Services
+namespace Device.Fingerprint.WebAPI.Services
 {
     public class BundleContent
     {

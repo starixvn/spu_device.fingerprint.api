@@ -1,5 +1,5 @@
 ﻿
-namespace DeviceFingerprint.WebAPI.Models
+namespace Device.Fingerprint.WebAPI.Models
 {
     public class FPResultModel
     {

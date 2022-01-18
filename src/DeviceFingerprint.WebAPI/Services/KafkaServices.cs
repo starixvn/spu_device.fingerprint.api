@@ -1,9 +1,9 @@
 ﻿using Confluent.Kafka;
-using DeviceFingerprint.WebAPI.Ultilities;
-using Fps.Device.FingerPrint.Features.FingerPrint.Model;
-using FPS.Device.FingerPrint.Model;
+using Device.Fingerprint.WebAPI.Ultilities;
+using Device.FingerPrint.Features.FingerPrint.Model;
+using Device.FingerPrint.Model;
 
-namespace DeviceFingerprint.WebAPI.Services
+namespace Device.Fingerprint.WebAPI.Services
 {
     public interface IKafkaServices
     {

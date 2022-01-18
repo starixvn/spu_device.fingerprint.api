@@ -1,4 +1,4 @@
-﻿using DeviceFingerprint.WebAPI.Services;
+﻿using Device.Fingerprint.WebAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -7,7 +7,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeviceFingerprint.WebAPI.Middleware
+namespace Device.Fingerprint.WebAPI.Middleware
 {
     public class JWTMiddleware
     {

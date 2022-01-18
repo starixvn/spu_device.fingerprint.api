@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DeviceFingerprint.WebAPI.Services
+namespace Device.Fingerprint.WebAPI.Services
 {
     public class JavascriptResult : ContentResult
     {

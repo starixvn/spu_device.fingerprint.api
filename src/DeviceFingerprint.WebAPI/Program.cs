@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace DeviceFingerprint.WebAPI
+namespace Device.Fingerprint.WebAPI
 {
     public class Program
     {
@@ -24,7 +24,11 @@ namespace DeviceFingerprint.WebAPI
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+#if DEBUG
+                    webBuilder.UseUrls("http://*:5007");
+#else
                     webBuilder.UseUrls("http://*:5000");
+#endif 
 
                     webBuilder
                     .UseSentry()

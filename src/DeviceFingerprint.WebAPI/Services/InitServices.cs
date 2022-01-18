@@ -1,9 +1,9 @@
-﻿using Fps.Device.FingerPrint.Features.FingerPrint.Services;
-using Fps.Device.FingerPrint.Features.Subscriber.Services;
-using Fps.Device.FingerPrint.Features.Transaction.Services;
+﻿using Device.FingerPrint.Features.FingerPrint.Services;
+using Device.FingerPrint.Features.Subscriber.Services;
+using Device.FingerPrint.Features.Transaction.Services;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace DeviceFingerprint.WebAPI.Services
+namespace Device.Fingerprint.WebAPI.Services
 {
     public static class InitServices
     {

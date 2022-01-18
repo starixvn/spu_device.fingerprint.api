@@ -1,9 +1,9 @@
-﻿using DeviceFingerprint.WebAPI.Services;
-using DeviceFingerprint.WebAPI.Ultilities;
-using Fps.Device.FingerPrint.Features.FingerPrint.Model;
-using Fps.Device.FingerPrint.Features.FingerPrint.Services;
-using Fps.Device.FingerPrint.Features.Subscriber.Services;
-using FPS.Device.FingerPrint.Model;
+﻿using Device.Fingerprint.WebAPI.Services;
+using Device.Fingerprint.WebAPI.Ultilities;
+using Device.FingerPrint.Features.FingerPrint.Model;
+using Device.FingerPrint.Features.FingerPrint.Services;
+using Device.FingerPrint.Features.Subscriber.Services;
+using Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DeviceFingerprint.WebAPI.Controllers
+namespace Device.Fingerprint.WebAPI.Controllers
 {
     [Route("api/fp")]
     [ApiController]

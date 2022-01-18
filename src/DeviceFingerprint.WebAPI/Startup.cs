@@ -1,5 +1,5 @@
-using DeviceFingerprint.WebAPI.Middleware;
-using DeviceFingerprint.WebAPI.Services;
+using Device.Fingerprint.WebAPI.Middleware;
+using Device.Fingerprint.WebAPI.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DeviceFingerprint.WebAPI
+namespace Device.Fingerprint.WebAPI
 {
     public class Startup
     {
@@ -55,7 +55,7 @@ namespace DeviceFingerprint.WebAPI
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>
             {
-                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "DeviceFingerprint.WebAPI", Version = "v1" });
+                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });
                 // To Enable authorization using Swagger (JWT)
                 swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
                 {
@@ -115,7 +115,7 @@ namespace DeviceFingerprint.WebAPI
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DeviceFingerprint.WebAPI v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
             }
 
             app.UseCors(options => options
