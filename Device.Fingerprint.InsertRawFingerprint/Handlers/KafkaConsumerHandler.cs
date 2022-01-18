@@ -8,29 +8,27 @@ using System.Threading.Tasks;
 
 namespace Device.Fingerprint.InsertRawFingerprint.Handlers
 {
-    public class KafkaConsumerHandler : IHostedService
+    public class KafkaConsumerHandler : BackgroundService
     {
-        private readonly IAppSettings appSettings;
         private readonly IFingerPrintService fingerPrintService;
-        private readonly IKafkaHandler kafkaHandler;
+        private readonly IRequestTimeConsumer requestTimeConsumer;
 
-        public KafkaConsumerHandler(IAppSettings appSettings, IFingerPrintService fingerPrintService, IKafkaHandler kafkaHandler)
+        public KafkaConsumerHandler(IFingerPrintService fingerPrintService, IRequestTimeConsumer requestTimeConsumer)
         {
             this.fingerPrintService = fingerPrintService;
-            this.kafkaHandler = kafkaHandler;
-            this.appSettings = appSettings;
+            this.requestTimeConsumer = requestTimeConsumer;
         }
 
-        public Task StartAsync(CancellationToken cancellationToken)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            new Thread(() => StartConsumerLoop(stoppingToken)).Start();
+
+            return Task.CompletedTask;
+        }
+        private void StartConsumerLoop(CancellationToken cancellationToken)
         {
             var callback = new CallBack<FingerPrintEntity>(x => fingerPrintService.InsertListFingerPrint(x));
-
-            return kafkaHandler.StartAsync(cancellationToken, appSettings, callback);
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return kafkaHandler.StopAsync(cancellationToken);
+            requestTimeConsumer.StartConsumerLoop<FingerPrintEntity>(cancellationToken, callback);
         }
     }
 }

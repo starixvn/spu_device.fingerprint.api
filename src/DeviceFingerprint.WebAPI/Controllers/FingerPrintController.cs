@@ -3,7 +3,6 @@ using DeviceFingerprint.WebAPI.Ultilities;
 using Fps.Device.FingerPrint.Features.FingerPrint.Model;
 using Fps.Device.FingerPrint.Features.FingerPrint.Services;
 using Fps.Device.FingerPrint.Features.Subscriber.Services;
-using Fps.Device.FingerPrint.Features.Transaction.Services;
 using FPS.Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
@@ -24,7 +23,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly IFingerPrintService fingerPrintService;
-        private readonly ITransactionService transactionService;
         private readonly ISubscriberServices subscriberServices;
         private readonly IKafkaServices kafkaServices;
 
@@ -32,7 +30,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             IFingerPrintService fingerPrintService,
-            ITransactionService transactionService,
             ISubscriberServices subscriberServices,
             IKafkaServices kafkaServices)
         {
@@ -40,7 +37,6 @@ namespace DeviceFingerprint.WebAPI.Controllers
             this.environment = Environment;
             this.appSettings = appSettings;
             this.fingerPrintService = fingerPrintService;
-            this.transactionService = transactionService;
             this.subscriberServices = subscriberServices;
             this.kafkaServices = kafkaServices;
         }
