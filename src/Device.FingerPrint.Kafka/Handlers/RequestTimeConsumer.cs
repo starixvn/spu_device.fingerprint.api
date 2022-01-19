@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using Device.FingerPrint.Kafka.Ultilities;
 using Microsoft.Extensions.Configuration;
-using Sentry;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Device.FingerPrint.Kafka.Handlers
 {
@@ -17,13 +15,10 @@ namespace Device.FingerPrint.Kafka.Handlers
     {
         private readonly string topic;
         private readonly int numberOfRecordsProcessIn1Time;
-        private readonly IConsumer<Ignore, string> kafkaConsumer;
-        private readonly ISentryClient sentryClient;
+        private readonly IConsumer<Ignore, string> kafkaConsumer;        
 
-        public RequestTimeConsumer(IConfiguration config, ISentryClient sentryClient)
-        {
-            this.sentryClient = sentryClient;
-
+        public RequestTimeConsumer(IConfiguration config)
+        {            
             var consumerConfig = new ConsumerConfig();
             config.GetSection("KafkaConfig:ConsumerSettings").Bind(consumerConfig);
             topic = config.GetValue<string>("KafkaConfig:TopicName");
@@ -37,27 +32,25 @@ namespace Device.FingerPrint.Kafka.Handlers
 
             int count = 0;
             var listEntity = new List<T>();
+
             while (!cancellationToken.IsCancellationRequested)
             {
-                try
-                { 
-                    var consumer = this.kafkaConsumer.Consume(cancellationToken);
-                    var value = consumer.Message.Value;
-                    var entity = SerializationHelper.DeserializeJson<T>(value);
+                var consumer = this.kafkaConsumer.Consume(cancellationToken);
+                if (!string.IsNullOrWhiteSpace(consumer.Message.Value))
+                {
+                    var entity = SerializationHelper.DeserializeJson<T>(consumer.Message.Value);
                     count++;
                     listEntity.Add(entity);
-                    if (count == numberOfRecordsProcessIn1Time)
+
+                    if (count >= numberOfRecordsProcessIn1Time)
                     {
                         callback(listEntity);
+
                         kafkaConsumer.Commit(consumer);
+
                         count = 0;
-                        listEntity = new List<T>();
+                        listEntity.Clear();
                     }
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-                    break;
                 }
             }
         }

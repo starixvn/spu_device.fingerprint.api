@@ -1,9 +1,13 @@
-﻿using Device.FingerPrint.Features.FingerPrint.Services;
+﻿using Device.FingerPrint.Features.FingerPrint.Model;
+using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Kafka.Handlers;
 using Device.FingerPrint.Model;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Linq;
+using Sentry;
+using System;
 
 namespace Device.Fingerprint.InsertRawFingerprint.Handlers
 {
@@ -11,9 +15,11 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
     {
         private readonly IFingerPrintService fingerPrintService;
         private readonly IRequestTimeConsumer requestTimeConsumer;
+        private readonly ISentryClient sentryClient;
 
-        public KafkaConsumerHandler(IFingerPrintService fingerPrintService, IRequestTimeConsumer requestTimeConsumer)
+        public KafkaConsumerHandler(IFingerPrintService fingerPrintService, IRequestTimeConsumer requestTimeConsumer, ISentryClient sentryClient)
         {
+            this.sentryClient = sentryClient;
             this.fingerPrintService = fingerPrintService;
             this.requestTimeConsumer = requestTimeConsumer;
         }
@@ -26,8 +32,37 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
         }
         private void StartConsumerLoop(CancellationToken cancellationToken)
         {
-            var callback = new CallBack<FingerPrintModel>(x => fingerPrintService.InsertListFingerPrint(x));
-            requestTimeConsumer.StartConsumerLoop<FingerPrintModel>(cancellationToken, callback);
+            try
+            {
+                var callback = new CallBack<FingerPrintModel>(x =>
+                       {
+                           var result = x.Select(a => TranformFingerPrint(a));
+
+                           fingerPrintService.InsertListFingerPrint(result);
+                       }
+                 );
+
+                requestTimeConsumer.StartConsumerLoop(cancellationToken, callback);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
         }
+
+        private FingerPrintEntity TranformFingerPrint(FingerPrintModel model)
+        {
+            return new FingerPrintEntity
+            {
+                Attributes = model.Attributes,
+                CookieId = model.CookieId,
+                DeviceCode = model.DeviceCode,
+                DeviceInfo = model.DeviceInfo,
+                FingerPrint = model.FingerPrint,
+                SessionKey = model.SessionKey,
+                SubscriberId = model.SubscriberId
+            };
+        }
+
     }
 }
