@@ -4,6 +4,7 @@ WORKDIR /src
 
 COPY ["./src/Device.Fingerprint.InsertRawTransaction", "Device.Fingerprint.InsertRawTransaction/"]
 
+COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 COPY ["./src/Device.FingerPrint.Kafka", "Device.FingerPrint.Kafka/"]
 
