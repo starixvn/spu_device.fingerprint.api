@@ -1,7 +1,6 @@
-﻿using Device.FingerPrint.Kafka;
+﻿using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Kafka.Handlers;
-using Device.FingerPrint.Features.FingerPrint.Model;
-using Device.FingerPrint.Features.FingerPrint.Services;
+using Device.FingerPrint.Model;
 using Microsoft.Extensions.Hosting;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,8 +26,8 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
         }
         private void StartConsumerLoop(CancellationToken cancellationToken)
         {
-            var callback = new CallBack<FingerPrintEntity>(x => fingerPrintService.InsertListFingerPrint(x));
-            requestTimeConsumer.StartConsumerLoop<FingerPrintEntity>(cancellationToken, callback);
+            var callback = new CallBack<FingerPrintModel>(x => fingerPrintService.InsertListFingerPrint(x));
+            requestTimeConsumer.StartConsumerLoop<FingerPrintModel>(cancellationToken, callback);
         }
     }
 }

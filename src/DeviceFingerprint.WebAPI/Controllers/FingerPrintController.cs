@@ -96,7 +96,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
-                    FingerPrintEntity fingerPrintEntity = new FingerPrintEntity
+                    FingerPrintModel fingerPrintModel = new FingerPrintModel
                     {
                         FingerPrint = fingerPrint.FingerPrintCode,
                         Attributes = fingerPrint.FingerPrint,
@@ -106,7 +106,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         DeviceCode = fingerPrint.DeviceCode,
                         CookieId = fingerPrint.CookieId
                     };
-                    kafkaServices.SendFingerprintToKafka(fingerPrintEntity);
+                    kafkaServices.SendFingerprintToKafka(fingerPrintModel);
                 }
             }
             catch (Exception ex)

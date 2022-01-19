@@ -1,6 +1,5 @@
 ﻿using Confluent.Kafka;
 using Device.Fingerprint.WebAPI.Ultilities;
-using Device.FingerPrint.Features.FingerPrint.Model;
 using Device.FingerPrint.Model;
 
 namespace Device.Fingerprint.WebAPI.Services
@@ -8,7 +7,7 @@ namespace Device.Fingerprint.WebAPI.Services
     public interface IKafkaServices
     {
         public bool SendTransactionToKafka(TransactionModel model);
-        public void SendFingerprintToKafka(FingerPrintEntity model);
+        public void SendFingerprintToKafka(FingerPrintModel model);
     }
     public class KafkaServices : IKafkaServices
     {
@@ -32,7 +31,7 @@ namespace Device.Fingerprint.WebAPI.Services
                 return false;
             }
         }
-        public void SendFingerprintToKafka(FingerPrintEntity model)
+        public void SendFingerprintToKafka(FingerPrintModel model)
         {
             using (var producer = new ProducerBuilder<Null, string>(producerConfig).Build())
             {
