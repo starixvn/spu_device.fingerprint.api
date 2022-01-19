@@ -9,4 +9,8 @@ include:
     
   - project: "ci/repos-ci/spu_fps_fp_raw_fp_insert_service"
     ref: master
+    file: "gitlab-ci-mixing.yml"
+    
+  - project: "ci/repos-ci/spu_fps_fp_api_job_service"
+    ref: master
     file: "gitlab-ci-mixing.yml"    
