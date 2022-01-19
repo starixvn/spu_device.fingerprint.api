@@ -2,21 +2,23 @@ FROM registry.nexdev.net:5050/docker/dotnet/core/sdk:5.0.102-ca-patch-buster-sli
 
 WORKDIR /src
 
-COPY ["./src/Fps.Device.FingerPrint", "Fps.Device.FingerPrint/"]
+COPY ["./src/Device.Fingerprint.InsertRawTransaction", "Device.Fingerprint.InsertRawTransaction/"]
 
-COPY ["./src/FPS.Device.FingerPrint.Model", "FPS.Device.FingerPrint.Model/"]
+COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
+COPY ["./src/Device.FingerPrint.Kafka", "Device.FingerPrint.Kafka/"]
 
-COPY ["./src/DeviceFingerprint.WebAPI/DeviceFingerprint.WebAPI.csproj", "DeviceFingerprint.WebAPI/"]
 
-WORKDIR "/src/DeviceFingerprint.WebAPI"
+COPY ["./src/Device.Fingerprint.InsertRawTransaction/Device.Fingerprint.InsertRawTransaction.csproj", "Device.Fingerprint.InsertRawTransaction/"]
+
+WORKDIR "/src/Device.Fingerprint.InsertRawTransaction"
 
 RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
 
 RUN dotnet restore -v n
 
-COPY ./src/DeviceFingerprint.WebAPI .
+COPY ./src/Device.Fingerprint.InsertRawTransaction .
 
-RUN dotnet publish -r linux-x64 --self-contained false -o /app
+RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 
 FROM registry.nexdev.net:5050/docker/dotnet/core/aspnet:5.0-buster-slim AS base
 
@@ -31,4 +33,4 @@ COPY --from=builder /app .
 
 ENV TZ="America/La_Paz"
 
-ENTRYPOINT ["dotnet", "DeviceFingerprint.WebAPI.dll"]
+ENTRYPOINT ["dotnet", "Device.Fingerprint.InsertRawTransaction.dll"]
