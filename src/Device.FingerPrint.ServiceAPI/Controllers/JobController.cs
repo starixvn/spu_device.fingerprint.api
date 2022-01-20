@@ -37,5 +37,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                 return false;
             }
         }
+
+        [HttpGet("testing")]
+        public string Test()
+        {
+            return "testing";
+        }
     }
 }

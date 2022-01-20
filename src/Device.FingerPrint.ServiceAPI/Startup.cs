@@ -32,6 +32,7 @@ namespace Device.FingerPrint.ServiceAPI
             services.AddSingleton<IAppSettings>(appSettings);
 
             services.AddControllers();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.FingerPrint.ServiceAPI", Version = "v1" });
@@ -50,10 +51,11 @@ namespace Device.FingerPrint.ServiceAPI
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-                app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.FingerPrint.ServiceAPI v1"));
+                app.UseDeveloperExceptionPage();                
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.FingerPrint.ServiceAPI v1"));
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
