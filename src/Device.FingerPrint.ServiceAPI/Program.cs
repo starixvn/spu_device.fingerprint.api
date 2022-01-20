@@ -24,7 +24,11 @@ namespace Device.FingerPrint.ServiceAPI
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+#if DEBUG
+                    webBuilder.UseUrls("http://*:5008");
+#else
                     webBuilder.UseUrls("http://*:5000");
+#endif
 
                     webBuilder
                     .UseSentry()
