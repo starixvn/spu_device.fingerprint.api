@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using SilkierQuartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,7 @@ namespace Device.FingerPrint.JobManagement
                     webBuilder
                     .UseSentry()
                     .UseStartup<Startup>();
-                });
+                })
+                    .ConfigureSilkierQuartzHost();
     }
 }

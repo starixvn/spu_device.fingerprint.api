@@ -7,10 +7,11 @@
   <ItemGroup>
     <PackageReference Include="Fanex.Logging.Extensions" Version="1.0.6" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
-    <PackageReference Include="Hangfire.AspNetCore" Version="1.7.28" />
-    <PackageReference Include="Hangfire.Dashboard.Basic.Authentication" Version="5.0.0" />
-    <PackageReference Include="Hangfire.MySqlStorage" Version="2.0.3" />
+    <PackageReference Include="Quartz" Version="3.3.3" />
+    <PackageReference Include="Quartz.Extensions.DependencyInjection" Version="3.3.3" />
     <PackageReference Include="Sentry.AspNetCore" Version="2.1.8" />
+    <PackageReference Include="SilkierQuartz" Version="5.0.309" />
+    <PackageReference Include="SilkierQuartz.Plugins.RecentHistory" Version="5.0.309" />
   </ItemGroup>
 
 </Project>

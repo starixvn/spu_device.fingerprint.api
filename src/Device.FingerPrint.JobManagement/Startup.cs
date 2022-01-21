@@ -1,17 +1,15 @@
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
-using Hangfire;
-using Hangfire.MySql;
-using HangfireBasicAuthenticationFilter;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Quartz;
 using Sentry;
-using System;
+using SilkierQuartz;
 using System.Collections.Generic;
-using System.Transactions;
 
 namespace Device.FingerPrint.JobManagement
 {
@@ -30,31 +28,35 @@ namespace Device.FingerPrint.JobManagement
         {
             var appSettings = new AppSettings(this.Configuration);
 
-            services.AddHangfire((provider, configuration) => configuration
-                        .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-                        .UseSimpleAssemblyNameTypeSerializer());
+            services.AddRazorPages();
 
-            services.AddHostedService<RecurringJobsService>();
-            services.AddHangfireServer(options =>
+            services.Configure<QuartzOptions>(options =>
             {
-                options.StopTimeout = TimeSpan.FromSeconds(15);
-                options.ShutdownTimeout = TimeSpan.FromSeconds(30);                                
+                options.Scheduling.IgnoreDuplicates = true; // default: false
+                options.Scheduling.OverWriteExistingData = true; // default: true
             });
 
-            GlobalConfiguration.Configuration.UseStorage(
-                new MySqlStorage(
-                "server=10.18.200.72;Port=3306;uid=fpsAPIAdmin;pwd=Welcome1;database=FPS_FingerPrint_Jobs;Allow User Variables=True",
-                new MySqlStorageOptions
+            services.AddSilkierQuartz(options =>
+            {
+                options.VirtualPathRoot = "/jobs";
+                options.UseLocalTime = true;
+                options.DefaultDateFormat = "yyyy-MM-dd";
+                options.DefaultTimeFormat = "HH:mm:ss";
+                options.CronExpressionOptions = new CronExpressionDescriptor.Options()
                 {
-                    TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-                    QueuePollInterval = TimeSpan.FromSeconds(15),
-                    JobExpirationCheckInterval = TimeSpan.FromHours(1),
-                    CountersAggregateInterval = TimeSpan.FromMinutes(5),
-                    PrepareSchemaIfNecessary = true,
-                    DashboardJobListLimit = 50000,
-                    TransactionTimeout = TimeSpan.FromMinutes(1),
-                    TablesPrefix = "fp_"
-                }));
+                    DayOfWeekStartIndexZero = false //Quartz uses 1-7 as the range
+                };
+                options.ProductName = "Device FingerPrint";               
+            },
+            authenticationOptions =>
+            {
+                authenticationOptions.AuthScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                authenticationOptions.SilkierQuartzClaim = "Silkier";
+                authenticationOptions.SilkierQuartzClaimValue = "Quartz";
+                authenticationOptions.UserName = "admin";
+                authenticationOptions.UserPassword = "admin";
+                authenticationOptions.AccessRequirement = SilkierQuartzAuthenticationOptions.SimpleAccessRequirement.AllowOnlyUsersWithClaim;
+            });
 
             RegisterLogging(appSettings);
         }
@@ -67,15 +69,12 @@ namespace Device.FingerPrint.JobManagement
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHangfireDashboard("/jobs", new DashboardOptions
-            {
-                Authorization = new[] { new HangfireCustomBasicAuthenticationFilter { User = "admin", Pass = "admin" } },
-                DisplayStorageConnectionString = false,
-                DashboardTitle = "ASP.Net Core Hangfire Management",
-                StatsPollingInterval = 5000
-            });
-
+            app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseSilkierQuartz();
 
             app.UseEndpoints(endpoints =>
             {

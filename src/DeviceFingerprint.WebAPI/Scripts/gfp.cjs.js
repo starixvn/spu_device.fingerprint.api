@@ -235,8 +235,9 @@ function initStorage() {
     return Promise.resolve(localForageDrives);
 }
 function isWebSQL() {
-    const supports_webSQL = "openDatabase" in window;
-    return supports_webSQL;
+    if (!window.openDatabase)
+        return false;
+    return true;
 }
 function isIndexDB() {
     if (window.indexedDB)
