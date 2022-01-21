@@ -13174,32 +13174,35 @@ var globalFP = (function (exports) {
 
     function initStorage() {
         let localForageDrives = [];
-        localForageDrives.push(localForage.INDEXEDDB);
-        localForageDrives.push(localForage.WEBSQL);
-        localForageDrives.push(localForage.LOCALSTORAGE);
-        // if (isIndexDB()) {
-        //   localForageDrives.push(localForage.INDEXEDDB);
-        // }
-        // if (isWebSQL()) {
-        //   localForageDrives.push(localForage.WEBSQL);
-        // }
-        // if (isLocalStorage()) {
-        //   localForageDrives.push(localForage.LOCALSTORAGE);
-        // }
+        // localForageDrives.push(localForage.INDEXEDDB);
+        // localForageDrives.push(localForage.WEBSQL);
+        // localForageDrives.push(localForage.LOCALSTORAGE);
+        if (isIndexDB()) {
+            localForageDrives.push(localForage.INDEXEDDB);
+        }
+        if (isWebSQL()) {
+            localForageDrives.push(localForage.WEBSQL);
+        }
+        if (isLocalStorage()) {
+            localForageDrives.push(localForage.LOCALSTORAGE);
+        }
         return Promise.resolve(localForageDrives);
     }
-    // function isWebSQL(): boolean {
-    //   if (!window.openDatabase) return false;
-    //   return true;
-    // }
-    // function isIndexDB(): boolean {
-    //   if (window.indexedDB) return true;
-    //   return false;
-    // }
-    // function isLocalStorage(): boolean {
-    //   if (window.localStorage) return true;
-    //   return false;
-    // }
+    function isWebSQL() {
+        if (!window.openDatabase)
+            return false;
+        return true;
+    }
+    function isIndexDB() {
+        if (window.indexedDB)
+            return true;
+        return false;
+    }
+    function isLocalStorage() {
+        if (window.localStorage)
+            return true;
+        return false;
+    }
     function setCookie(name, value, days) {
         var expires = "";
         if (days) {
