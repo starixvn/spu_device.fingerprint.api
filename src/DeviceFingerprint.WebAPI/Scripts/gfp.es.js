@@ -274,18 +274,18 @@ function cookieHandler(cookieValue) {
 function setStorage(name, value) {
     initStorage().then((drivers) => {
         drivers.forEach((drive) => {
-            try {
-                var storageDriver = localForage.createInstance({
-                    driver: drive,
-                    name: drive + "-EC",
-                    storeName: "ec",
-                });
-                storageDriver.setItem(name, value);
-                setCookie(name, value, 30);
-            }
-            catch (ex) {
-                console.log(ex);
-            }
+            var storageDriver = localForage.createInstance({
+                driver: drive,
+                name: drive + "-EC",
+                storeName: "ec",
+            });
+            storageDriver
+                .setItem(name, value, () => { })
+                .then(console.log)
+                .catch((e) => {
+                console.log(e.message);
+            });
+            setCookie(name, value, 30);
         });
     });
 }
@@ -298,9 +298,7 @@ function storageHandler(name) {
                 name: drive + "-EC",
                 storeName: "ec",
             });
-            return yield storageDriver.getItem(name, () => {
-                return null;
-            });
+            return yield storageDriver.getItem(name, () => { });
         }));
         cookies.push(Promise.resolve(getCookie(name)));
         return cookies;
