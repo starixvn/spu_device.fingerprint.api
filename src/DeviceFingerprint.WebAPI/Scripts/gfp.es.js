@@ -213,31 +213,52 @@ function isMobileIOS(ua) {
 
 function initStorage() {
     let localForageDrives = [];
-    if (isIndexDB()) {
-        localForageDrives.push(localForage.INDEXEDDB);
-    }
-    if (isWebSQL()) {
-        localForageDrives.push(localForage.WEBSQL);
-    }
-    if (isLocalStorage()) {
-        localForageDrives.push(localForage.LOCALSTORAGE);
-    }
+    localForageDrives.push(localForage.INDEXEDDB);
+    localForageDrives.push(localForage.WEBSQL);
+    localForageDrives.push(localForage.LOCALSTORAGE);
+    // if (isIndexDB()) {
+    //   localForageDrives.push(localForage.INDEXEDDB);
+    // }
+    // if (isWebSQL()) {
+    //   localForageDrives.push(localForage.WEBSQL);
+    // }
+    // if (isLocalStorage()) {
+    //   localForageDrives.push(localForage.LOCALSTORAGE);
+    // }
     return Promise.resolve(localForageDrives);
 }
-function isWebSQL() {
-    if (!window.openDatabase)
-        return false;
-    return true;
+// function isWebSQL(): boolean {
+//   if (!window.openDatabase) return false;
+//   return true;
+// }
+// function isIndexDB(): boolean {
+//   if (window.indexedDB) return true;
+//   return false;
+// }
+// function isLocalStorage(): boolean {
+//   if (window.localStorage) return true;
+//   return false;
+// }
+function setCookie(name, value, days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
 }
-function isIndexDB() {
-    if (window.indexedDB)
-        return true;
-    return false;
-}
-function isLocalStorage() {
-    if (window.localStorage)
-        return true;
-    return false;
+function getCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(";");
+    for (var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == " ")
+            c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) == 0)
+            return c.substring(nameEQ.length, c.length);
+    }
+    return null;
 }
 function cookieHandler(cookieValue) {
     var value = cookieValue != null ? "/" + cookieValue : "";
@@ -253,26 +274,36 @@ function cookieHandler(cookieValue) {
 function setStorage(name, value) {
     initStorage().then((drivers) => {
         drivers.forEach((drive) => {
-            var storageDriver = localForage.createInstance({
-                driver: drive,
-                name: drive + "-EC",
-                storeName: "ec",
-            });
-            storageDriver.setItem(name, value);
+            try {
+                var storageDriver = localForage.createInstance({
+                    driver: drive,
+                    name: drive + "-EC",
+                    storeName: "ec",
+                });
+                storageDriver.setItem(name, value);
+                setCookie(name, value, 30);
+            }
+            catch (ex) {
+                console.log(ex);
+            }
         });
     });
 }
 function storageHandler(name) {
     return initStorage()
         .then((driver) => {
-        return driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
+        var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
             var storageDriver = localForage.createInstance({
                 driver: drive,
                 name: drive + "-EC",
                 storeName: "ec",
             });
-            return yield storageDriver.getItem(name);
+            return yield storageDriver.getItem(name, () => {
+                return null;
+            });
         }));
+        cookies.push(Promise.resolve(getCookie(name)));
+        return cookies;
     })
         .then((res) => {
         return Promise.all(res).then((cookies) => {
