@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Device.FingerPrint.Kafka.Ultilities;
 using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -38,6 +39,8 @@ namespace Device.FingerPrint.Kafka.Handlers
                 var consumer = this.kafkaConsumer.Consume(cancellationToken);
                 if (!string.IsNullOrWhiteSpace(consumer.Message.Value))
                 {
+                    Console.WriteLine($"{consumer.Message.Key}: {consumer.Message.Value}ms");
+                    Console.WriteLine($"TopicPartitionOffset: {consumer.TopicPartitionOffset}");
                     var entity = SerializationHelper.DeserializeJson<T>(consumer.Message.Value);
                     count++;
                     listEntity.Add(entity);

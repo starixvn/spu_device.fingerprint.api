@@ -24,11 +24,6 @@ namespace Device.Fingerprint.InsertRawTransaction
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-#if DEBUG
-                    webBuilder.UseUrls("http://*:5006");
-#else
-                    webBuilder.UseUrls("http://*:5000");
-#endif 
 
                     webBuilder
                     .UseSentry()
