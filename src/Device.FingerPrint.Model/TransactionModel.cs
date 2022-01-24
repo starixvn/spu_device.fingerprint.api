@@ -18,6 +18,6 @@ namespace Device.FingerPrint.Model
 
         public string Url { get; set; }
 
-        public string Action { get; set; }
+        public string TransKey { get; set; }
     }
 }
