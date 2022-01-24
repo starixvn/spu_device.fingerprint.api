@@ -133,6 +133,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Url = data.Url,
                         TransKey = data.TransKey
                     };
+
                     return kafkaServices.SendTransactionToKafka(transaction);
                 }
                 return false;

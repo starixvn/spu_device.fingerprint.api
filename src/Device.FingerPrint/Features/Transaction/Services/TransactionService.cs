@@ -7,7 +7,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
-        void InsertListTransaction(List<TransactionModel> transaction);
+        void InsertListTransaction(IEnumerable<TransactionEntity> transactions);
 
         void RecoverDevice(int batchSize);
     }
@@ -21,9 +21,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
             this.transactionDataAccess = transactionDataAccess;
         }
 
-        public void InsertListTransaction(List<TransactionModel> listTransaction)
+        public void InsertListTransaction(IEnumerable<TransactionEntity> transactions)
         {
-            string JsonFingerPrint = JsonConvert.SerializeObject(listTransaction);
+            string JsonFingerPrint = JsonConvert.SerializeObject(transactions);
+
             transactionDataAccess.InsertJsonTransaction(JsonFingerPrint);
         }
 

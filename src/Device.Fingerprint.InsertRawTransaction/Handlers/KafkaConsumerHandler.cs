@@ -1,7 +1,9 @@
-﻿using Device.FingerPrint.Features.Transaction.Services;
+﻿using Device.FingerPrint.Features.Transaction.Model;
+using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Kafka.Handlers;
 using Device.FingerPrint.Model;
 using Microsoft.Extensions.Hosting;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,9 +27,30 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
             return Task.CompletedTask;
         }
         private void StartConsumerLoop(CancellationToken cancellationToken)
-        {
-            var callback = new CallBack<TransactionModel>(x => transactionService.InsertListTransaction(x));
+        {            
+            var callback = new CallBack<TransactionModel>(x =>
+            {
+                var result = x.Select(a => TranformFingerPrint(a));
+
+                transactionService.InsertListTransaction(result);
+            });
+
             requestTimeConsumer.StartConsumerLoop(cancellationToken, callback);
+        }
+
+        private TransactionEntity TranformFingerPrint(TransactionModel model)
+        {
+            return new TransactionEntity
+            {
+                LoginName = model.LoginName,
+                ClientIp = model.ClientIp,
+                SessionKey = model.SessionKey,
+                SubscriberId = model.SubscriberId,
+                TransKey = model.TransKey,
+                TransTime = model.TransTime,
+                Url = model.Url,
+                UserAgent = model.UserAgent
+            };
         }
     }
 }
