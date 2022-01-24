@@ -27,19 +27,17 @@ namespace demoAPI.Controllers
 
         private void FpsIntegration(string loginName)
         {
-            if (Session["fpsSessionKey"] == null)
+            if (Session["fpsTrans"] == null)
             {
                 var subscriberId = Convert.ToInt32(ConfigurationManager.AppSettings["subscriberId"]);
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
                 var fpsService = new FpsService(subscriberId, apiUrl);
 
-                ViewBag.fpsScript = fpsService.GetScriptUrl();
+                ViewBag.fpsScript = fpsService.GetScriptUrl();                                
 
-                var fpsSessionKey = fpsService.GenerateSessionKey();
+                var result = fpsService.InsertTransaction(loginName, "Login");
 
-                fpsService.InsertTransaction(loginName, "Login", fpsSessionKey);
-
-                Session["fpsSessionKey"] = fpsSessionKey;
+                Session["fpsTrans"] = result;
             }
         }
     }

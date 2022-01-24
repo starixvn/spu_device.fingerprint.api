@@ -133,9 +133,11 @@ function getDI() {
 
 var apiUrl = "__apiUrl__";
 var subscriberId = "__subscriberId__";
-function set(appAPIUrl, subscriber) {
-    apiUrl = appAPIUrl;
-    subscriberId = subscriber.toString();
+var sessionKey = "__sessionKey__";
+function set(appAPIUrl, subscriber, sessionKey) {
+    this.apiUrl = appAPIUrl;
+    this.subscriberId = subscriber;
+    this.sessionKey = sessionKey;
 }
 
 function getDeviceInfo() {
@@ -324,29 +326,28 @@ function storageHandler(name) {
 }
 
 var _isDebug = false;
-var _hiddenName = "__sk";
 var _cookieName = "__fp";
 function isDebug(isDebug) {
     _isDebug = isDebug;
     return this;
 }
-function config(apiUrl, subscriberId) {
-    set(apiUrl, subscriberId);
+function config(apiUrl, subscriberId, sessionKey) {
+    set(apiUrl, subscriberId, sessionKey);
 }
 const promiseAny = (iterable) => __awaiter(void 0, void 0, void 0, function* () {
     return Promise.all([...iterable].map((promise) => {
         return new Promise((resolve, reject) => Promise.resolve(promise).then(reject, resolve));
     })).then((errors) => Promise.reject(errors), (value) => Promise.resolve(value));
 });
-function injectSessionKey(value) {
-    var container = document.forms[0] || document.body;
-    var fkInput = document.createElement("input");
-    fkInput.setAttribute("type", "hidden");
-    fkInput.setAttribute("name", _hiddenName);
-    fkInput.setAttribute("id", _hiddenName);
-    fkInput.setAttribute("value", value);
-    container.appendChild(fkInput);
-}
+// function injectSessionKey(value: string) {
+//   var container = document.forms[0] || document.body;
+//   var fkInput = document.createElement("input");
+//   fkInput.setAttribute("type", "hidden");
+//   fkInput.setAttribute("name", _hiddenName);
+//   fkInput.setAttribute("id", _hiddenName);
+//   fkInput.setAttribute("value", value);
+//   container.appendChild(fkInput);
+// }
 function getFP() {
     let start = Date.now();
     storageHandler(_cookieName).then((cookieId) => {
@@ -357,16 +358,7 @@ function getFP() {
                 console.log(result.Properties);
             }
             else {
-                let sessionKeyElement = document.getElementById(_hiddenName);
-                if (sessionKeyElement) {
-                    let sessionKeyValue = sessionKeyElement.value;
-                    if (sessionKeyValue != null && sessionKeyValue != "") {
-                        processData(result, false, sessionKeyValue, cookieId);
-                    }
-                }
-                else {
-                    processData(result, true, null, cookieId);
-                }
+                processData(result, sessionKey, cookieId);
             }
         })
             .then(() => {
@@ -375,7 +367,7 @@ function getFP() {
         });
     });
 }
-function processData(result, isInject, sessionKey, cookieId) {
+function processData(result, sessionKey, cookieId) {
     getDomain()
         .then((res) => res.text())
         .then((req) => {
@@ -397,17 +389,13 @@ function processData(result, isInject, sessionKey, cookieId) {
                         let encryptedFP = Encrypting({
                             di: result.Id,
                             attr: result.Properties,
-                            fk: isInject ? response.c : sessionKey,
+                            fk: sessionKey,
                             subs: subscriberId,
                             dev: device,
                             devCode: HashMD5(device),
                             cookieId: cookieId,
                         }, response.a);
-                        postData(url, encryptedFP, response.b).then((data) => {
-                            if (data.ok && isInject) {
-                                injectSessionKey(response.c);
-                            }
-                        });
+                        postData(url, encryptedFP, response.b);
                     }
                 }));
             }

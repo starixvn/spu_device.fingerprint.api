@@ -41,8 +41,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.kafkaServices = kafkaServices;
         }
 
-        [HttpGet("scr/{subscriberId}")]
-        public ActionResult Script(int subscriberId = 0)
+        [HttpGet("scr/{sessionKey}/{subscriberId}")]
+        public ActionResult Script(string sessionKey, int subscriberId = 0)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
 
@@ -55,11 +55,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings);
+                var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings, sessionKey);
 
                 return new JavascriptResult(bundleContent.Content);
             }
-
 
             return null;
         }
@@ -72,8 +71,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
             {
-                EncryptedKey = appSettings.EncryptPassword,
-                SessionKey = Guid.NewGuid().ToString("N"),
+                EncryptedKey = appSettings.EncryptPassword,               
                 Token = JWTService.GenerateJwtToken()
             });
 

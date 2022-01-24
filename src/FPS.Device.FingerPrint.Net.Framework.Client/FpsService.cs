@@ -9,9 +9,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
     public interface IFpsService
     {
 
-        bool InsertTransaction(string LoginName, string action, string sessionKey, TimeSpan? timeout = null, string transKey = null);
-
-        string GenerateSessionKey();
+        bool InsertTransaction(string LoginName, string action, TimeSpan? timeout = null, string transKey = null);               
 
         string GetScriptUrl();
     }
@@ -20,26 +18,27 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
     {
         private readonly int subscriberId;
         private readonly string apiUrl;
+        private readonly string sessionKey;
 
         public FpsService(int subscriberId, string apiUrl)
         {
             this.subscriberId = subscriberId;
             this.apiUrl = apiUrl;
+            this.sessionKey = Guid.NewGuid().ToString("N");
         }
 
-        public bool InsertTransaction(string LoginName, string action, string sessionKey, TimeSpan? timeout = null, string transKey = null)
+        public bool InsertTransaction(string LoginName, string action, TimeSpan? timeout = null, string transKey = null)
         {            
             if (!string.IsNullOrWhiteSpace(LoginName) && subscriberId != 0)
             {                
                 var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
-                
-                var SessionKey = sessionKey ?? HttpContext.Current.Request.Form["__sk"].ToString();
+                                
                 var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var ClientIp = GetIP();
                 var transaction = new TransactionModel
                 {
                     LoginName = LoginName,
-                    SessionKey = SessionKey,
+                    SessionKey = sessionKey,
                     SubscriberId = subscriberId,
                     UserAgent = UserAgent,
                     ClientIp = ClientIp,
@@ -61,11 +60,11 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
 
             return false;
         }
-        private string GetUrl(string baseUrl, string relativeUrl, object param = null)
+        private string GetUrl(string baseUrl, string relativeUrl)
         {
             var url = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
 
-            return url + relativeUrl + param;
+            return url + relativeUrl;
         }
 
         private string GetIP()
@@ -80,14 +79,9 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             return ip;
         }
 
-        public string GenerateSessionKey()
-        {
-            return Guid.NewGuid().ToString("N");
-        }
-
         public string GetScriptUrl()
         {
-            return GetUrl(apiUrl, "api/fp/scr/", subscriberId);
+            return GetUrl(apiUrl, $"api/fp/scr/{sessionKey}/{subscriberId}");
         }
     }
 }
