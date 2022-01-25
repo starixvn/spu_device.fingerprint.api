@@ -9,7 +9,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
     public interface IFpsService
     {
 
-        bool InsertTransaction(string LoginName, string action, TimeSpan? timeout = null, string transKey = null);               
+        bool InsertTransaction(string action, string loginName, long custId = 0, string transKey = null, TimeSpan? timeout = null);               
 
         string GetScriptUrl();
     }
@@ -27,9 +27,9 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             this.sessionKey = Guid.NewGuid().ToString("N");
         }
 
-        public bool InsertTransaction(string LoginName, string action, TimeSpan? timeout = null, string transKey = null)
+        public bool InsertTransaction(string action, string loginName, long custId = 0, string transKey = null, TimeSpan? timeout = null)
         {            
-            if (!string.IsNullOrWhiteSpace(LoginName) && subscriberId != 0)
+            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {                
                 var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
                                 
@@ -37,7 +37,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 var ClientIp = GetIP();
                 var transaction = new TransactionModel
                 {
-                    LoginName = LoginName,
+                    LoginName = loginName,
                     SessionKey = sessionKey,
                     SubscriberId = subscriberId,
                     UserAgent = UserAgent,
@@ -45,7 +45,8 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                     TransTime = DateTime.Now,
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
                     Action = action,
-                    TransKey = transKey                    
+                    TransKey = transKey,
+                    CustId = custId
                 };
 
                 using (var client = new HttpClient())

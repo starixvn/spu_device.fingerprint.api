@@ -113,7 +113,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
-        [HttpPost("Transaction")]
+        [HttpPost("transaction")]
         public bool Transaction([FromBody] TransactionModel data)
         {
             try
@@ -129,7 +129,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         TransTime = data.TransTime,
                         UserAgent = data.UserAgent,
                         Url = data.Url,
-                        TransKey = data.TransKey
+                        TransKey = data.TransKey,
+                        CustId = data.CustId                        
                     };
 
                     return kafkaServices.SendTransactionToKafka(transaction);

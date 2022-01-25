@@ -35,7 +35,7 @@ namespace demoAPI.Controllers
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();                                
 
-                var result = fpsService.InsertTransaction(loginName, "Login");
+                var result = fpsService.InsertTransaction("Login", loginName);
 
                 Session["fpsTrans"] = result;
             }

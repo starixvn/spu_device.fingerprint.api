@@ -21,5 +21,7 @@ namespace Device.FingerPrint.Model
         public string Action { get; set; }
 
         public string TransKey { get; set; }
+
+        public long CustId { get; set; }
     }
 }
