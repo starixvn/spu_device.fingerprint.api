@@ -1,5 +1,4 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
-using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -9,7 +8,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         void InsertListTransaction(IEnumerable<TransactionEntity> transactions);
 
-        void RecoverDevice(int batchSize);
+        void DeviceIdentify(int batchSize);
+
+        void MergeTransaction(int batchSize);
     }
 
     public class TransactionService : ITransactionService
@@ -28,9 +29,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.InsertJsonTransaction(JsonFingerPrint);
         }
 
-        public void RecoverDevice(int batchSize)
+        public void DeviceIdentify(int batchSize)
         {
-            transactionDataAccess.RecoverDevice(batchSize);
+            transactionDataAccess.DeviceIdentify(batchSize);
+        }
+
+        public void MergeTransaction(int batchSize)
+        {
+            transactionDataAccess.MergeTransaction(batchSize);
         }
     }
 }

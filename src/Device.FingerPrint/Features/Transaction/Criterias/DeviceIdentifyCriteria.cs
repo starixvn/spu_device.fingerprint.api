@@ -3,14 +3,14 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class RecoverDeviceCriteria : NonQueryCommand
+    public class DeviceIdentifyCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_BatchSize")]
-        public int Batch { get; set; }
+        public int Size { get; set; }
 
         public override string GetSettingKey()
         {
-            return "FP_RecoverDevice";
+            return "FP_DeviceIdentify";
         }
 
         public override bool IsValid()

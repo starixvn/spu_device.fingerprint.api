@@ -14,23 +14,40 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
     public class JobController : ControllerBase
     {
         private readonly ISentryClient sentryClient;
-        private readonly IRecoverDeviceServices recoverDeviceServices;
-        public JobController(IRecoverDeviceServices recoverDeviceServices, ISentryClient sentryClient)
+        private readonly IDeviceIdentifyServices deviceIdentifyServices;
+        public JobController(IDeviceIdentifyServices deviceIdentifyServices, ISentryClient sentryClient)
         {
-            this.recoverDeviceServices = recoverDeviceServices;
+            this.deviceIdentifyServices = deviceIdentifyServices;
             this.sentryClient = sentryClient;
         }
 
-        [HttpPost("recoverdevice/{batchSize}")]
-        public bool RecoverDevice(int batchSize)
+        [HttpPost("deviceidentify/{batchSize}")]
+        public bool DeviceIdentify(int batchSize)
         {
             try
             {
-                this.recoverDeviceServices.RecoverDevice(batchSize);
+                this.deviceIdentifyServices.DeviceIdentify(batchSize);
 
                 return true;
             }
             catch(Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("mergetransaction/{batchSize}")]
+        public bool MergeTransaction(int batchSize)
+        {
+            try
+            {
+                this.deviceIdentifyServices.MergeTransaction(batchSize);
+
+                return true;
+            }
+            catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
 

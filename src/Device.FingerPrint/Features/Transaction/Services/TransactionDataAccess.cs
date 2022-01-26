@@ -12,7 +12,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         void InsertJsonTransaction(string jsonTransaction);
 
-        void RecoverDevice(int batchSize);
+        void DeviceIdentify(int batchSize);
+
+        void MergeTransaction(int batchSize);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -34,11 +36,21 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository.Execute(criteria);
         }
 
-        public void RecoverDevice(int batchSize)
+        public void DeviceIdentify(int batchSize)
         {
-            var criteria = new RecoverDeviceCriteria
+            var criteria = new DeviceIdentifyCriteria
             {
-                Batch = batchSize
+                Size = batchSize
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void MergeTransaction(int batchSize)
+        {
+            var criteria = new MergeTransactionCriteria
+            {
+               Size  = batchSize
             };
 
             repository.Execute(criteria);

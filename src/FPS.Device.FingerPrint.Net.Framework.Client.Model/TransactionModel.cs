@@ -23,5 +23,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client.Model
         public string TransKey { get; set; }
 
         public long CustId { get; set; }
+
+        public long SubAccId { get; set; }
     }
 }

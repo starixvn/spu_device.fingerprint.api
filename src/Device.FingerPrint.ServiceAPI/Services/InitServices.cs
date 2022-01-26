@@ -14,7 +14,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
-            services.AddSingleton<IRecoverDeviceServices, RecoverDeviceServices>();
+            services.AddSingleton<IDeviceIdentifyServices, DeviceIdentifyServices>();
         }
     }
 }

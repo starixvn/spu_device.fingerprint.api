@@ -129,7 +129,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         UserAgent = data.UserAgent,
                         Url = data.Url,
                         TransKey = data.TransKey,
-                        CustId = data.CustId                        
+                        CustId = data.CustId,
+                        SubAccId = data.SubAccId
                     };
 
                     return kafkaServices.SendTransactionToKafka(transaction);
