@@ -78,8 +78,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return Ok(jsonString);
         }
 
-
-
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
         public void FingerPrint([FromBody] string data)
@@ -102,7 +100,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
                         DeviceInfo = fingerPrint.Device,
                         DeviceCode = fingerPrint.DeviceCode,
-                        CookieId = fingerPrint.CookieId
+                        CookieId = fingerPrint.CookieId,
+                        Flagged = fingerPrint.Flagged
                     };
                     kafkaServices.SendFingerprintToKafka(fingerPrintModel);
                 }

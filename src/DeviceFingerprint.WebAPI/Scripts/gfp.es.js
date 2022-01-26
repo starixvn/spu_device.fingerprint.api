@@ -3041,6 +3041,14 @@ function set(appAPIUrl, subscriber, sessionKey) {
     this.sessionKey = sessionKey;
 }
 
+function checkHeadless() {
+    const userAgent = navigator.userAgent;
+    let isBot = isHeadlessChrome(userAgent);
+    return isBot ? 'bot' : 'human';
+}
+function isHeadlessChrome(userAgent) {
+    return /HeadlessChrome/i.test(userAgent);
+}
 function getDeviceInfo() {
     const userAgent = navigator.userAgent;
     const isMobile = isMobileAndroid(userAgent) ||
@@ -3264,6 +3272,7 @@ function processData(result, sessionKey, cookieId) {
                     if (conf.ok) {
                         const response = yield conf.json();
                         const deviceInfo = getDeviceInfo();
+                        const flagged = checkHeadless();
                         const device = JSON.stringify(deviceInfo);
                         let encryptedFP = Encrypting({
                             di: result.Id,
@@ -3273,8 +3282,8 @@ function processData(result, sessionKey, cookieId) {
                             dev: device,
                             devCode: HashMD5(device),
                             cookieId: cookieId,
+                            flagged: flagged
                         }, response.a);
-                        console.log('encryptedFP', encryptedFP);
                         postData(url, encryptedFP, response.b);
                     }
                 }));

@@ -290,5 +290,8 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("cookieId")]
         public long CookieId { get; set; }
+
+        [JsonProperty("flagged")]
+        public string Flagged { get; set; }
     }
 }

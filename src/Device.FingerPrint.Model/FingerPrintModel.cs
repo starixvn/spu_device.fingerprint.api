@@ -16,5 +16,7 @@ namespace Device.FingerPrint.Model
         public string DeviceCode { get; set; }
 
         public long CookieId { get; set; }
+
+        public string Flagged { get; set; }
     }
 }
