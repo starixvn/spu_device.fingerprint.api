@@ -89,9 +89,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var decryptedData = scrypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
-
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
+                    int output;
                     FingerPrintModel fingerPrintModel = new FingerPrintModel
                     {
                         FingerPrint = fingerPrint.FingerPrintCode,
@@ -101,7 +101,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         DeviceInfo = fingerPrint.Device,
                         DeviceCode = fingerPrint.DeviceCode,
                         CookieId = fingerPrint.CookieId,
-                        Flagged = fingerPrint.Flagged
+                        Flagged = int.TryParse(fingerPrint.Flagged, out output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : ""
                     };
                     kafkaServices.SendFingerprintToKafka(fingerPrintModel);
                 }
@@ -208,4 +208,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return -1;
         }
     }
+}
+
+enum FlaggedStatus
+{
+    human,
+    bot
 }

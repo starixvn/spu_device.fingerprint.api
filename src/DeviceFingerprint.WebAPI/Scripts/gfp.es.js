@@ -3041,10 +3041,14 @@ function set(appAPIUrl, subscriber, sessionKey) {
     this.sessionKey = sessionKey;
 }
 
+const flaggedEnum = {
+    HUMAN: 0,
+    BOT_HEADLESS_CHROME: 1
+};
 function checkHeadless() {
     const userAgent = navigator.userAgent;
     let isBot = isHeadlessChrome(userAgent);
-    return isBot ? 'bot' : 'human';
+    return isBot ? flaggedEnum.BOT_HEADLESS_CHROME : flaggedEnum.HUMAN;
 }
 function isHeadlessChrome(userAgent) {
     return /HeadlessChrome/i.test(userAgent);
