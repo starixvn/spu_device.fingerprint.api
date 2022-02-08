@@ -1,7 +1,10 @@
 ﻿using FPS.Device.FingerPrint.Net.Framework.Client.Model;
+using Newtonsoft.Json;
 using System;
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace Fps.Device.FingerPrint.Net.Framework.Client
@@ -9,7 +12,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
     public interface IFpsService
     {
 
-        bool InsertTransaction(string action, string loginName, long custId = 0, long subAccId = 0, string transKey = null, TimeSpan? timeout = null);               
+        void InsertTransaction(string action, string loginName, long custId = 0, long subAccId = 0, string transKey = null, TimeSpan? timeout = null);               
 
         string GetScriptUrl();
     }
@@ -27,21 +30,20 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             this.sessionKey = Guid.NewGuid().ToString("N");
         }
 
-        public bool InsertTransaction(string action, string loginName, long custId = 0, long subAccId = 0, string transKey = null, TimeSpan? timeout = null)
+        public void InsertTransaction(string action, string loginName, long custId = 0, long subAccId = 0, string transKey = null, TimeSpan? timeout = null)
         {            
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {                
-                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
-                                
-                var UserAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
-                var ClientIp = GetIP();
+                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");                                
+                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+                var clientIp = GetIP();
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
                     SessionKey = sessionKey,
                     SubscriberId = subscriberId,
-                    UserAgent = UserAgent,
-                    ClientIp = ClientIp,
+                    UserAgent = userAgent,
+                    ClientIp = clientIp,
                     TransTime = DateTime.Now,
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
                     Action = action,
@@ -49,18 +51,12 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                     CustId = custId,
                     SubAccId = subAccId
                 };
+                var cancelToken = new CancellationToken();
 
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
-                    var content = JsonContent.Create(transaction);
-                    var response = client.PostAsync(url, content).Result;
-
-                    return response.IsSuccessStatusCode;
-                }
+                PostBasicAsync(url, transaction, cancelToken).Wait();
             }
 
-            return false;
+           
         }
         private string GetUrl(string baseUrl, string relativeUrl)
         {
@@ -79,6 +75,26 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             }
 
             return ip;
+        }
+
+        private static async Task PostBasicAsync(string url, object content, CancellationToken cancellationToken)
+        {
+            using (var client = new HttpClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+            {
+                var json = JsonConvert.SerializeObject(content);
+                using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
+                {
+                    request.Content = stringContent;
+
+                    using (var response = await client
+                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
+                        .ConfigureAwait(false))
+                    {
+                        response.EnsureSuccessStatusCode();
+                    }
+                }
+            }
         }
 
         public string GetScriptUrl()

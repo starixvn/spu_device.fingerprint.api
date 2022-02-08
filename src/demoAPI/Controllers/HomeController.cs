@@ -6,11 +6,10 @@ using System.Web.Mvc;
 namespace demoAPI.Controllers
 {
     public class HomeController : Controller
-    {
-
+    {        
         public HomeController()
         {
-
+            
         }
 
         public ActionResult Index()
@@ -35,9 +34,9 @@ namespace demoAPI.Controllers
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();                                
 
-                var result = fpsService.InsertTransaction("Login", loginName);
+                fpsService.InsertTransaction("Login", loginName);
 
-                Session["fpsTrans"] = result;
+                Session["fpsTrans"] = true;
             }
         }
     }
