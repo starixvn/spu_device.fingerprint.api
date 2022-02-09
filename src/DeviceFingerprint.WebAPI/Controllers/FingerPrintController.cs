@@ -104,6 +104,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         CookieId = fingerPrint.CookieId,
                         Flagged = int.TryParse(fingerPrint.Flagged, out output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : ""
                     };
+
                     kafkaServices.SendFingerprintToKafka(fingerPrintModel);
                 }
             }
@@ -114,7 +115,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpPost("transaction")]
-        public bool Transaction([FromBody] TransactionModel data)
+        public void Transaction([FromBody] TransactionModel data)
         {
             try
             {
@@ -134,14 +135,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         SubAccId = data.SubAccId
                     };
 
-                    return kafkaServices.SendTransactionToKafka(transaction);
+                    kafkaServices.SendTransactionToKafka(transaction);
                 }
-                return false;
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
-                return false;
+                sentryClient.CaptureException(ex);               
             }
         }
 

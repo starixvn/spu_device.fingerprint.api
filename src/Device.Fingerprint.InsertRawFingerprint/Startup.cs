@@ -36,7 +36,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
             services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
             services.AddSingleton<IFingerPrintService, FingerPrintService>();            
 
-            services.AddSingleton<IRequestTimeConsumer, RequestTimeConsumer>();
+            //services.AddSingleton<IRequestTimeConsumer, RequestTimeConsumer>();
             services.AddHostedService<KafkaConsumerHandler>();
 
             services.AddHealthChecks();

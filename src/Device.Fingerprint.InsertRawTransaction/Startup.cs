@@ -38,7 +38,7 @@ namespace Device.Fingerprint.InsertRawTransaction
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
 
-            services.AddSingleton<IRequestTimeConsumer, RequestTimeConsumer>();
+            //services.AddSingleton<IRequestTimeConsumer, RequestTimeConsumer>();
             services.AddHostedService<KafkaConsumerHandler>();
 
             services.AddHealthChecks();

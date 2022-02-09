@@ -12,7 +12,15 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
     public interface IFpsService
     {
 
-        void InsertTransaction(string action, string loginName, long custId = 0, long subAccId = 0, string transKey = null, TimeSpan? timeout = null);               
+        void InsertTransaction(string action, string loginName, long custId , long subAccId, string transKey);
+
+        void InsertTransaction(HttpRequest request, string action, string loginName, long custId, long subAccId, string transKey);
+
+        void InsertTransaction(string action, string loginName, long custId, long subAccId);
+
+        void InsertTransaction(string action, string loginName);
+
+        void InsertTransaction(string action, string loginName, HttpRequest request);
 
         string GetScriptUrl();
     }
@@ -30,7 +38,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             this.sessionKey = Guid.NewGuid().ToString("N");
         }
 
-        public void InsertTransaction(string action, string loginName, long custId = 0, long subAccId = 0, string transKey = null, TimeSpan? timeout = null)
+        public void InsertTransaction(string action, string loginName, long custId, long subAccId, string transKey)
         {            
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {                
@@ -45,7 +53,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                     UserAgent = userAgent,
                     ClientIp = clientIp,
                     TransTime = DateTime.Now,
-                    Url = HttpContext.Current.Request.Url.AbsoluteUri,
+                    Url = HttpContext.Current.Request.Url.AbsoluteUri, 
                     Action = action,
                     TransKey = transKey,
                     CustId = custId,
@@ -54,10 +62,109 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 var cancelToken = new CancellationToken();
 
                 PostBasicAsync(url, transaction, cancelToken).Wait();
-            }
-
-           
+            }           
         }
+
+        public void InsertTransaction(string action, string loginName, long custId, long subAccId)
+        {
+            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            {
+                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
+                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+                var clientIp = GetIP();
+                var transaction = new TransactionModel
+                {
+                    LoginName = loginName,
+                    SessionKey = sessionKey,
+                    SubscriberId = subscriberId,
+                    UserAgent = userAgent,
+                    ClientIp = clientIp,
+                    TransTime = DateTime.Now,
+                    Url = HttpContext.Current.Request.Url.AbsoluteUri,
+                    Action = action,                    
+                    CustId = custId,
+                    SubAccId = subAccId
+                };
+                var cancelToken = new CancellationToken();
+
+                PostBasicAsync(url, transaction, cancelToken).Wait();
+            }
+        }
+
+        public void InsertTransaction(string action, string loginName)
+        {
+            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            {
+                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
+                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+                var clientIp = GetIP();
+                var transaction = new TransactionModel
+                {
+                    LoginName = loginName,
+                    SessionKey = sessionKey,
+                    SubscriberId = subscriberId,
+                    UserAgent = userAgent,
+                    ClientIp = clientIp,
+                    TransTime = DateTime.Now,
+                    Url = HttpContext.Current.Request.Url.AbsoluteUri,
+                    Action = action
+                };
+                var cancelToken = new CancellationToken();
+
+                PostBasicAsync(url, transaction, cancelToken).Wait();
+            }
+        }
+
+        public void InsertTransaction(string action, string loginName, HttpRequest request)
+        {
+            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            {
+                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
+                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+                var clientIp = GetIP();
+                var transaction = new TransactionModel
+                {
+                    LoginName = loginName,
+                    SessionKey = sessionKey,
+                    SubscriberId = subscriberId,
+                    UserAgent = userAgent,
+                    ClientIp = clientIp,
+                    TransTime = DateTime.Now,
+                    Url = request.Url.AbsoluteUri,
+                    Action = action
+                };
+                var cancelToken = new CancellationToken();
+
+                PostBasicAsync(url, transaction, cancelToken).Wait();
+            }
+        }
+
+        public void InsertTransaction(HttpRequest request, string action, string loginName, long custId, long subAccId, string transKey)
+        {
+            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            {
+                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
+                var userAgent = request.Headers["User-Agent"].ToString();
+                var clientIp = GetIP();
+                var transaction = new TransactionModel
+                {
+                    LoginName = loginName,
+                    SessionKey = sessionKey,
+                    SubscriberId = subscriberId,
+                    UserAgent = userAgent,
+                    ClientIp = clientIp,
+                    TransTime = DateTime.Now,
+                    Url = request.Url.AbsoluteUri,
+                    Action = action,
+                    CustId = custId,
+                    SubAccId = subAccId
+                };
+                var cancelToken = new CancellationToken();
+
+                PostBasicAsync(url, transaction, cancelToken).Wait();
+            }
+        }
+
         private string GetUrl(string baseUrl, string relativeUrl)
         {
             var url = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
@@ -101,5 +208,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             return GetUrl(apiUrl, $"api/fp/scr/{sessionKey}/{subscriberId}");
         }
+
+        
     }
 }

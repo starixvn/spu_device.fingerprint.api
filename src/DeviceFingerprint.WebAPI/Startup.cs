@@ -1,5 +1,7 @@
+using Confluent.Kafka;
 using Device.Fingerprint.WebAPI.Middleware;
 using Device.Fingerprint.WebAPI.Services;
+using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
@@ -51,6 +53,14 @@ namespace Device.Fingerprint.WebAPI
             });
 
             services.AddHealthChecks();
+
+            var producerConfig = new ProducerConfig(new ClientConfig
+            {
+                BootstrapServers = Configuration["KafkaConfig:BootstrapServers"]
+            });
+
+            services.AddSingleton(producerConfig);
+            services.AddSingleton(typeof(IKafkaProducer<,>), typeof(KafkaProducer<,>));
 
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>

@@ -12,12 +12,12 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
     public class KafkaConsumerHandler : BackgroundService
     {
         private readonly ITransactionService transactionService;
-        private readonly IRequestTimeConsumer requestTimeConsumer;
+       // private readonly IRequestTimeConsumer requestTimeConsumer;
 
-        public KafkaConsumerHandler(ITransactionService transactionService, IRequestTimeConsumer requestTimeConsumer)
+        public KafkaConsumerHandler(ITransactionService transactionService)
         {
             this.transactionService = transactionService;
-            this.requestTimeConsumer = requestTimeConsumer;
+           // this.requestTimeConsumer = requestTimeConsumer;
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -28,14 +28,14 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
         }
         private void StartConsumerLoop(CancellationToken cancellationToken)
         {            
-            var callback = new CallBack<TransactionModel>(x =>
-            {
-                var result = x.Select(a => TranformFingerPrint(a));
+            //var callback = new CallBack<TransactionModel>(x =>
+            //{
+            //    var result = x.Select(a => TranformFingerPrint(a));
 
-                transactionService.InsertListTransaction(result);
-            });
+            //    transactionService.InsertListTransaction(result);
+            //});
 
-            requestTimeConsumer.StartConsumerLoop(cancellationToken, callback);
+            //requestTimeConsumer.StartConsumerLoop(cancellationToken, callback);
         }
 
         private TransactionEntity TranformFingerPrint(TransactionModel model)

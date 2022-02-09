@@ -14,14 +14,13 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
     public class KafkaConsumerHandler : BackgroundService
     {
         private readonly IFingerPrintService fingerPrintService;
-        private readonly IRequestTimeConsumer requestTimeConsumer;
+        
         private readonly ISentryClient sentryClient;
 
-        public KafkaConsumerHandler(IFingerPrintService fingerPrintService, IRequestTimeConsumer requestTimeConsumer, ISentryClient sentryClient)
+        public KafkaConsumerHandler(IFingerPrintService fingerPrintService, ISentryClient sentryClient)
         {
             this.sentryClient = sentryClient;
-            this.fingerPrintService = fingerPrintService;
-            this.requestTimeConsumer = requestTimeConsumer;
+            this.fingerPrintService = fingerPrintService;            
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -34,15 +33,15 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
         {
             try
             {
-                var callback = new CallBack<FingerPrintModel>(x =>
-                       {
-                           var result = x.Select(a => TranformFingerPrint(a));
+                //var callback = new CallBack<FingerPrintModel>(x =>
+                //       {
+                //           var result = x.Select(a => TranformFingerPrint(a));
 
-                           fingerPrintService.InsertListFingerPrint(result);
-                       }
-                 );
+                //           fingerPrintService.InsertListFingerPrint(result);
+                //       }
+                // );
 
-                requestTimeConsumer.StartConsumerLoop(cancellationToken, callback);
+                //requestTimeConsumer.StartConsumerLoop(cancellationToken, callback);
             }
             catch (Exception ex)
             {
