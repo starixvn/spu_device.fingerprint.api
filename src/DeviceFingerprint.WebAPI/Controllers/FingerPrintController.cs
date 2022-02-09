@@ -12,6 +12,7 @@ using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static Device.Fingerprint.WebAPI.MasterData.MasterData;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
@@ -208,10 +209,4 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return -1;
         }
     }
-}
-
-enum FlaggedStatus
-{
-    human,
-    bot
 }
