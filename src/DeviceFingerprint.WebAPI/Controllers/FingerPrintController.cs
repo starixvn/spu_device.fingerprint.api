@@ -16,7 +16,7 @@ using static Device.Fingerprint.WebAPI.MasterData.MasterData;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
-    [Route("api/fp")]
+    [Route("api")]
     [ApiController]
     public class FingerPrintController : ControllerBase
     {
@@ -80,7 +80,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost]
+        [HttpPost("fp")]
         public void FingerPrint([FromBody] string data)
         {
             try

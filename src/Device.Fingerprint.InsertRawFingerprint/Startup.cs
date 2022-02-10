@@ -16,6 +16,9 @@ using System.Linq;
 using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers;
 using Microsoft.AspNetCore.Http;
+using Confluent.Kafka;
+using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
+using Device.FingerPrint.Model;
 
 namespace Device.Fingerprint.InsertRawFingerprint
 {
@@ -34,10 +37,26 @@ namespace Device.Fingerprint.InsertRawFingerprint
             services.AddSingleton<IAppSettings>(appSettings);
 
             services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
-            services.AddSingleton<IFingerPrintService, FingerPrintService>();            
+            services.AddSingleton<IFingerPrintService, FingerPrintService>();
 
-            //services.AddSingleton<IRequestTimeConsumer, RequestTimeConsumer>();
-            services.AddHostedService<KafkaConsumerHandler>();
+            var clientConfig = new ClientConfig()
+            {
+                BootstrapServers = Configuration["Kafka:ClientConfigs:BootstrapServers"]
+            };
+
+            var consumerConfig = new ConsumerConfig(clientConfig)
+            {
+                GroupId = "fingerprint_topic_app",
+                EnableAutoCommit = false,
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                StatisticsIntervalMs = 5000,
+                SessionTimeoutMs = 6000
+            };
+            services.AddSingleton(consumerConfig);
+
+            services.AddScoped<IKafkaHandler<string, FingerPrintModel>, KafkaHandler>();
+            services.AddSingleton(typeof(IKafkaConsumer<,>), typeof(KafkaConsumer<,>));
+            services.AddHostedService<KafkaConsumer>();                        
 
             services.AddHealthChecks();
 

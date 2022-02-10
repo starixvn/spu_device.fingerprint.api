@@ -1,9 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.Fingerprint.WebAPI
 {
@@ -52,9 +49,11 @@ namespace Device.Fingerprint.WebAPI
 
             environment = GetValue<string>("AppConfig:Environment");
 
-            bootstrapServers = GetValue<string>("KafkaConfig:BootstrapServers");
-            transactionTopicname = GetValue<string>("KafkaConfig:TransactionTopicName");
-            fingerprintTopicname = GetValue<string>("KafkaConfig:FingerprintTopicName");
+            bootstrapServers = GetValue<string>("Kafka:ClientConfigs:BootstrapServers");
+
+            transactionTopicname = GetValue<string>("Kafka:ClientConfigs:TransactionTopicName");
+
+            fingerprintTopicname = GetValue<string>("Kafka:ClientConfigs:FingerprintTopicName");
         }
 
         public string ApiUrl => apiUrl;

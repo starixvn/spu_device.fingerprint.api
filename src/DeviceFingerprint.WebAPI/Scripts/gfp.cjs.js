@@ -3135,13 +3135,18 @@ function initStorage() {
     if (isIndexDB()) {
         localForageDrives.push(localForage__default["default"].INDEXEDDB);
     }
-    {
+    if (isWebSQL()) {
         localForageDrives.push(localForage__default["default"].WEBSQL);
     }
     if (isLocalStorage()) {
         localForageDrives.push(localForage__default["default"].LOCALSTORAGE);
     }
     return Promise.resolve(localForageDrives);
+}
+function isWebSQL() {
+    if (!window.openDatabase)
+        return false;
+    return true;
 }
 function isIndexDB() {
     if (window.indexedDB)
@@ -3243,11 +3248,6 @@ function isDebug(isDebug) {
 function config(apiUrl, subscriberId, sessionKey) {
     set(apiUrl, subscriberId, sessionKey);
 }
-const promiseAny = (iterable) => __awaiter(void 0, void 0, void 0, function* () {
-    return Promise.all([...iterable].map((promise) => {
-        return new Promise((resolve, reject) => Promise.resolve(promise).then(reject, resolve));
-    })).then((errors) => Promise.reject(errors), (value) => Promise.resolve(value));
-});
 function getFP() {
     let start = Date.now();
     storageHandler(_cookieName).then((cookieId) => {
@@ -3268,45 +3268,69 @@ function getFP() {
     });
 }
 function processData(result, sessionKey, cookieId) {
-    getDomain()
-        .then((res) => res.text())
-        .then((req) => {
-        var requests = JSON.parse(req).map(function (url) {
-            return fetch(url + "/api/fp/hc", {
-                cache: "no-cache",
-            });
-        });
-        promiseAny(requests).then((res) => {
-            if (res.status == 200) {
-                var str = res.url;
-                var index = str.lastIndexOf("/");
-                var url = str.substring(0, index);
-                getConfig(url).then((conf) => __awaiter(this, void 0, void 0, function* () {
-                    if (conf.ok) {
-                        const response = yield conf.json();
-                        const deviceInfo = getDeviceInfo();
-                        const flagged = checkHeadless();
-                        const device = JSON.stringify(deviceInfo);
-                        let encryptedFP = Encrypting({
-                            di: result.Id,
-                            attr: result.Properties,
-                            fk: sessionKey,
-                            subs: subscriberId,
-                            dev: device,
-                            devCode: HashMD5(device),
-                            cookieId: cookieId,
-                            flagged: flagged
-                        }, response.a);
-                        postData(url, encryptedFP, response.b);
-                    }
-                }));
-            }
-        });
-    });
+    getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
+        if (conf.ok) {
+            const response = yield conf.json();
+            const deviceInfo = getDeviceInfo();
+            const flagged = checkHeadless();
+            const device = JSON.stringify(deviceInfo);
+            let encryptedFP = Encrypting({
+                di: result.Id,
+                attr: result.Properties,
+                fk: sessionKey,
+                subs: subscriberId,
+                dev: device,
+                devCode: HashMD5(device),
+                cookieId: cookieId,
+                flagged: flagged,
+            }, response.a);
+            postData(apiUrl, encryptedFP, response.b);
+        }
+    }));
 }
+// function processData(result, sessionKey: string, cookieId: number) {
+//   getDomain()
+//     .then((res) => res.text())
+//     .then((req) => {
+//       var requests = JSON.parse(req).map(function (url) {
+//         return fetch(url + "/api/fp/hc", {
+//           cache: "no-cache",
+//         });
+//       });
+//       promiseAny(requests).then((res: Response) => {
+//         if (res.status == 200) {
+//           var str = res.url;
+//           var index = str.lastIndexOf("/");
+//           var url = str.substring(0, index);
+//           getConfig(url).then(async (conf) => {
+//             if (conf.ok) {
+//               const response = await conf.json();
+//               const deviceInfo = getDeviceInfo();
+//               const flagged = checkHeadless();
+//               const device = JSON.stringify(deviceInfo);
+//               let encryptedFP = Encrypting(
+//                 {
+//                   di: result.Id,
+//                   attr: result.Properties,
+//                   fk: sessionKey,
+//                   subs: appConfig.subscriberId,
+//                   dev: device,
+//                   devCode: HashMD5(device),
+//                   cookieId: cookieId,
+//                   flagged: flagged
+//                 },
+//                 response.a
+//               );
+//               postData(url, encryptedFP, response.b);
+//             }
+//           });
+//         }
+//       });
+//     });
+// }
 function postData(url, data, token) {
     return __awaiter(this, void 0, void 0, function* () {
-        return fetch(url, {
+        return fetch(url + "/fp", {
             method: "POST",
             cache: "no-cache",
             credentials: "include",
@@ -3322,12 +3346,6 @@ function postData(url, data, token) {
 }
 function getConfig(url) {
     return fetch(url + "/conf", {
-        method: "GET",
-        redirect: "follow",
-    });
-}
-function getDomain() {
-    return fetch(apiUrl + "/subscriber/" + subscriberId, {
         method: "GET",
         redirect: "follow",
     });

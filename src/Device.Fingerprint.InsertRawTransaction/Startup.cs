@@ -17,6 +17,8 @@ using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers;
 using Microsoft.AspNetCore.Http;
 using Confluent.Kafka;
+using Device.FingerPrint.Model;
+using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 
 namespace Device.Fingerprint.InsertRawTransaction
 {
@@ -38,8 +40,25 @@ namespace Device.Fingerprint.InsertRawTransaction
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
 
-            //services.AddSingleton<IRequestTimeConsumer, RequestTimeConsumer>();
-            services.AddHostedService<KafkaConsumerHandler>();
+            var clientConfig = new ClientConfig()
+            {
+                BootstrapServers = Configuration["Kafka:ClientConfigs:BootstrapServers"]
+            };
+
+            var consumerConfig = new ConsumerConfig(clientConfig)
+            {
+                GroupId = "transaction_topic_app",
+                EnableAutoCommit = false,
+                AutoOffsetReset = AutoOffsetReset.Earliest,
+                StatisticsIntervalMs = 5000,
+                SessionTimeoutMs = 6000
+            };
+
+            services.AddSingleton(consumerConfig);
+
+            services.AddScoped<IKafkaHandler<string, TransactionModel>, KafkaHandler>();
+            services.AddSingleton(typeof(IKafkaConsumer<,>), typeof(KafkaConsumer<,>));
+            services.AddHostedService<KafkaConsumer>();
 
             services.AddHealthChecks();
 

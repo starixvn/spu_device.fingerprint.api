@@ -20,7 +20,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
 
         void InsertTransaction(string action, string loginName);
 
-        void InsertTransaction(string action, string loginName, HttpRequest request);
+        void InsertTransaction(HttpRequest request, string action, string loginName);
 
         string GetScriptUrl();
     }
@@ -30,19 +30,21 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         private readonly int subscriberId;
         private readonly string apiUrl;
         private readonly string sessionKey;
+        private readonly string transactionUrl;
 
         public FpsService(int subscriberId, string apiUrl)
         {
             this.subscriberId = subscriberId;
             this.apiUrl = apiUrl;
             this.sessionKey = Guid.NewGuid().ToString("N");
+
+            transactionUrl = GetUrl(apiUrl, "api/transaction");
         }
 
         public void InsertTransaction(string action, string loginName, long custId, long subAccId, string transKey)
         {            
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
-            {                
-                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");                                
+            {               
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var transaction = new TransactionModel
@@ -61,7 +63,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                PostBasicAsync(url, transaction, cancelToken).Wait();
+                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
             }           
         }
 
@@ -69,7 +71,6 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
-                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var transaction = new TransactionModel
@@ -87,7 +88,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                PostBasicAsync(url, transaction, cancelToken).Wait();
+                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
             }
         }
 
@@ -95,7 +96,6 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
-                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var transaction = new TransactionModel
@@ -111,16 +111,15 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                PostBasicAsync(url, transaction, cancelToken).Wait();
+                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
             }
         }
 
-        public void InsertTransaction(string action, string loginName, HttpRequest request)
+        public void InsertTransaction(HttpRequest request, string action, string loginName)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
-                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
-                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+                var userAgent = request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var transaction = new TransactionModel
                 {
@@ -135,7 +134,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                PostBasicAsync(url, transaction, cancelToken).Wait();
+                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
             }
         }
 
@@ -143,7 +142,6 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
-                var url = "http:" + GetUrl(apiUrl, "api/fp/Transaction");
                 var userAgent = request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var transaction = new TransactionModel
@@ -161,7 +159,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                PostBasicAsync(url, transaction, cancelToken).Wait();
+                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
             }
         }
 
@@ -169,7 +167,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             var url = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
 
-            return url + relativeUrl;
+            return "http:" + url + relativeUrl;
         }
 
         private string GetIP()
@@ -206,7 +204,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
 
         public string GetScriptUrl()
         {
-            return GetUrl(apiUrl, $"api/fp/scr/{sessionKey}/{subscriberId}");
+            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberId}");
         }
 
         
