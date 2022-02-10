@@ -48,7 +48,7 @@ namespace Device.Fingerprint.InsertRawTransaction
             var consumerConfig = new ConsumerConfig(clientConfig)
             {
                 GroupId = "transaction_topic_app",
-                EnableAutoCommit = false,
+                EnableAutoCommit = true,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 StatisticsIntervalMs = 5000,
                 SessionTimeoutMs = 6000

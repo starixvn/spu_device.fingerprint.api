@@ -56,7 +56,7 @@ namespace Device.Fingerprint.WebAPI
 
             var producerConfig = new ProducerConfig(new ClientConfig
             {
-                BootstrapServers = Configuration["KafkaConfig:BootstrapServers"]
+                BootstrapServers = Configuration["Kafka:ClientConfigs:BootstrapServers"]
             });
 
             services.AddSingleton(producerConfig);
