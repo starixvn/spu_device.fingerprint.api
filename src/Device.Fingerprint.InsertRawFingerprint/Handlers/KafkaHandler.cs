@@ -26,7 +26,7 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
         {
             listFingerPrint.Add(TranformFingerPrint(value));
 
-            if(listFingerPrint.Count >= 10)
+            if(listFingerPrint.Count >= 1)
             {
                 fingerPrintService.InsertListFingerPrint(listFingerPrint);
 

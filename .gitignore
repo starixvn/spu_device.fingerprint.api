@@ -10,3 +10,4 @@ bin/
 publish/*
 src/Device.Fingerprint.InsertRawFingerprint/publish/*
 src/Device.Fingerprint.InsertRawTransaction/publish/*
+src/Device.FingerPrint.Kafka/DockerCompose/bk/*

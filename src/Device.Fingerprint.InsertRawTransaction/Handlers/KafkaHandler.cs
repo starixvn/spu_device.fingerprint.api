@@ -23,7 +23,7 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
         {
             listTrans.Add(TranformTransaction(value));
 
-            if(listTrans.Count >= 10)
+            if(listTrans.Count >= 1)
             {
                 transactionService.InsertListTransaction(listTrans);
 
