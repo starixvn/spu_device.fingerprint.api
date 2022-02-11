@@ -38,7 +38,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             this.apiUrl = apiUrl;
             this.sessionKey = Guid.NewGuid().ToString("N");
 
-            transactionUrl = GetUrl(apiUrl, "api/transaction");
+            transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
         }
 
         public void InsertTransaction(string action, string loginName, long custId, long subAccId, string transKey)
@@ -167,7 +167,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             var url = baseUrl.EndsWith("/") ? baseUrl : baseUrl + "/";
 
-            return "http:" + url + relativeUrl;
+            return url + relativeUrl;
         }
 
         private string GetIP()
