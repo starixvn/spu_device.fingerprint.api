@@ -26,7 +26,7 @@ namespace demoAPI.Controllers
 
         private void FpsIntegration(string loginName)
         {
-            if (Session["fpsTrans"] == null)
+            if (Session["IsPushTrans"] == null)
             {
                 var subscriberId = Convert.ToInt32(ConfigurationManager.AppSettings["subscriberId"]);
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
@@ -36,7 +36,7 @@ namespace demoAPI.Controllers
 
                 fpsService.InsertTransaction("Login", loginName);
 
-                Session["fpsTrans"] = true;
+                Session["IsPushTrans"] = "Ok";
             }
         }
     }
