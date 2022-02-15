@@ -3,5 +3,7 @@
 <Functions>
 	<Function Name="Transaction">
 		<Setting Key="FP_RecoverDevice" SpName="FP_RecoverDevice" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FP_MergeTransaction" SpName="FP_MergeTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FP_UpdateTransaction" SpName="FP_UpdateTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>
