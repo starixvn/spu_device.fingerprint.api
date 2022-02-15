@@ -71,5 +71,39 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                 return false;
             }
         }
+
+        [HttpPost("updateTransaction24")]
+        public bool UpdateTransaction24()
+        {
+            try
+            {
+                this.deviceIdentifyServices.UpdateTransaction24();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("updateTransaction48")]
+        public bool UpdateTransaction48()
+        {
+            try
+            {
+                this.deviceIdentifyServices.UpdateTransaction48();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
     }
 }

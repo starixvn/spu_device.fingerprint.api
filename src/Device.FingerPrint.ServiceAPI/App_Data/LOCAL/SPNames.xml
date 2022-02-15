@@ -5,5 +5,7 @@
 		<Setting Key="FP_DeviceIdentify" SpName="FP_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 		<Setting Key="FP_MergeTransaction" SpName="FP_MergeTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FP_UpdateTransaction" SpName="FP_UpdateTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FP_UpdateTransaction24" SpName="FP_UpdateTransaction24" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FP_UpdateTransaction48" SpName="FP_UpdateTransaction48" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>  
 </Functions>
