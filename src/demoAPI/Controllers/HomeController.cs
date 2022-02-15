@@ -14,12 +14,12 @@ namespace demoAPI.Controllers
 
         public ActionResult Index()
         {
-            if (Session["Username"] == null)
-            {
-                return Redirect("Login");
-            }
+            //if (Session["Username"] == null)
+            //{
+            //    return Redirect("Login");
+            //}
 
-            FpsIntegration(Session["Username"].ToString());
+            //FpsIntegration(Session["Username"].ToString());
 
             return View();
         }
