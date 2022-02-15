@@ -32,7 +32,7 @@ namespace demoAPI.Controllers
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
                 var fpsService = new FpsService(subscriberId, apiUrl);
 
-                //ViewBag.fpsScript = fpsService.GetScriptUrl();                                
+                ViewBag.fpsScript = fpsService.GetScriptUrl();
 
                 //fpsService.InsertTransaction("Login", loginName);
 
