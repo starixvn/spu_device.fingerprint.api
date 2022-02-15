@@ -34,7 +34,7 @@ namespace demoAPI.Controllers
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
-                //fpsService.InsertTransaction("Login", loginName);
+                fpsService.InsertTransaction("Login", loginName);
 
                 Session["IsPushTrans"] = "Ok";
             }
