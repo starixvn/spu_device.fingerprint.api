@@ -54,5 +54,22 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                 return false;
             }
         }
+
+        [HttpPost("updateTransaction/{batchSize}")]
+        public bool UpdateTransaction(int batchSize)
+        {
+            try
+            {
+                this.deviceIdentifyServices.UpdateTransaction(batchSize);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
     }
 }

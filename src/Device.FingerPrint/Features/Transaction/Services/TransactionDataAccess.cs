@@ -15,6 +15,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
         void DeviceIdentify(int batchSize);
 
         void MergeTransaction(int batchSize);
+
+        void UpdateTransaction(int batchSize);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -51,6 +53,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
             var criteria = new MergeTransactionCriteria
             {
                Size  = batchSize
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void UpdateTransaction(int batchSize)
+        {
+            var criteria = new UpdateTransactionCriteria
+            {
+                Size = batchSize
             };
 
             repository.Execute(criteria);
