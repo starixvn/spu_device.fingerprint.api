@@ -1,6 +1,5 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
-using Device.FingerPrint.Features.FingerPrint.Model;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
@@ -12,7 +11,6 @@ using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Device.Fingerprint.WebAPI.MasterData.MasterData;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
