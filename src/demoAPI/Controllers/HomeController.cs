@@ -19,7 +19,7 @@ namespace demoAPI.Controllers
                 return Redirect("Login");
             }
 
-            //FpsIntegration(Session["Username"].ToString());
+            FpsIntegration(Session["Username"].ToString());
 
             return View();
         }
@@ -32,9 +32,9 @@ namespace demoAPI.Controllers
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
                 var fpsService = new FpsService(subscriberId, apiUrl);
 
-                ViewBag.fpsScript = fpsService.GetScriptUrl();                                
+                //ViewBag.fpsScript = fpsService.GetScriptUrl();                                
 
-                fpsService.InsertTransaction("Login", loginName);
+                //fpsService.InsertTransaction("Login", loginName);
 
                 Session["IsPushTrans"] = "Ok";
             }
