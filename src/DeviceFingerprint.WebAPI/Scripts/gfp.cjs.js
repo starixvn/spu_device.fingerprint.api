@@ -3228,22 +3228,27 @@ function storageHandler(name) {
         .then((driver) => {
         var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
             if (drive != null) {
-                var storageDriver = localForage__default["default"].createInstance({
-                    driver: drive,
-                    name: drive + "-EC",
-                    storeName: "ec",
-                });
-                return yield storageDriver.getItem(name, () => { });
+                try {
+                    var storageDriver = localForage__default["default"].createInstance({
+                        driver: drive,
+                        name: drive + "-EC",
+                        storeName: "ec",
+                    });
+                    return yield storageDriver.getItem(name, () => { });
+                }
+                catch (_a) {
+                    return Promise.resolve(null);
+                }
             }
         }));
         cookies.push(Promise.resolve(getCookie(name)));
         return cookies;
     })
         .then((res) => {
-        console.log(res);
         return Promise.all(res).then((cookies) => {
             var latestCookie = null;
             for (const cookie of cookies) {
+                console.log(cookie);
                 if (cookie != null) {
                     latestCookie = cookie;
                     break;
