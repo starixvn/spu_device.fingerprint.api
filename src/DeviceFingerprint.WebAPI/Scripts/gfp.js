@@ -8529,18 +8529,33 @@ var globalFP = (function (exports) {
         return Promise.resolve(localForageDrives);
     }
     function isWebSQL() {
-        if (!window.openDatabase)
+        try {
+            if (!window.openDatabase)
+                return false;
+        }
+        catch (_a) {
             return false;
+        }
         return true;
     }
     function isIndexDB() {
-        if (window.indexedDB)
-            return true;
+        try {
+            if (window.indexedDB)
+                return true;
+        }
+        catch (_a) {
+            return false;
+        }
         return false;
     }
     function isLocalStorage() {
-        if (window.localStorage)
-            return true;
+        try {
+            if (window.localStorage)
+                return true;
+        }
+        catch (_a) {
+            return false;
+        }
         return false;
     }
     function setCookie(name, value, days) {
