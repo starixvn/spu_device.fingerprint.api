@@ -4,9 +4,15 @@ using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using ONEbook.UM.AspNetCore;
+using ONEbook.UM.Configurations;
+using ONEbook.UM.Helpers;
+using ONEbook.UM.Services;
+using ONEbook.UM.Transport;
 using Quartz;
 using Refit;
 using Sentry;
@@ -59,6 +65,20 @@ namespace Device.FingerPrint.JobManagement
                 authenticationOptions.UserPassword = "admin";
                 authenticationOptions.AccessRequirement = SilkierQuartzAuthenticationOptions.SimpleAccessRequirement.AllowOnlyUsersWithClaim;
             });
+            services.AddSingleton<IAppSettings>(appSettings);
+            services.AddSingleton(new UMClientConfiguration().Initialize(Configuration));
+            services.AddSingleton<IUMCacheService, UMCacheService>();
+            services.AddSingleton<IUMRestClient, UMRestClient>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IHttpContextHelper, HttpContextHelper>();
+            services.AddSingleton<IMaintenanceService, MaintenanceService>();
+
+            services.AddRefitClient<IJobServiceApi>();
+            services.AddSingleton<IJobService, JobService>();
+            services.AddSingleton<QuartzHostedService>();
+            services.AddHostedService<QuartzHostedService>();
+            services.AddSingleton<JobExecute>();
+            services.AddSingleton<JobMonitoring>();
 
             services.AddRefitClient<IJobServiceApi>();
             services.AddSingleton<IJobService, JobService>();
