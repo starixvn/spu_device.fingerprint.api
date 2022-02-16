@@ -1,3 +1,4 @@
+using Device.FingerPrint.JobManagement.Services;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Quartz;
+using Refit;
 using Sentry;
 using SilkierQuartz;
 using System.Collections.Generic;
@@ -58,6 +60,12 @@ namespace Device.FingerPrint.JobManagement
                 authenticationOptions.AccessRequirement = SilkierQuartzAuthenticationOptions.SimpleAccessRequirement.AllowOnlyUsersWithClaim;
             });
 
+            services.AddRefitClient<IJobServiceApi>();
+            services.AddSingleton<IJobService, JobService>();
+            services.AddHostedService<QuartzHostedService>();
+            services.AddSingleton<JobExecute>();
+            services.AddSingleton<JobMonitoring>();
+
             RegisterLogging(appSettings);
         }
 
@@ -94,7 +102,7 @@ namespace Device.FingerPrint.JobManagement
                 {
                      new SentryLogging(new SentryEngineOptions {
                         Dsn = new Dsn(appSettings.SentryDsn),
-                        Environment = appSettings.Environment
+                        Environment = appSettings.EnvironmentString
                      })
                 });
         }

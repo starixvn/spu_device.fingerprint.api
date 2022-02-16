@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Device.FingerPrint.JobManagement.Models;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.ComponentModel;
 
@@ -10,7 +11,11 @@ namespace Device.FingerPrint.JobManagement
 
         string SentryDsn { get; }
 
-        string Environment { get; }                
+        int Environment { get; }
+
+        string EnvironmentString { get; }
+
+        Scheduler Schedulers { get; }
     }
 
     public class AppSettings: IAppSettings
@@ -29,14 +34,33 @@ namespace Device.FingerPrint.JobManagement
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
             environment = GetValue<string>("AppConfig:Environment");
-            
+
+            Schedulers = GetSection<Scheduler>(nameof(Schedulers));
         }                
 
         public string SPName => spName;
 
         public string SentryDsn => sentryDsn;
 
-        public string Environment => environment;               
+        public int Environment
+        {
+            get
+            {
+                switch (environment)
+                {
+                    case "LOCAL":
+                        return 1;
+                    case "UAT":
+                        return 2;
+                    default:
+                        return 3;
+                }
+            }
+        }
+
+        public string EnvironmentString => environment;
+
+        public Scheduler Schedulers { get; }
 
         public T GetValue<T>(string key)
         {
