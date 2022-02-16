@@ -11,16 +11,9 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
 {
     public interface IFpsService
     {
+        void InsertTransaction(string action, string loginName, DateTime loginTime);
 
-        void InsertTransaction(string action, string loginName, long custId , long subAccId, string transKey);
-
-        void InsertTransaction(HttpRequest request, string action, string loginName, long custId, long subAccId, string transKey);
-
-        void InsertTransaction(string action, string loginName, long custId, long subAccId);
-
-        void InsertTransaction(string action, string loginName);
-
-        void InsertTransaction(HttpRequest request, string action, string loginName);
+        void InsertTransaction(string action, string loginName, long custId, long subAccId, DateTime loginTime);
 
         string GetScriptUrl();
     }
@@ -41,33 +34,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
         }
 
-        public void InsertTransaction(string action, string loginName, long custId, long subAccId, string transKey)
-        {            
-            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
-            {               
-                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
-                var clientIp = GetIP();
-                var transaction = new TransactionModel
-                {
-                    LoginName = loginName,
-                    SessionKey = sessionKey,
-                    SubscriberId = subscriberId,
-                    UserAgent = userAgent,
-                    ClientIp = clientIp,
-                    TransTime = DateTime.Now,
-                    Url = HttpContext.Current.Request.Url.AbsoluteUri, 
-                    Action = action,
-                    TransKey = transKey,
-                    CustId = custId,
-                    SubAccId = subAccId
-                };
-                var cancelToken = new CancellationToken();
-
-                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
-            }           
-        }
-
-        public void InsertTransaction(string action, string loginName, long custId, long subAccId)
+        public void InsertTransaction(string action, string loginName, DateTime loginTime)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
@@ -82,9 +49,10 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                     ClientIp = clientIp,
                     TransTime = DateTime.Now,
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
-                    Action = action,                    
-                    CustId = custId,
-                    SubAccId = subAccId
+                    Action = action,
+                    TransKey = loginName + "#" + loginTime.Ticks,
+                    CustId = 0,
+                    SubAccId = 0
                 };
                 var cancelToken = new CancellationToken();
 
@@ -92,7 +60,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
             }
         }
 
-        public void InsertTransaction(string action, string loginName)
+        public void InsertTransaction(string action, string loginName, long custId, long subAccId, DateTime loginTime)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
@@ -107,53 +75,8 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                     ClientIp = clientIp,
                     TransTime = DateTime.Now,
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
-                    Action = action
-                };
-                var cancelToken = new CancellationToken();
-
-                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
-            }
-        }
-
-        public void InsertTransaction(HttpRequest request, string action, string loginName)
-        {
-            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
-            {
-                var userAgent = request.Headers["User-Agent"].ToString();
-                var clientIp = GetIP();
-                var transaction = new TransactionModel
-                {
-                    LoginName = loginName,
-                    SessionKey = sessionKey,
-                    SubscriberId = subscriberId,
-                    UserAgent = userAgent,
-                    ClientIp = clientIp,
-                    TransTime = DateTime.Now,
-                    Url = request.Url.AbsoluteUri,
-                    Action = action
-                };
-                var cancelToken = new CancellationToken();
-
-                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
-            }
-        }
-
-        public void InsertTransaction(HttpRequest request, string action, string loginName, long custId, long subAccId, string transKey)
-        {
-            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
-            {
-                var userAgent = request.Headers["User-Agent"].ToString();
-                var clientIp = GetIP();
-                var transaction = new TransactionModel
-                {
-                    LoginName = loginName,
-                    SessionKey = sessionKey,
-                    SubscriberId = subscriberId,
-                    UserAgent = userAgent,
-                    ClientIp = clientIp,
-                    TransTime = DateTime.Now,
-                    Url = request.Url.AbsoluteUri,
                     Action = action,
+                    TransKey = loginName + "#" + loginTime.Ticks,
                     CustId = custId,
                     SubAccId = subAccId
                 };
@@ -206,7 +129,5 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
         {
             return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberId}");
         }
-
-        
     }
 }
