@@ -20,6 +20,8 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Url { get; set; }
 
+        public string Action { get; set; }
+
         public string TransKey { get; set; }
 
         public long CustId { get; set; }

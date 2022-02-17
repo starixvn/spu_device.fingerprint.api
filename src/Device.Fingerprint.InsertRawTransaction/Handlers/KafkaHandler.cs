@@ -44,6 +44,7 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
                 TransKey = model.TransKey,
                 TransTime = model.TransTime,
                 Url = model.Url,
+                Action = model.Action,
                 UserAgent = model.UserAgent,
                 CustId = model.CustId,
                 SubAccId = model.SubAccId

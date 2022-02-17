@@ -129,6 +129,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         TransTime = data.TransTime,
                         UserAgent = data.UserAgent,
                         Url = data.Url,
+                        Action = data.Action,
                         TransKey = data.TransKey,
                         CustId = data.CustId,
                         SubAccId = data.SubAccId
