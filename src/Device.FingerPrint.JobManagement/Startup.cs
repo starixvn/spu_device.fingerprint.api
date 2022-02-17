@@ -1,8 +1,10 @@
 using Device.FingerPrint.JobManagement.Services;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
+using HealthChecks.UI.Client;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -73,6 +75,10 @@ namespace Device.FingerPrint.JobManagement
             services.AddSingleton<IHttpContextHelper, HttpContextHelper>();
             services.AddSingleton<IMaintenanceService, MaintenanceService>();
 
+            services.AddHealthChecks();
+            services.AddRazorPages();            
+            services.AddOptions();
+
             services.AddRefitClient<IJobServiceApi>();
             services.AddSingleton<IJobService, JobService>();
             services.AddSingleton<QuartzHostedService>();
@@ -96,6 +102,12 @@ namespace Device.FingerPrint.JobManagement
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseHealthChecks("/healthz", new HealthCheckOptions()
+            {
+                Predicate = _ => true,
+                ResponseWriter = UIResponseWriter.WriteHealthCheckUIResponse
+            });
 
             app.UseStaticFiles();
             app.UseRouting();
