@@ -14,3 +14,7 @@ include:
   - project: "ci/repos-ci/spu_fps_fp_api_job_service"
     ref: master
     file: "gitlab-ci-mixing.yml"    
+    
+  - project: "ci/repos-ci/spu_nap_fp_job_management_service"
+    ref: master
+    file: "gitlab-ci-mixing.yml" 
