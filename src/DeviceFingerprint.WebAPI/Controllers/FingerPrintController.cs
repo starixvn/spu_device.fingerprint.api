@@ -100,7 +100,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         DeviceInfo = fingerPrint.Device,
                         DeviceCode = fingerPrint.DeviceCode,
                         CookieId = fingerPrint.CookieId,
-                        Flagged = int.TryParse(fingerPrint.Flagged, out output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : ""
+                        Flagged = int.TryParse(fingerPrint.Flagged, out output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : "",
+                        Url = fingerPrint.Url
                     };
 
                     kafkaServices.SendFingerprintToKafka(fingerPrintModel);

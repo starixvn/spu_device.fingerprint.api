@@ -293,5 +293,8 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("flagged")]
         public string Flagged { get; set; }
+
+        [JsonProperty("url")]
+        public string Url { get; set; }
     }
 }

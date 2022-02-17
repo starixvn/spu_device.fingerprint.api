@@ -21,5 +21,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Model
         public long CookieId { get; set; }
 
         public string Flagged { get; set; }
+
+        public string Url { get; set; }
     }
 }

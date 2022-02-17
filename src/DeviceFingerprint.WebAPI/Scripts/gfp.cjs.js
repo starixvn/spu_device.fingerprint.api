@@ -3306,6 +3306,7 @@ function processData(result, sessionKey, cookieId) {
                 devCode: HashMD5(device),
                 cookieId: cookieId,
                 flagged: flagged,
+                url: window.location && window.location.origin ? `${window.location.origin}/` : ''
             }, response.a);
             postData(apiUrl, encryptedFP, response.b);
         }
