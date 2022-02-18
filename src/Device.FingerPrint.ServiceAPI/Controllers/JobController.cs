@@ -1,11 +1,7 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Sentry;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
 {
@@ -21,8 +17,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.sentryClient = sentryClient;
         }
 
-        [HttpPost("deviceidentify/{batchSize}")]
-        public bool DeviceIdentify(int batchSize)
+        [HttpPost("deviceidentify")]
+        public bool DeviceIdentify([FromForm] int batchSize)
         {
             try
             {
@@ -38,8 +34,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("mergetransaction/{batchSize}")]
-        public bool MergeTransaction(int batchSize)
+        [HttpPost("mergetransaction")]
+        public bool MergeTransaction([FromForm] int batchSize)
         {
             try
             {
@@ -55,8 +51,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("updateTransaction/{batchSize}")]
-        public bool UpdateTransaction(int batchSize)
+        [HttpPost("updateTransaction")]
+        public bool UpdateTransaction([FromForm] int batchSize)
         {
             try
             {

@@ -85,13 +85,7 @@ namespace Device.FingerPrint.JobManagement
             services.AddHostedService<QuartzHostedService>();
             services.AddSingleton<JobExecute>();
             services.AddSingleton<JobMonitoring>();
-
-            services.AddRefitClient<IJobServiceApi>();
-            services.AddSingleton<IJobService, JobService>();
-            services.AddHostedService<QuartzHostedService>();
-            services.AddSingleton<JobExecute>();
-            services.AddSingleton<JobMonitoring>();
-
+        
             RegisterLogging(appSettings);
         }
 
