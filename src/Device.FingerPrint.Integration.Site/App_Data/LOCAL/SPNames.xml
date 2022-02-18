@@ -2,6 +2,6 @@
 
 <Functions>
   <Function Name="Subscriber">
-    <Setting Key="FP_GetSubscriberList" SpName="FP_GetSubscriberList" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_GetSubscriberList" SpName="FPS_FP_GetSubscriberList" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 </Functions>

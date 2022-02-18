@@ -3,11 +3,11 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    class UpdateTransaction48Criteria : NonQueryCommand
+    class UpdateTransactionNCriteria : NonQueryCommand
     {
         public override string GetSettingKey()
         {
-            return "FP_UpdateTransaction48";
+            return "FPS_FP_UpdateTransactionN";
         }
 
         public override bool IsValid()

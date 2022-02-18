@@ -14,7 +14,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "FP_MergeTransaction";
+            return "FPS_FP_MergeTransaction";
         }
 
         public override bool IsValid()

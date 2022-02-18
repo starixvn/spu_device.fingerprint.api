@@ -2,14 +2,14 @@
 
 <Functions>
 	<Function Name="Transaction">
-		<Setting Key="FP_InsertTransaction" SpName="FP_InsertTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_InsertTransaction" SpName="FPS_FP_InsertTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
   <Function Name="FingerPrint">
-    <Setting Key="FP_InsertFingerPrint" SpName="FP_InsertFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FP_UpdateCookie" SpName="FP_UpdateCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FP_UpdateFingerPrintCookie" SpName="FP_UpdateFingerPrintCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_InsertFingerPrint" SpName="FPS_FP_InsertFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	<Setting Key="FPS_FP_UpdateCookie" SpName="FPS_FP_UpdateCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	<Setting Key="FPS_FP_UpdateFingerPrintCookie" SpName="FPS_FP_UpdateFingerPrintCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 	<Function Name="Subscriber">
-		<Setting Key="FP_GetSubscriberInfoById" SpName="FP_GetSubscriberInfoById" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_GetSubscriberInfoById" SpName="FPS_FP_GetSubscriberInfoById" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>

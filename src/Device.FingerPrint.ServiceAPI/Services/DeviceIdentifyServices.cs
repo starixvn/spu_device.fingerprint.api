@@ -10,9 +10,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void UpdateTransaction(int batchSize);
 
-        public void UpdateTransaction24();
-
-        public void UpdateTransaction48();
+        public void UpdateTransactionN();
     }
 
     public class DeviceIdentifyServices: IDeviceIdentifyServices
@@ -39,14 +37,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
             transactionService.UpdateTransaction(batchSize);
         }
 
-        public void UpdateTransaction24()
+        public void UpdateTransactionN()
         {
-            transactionService.UpdateTransaction24();
-        }
-
-        public void UpdateTransaction48()
-        {
-            transactionService.UpdateTransaction48();
+            transactionService.UpdateTransactionN();
         }
     }
 }
