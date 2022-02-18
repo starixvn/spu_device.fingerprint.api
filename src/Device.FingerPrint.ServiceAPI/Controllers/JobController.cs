@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
+using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
@@ -40,6 +41,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             try
             {
                 this.deviceIdentifyServices.MergeTransaction(batchSize);
+
+                LogService.Info($"MergeTransaction successful");
 
                 return true;
             }
