@@ -40,9 +40,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                this.deviceIdentifyServices.MergeTransaction(batchSize);
-
-                LogService.Info($"MergeTransaction successful");
+                this.deviceIdentifyServices.MergeTransaction(batchSize);                
 
                 return true;
             }
