@@ -52,7 +52,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("updateTransaction")]
+        [HttpPost("updatetransaction")]
         public bool UpdateTransaction([FromForm] int batchSize)
         {
             try
@@ -69,7 +69,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("updateTransactionN")]
+        [HttpPost("updatetransactionN")]
         public bool UpdateTransactionN()
         {
             try
