@@ -18,7 +18,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void UpdateTransaction(string json, int retry);
 
-        void UpdateTransactionN();
+        void UpdateTransactionN(string json);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -71,9 +71,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository.Execute(criteria);
         }
 
-        public void UpdateTransactionN()
+        public void UpdateTransactionN(string json)
         {
-            var criteria = new UpdateTransactionNCriteria{};
+            var criteria = new UpdateTransactionNCriteria
+            {
+                Json = json
+            };
 
             repository.Execute(criteria);
         }

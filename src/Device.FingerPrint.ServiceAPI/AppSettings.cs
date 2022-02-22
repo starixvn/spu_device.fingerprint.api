@@ -15,6 +15,8 @@ namespace Device.FingerPrint.ServiceAPI
         string SentryDsn { get; }
 
         string Environment { get; }
+
+        int RawTransactionRetry { get; }
     }
 
     public class AppSettings: IAppSettings
@@ -26,6 +28,7 @@ namespace Device.FingerPrint.ServiceAPI
         private readonly string encryptPassword;
         private readonly string sentryDsn;
         private readonly string environment;
+        private readonly int rawTransactionRetry;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -40,6 +43,8 @@ namespace Device.FingerPrint.ServiceAPI
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
             environment = GetValue<string>("AppConfig:Environment");
+
+            rawTransactionRetry = GetValue<int>("RawTransaction:Retry");
         }
 
         public string ApiUrl => apiUrl;
@@ -51,6 +56,8 @@ namespace Device.FingerPrint.ServiceAPI
         public string SentryDsn => sentryDsn;
 
         public string Environment => environment;
+
+        public int RawTransactionRetry => rawTransactionRetry;
 
         public T GetValue<T>(string key)
         {

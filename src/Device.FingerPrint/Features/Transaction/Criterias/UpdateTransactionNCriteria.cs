@@ -5,6 +5,9 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     class UpdateTransactionNCriteria : NonQueryCommand
     {
+        [SpParam(SqlParamName = "ip_RawTransJson")]
+        public string Json { get; set; }
+
         public override string GetSettingKey()
         {
             return "FPS_FP_UpdateTransactionN";

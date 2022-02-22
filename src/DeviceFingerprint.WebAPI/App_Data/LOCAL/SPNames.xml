@@ -13,7 +13,7 @@
 	<Setting Key="FPS_FP_UpdateFingerPrintCookie" SpName="FPS_FP_UpdateFingerPrintCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 	<Function Name="Subscriber">
-		<Setting Key="FPS_FP_GetSubscriberInfoById" SpName="FPS_FP_GetSubscriberInfoById" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Core_SubscriberInfoById_Get" SpName="FPS_FP_Core_SubscriberInfoById_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 	<Function Name="Offset">
 		<Setting Key="FPS_FP_GetOffset" SpName="FPS_FP_GetOffset" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>

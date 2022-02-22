@@ -1,7 +1,7 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
 
-namespace Device.FingerPrint.Features.Transaction.Criterias
+namespace Device.FingerPrint.Features.RawTransaction.Criterias
 {
     class GetRawTransCriteria : NonQueryCommand
     {

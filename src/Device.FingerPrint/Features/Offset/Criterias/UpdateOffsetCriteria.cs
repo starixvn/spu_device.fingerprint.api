@@ -13,7 +13,7 @@ namespace Device.FingerPrint.Features.Offset.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Offset_Offset_UpdateOffsetValue";
+            return "FPS_FP_Core_Offset_UpdateOffsetValue";
         }
 
         public override bool IsValid()

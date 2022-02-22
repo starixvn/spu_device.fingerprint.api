@@ -13,6 +13,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
     [Route("api/job")]
     public class JobController : ControllerBase
     {
+        private readonly IAppSettings appSettings;
         private readonly ISentryClient sentryClient;
         private readonly IDeviceIdentifyServices deviceIdentifyServices;
         private readonly IRawTransactionService rawTransactionServices;
@@ -23,12 +24,14 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IRawTransactionService rawTransactionServices
                             , IUpdateTransactionServices updateTransactionServices
                             , IOffsetService offsetService
+                            , IAppSettings appSettings
                             , ISentryClient sentryClient)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.rawTransactionServices = rawTransactionServices;
             this.updateTransactionServices = updateTransactionServices;
             this.offsetService = offsetService;
+            this.appSettings = appSettings;
             this.sentryClient = sentryClient;
         }
 
@@ -67,11 +70,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransaction")]
-        public bool UpdateTransactionNew([FromForm] int batchSize)
+        public bool UpdateTransaction([FromForm] int batchSize)
         {
             try
             {
                 var offsetName = "RawTransaction";
+                var retry = appSettings.RawTransactionRetry;
 
                 // GetOffset
                 var offsetRawTrans = offsetService.GetOffset(offsetName);
@@ -82,7 +86,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                 {
                     Size = batchSize,
                     Offset = offset.OffsetValue,
-                    Retry = 5
+                    Retry = retry
                 };
                 var rawTrans = rawTransactionServices.GetRawTrans(config);
 
@@ -92,7 +96,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                     offsetService.UpdateOffsetValue(offsetName, rawTrans.First().Id);
 
                     // UpdateTransaction
-                    updateTransactionServices.UpdateTransaction(rawTrans, batchSize);
+                    updateTransactionServices.UpdateRawTransaction(rawTrans, batchSize, retry);
                 }
 
                 return true;
@@ -106,11 +110,32 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransactionN")]
-        public bool UpdateTransactionN()
+        public bool UpdateTransactionN([FromForm] int batchSize)
         {
             try
             {
-                this.deviceIdentifyServices.UpdateTransactionN();
+                var offsetName = "RawTransactionN";
+
+                // GetOffset
+                var offsetRawTrans = offsetService.GetOffset(offsetName);
+                var offset = offsetRawTrans.First();
+
+                // GetRawTrans
+                RawTransactionConfigModel config = new()
+                {
+                    Size = batchSize,
+                    Offset = offset.OffsetValue
+                };
+
+                var rawTrans = rawTransactionServices.GetRawTransN(config);
+                if (rawTrans != null && rawTrans.Any())
+                {
+                    // UpdateOffset
+                    offsetService.UpdateOffsetValue(offsetName, rawTrans.First().Id);
+
+                    // UpdateTransaction
+                    updateTransactionServices.UpdateRawTransactionN(rawTrans, batchSize);
+                }
 
                 return true;
             }

@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.Features.Transaction.Criterias;
+﻿
+using Device.FingerPrint.Features.RawTransaction.Criterias;
 using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Model;
 using Fanex.Data.Repository;
@@ -10,6 +11,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
     public interface IRawTransactionDataAccess
     {
         IEnumerable<RawTransactionEntity> GetRawTrans(RawTransactionConfigModel config);
+        IEnumerable<RawTransactionEntity> GetRawTransN(RawTransactionConfigModel config);
     }
 
     public class RawTransactionDataAccess: IRawTransactionDataAccess
@@ -28,6 +30,17 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
                 Size = config.Size,
                 Offset = config.Offset,
                 Retry = config.Retry
+            };
+
+            return repository.Fetch<RawTransactionEntity>(criteria);
+        }
+
+        public IEnumerable<RawTransactionEntity> GetRawTransN(RawTransactionConfigModel config)
+        {
+            var criteria = new GetRawTransNCriteria 
+            { 
+                Size = config.Size,
+                Offset = config.Offset
             };
 
             return repository.Fetch<RawTransactionEntity>(criteria);
