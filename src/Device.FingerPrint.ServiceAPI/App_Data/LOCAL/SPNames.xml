@@ -6,5 +6,11 @@
 		<Setting Key="FPS_FP_MergeTransaction" SpName="FPS_FP_MergeTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 		<Setting Key="FPS_FP_UpdateTransaction" SpName="FPS_FP_UpdateTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_UpdateTransactionN" SpName="FPS_FP_UpdateTransactionN" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	</Function>  
+	</Function>
+  <Function Name="RawTransaction">
+    <Setting Key="FPS_FP_GetRawTrans" SpName="FPS_FP_GetRawTrans" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
+  <Function Name="Offset">
+    <Setting Key="FPS_FP_GetOffset" SpName="FPS_FP_GetOffset" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
 </Functions>

@@ -8,8 +8,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void MergeTransaction(int batchSize);
 
-        public void UpdateTransaction(int batchSize);
-
         public void UpdateTransactionN();
     }
 
@@ -30,11 +28,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
         public void MergeTransaction(int batchSize)
         {
             transactionService.MergeTransaction(batchSize);
-        }
-
-        public void UpdateTransaction(int batchSize)
-        {
-            transactionService.UpdateTransaction(batchSize);
         }
 
         public void UpdateTransactionN()

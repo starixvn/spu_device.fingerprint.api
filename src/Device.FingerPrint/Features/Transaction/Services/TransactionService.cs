@@ -12,7 +12,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void MergeTransaction(int batchSize);
 
-        void UpdateTransaction(int batchSize);
+        void UpdateTransaction(string json, int retry);
 
         void UpdateTransactionN();
     }
@@ -43,9 +43,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.MergeTransaction(batchSize);
         }
 
-        public void UpdateTransaction(int batchSize)
+        public void UpdateTransaction(string json, int retry)
         {
-            transactionDataAccess.UpdateTransaction(batchSize);
+            transactionDataAccess.UpdateTransaction(json, retry);
         }
 
         public void UpdateTransactionN()

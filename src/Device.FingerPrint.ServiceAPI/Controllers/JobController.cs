@@ -1,8 +1,11 @@
-﻿using Device.FingerPrint.ServiceAPI.Services;
-using Fanex.Logging;
+﻿using Device.FingerPrint.Features.Offset.Services;
+using Device.FingerPrint.Features.RawTransaction.Services;
+using Device.FingerPrint.Model;
+using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
+using System.Linq;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
 {
@@ -12,9 +15,20 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
     {
         private readonly ISentryClient sentryClient;
         private readonly IDeviceIdentifyServices deviceIdentifyServices;
-        public JobController(IDeviceIdentifyServices deviceIdentifyServices, ISentryClient sentryClient)
+        private readonly IRawTransactionService rawTransactionServices;
+        private readonly IOffsetService offsetService;
+        private readonly IUpdateTransactionServices updateTransactionServices;
+
+        public JobController(IDeviceIdentifyServices deviceIdentifyServices
+                            , IRawTransactionService rawTransactionServices
+                            , IUpdateTransactionServices updateTransactionServices
+                            , IOffsetService offsetService
+                            , ISentryClient sentryClient)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
+            this.rawTransactionServices = rawTransactionServices;
+            this.updateTransactionServices = updateTransactionServices;
+            this.offsetService = offsetService;
             this.sentryClient = sentryClient;
         }
 
@@ -53,11 +67,33 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransaction")]
-        public bool UpdateTransaction([FromForm] int batchSize)
+        public bool UpdateTransactionNew([FromForm] int batchSize)
         {
             try
             {
-                this.deviceIdentifyServices.UpdateTransaction(batchSize);
+                var offsetName = "RawTransaction";
+
+                // GetOffset
+                var offsetRawTrans = offsetService.GetOffset(offsetName);
+                var offset = offsetRawTrans.First();
+
+                // GetRawTrans
+                RawTransactionConfigModel config = new()
+                {
+                    Size = batchSize,
+                    Offset = offset.OffsetValue,
+                    Retry = 5
+                };
+                var rawTrans = rawTransactionServices.GetRawTrans(config);
+
+                if (rawTrans != null && rawTrans.Any())
+                {
+                    // UpdateOffset
+                    offsetService.UpdateOffsetValue(offsetName, rawTrans.First().Id);
+
+                    // UpdateTransaction
+                    updateTransactionServices.UpdateTransaction(rawTrans, batchSize);
+                }
 
                 return true;
             }
