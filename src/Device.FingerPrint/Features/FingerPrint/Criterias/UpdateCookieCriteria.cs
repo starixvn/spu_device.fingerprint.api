@@ -13,7 +13,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_UpdateCookie";
+            return "FPS_FP_Transform_Cookie_Update";
         }
 
         public override bool IsValid()

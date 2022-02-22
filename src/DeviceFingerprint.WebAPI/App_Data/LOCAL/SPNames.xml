@@ -2,20 +2,17 @@
 
 <Functions>
 	<Function Name="Transaction">
-		<Setting Key="FPS_FP_InsertTransaction" SpName="FPS_FP_InsertTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_Transaction_Insert" SpName="FPS_FP_Transform_Transaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 	<Function Name="RawTransaction">
-		<Setting Key="FPS_FP_GetRawTrans" SpName="FPS_FP_GetRawTrans" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_RawTrans_Get" SpName="FPS_FP_Transform_RawTrans_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
   <Function Name="FingerPrint">
-    <Setting Key="FPS_FP_InsertFingerPrint" SpName="FPS_FP_InsertFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_UpdateCookie" SpName="FPS_FP_UpdateCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_UpdateFingerPrintCookie" SpName="FPS_FP_UpdateFingerPrintCookie" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_FingerPrint_Insert" SpName="FPS_FP_Transform_FingerPrint_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	<Setting Key="FPS_FP_Transform_Cookie_Update" SpName="FPS_FP_Transform_Cookie_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	<Setting Key="FPS_FP_Transform_FingerPrintCookie_Update" SpName="FPS_FP_Transform_FingerPrintCookie_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 	<Function Name="Subscriber">
 		<Setting Key="FPS_FP_Core_SubscriberInfoById_Get" SpName="FPS_FP_Core_SubscriberInfoById_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	</Function>
-	<Function Name="Offset">
-		<Setting Key="FPS_FP_GetOffset" SpName="FPS_FP_GetOffset" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>

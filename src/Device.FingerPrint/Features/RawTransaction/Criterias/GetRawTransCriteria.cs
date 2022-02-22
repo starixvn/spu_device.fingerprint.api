@@ -16,7 +16,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_GetRawTrans";
+            return "FPS_FP_Transform_RawTrans_Get";
         }
 
         public override bool IsValid()

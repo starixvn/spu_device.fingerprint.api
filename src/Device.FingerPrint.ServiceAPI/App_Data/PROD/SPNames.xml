@@ -2,7 +2,7 @@
 
 <Functions>
 	<Function Name="Transaction">
-		<Setting Key="FPS_FP_MergeTransaction" SpName="FPS_FP_MergeTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-		<Setting Key="FPS_FP_UpdateTransaction" SpName="FPS_FP_UpdateTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_Transaction_Merge" SpName="FPS_FP_Transform_Transaction_Merge" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_Transaction_Update" SpName="FPS_FP_Transform_Transaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>

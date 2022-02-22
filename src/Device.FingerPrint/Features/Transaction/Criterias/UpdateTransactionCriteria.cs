@@ -13,7 +13,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_UpdateTransaction";
+            return "FPS_FP_Transform_Transaction_Update";
         }
 
         public override bool IsValid()

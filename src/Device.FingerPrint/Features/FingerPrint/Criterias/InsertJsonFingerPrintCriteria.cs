@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_InsertFingerPrint";
+            return "FPS_FP_Transform_FingerPrint_Insert";
         }
 
         public override bool IsValid()

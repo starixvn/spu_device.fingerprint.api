@@ -7,7 +7,7 @@ namespace Device.FingerPrint.Features.Subscriber.Criterias
     {
         public override string GetSettingKey()
         {
-            return "FPS_FP_GetSubscriberList";
+            return "FPS_FP_Core_SubscriberList_Get";
         }
 
         public override bool IsValid()

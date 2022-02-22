@@ -2,14 +2,14 @@
 
 <Functions>
 	<Function Name="Transaction">
-		<Setting Key="FPS_FP_DeviceIdentify" SpName="FPS_FP_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-		<Setting Key="FPS_FP_MergeTransaction" SpName="FPS_FP_MergeTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-		<Setting Key="FPS_FP_UpdateTransaction" SpName="FPS_FP_UpdateTransaction" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_UpdateTransactionN" SpName="FPS_FP_UpdateTransactionN" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_DeviceIdentify" SpName="FPS_FP_Transform_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_Transaction_Merge" SpName="FPS_FP_Transform_Transaction_Merge" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_Transaction_Update" SpName="FPS_FP_Transform_Transaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_TransactionN_Update" SpName="FPS_FP_Transform_TransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
   <Function Name="RawTransaction">
-    <Setting Key="FPS_FP_GetRawTrans" SpName="FPS_FP_GetRawTrans" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_GetRawTransN" SpName="FPS_FP_GetRawTransN" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_RawTrans_Get" SpName="FPS_FP_Transform_RawTrans_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_RawTransN_Get" SpName="FPS_FP_Transform_RawTransN_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
   <Function Name="Offset">
     <Setting Key="FPS_FP_Core_Offset_Get" SpName="FPS_FP_Core_Offset_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
