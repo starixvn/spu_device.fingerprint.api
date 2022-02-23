@@ -10,8 +10,8 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
 
     public interface IRawTransactionDataAccess
     {
-        IEnumerable<RawTransactionEntity> GetRawTrans(RawTransactionConfigModel config);
-        IEnumerable<RawTransactionEntity> GetRawTransN(RawTransactionConfigModel config);
+        IEnumerable<RawTransactionEntity> GetRawTrans(int batchSize, int retry, string offsetName);
+        IEnumerable<RawTransactionEntity> GetRawTransN(int batchSize, string offsetName);
     }
 
     public class RawTransactionDataAccess: IRawTransactionDataAccess
@@ -23,24 +23,24 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<RawTransactionEntity> GetRawTrans(RawTransactionConfigModel config)
+        public IEnumerable<RawTransactionEntity> GetRawTrans(int batchSize, int retry, string offsetName)
         {
             var criteria = new GetRawTransCriteria 
             { 
-                Size = config.Size,
-                OffsetName = config.OffsetName,
-                Retry = config.Retry
+                Size = batchSize,
+                Retry = retry,
+                OffsetName = offsetName
             };
 
             return repository.Fetch<RawTransactionEntity>(criteria);
         }
 
-        public IEnumerable<RawTransactionEntity> GetRawTransN(RawTransactionConfigModel config)
+        public IEnumerable<RawTransactionEntity> GetRawTransN(int batchSize, string offsetName)
         {
             var criteria = new GetRawTransNCriteria 
             { 
-                Size = config.Size,
-                OffsetName = config.OffsetName
+                Size = batchSize,
+                OffsetName = offsetName
             };
 
             return repository.Fetch<RawTransactionEntity>(criteria);

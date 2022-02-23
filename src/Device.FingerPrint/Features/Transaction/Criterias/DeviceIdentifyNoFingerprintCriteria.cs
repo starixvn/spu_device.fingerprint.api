@@ -6,7 +6,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
     public class DeviceIdentifyNoFingerprintCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_TransJson")]
-        public string Json { get; set; }
+        public string TransJson { get; set; }
 
         public override string GetSettingKey()
         {

@@ -8,8 +8,8 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
 
     public interface IRawTransactionService
     {
-        IEnumerable<RawTransactionModel> GetRawTrans(RawTransactionConfigModel config);
-        IEnumerable<RawTransactionModel> GetRawTransN(RawTransactionConfigModel config);
+        IEnumerable<RawTransactionModel> GetRawTrans(int batchSize, int retry, string offsetName);
+        IEnumerable<RawTransactionModel> GetRawTransN(int batchSize, string offsetName);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -22,9 +22,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             this.rawTransactionDataAccess = rawTransactionDataAccess;
         }
 
-        public IEnumerable<RawTransactionModel> GetRawTrans(RawTransactionConfigModel config)
+        public IEnumerable<RawTransactionModel> GetRawTrans(int batchSize, int retry, string offsetName)
         {
-            var rawTrans = rawTransactionDataAccess.GetRawTrans(config);
+            var rawTrans = rawTransactionDataAccess.GetRawTrans(batchSize, retry, offsetName);
 
             if (rawTrans != null && rawTrans.Any())
             {
@@ -49,9 +49,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             return new List<RawTransactionModel>();
         }
 
-        public IEnumerable<RawTransactionModel> GetRawTransN(RawTransactionConfigModel config)
+        public IEnumerable<RawTransactionModel> GetRawTransN(int batchSize, string offsetName)
         {
-            var rawTrans = rawTransactionDataAccess.GetRawTransN(config);
+            var rawTrans = rawTransactionDataAccess.GetRawTransN(batchSize, offsetName);
 
             if (rawTrans != null && rawTrans.Any())
             {

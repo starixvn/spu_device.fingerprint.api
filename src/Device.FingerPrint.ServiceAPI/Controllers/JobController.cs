@@ -1,10 +1,7 @@
-﻿using Device.FingerPrint.Features.Offset.Services;
-using Device.FingerPrint.Model;
-using Device.FingerPrint.ServiceAPI.Services;
+﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
-using System.Linq;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
 {
@@ -14,14 +11,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
     {
         private readonly ISentryClient sentryClient;
         private readonly IDeviceIdentifyServices deviceIdentifyServices;
-        private readonly IOffsetService offsetService;
 
         public JobController(IDeviceIdentifyServices deviceIdentifyServices
-                            , IOffsetService offsetService
                             , ISentryClient sentryClient)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
-            this.offsetService = offsetService;
             this.sentryClient = sentryClient;
         }
 
@@ -30,7 +24,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                this.deviceIdentifyServices.ServiceDeviceIdentify(batchSize);
+                this.deviceIdentifyServices.DeviceIdentify(batchSize);
 
                 return true;
             }
@@ -60,11 +54,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransaction")]
-        public bool UpdateTransaction([FromForm] int batchSize)
+        public bool UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                this.deviceIdentifyServices.ServiceUpdateTransaction(batchSize);
+                deviceIdentifyServices.UpdateTransaction(batchSize, numberOfBatch);
 
                 return true;
             }
@@ -77,11 +71,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransactionN")]
-        public bool UpdateTransactionN([FromForm] int batchSize)
+        public bool UpdateTransactionN([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                this.deviceIdentifyServices.ServiceUpdateTransactionN(batchSize);
+                deviceIdentifyServices.UpdateTransactionN(batchSize, numberOfBatch);
 
                 return true;
             }

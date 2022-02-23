@@ -10,17 +10,17 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         void InsertListTransaction(IEnumerable<TransactionEntity> transactions);
 
-        void DeviceIdentify(string json, string offsetName);
+        void DeviceIdentify(string transJson, string offsetName);
 
-        void DeviceIdentifyNoFingerprint(string json);
+        void DeviceIdentifyNoFingerprint(string transJson);
 
         IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName);
 
         void MergeTransaction(int batchSize);
 
-        void UpdateTransaction(TransactionUpdateConfigModel model);
+        void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue);
 
-        void UpdateTransactionN(TransactionUpdateConfigModel model);
+        void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue);
     }
 
     public class TransactionService : ITransactionService
@@ -39,14 +39,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.InsertJsonTransaction(JsonFingerPrint);
         }
 
-        public void DeviceIdentify(string json, string offsetName)
+        public void DeviceIdentify(string transJson, string offsetName)
         {
-            transactionDataAccess.DeviceIdentify(json, offsetName);
+            transactionDataAccess.DeviceIdentify(transJson, offsetName);
         }
 
-        public void DeviceIdentifyNoFingerprint(string json)
+        public void DeviceIdentifyNoFingerprint(string transJson)
         {
-            transactionDataAccess.DeviceIdentifyNoFingerprint(json);
+            transactionDataAccess.DeviceIdentifyNoFingerprint(transJson);
         }
 
         public IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName)
@@ -85,14 +85,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.MergeTransaction(batchSize);
         }
 
-        public void UpdateTransaction(TransactionUpdateConfigModel model)
+        public void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue)
         {
-            transactionDataAccess.UpdateTransaction(model);
+            transactionDataAccess.UpdateTransaction(rawTransJson, retry, offsetName, offsetvalue);
         }
 
-        public void UpdateTransactionN(TransactionUpdateConfigModel model)
+        public void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue)
         {
-            transactionDataAccess.UpdateTransactionN(model);
+            transactionDataAccess.UpdateTransactionN(rawTransJson, offsetName, offsetvalue);
         }
     }
 }

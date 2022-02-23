@@ -6,7 +6,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
     class UpdateTransactionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_RawTransJson")]
-        public string Json { get; set; }
+        public string RawTransJson { get; set; }
 
         [SpParam(SqlParamName = "ip_Retry")]
         public int Retry { get; set; }
