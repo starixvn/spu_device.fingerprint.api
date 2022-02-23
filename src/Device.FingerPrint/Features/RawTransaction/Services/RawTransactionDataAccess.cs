@@ -28,7 +28,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             var criteria = new GetRawTransCriteria 
             { 
                 Size = config.Size,
-                Offset = config.Offset,
+                OffsetName = config.OffsetName,
                 Retry = config.Retry
             };
 
@@ -40,7 +40,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             var criteria = new GetRawTransNCriteria 
             { 
                 Size = config.Size,
-                Offset = config.Offset
+                OffsetName = config.OffsetName
             };
 
             return repository.Fetch<RawTransactionEntity>(criteria);

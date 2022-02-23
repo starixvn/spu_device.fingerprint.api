@@ -8,8 +8,8 @@ namespace Device.FingerPrint.Features.RawTransaction.Criterias
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
 
-        [SpParam(SqlParamName = "ip_Offset")]
-        public long Offset { get; set; }
+        [SpParam(SqlParamName = "ip_OffsetName")]
+        public string OffsetName { get; set; }
 
         [SpParam(SqlParamName = "ip_Retry")]
         public int Retry { get; set; }

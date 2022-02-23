@@ -25,7 +25,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             services.AddSingleton<IRawTransactionDataAccess, RawTransactionDataAccess>();
             services.AddSingleton<IRawTransactionService, RawTransactionService>();
-            services.AddSingleton<IUpdateTransactionServices, UpdateTransactionServices>();
         }
 
         private static void RegisterOffsetService(this IServiceCollection services)

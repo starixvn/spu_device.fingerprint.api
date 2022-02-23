@@ -1,6 +1,8 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
+using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
@@ -8,13 +10,17 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         void InsertListTransaction(IEnumerable<TransactionEntity> transactions);
 
-        void DeviceIdentify(int batchSize);
+        void DeviceIdentify(string json, string offsetName);
+
+        void DeviceIdentifyNoFingerprint(string json);
+
+        IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName);
 
         void MergeTransaction(int batchSize);
 
-        void UpdateTransaction(string json, int retry);
+        void UpdateTransaction(TransactionUpdateConfigModel model);
 
-        void UpdateTransactionN(string json);
+        void UpdateTransactionN(TransactionUpdateConfigModel model);
     }
 
     public class TransactionService : ITransactionService
@@ -33,9 +39,45 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.InsertJsonTransaction(JsonFingerPrint);
         }
 
-        public void DeviceIdentify(int batchSize)
+        public void DeviceIdentify(string json, string offsetName)
         {
-            transactionDataAccess.DeviceIdentify(batchSize);
+            transactionDataAccess.DeviceIdentify(json, offsetName);
+        }
+
+        public void DeviceIdentifyNoFingerprint(string json)
+        {
+            transactionDataAccess.DeviceIdentifyNoFingerprint(json);
+        }
+
+        public IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName)
+        {
+            var rawTrans = transactionDataAccess.GetDeviceIdentify(batchSize, offsetName);
+
+            if (rawTrans != null && rawTrans.Any())
+            {
+                return rawTrans.Select(x => new DeviceTransactionEntity
+                {
+                    Id = x.Id,
+                    RawTransId = x.RawTransId,
+                    CustId = x.CustId,
+                    SubAccId = x.SubAccId,
+                    LoginName = x.LoginName,
+                    SubscriberId = x.SubscriberId,
+                    FingerPrintCode = x.FingerPrintCode,
+                    CookieId = x.CookieId,
+                    TransTime = x.TransTime,
+                    ClientIp = x.ClientIp,
+                    UserAgent = x.UserAgent,
+                    Url = x.Url,
+                    Action = x.Action,
+                    ModifiedDate = x.ModifiedDate,
+                    CreatedDate = x.CreatedDate,
+                    TransKey = x.TransKey,
+                    Flagged = x.Flagged
+                });
+            }
+
+            return new List<DeviceTransactionEntity>();
         }
 
         public void MergeTransaction(int batchSize)
@@ -43,14 +85,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.MergeTransaction(batchSize);
         }
 
-        public void UpdateTransaction(string json, int retry)
+        public void UpdateTransaction(TransactionUpdateConfigModel model)
         {
-            transactionDataAccess.UpdateTransaction(json, retry);
+            transactionDataAccess.UpdateTransaction(model);
         }
 
-        public void UpdateTransactionN(string json)
+        public void UpdateTransactionN(TransactionUpdateConfigModel model)
         {
-            transactionDataAccess.UpdateTransactionN(json);
+            transactionDataAccess.UpdateTransactionN(model);
         }
     }
 }

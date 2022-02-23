@@ -5,8 +5,11 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     public class DeviceIdentifyCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_BatchSize")]
-        public int Size { get; set; }
+        [SpParam(SqlParamName = "ip_TransJson")]
+        public string Json { get; set; }
+
+        [SpParam(SqlParamName = "ip_OffsetName")]
+        public string OffsetName { get; set; }
 
         public override string GetSettingKey()
         {

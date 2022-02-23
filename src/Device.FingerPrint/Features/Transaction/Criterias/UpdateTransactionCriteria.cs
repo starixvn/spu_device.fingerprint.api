@@ -11,6 +11,12 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_Retry")]
         public int Retry { get; set; }
 
+        [SpParam(SqlParamName = "ip_OffsetName")]
+        public string OffsetName { get; set; }
+
+        [SpParam(SqlParamName = "ip_Offsetvalue")]
+        public long Offsetvalue { get; set; }
+
         public override string GetSettingKey()
         {
             return "FPS_FP_Transform_Transaction_Update";
