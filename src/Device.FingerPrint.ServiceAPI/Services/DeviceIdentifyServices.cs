@@ -20,7 +20,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         public void UpdateTransactionN(int batchSize, int numberOfBatch);
     }
 
-    public class DeviceIdentifyServices: IDeviceIdentifyServices
+    public class DeviceIdentifyServices : IDeviceIdentifyServices
     {
         private readonly IAppSettings appSettings;
         private readonly ITransactionService transactionService;
@@ -35,54 +35,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void DeviceIdentify(int batchSize)
         {
-            var offsetName = "DeviceIndetify";
-            var rawTrans = transactionService.GetDeviceIdentify(batchSize, offsetName);
+            var rawTrans = transactionService.GetDeviceIdentify(batchSize, Offset.DeviceIndetify);
+
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessDeviceIdentify(rawTrans, offsetName);
-            }
-        }
-
-        private async void ProcessDeviceIdentify(IEnumerable<DeviceTransactionEntity> rawTrans, string offsetName)
-        {
-            var groupRawTrans = rawTrans.Select((v, i) => new { v, checkDevice = v.FingerPrintCode == null ? 0 : 1 })
-                                        .GroupBy(x => x.checkDevice)
-                                        .Select(g => g.Select(x => x.v));
-
-            if (groupRawTrans != null && groupRawTrans.Any())
-            {
-                var tasks = new List<Task>();
-                foreach (var item in groupRawTrans)
-                {
-                    var records = item.Distinct();
-                    if (records != null && records.Any())
-                    {
-                        var firstItem = records.First();
-                        if (firstItem.FingerPrintCode == null)
-                        {
-                            var task = Task.Run(() =>
-                            {
-                                transactionService.DeviceIdentifyNoFingerprint(JsonConvert.SerializeObject(records));
-                            });
-                            tasks.Add(task);
-                        }
-                        else
-                        {
-                            var task = Task.Run(() =>
-                            {
-                                transactionService.DeviceIdentify(JsonConvert.SerializeObject(records), offsetName);
-                            });
-                            tasks.Add(task);
-                        }
-                    }
-                }
-
-                // Run Tasks
-                if (tasks.Count > 0)
-                {
-                    var taskCompleted = Task.WhenAll(tasks.ToArray());
-                    await taskCompleted;
-                }
+                ProcessDeviceIdentify(rawTrans, Offset.DeviceIndetify);
             }
         }
 
@@ -93,69 +50,100 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void UpdateTransaction(int batchSize, int numberOfBatch)
         {
-            var offsetName = "RawTransaction";
-            var retry = appSettings.RawTransactionRetry;
-            var rawTrans = rawTransactionServices.GetRawTrans(batchSize * numberOfBatch, retry, offsetName);
+            var rawTrans = rawTransactionServices.GetRawTrans(batchSize * numberOfBatch, appSettings.RawTransactionRetry, Offset.RawTransaction);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessUpdateTransaction(rawTrans, batchSize, retry, offsetName);
+                ProcessUpdateTransaction(rawTrans, batchSize, appSettings.RawTransactionRetry, Offset.RawTransaction);
             }
         }
-
-        private async void ProcessUpdateTransaction(IEnumerable<RawTransactionModel> rawTrans, int batchSize, int retry, string offsetName)
-        {
-            var result = new List<RawTransactionModel>();
-            var tasks = new List<Task>();
-            var chunkRawTrans = rawTrans.Chunk2(batchSize);
-
-            foreach (var item in chunkRawTrans)
-            {
-                var records = item.Distinct();
-                var task = Task.Run(() =>
-                {
-                    var rawTransJson = JsonConvert.SerializeObject(records);
-                    var offsetvalue = rawTrans.Min(x => x.Id);
-                    transactionService.UpdateTransaction(rawTransJson, retry, offsetName, offsetvalue);
-                });
-                tasks.Add(task);
-            }
-            var taskCompleted = Task.WhenAll(tasks.ToArray());
-            await taskCompleted;
-        }
-
         public void UpdateTransactionN(int batchSize, int numberOfBatch)
         {
-            var offsetName = "RawTransactionN";
-            var rawTrans = rawTransactionServices.GetRawTransN(batchSize * numberOfBatch, offsetName);
+            var rawTrans = rawTransactionServices.GetRawTransN(batchSize * numberOfBatch, Offset.RawTransactionN);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessUpdateTransactionN(rawTrans, batchSize, offsetName);
+                ProcessUpdateTransactionN(rawTrans, batchSize, Offset.RawTransactionN);
             }
         }
 
-        private async void ProcessUpdateTransactionN(IEnumerable<RawTransactionModel> rawTrans, int batchSize, string offsetName)
+        private void ProcessUpdateTransaction(IEnumerable<RawTransactionModel> rawTrans, int batchSize, int retry, string offsetName)
         {
-            var result = new List<RawTransactionModel>();
-            var tasks = new List<Task>();
             if (rawTrans != null && rawTrans.Any())
             {
+                var tasks = new List<Task>();
                 var chunkRawTrans = rawTrans.Chunk2(batchSize);
 
                 foreach (var item in chunkRawTrans)
                 {
-                    var records = item.Distinct();
                     var task = Task.Run(() =>
                     {
-                        var rawTransJson = JsonConvert.SerializeObject(records);
+                        var rawTransJson = JsonConvert.SerializeObject(item);
+                        var offsetValue = rawTrans.Min(x => x.Id);
+
+                        transactionService.UpdateTransaction(rawTransJson, retry, offsetName, offsetValue);
+                    });
+
+                    tasks.Add(task);
+                }
+
+                Task.WhenAll(tasks.ToArray());
+            }
+        }
+
+        private void ProcessUpdateTransactionN(IEnumerable<RawTransactionModel> rawTrans, int batchSize, string offsetName)
+        {
+            if (rawTrans != null && rawTrans.Any())
+            {
+                var tasks = new List<Task>();
+                var chunkRawTrans = rawTrans.Chunk2(batchSize);
+
+                foreach (var item in chunkRawTrans)
+                {
+                    var task = Task.Run(() =>
+                    {
+                        var rawTransJson = JsonConvert.SerializeObject(item);
                         var offsetvalue = rawTrans.Min(x => x.Id);
                         transactionService.UpdateTransactionN(rawTransJson, offsetName, offsetvalue);
                     });
+
                     tasks.Add(task);
                 }
-                var taskCompleted = Task.WhenAll(tasks.ToArray());
-                await taskCompleted;
+
+                Task.WhenAll(tasks.ToArray());
+            }
+        }
+
+        private void ProcessDeviceIdentify(IEnumerable<DeviceTransactionEntity> rawTrans, string offsetName)
+        {
+
+            if (rawTrans != null && rawTrans.Any())
+            {
+                var tasks = new List<Task>();
+
+                var groupByRawTrans = rawTrans.GroupBy(x => x.FingerPrintCode != null);
+
+                foreach (var group in groupByRawTrans)
+                {
+                    var existingFingerPrint = JsonConvert.SerializeObject(group);
+
+                    if (group.Key)
+                    {
+                        tasks.Add(Task.Run(() =>
+                        {
+                            transactionService.DeviceIdentify(existingFingerPrint, offsetName);
+                        }));
+                    }
+                    else
+                    {
+                        tasks.Add(Task.Run(() =>
+                        {
+                            transactionService.DeviceIdentifyNoFingerprint(existingFingerPrint);
+                        }));
+                    }
+                }
+
+                Task.WhenAll(tasks.ToArray());
             }
         }
     }
