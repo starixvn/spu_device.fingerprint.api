@@ -29,10 +29,6 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             if(subcribers != null && subcribers.Any())
             {
                 return subcribers.Select(x => new SubscriberModel {
-                    DomainId = x.DomainId,
-                    DomainName = x.DomainName,
-                    IsActived = x.IsActived,
-                    IsMain = x.IsMain,
                     SubscriberId  = x.SubscriberId,
                     SubscriberName =x.SubscriberName
                 });
@@ -49,10 +45,6 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             {
                 return subcribers.Select(x => new SubscriberModel
                 {
-                    DomainId = x.DomainId,
-                    DomainName = x.DomainName,
-                    IsActived = x.IsActived,
-                    IsMain = x.IsMain,
                     SubscriberId = x.SubscriberId,
                     SubscriberName = x.SubscriberName
                 });

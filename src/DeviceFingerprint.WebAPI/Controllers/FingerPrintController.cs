@@ -153,8 +153,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             if (subscribers != null && subscribers.Any())
             {
                 var domains = subscribers
-                .Where(x => x.IsActived)
-                .Select(x => x.DomainName);
+                .Select(x => x.SubscriberName);
 
                 return Ok(domains);
             }
@@ -197,7 +196,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             if (subscribers != null && subscribers.Any())
             {
-                var subscriber = subscribers.FirstOrDefault(x => x.IsActived && x.IsMain);
+                var subscriber = subscribers.FirstOrDefault();
 
                 if (subscriber != null)
                 {
