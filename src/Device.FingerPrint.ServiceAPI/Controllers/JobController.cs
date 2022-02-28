@@ -10,13 +10,16 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
     public class JobController : ControllerBase
     {
         private readonly ISentryClient sentryClient;
-        private readonly IDeviceIdentifyServices deviceIdentifyServices;
+        private readonly IDeviceIdentifyJobServices deviceIdentifyServices;
+        private readonly ITransactionJobServices transactionServices;
 
-        public JobController(IDeviceIdentifyServices deviceIdentifyServices
-                            , ISentryClient sentryClient)
+        public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
+                            , ISentryClient sentryClient
+                            , ITransactionJobServices transactionServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.sentryClient = sentryClient;
+            this.transactionServices = transactionServices;
         }
 
         [HttpPost("deviceidentify")]
@@ -58,7 +61,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                deviceIdentifyServices.UpdateTransaction(batchSize, numberOfBatch);
+                transactionServices.UpdateTransaction(batchSize, numberOfBatch);
 
                 return true;
             }
@@ -75,7 +78,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                deviceIdentifyServices.UpdateTransactionN(batchSize, numberOfBatch);
+                transactionServices.UpdateTransactionN(batchSize, numberOfBatch);
 
                 return true;
             }

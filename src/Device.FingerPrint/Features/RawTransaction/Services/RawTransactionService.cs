@@ -8,8 +8,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
 
     public interface IRawTransactionService
     {
-        IEnumerable<RawTransactionModel> GetRawTrans(int batchSize, int retry, string offsetName);
-        IEnumerable<RawTransactionModel> GetRawTransN(int batchSize, string offsetName);
+        IEnumerable<RawTransactionModel> GetRawTrans(int batchSize, int retry, int offsetId);
+
+        IEnumerable<RawTransactionModel> GetRawTransN(int batchSize, int offsetId);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -22,9 +23,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             this.rawTransactionDataAccess = rawTransactionDataAccess;
         }
 
-        public IEnumerable<RawTransactionModel> GetRawTrans(int batchSize, int retry, string offsetName)
+        public IEnumerable<RawTransactionModel> GetRawTrans(int batchSize, int retry, int offsetId)
         {
-            var rawTrans = rawTransactionDataAccess.GetRawTrans(batchSize, retry, offsetName);
+            var rawTrans = rawTransactionDataAccess.GetRawTrans(batchSize, retry, offsetId);
 
             if (rawTrans != null && rawTrans.Any())
             {
@@ -49,9 +50,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             return new List<RawTransactionModel>();
         }
 
-        public IEnumerable<RawTransactionModel> GetRawTransN(int batchSize, string offsetName)
+        public IEnumerable<RawTransactionModel> GetRawTransN(int batchSize, int offsetId)
         {
-            var rawTrans = rawTransactionDataAccess.GetRawTransN(batchSize, offsetName);
+            var rawTrans = rawTransactionDataAccess.GetRawTransN(batchSize, offsetId);
 
             if (rawTrans != null && rawTrans.Any())
             {

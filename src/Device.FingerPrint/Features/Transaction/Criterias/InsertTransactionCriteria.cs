@@ -3,7 +3,7 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class InsertJsonTransactionCriteria : NonQueryCommand
+    public class InsertTransactionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_Transaction")]
         public string Transaction { get; set; }

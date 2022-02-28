@@ -11,11 +11,11 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_Retry")]
         public int Retry { get; set; }
 
-        [SpParam(SqlParamName = "ip_OffsetName")]
-        public string OffsetName { get; set; }
+        [SpParam(SqlParamName = "ip_OffsetId")]
+        public int OffsetId { get; set; }
 
-        [SpParam(SqlParamName = "ip_Offsetvalue")]
-        public long Offsetvalue { get; set; }
+        [SpParam(SqlParamName = "ip_OffsetValue")]
+        public long OffsetValue { get; set; }
 
         public override string GetSettingKey()
         {

@@ -4,10 +4,12 @@ using System.Text;
 
 namespace Device.FingerPrint.Model
 {
-    public static class Offset
+    public enum Offset
     {
-        public const string RawTransaction = "RawTransaction";
-        public const string RawTransactionN = "RawTransactionN";
-        public const string DeviceIndetify = "DeviceIndetify";
+        RawTransaction = 1,
+
+        RawTransactionN = 2,  
+        
+        ForceMergeTransaction = 3
     }
 }

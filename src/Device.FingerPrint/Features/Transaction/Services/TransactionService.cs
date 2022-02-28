@@ -20,9 +20,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void MergeTransactionNew(string transJson);
 
-        void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue);
+        void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
 
-        void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue);
+        void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue);
     }
 
     public class TransactionService : ITransactionService
@@ -38,7 +38,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
         {
             string JsonFingerPrint = JsonConvert.SerializeObject(transactions);
 
-            transactionDataAccess.InsertJsonTransaction(JsonFingerPrint);
+            transactionDataAccess.InsertTransaction(JsonFingerPrint);
         }
 
         public void DeviceIdentify(string transJson, string offsetName)
@@ -92,14 +92,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.MergeTransactionNew(transJson);
         }
 
-        public void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue)
+        public void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue)
         {
-            transactionDataAccess.UpdateTransaction(rawTransJson, retry, offsetName, offsetvalue);
+            transactionDataAccess.UpdateTransaction(rawTransJson, retry, offsetId, offsetValue);
         }
 
-        public void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue)
+        public void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue)
         {
-            transactionDataAccess.UpdateTransactionN(rawTransJson, offsetName, offsetvalue);
+            transactionDataAccess.UpdateTransactionN(rawTransJson, offsetId, offsetValue);
         }
     }
 }

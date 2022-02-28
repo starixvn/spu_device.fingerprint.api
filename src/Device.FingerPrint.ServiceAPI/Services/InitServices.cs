@@ -18,7 +18,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
-            services.AddSingleton<IDeviceIdentifyServices, DeviceIdentifyServices>();
+
+            services.AddSingleton<IDeviceIdentifyJobServices, DeviceIdentifyJobServices>();
+            services.AddSingleton<ITransactionJobServices, TransactionJobServices>();
         }
 
         private static void RegisterRawTransactionService(this IServiceCollection services)

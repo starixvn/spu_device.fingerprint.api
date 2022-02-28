@@ -11,7 +11,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
-        void InsertJsonTransaction(string jsonTransaction);
+        void InsertTransaction(string jsonTransaction);
 
         void DeviceIdentify(string json, string offsetName);
 
@@ -23,9 +23,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void MergeTransactionNew(string transJson);
 
-        void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue);
+        void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
 
-        void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue);
+        void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -37,9 +37,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository = new DynamicRepository();
         }
 
-        public void InsertJsonTransaction(string jsonTransaction)
+        public void InsertTransaction(string jsonTransaction)
         {
-            var criteria = new InsertJsonTransactionCriteria
+            var criteria = new InsertTransactionCriteria
             {
                 Transaction = jsonTransaction
             };
@@ -99,26 +99,26 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository.Execute(criteria);
         }
 
-        public void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue)
+        public void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue)
         {
             var criteria = new UpdateTransactionCriteria
             {
                 RawTransJson = rawTransJson,
                 Retry = retry,
-                OffsetName = offsetName,
-                Offsetvalue = offsetvalue
+                OffsetId = offsetId,
+                OffsetValue = offsetValue
             };
 
             repository.Execute(criteria);
         }
 
-        public void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue)
+        public void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue)
         {
             var criteria = new UpdateTransactionNCriteria
             {
                 RawTransJson = rawTransJson,
-                OffsetName = offsetName,
-                Offsetvalue = offsetvalue
+                OffsetId = offsetId,
+                OffsetValue = offsetValue
             };
 
             repository.Execute(criteria);
