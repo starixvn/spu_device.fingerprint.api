@@ -5,6 +5,7 @@ using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
@@ -40,6 +41,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if (rawTrans != null && rawTrans.Any())
             {
                 ProcessDeviceIdentify(rawTrans, Offset.DeviceIndetify);
+                MergeTransactionNew(rawTrans);
             }
         }
 
@@ -145,6 +147,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 Task.WhenAll(tasks.ToArray());
             }
+        }
+
+        private void MergeTransactionNew(IEnumerable<DeviceTransactionEntity> rawTrans)
+        {
+            var transJson = JsonConvert.SerializeObject(rawTrans);
+            transactionService.MergeTransactionNew(transJson);
         }
     }
 }

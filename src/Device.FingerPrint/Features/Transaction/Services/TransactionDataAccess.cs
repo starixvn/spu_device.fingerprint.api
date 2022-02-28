@@ -21,6 +21,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void MergeTransaction(int batchSize);
 
+        void MergeTransactionNew(string transJson);
+
         void UpdateTransaction(string rawTransJson, int retry, string offsetName, long offsetvalue);
 
         void UpdateTransactionN(string rawTransJson, string offsetName, long offsetvalue);
@@ -82,6 +84,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
             var criteria = new MergeTransactionCriteria
             {
                Size  = batchSize
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void MergeTransactionNew(string transJson)
+        {
+            var criteria = new MergeTransactionNewCriteria
+            {
+                TransJson = transJson
             };
 
             repository.Execute(criteria);
