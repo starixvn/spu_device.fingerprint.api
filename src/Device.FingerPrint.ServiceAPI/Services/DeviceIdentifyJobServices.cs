@@ -12,32 +12,75 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IDeviceIdentifyJobServices
     {
-        public void DeviceIdentify(int batchSize);
+        public void DeviceIdentify(int batchSize, int numberOfBatch);
 
         public void MergeTransaction(int batchSize);
     }
 
     public class DeviceIdentifyJobServices : IDeviceIdentifyJobServices
     {
-        
+
         private readonly ITransactionService transactionService;
-        
+
 
         public DeviceIdentifyJobServices(ITransactionService transactionService, IAppSettings appSettings, IRawTransactionService rawTransactionServices)
         {
             this.transactionService = transactionService;
         }
 
-        public void DeviceIdentify(int batchSize)
+        public void DeviceIdentify(int batchSize, int numberOfBatch)
         {
-            var rawTrans = transactionService.GetDeviceIdentify(batchSize, "");
+            var listRawTrans = new List<Task>();
 
-            if (rawTrans != null && rawTrans.Any())
+            var rawTrans = transactionService.GetDeviceIdentify(batchSize);            
+
+            listRawTrans.Add(Task.Run(() =>
             {
-                ProcessDeviceIdentify(rawTrans,"");
+                if (rawTrans.Item1 != null && rawTrans.Item1.Any())
+                {
+                    var groupRawTrans = rawTrans.Item1.GroupBy(x => x.GroupId);
 
-                //MergeTransactionNew(rawTrans);
-            }
+                    var tasks = new List<Task>();
+
+                    foreach (var group in groupRawTrans)
+                    {
+                        if (group.Key != 0)
+                        {
+                            tasks.Add(ProcessDeviceIdentify(group, group.Key));
+                        }
+                        else
+                        {
+                            var chunkGroup = group.Chunk2(numberOfBatch);
+
+                            foreach (var chunk in chunkGroup)
+                            {
+                                if (chunk != null && chunk.Any())
+                                {
+                                    tasks.Add(ProcessDeviceIdentify(chunk, 0));
+                                }
+                            }
+
+                        }
+                    }
+
+                    if (tasks.Any())
+                    {
+                        Task.WaitAll(tasks.ToArray());
+                    }
+                }
+            }));
+
+            listRawTrans.Add(Task.Run(() =>
+            {
+                if (rawTrans.Item2 != null && rawTrans.Item2.Any())
+                {
+                    var rawTransIds = string.Join(",", rawTrans.Item2);
+
+                    transactionService.DeviceIdentifyNoFingerprint(rawTransIds);
+                }
+            }));
+
+            Task.WaitAll(listRawTrans.ToArray());
         }
 
         public void MergeTransaction(int batchSize)
@@ -45,40 +88,17 @@ namespace Device.FingerPrint.ServiceAPI.Services
             transactionService.MergeTransaction(batchSize);
         }
 
-        private void ProcessDeviceIdentify(IEnumerable<DeviceTransactionEntity> rawTrans, string offsetName)
+        private Task ProcessDeviceIdentify(IEnumerable<DeviceIdentifyEntity> rawTrans, int groupId)
         {
+            var rawTransJson = JsonConvert.SerializeObject(rawTrans);
 
-            if (rawTrans != null && rawTrans.Any())
+            return Task.Run(() =>
             {
-                var tasks = new List<Task>();
-
-                var groupByRawTrans = rawTrans.GroupBy(x => x.FingerPrintCode != null);
-
-                foreach (var group in groupByRawTrans)
-                {
-                    var existingFingerPrint = JsonConvert.SerializeObject(group);
-
-                    if (group.Key)
-                    {
-                        tasks.Add(Task.Run(() =>
-                        {
-                            transactionService.DeviceIdentify(existingFingerPrint, offsetName);
-                        }));
-                    }
-                    else
-                    {
-                        tasks.Add(Task.Run(() =>
-                        {
-                            transactionService.DeviceIdentifyNoFingerprint(existingFingerPrint);
-                        }));
-                    }
-                }
-
-                Task.WhenAll(tasks.ToArray());
-            }
+                transactionService.DeviceIdentify(rawTransJson, groupId);
+            });
         }
 
-        private void MergeTransactionNew(IEnumerable<DeviceTransactionEntity> rawTrans)
+        private void MergeTransactionNew(IEnumerable<DeviceIdentifyEntity> rawTrans)
         {
             var transJson = JsonConvert.SerializeObject(rawTrans);
             transactionService.MergeTransactionNew(transJson);

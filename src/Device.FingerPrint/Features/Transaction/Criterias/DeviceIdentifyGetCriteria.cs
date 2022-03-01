@@ -8,9 +8,6 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
 
-        [SpParam(SqlParamName = "ip_OffsetName")]
-        public string OffsetName { get; set; }
-
         public override string GetSettingKey()
         {
             return "FPS_FP_Transform_DeviceIdentify_Get";

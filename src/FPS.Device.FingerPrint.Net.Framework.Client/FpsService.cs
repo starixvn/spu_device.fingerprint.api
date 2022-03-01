@@ -73,7 +73,7 @@ namespace Fps.Device.FingerPrint.Net.Framework.Client
                     SubscriberId = subscriberId,
                     UserAgent = userAgent,
                     ClientIp = clientIp,
-                    TransTime = DateTime.Now,
+                    TransTime = DateTime.UtcNow,
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
                     Action = action,
                     TransKey = loginName + "#" + loginTime.Ticks,

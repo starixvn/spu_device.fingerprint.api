@@ -23,11 +23,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("deviceidentify")]
-        public bool DeviceIdentify([FromForm] int batchSize)
+        public bool DeviceIdentify([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                this.deviceIdentifyServices.DeviceIdentify(batchSize);
+                this.deviceIdentifyServices.DeviceIdentify(batchSize, numberOfBatch);
 
                 return true;
             }

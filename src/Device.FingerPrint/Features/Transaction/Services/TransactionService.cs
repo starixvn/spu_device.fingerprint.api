@@ -10,11 +10,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         void InsertListTransaction(IEnumerable<TransactionEntity> transactions);
 
-        void DeviceIdentify(string transJson, string offsetName);
+        void DeviceIdentify(string transJson, int groupId);
 
-        void DeviceIdentifyNoFingerprint(string transJson);
+        void DeviceIdentifyNoFingerprint(string rawTransIds);
 
-        IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName);
+        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize);
 
         void MergeTransaction(int batchSize);
 
@@ -41,45 +41,19 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.InsertTransaction(JsonFingerPrint);
         }
 
-        public void DeviceIdentify(string transJson, string offsetName)
+        public void DeviceIdentify(string transJson, int groupId)
         {
-            transactionDataAccess.DeviceIdentify(transJson, offsetName);
+            transactionDataAccess.DeviceIdentify(transJson, groupId);
         }
 
-        public void DeviceIdentifyNoFingerprint(string transJson)
+        public void DeviceIdentifyNoFingerprint(string rawTransIds)
         {
-            transactionDataAccess.DeviceIdentifyNoFingerprint(transJson);
+            transactionDataAccess.DeviceIdentifyNoFingerprint(rawTransIds);
         }
 
-        public IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName)
+        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize)
         {
-            var rawTrans = transactionDataAccess.GetDeviceIdentify(batchSize, offsetName);
-
-            if (rawTrans != null && rawTrans.Any())
-            {
-                return rawTrans.Select(x => new DeviceTransactionEntity
-                {
-                    Id = x.Id,
-                    RawTransId = x.RawTransId,
-                    CustId = x.CustId,
-                    SubAccId = x.SubAccId,
-                    LoginName = x.LoginName,
-                    SubscriberId = x.SubscriberId,
-                    FingerPrintCode = x.FingerPrintCode,
-                    CookieId = x.CookieId,
-                    TransTime = x.TransTime,
-                    ClientIp = x.ClientIp,
-                    UserAgent = x.UserAgent,
-                    Url = x.Url,
-                    Action = x.Action,
-                    ModifiedDate = x.ModifiedDate,
-                    CreatedDate = x.CreatedDate,
-                    TransKey = x.TransKey,
-                    Flagged = x.Flagged
-                });
-            }
-
-            return new List<DeviceTransactionEntity>();
+            return transactionDataAccess.GetDeviceIdentify(batchSize);            
         }
 
         public void MergeTransaction(int batchSize)

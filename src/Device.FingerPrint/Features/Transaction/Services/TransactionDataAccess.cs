@@ -11,13 +11,13 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
-        void InsertTransaction(string jsonTransaction);
+        void InsertTransaction(string transJson);
 
-        void DeviceIdentify(string json, string offsetName);
+        void DeviceIdentify(string transJson, long groupId);
 
-        void DeviceIdentifyNoFingerprint(string json);
+        void DeviceIdentifyNoFingerprint(string rawTransIds);
 
-        IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName);
+        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize);
 
         void MergeTransaction(int batchSize);
 
@@ -37,53 +37,52 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository = new DynamicRepository();
         }
 
-        public void InsertTransaction(string jsonTransaction)
+        public void InsertTransaction(string transJson)
         {
             var criteria = new InsertTransactionCriteria
             {
-                Transaction = jsonTransaction
+                Transaction = transJson
             };
 
             repository.Execute(criteria);
         }
 
-        public void DeviceIdentify(string transJson, string offsetName)
+        public void DeviceIdentify(string transJson, long groupId)
         {
             var criteria = new DeviceIdentifyCriteria
             {
                 TransJson = transJson,
-                OffsetName = offsetName
+                GroupId = groupId
             };
 
             repository.Execute(criteria);
         }
 
-        public void DeviceIdentifyNoFingerprint(string transJson)
+        public void DeviceIdentifyNoFingerprint(string rawTransIds)
         {
             var criteria = new DeviceIdentifyNoFingerprintCriteria
             {
-                TransJson = transJson
+                TransList = rawTransIds
             };
 
             repository.Execute(criteria);
         }
 
-        public IEnumerable<DeviceTransactionEntity> GetDeviceIdentify(int batchSize, string offsetName)
+        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize)
         {
             var criteria = new DeviceIdentifyGetCriteria
             {
-                Size = batchSize,
-                OffsetName = offsetName
+                Size = batchSize
             };
 
-            return repository.Fetch<DeviceTransactionEntity>(criteria);
+            return repository.FetchMultiple<DeviceIdentifyEntity, long>(criteria);
         }
 
         public void MergeTransaction(int batchSize)
         {
             var criteria = new MergeTransactionCriteria
             {
-               Size  = batchSize
+                Size = batchSize
             };
 
             repository.Execute(criteria);
