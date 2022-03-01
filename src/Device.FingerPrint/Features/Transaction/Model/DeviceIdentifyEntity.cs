@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public long CookieId { get; set; }       
 
-        public DateTime CreatedDate { get; set; }
+        public DateTime TransTime { get; set; }
 
         public int GroupId { get; set; }
     }
