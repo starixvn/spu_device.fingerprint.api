@@ -128,7 +128,7 @@ namespace Device.FingerPrint.JobManagement
                 {
                      new SentryLogging(new SentryEngineOptions {
                         Dsn = new Dsn(appSettings.SentryDsn),
-                        Environment = appSettings.EnvironmentString
+                        Environment = appSettings.Environment
                      })
                 });
         }

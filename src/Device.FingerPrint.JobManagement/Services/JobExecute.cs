@@ -50,7 +50,7 @@
 
                     dataMap.PutAsString("count", 0);
 
-                    sentryClient.CaptureMessage($"{_appSettings.EnvironmentString} - {jobName} is STOPPED. Cause of RETRIED EXECEEDED.", SentryLevel.Error);
+                    sentryClient.CaptureMessage($"{_appSettings.Environment} - {jobName} is STOPPED. Cause of RETRIED EXECEEDED.", SentryLevel.Error);
 
                     throw e;
                 }
@@ -68,7 +68,7 @@
                         count++;
 
                         dataMap.PutAsString("count", count);
-                        var errorMessage = $"{_appSettings.EnvironmentString} - {jobName} is failed at {DateTime.Now}.";
+                        var errorMessage = $"{_appSettings.Environment} - {jobName} is failed at {DateTime.Now}.";
 
                         throw JobHelper.JobExecuteFailed(errorMessage, sentryClient);
                     }
@@ -83,7 +83,7 @@
 
                     dataMap.PutAsString("count", count);
 
-                    throw JobHelper.JobExecuteFailed($"{_appSettings.EnvironmentString} - " + ex.Message, sentryClient);
+                    throw JobHelper.JobExecuteFailed($"{_appSettings.Environment} - " + ex.Message, sentryClient);
                 }
             }
         }

@@ -11,9 +11,7 @@ namespace Device.FingerPrint.JobManagement
 
         string SentryDsn { get; }
 
-        int Environment { get; }
-
-        string EnvironmentString { get; }
+        string Environment { get; }                
 
         Scheduler Schedulers { get; }
     }
@@ -42,23 +40,7 @@ namespace Device.FingerPrint.JobManagement
 
         public string SentryDsn => sentryDsn;
 
-        public int Environment
-        {
-            get
-            {
-                switch (environment)
-                {
-                    case "LOCAL":
-                        return 1;
-                    case "UAT":
-                        return 2;
-                    default:
-                        return 3;
-                }
-            }
-        }
-
-        public string EnvironmentString => environment;
+        public string Environment => environment;
 
         public Scheduler Schedulers { get; }
 
