@@ -7,8 +7,8 @@
     <ProjectGuid>{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Fps.Device.FingerPrint.Client.Net.Framework</RootNamespace>
-    <AssemblyName>Fps.Device.FingerPrint.Client.Net.Framework</AssemblyName>
+    <RootNamespace>FPS.Device.FingerPrint.Net.Framework.Client</RootNamespace>
+    <AssemblyName>FPS.Device.FingerPrint.Net.Framework.Client</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
