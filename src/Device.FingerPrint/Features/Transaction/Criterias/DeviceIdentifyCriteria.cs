@@ -8,8 +8,8 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_TransJson")]
         public string TransJson { get; set; }
 
-        [SpParam(SqlParamName = "ip_GroupId")]
-        public long GroupId { get; set; }
+        [SpParam(SqlParamName = "ip_GroupType")]
+        public int GroupType { get; set; }
 
         public override string GetSettingKey()
         {

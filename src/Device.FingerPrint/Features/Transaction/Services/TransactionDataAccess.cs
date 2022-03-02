@@ -11,11 +11,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
-        void DeviceIdentify(string transJson, long groupId);
+        void DeviceIdentify(string transJson, int groupType);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
 
-        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize);
+        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity>, IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch);
 
         void MergeTransaction(int batchSize);
 
@@ -31,14 +31,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository = new DynamicRepository();
         }
 
-        
-
-        public void DeviceIdentify(string transJson, long groupId)
+        public void DeviceIdentify(string transJson, int groupType)
         {
             var criteria = new DeviceIdentifyCriteria
             {
                 TransJson = transJson,
-                GroupId = groupId
+                GroupType = groupType
             };
 
             repository.Execute(criteria);
@@ -54,14 +52,15 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository.Execute(criteria);
         }
 
-        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize)
+        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity>, IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch)
         {
             var criteria = new DeviceIdentifyGetCriteria
             {
-                Size = batchSize
+                Size = batchSize,
+                NumberOfBatch = numberOfBatch
             };
 
-            return repository.FetchMultiple<DeviceIdentifyEntity, long>(criteria);
+            return repository.FetchMultiple<DeviceIdentifyEntity, DeviceIdentifyEntity, ulong>(criteria);
         }
 
         public void MergeTransaction(int batchSize)

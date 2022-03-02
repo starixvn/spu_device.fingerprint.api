@@ -9,11 +9,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
     public interface ITransactionService
     {
        
-        void DeviceIdentify(string transJson, int groupId);
+        void DeviceIdentify(string transJson, int groupType);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
 
-        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize);
+        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity> ,IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch);
 
         void MergeTransaction(int batchSize);
 
@@ -29,9 +29,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             this.transactionDataAccess = transactionDataAccess;
         }
 
-        public void DeviceIdentify(string transJson, int groupId)
+        public void DeviceIdentify(string transJson, int groupType)
         {
-            transactionDataAccess.DeviceIdentify(transJson, groupId);
+            transactionDataAccess.DeviceIdentify(transJson, groupType);
         }
 
         public void DeviceIdentifyNoFingerprint(string rawTransIds)
@@ -39,9 +39,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.DeviceIdentifyNoFingerprint(rawTransIds);
         }
 
-        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<long>) GetDeviceIdentify(int batchSize)
+        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity> ,IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch)
         {
-            return transactionDataAccess.GetDeviceIdentify(batchSize);            
+            return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
         }
 
         public void MergeTransaction(int batchSize)
