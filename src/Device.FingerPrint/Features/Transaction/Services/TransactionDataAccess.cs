@@ -11,8 +11,6 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
-        void InsertTransaction(string transJson);
-
         void DeviceIdentify(string transJson, long groupId);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
@@ -22,10 +20,6 @@ namespace Device.FingerPrint.Features.Transaction.Services
         void MergeTransaction(int batchSize);
 
         void MergeTransactionNew(string transJson);
-
-        void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
-
-        void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -37,15 +31,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository = new DynamicRepository();
         }
 
-        public void InsertTransaction(string transJson)
-        {
-            var criteria = new InsertTransactionCriteria
-            {
-                Transaction = transJson
-            };
-
-            repository.Execute(criteria);
-        }
+        
 
         public void DeviceIdentify(string transJson, long groupId)
         {
@@ -96,31 +82,6 @@ namespace Device.FingerPrint.Features.Transaction.Services
             };
 
             repository.Execute(criteria);
-        }
-
-        public void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue)
-        {
-            var criteria = new UpdateTransactionCriteria
-            {
-                RawTransJson = rawTransJson,
-                Retry = retry,
-                OffsetId = offsetId,
-                OffsetValue = offsetValue
-            };
-
-            repository.Execute(criteria);
-        }
-
-        public void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue)
-        {
-            var criteria = new UpdateTransactionNCriteria
-            {
-                RawTransJson = rawTransJson,
-                OffsetId = offsetId,
-                OffsetValue = offsetValue
-            };
-
-            repository.Execute(criteria);
-        }
+        }        
     }
 }

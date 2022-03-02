@@ -1,5 +1,5 @@
-﻿using Device.FingerPrint.Features.Transaction.Model;
-using Device.FingerPrint.Features.Transaction.Services;
+﻿using Device.FingerPrint.Features.RawTransaction.Model;
+using Device.FingerPrint.Features.RawTransaction.Services;
 using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Device.FingerPrint.Model;
 using Sentry;
@@ -11,13 +11,13 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
 {
     public class KafkaHandler : IKafkaHandler<string, TransactionModel>
     {
-        private readonly ITransactionService transactionService;
+        private readonly IRawTransactionService rawTransactionService;
         private readonly List<TransactionEntity> listTrans;
         private readonly ISentryClient sentryClient;
 
-        public KafkaHandler(ISentryClient sentryClient, ITransactionService transactionService)
+        public KafkaHandler(ISentryClient sentryClient, IRawTransactionService rawTransactionService)
         {
-            this.transactionService = transactionService;
+            this.rawTransactionService = rawTransactionService;
             this.sentryClient = sentryClient;
 
             listTrans = new List<TransactionEntity>();
@@ -31,7 +31,7 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
             {
                 try
                 {
-                    transactionService.InsertListTransaction(listTrans);
+                    rawTransactionService.InsertRawTransaction(listTrans);
                 }
                 catch(Exception ex)
                 {

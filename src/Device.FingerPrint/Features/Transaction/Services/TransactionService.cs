@@ -8,8 +8,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
-        void InsertListTransaction(IEnumerable<TransactionEntity> transactions);
-
+       
         void DeviceIdentify(string transJson, int groupId);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
@@ -18,11 +17,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void MergeTransaction(int batchSize);
 
-        void MergeTransactionNew(string transJson);
-
-        void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
-
-        void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue);
+        void MergeTransactionNew(string transJson);        
     }
 
     public class TransactionService : ITransactionService
@@ -32,13 +27,6 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionService(ITransactionDataAccess transactionDataAccess)
         {
             this.transactionDataAccess = transactionDataAccess;
-        }
-
-        public void InsertListTransaction(IEnumerable<TransactionEntity> transactions)
-        {
-            string JsonFingerPrint = JsonConvert.SerializeObject(transactions);
-
-            transactionDataAccess.InsertTransaction(JsonFingerPrint);
         }
 
         public void DeviceIdentify(string transJson, int groupId)
@@ -64,16 +52,6 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void MergeTransactionNew(string transJson)
         {
             transactionDataAccess.MergeTransactionNew(transJson);
-        }
-
-        public void UpdateTransaction(string rawTransJson, int retry, int offsetId, long offsetValue)
-        {
-            transactionDataAccess.UpdateTransaction(rawTransJson, retry, offsetId, offsetValue);
-        }
-
-        public void UpdateTransactionN(string rawTransJson, int offsetId, long offsetValue)
-        {
-            transactionDataAccess.UpdateTransactionN(rawTransJson, offsetId, offsetValue);
         }
     }
 }

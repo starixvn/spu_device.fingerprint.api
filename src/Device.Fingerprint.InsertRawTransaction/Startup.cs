@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Http;
 using Confluent.Kafka;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
+using Device.FingerPrint.Features.RawTransaction.Services;
 
 namespace Device.Fingerprint.InsertRawTransaction
 {
@@ -37,8 +38,8 @@ namespace Device.Fingerprint.InsertRawTransaction
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
 
-            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
-            services.AddSingleton<ITransactionService, TransactionService>();
+            services.AddSingleton<IRawTransactionDataAccess, RawTransactionDataAccess>();
+            services.AddSingleton<IRawTransactionService, RawTransactionService>();
 
             var clientConfig = new ClientConfig()
             {
