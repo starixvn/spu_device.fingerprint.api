@@ -1,11 +1,8 @@
 ﻿using Device.FingerPrint.Features.FingerPrint.Model;
 using Device.FingerPrint.Features.FingerPrint.Services;
-using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Device.FingerPrint.Model;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Device.Fingerprint.InsertRawFingerprint.Handlers
@@ -36,15 +33,15 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
             return Task.CompletedTask;
         }
 
-        private FingerPrintEntity TranformFingerPrint(FingerPrintModel model)
+        private static FingerPrintEntity TranformFingerPrint(FingerPrintModel model)
         {
             return new FingerPrintEntity
             {
-                Attributes = model.Attributes,
+                Attribute = model.Attribute,
                 CookieCode = model.CookieCode,
-                UserAgent = model.UserAgent,
+                UserAgentAttribute = model.UserAgentAttribute,
                 UserAgentCode = model.UserAgentCode,
-                FingerPrint = model.FingerPrint,
+                FingerPrintCode = model.FingerPrintCode,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 Flagged = model.Flagged,

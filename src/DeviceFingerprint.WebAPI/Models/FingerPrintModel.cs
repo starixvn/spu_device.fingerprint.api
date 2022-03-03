@@ -283,7 +283,7 @@ namespace Device.Fingerprint.WebAPI.Models
         public string FingerPrint { get; set; }
 
         [JsonProperty("ua")]
-        public string UserAgent { get; set; }
+        public string UserAgentAttribute { get; set; }
 
         [JsonProperty("uaCode")]
         public string UserAgentCode { get; set; }

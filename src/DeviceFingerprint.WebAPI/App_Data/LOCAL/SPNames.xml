@@ -9,8 +9,7 @@
   </Function>
   <Function Name="FingerPrint">
     <Setting Key="FPS_FP_Transform_FingerPrint_Insert" SpName="FPS_FP_Transform_FingerPrint_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_Cookie_Update" SpName="FPS_FP_Transform_Cookie_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_FingerPrintCookie_Update" SpName="FPS_FP_Transform_FingerPrintCookie_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_FingerPrintCookie_Update" SpName="FPS_FP_Transform_FingerPrintCookie_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 	<Function Name="Subscriber">
 		<Setting Key="FPS_FP_Core_SubscriberInfoById_Get" SpName="FPS_FP_Core_SubscriberInfoById_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>

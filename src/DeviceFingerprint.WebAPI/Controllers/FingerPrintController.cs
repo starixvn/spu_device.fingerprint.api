@@ -91,11 +91,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     var fingerPrintModel = new FingerPrintModel
                     {
-                        FingerPrint = fingerPrint.FingerPrintCode,
-                        Attributes = fingerPrint.FingerPrint,
+                        FingerPrintCode = fingerPrint.FingerPrintCode,
+                        Attribute = fingerPrint.FingerPrint,
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
-                        UserAgent = fingerPrint.UserAgent,
+                        UserAgentAttribute = fingerPrint.UserAgentAttribute,
                         UserAgentCode = fingerPrint.UserAgentCode,
                         CookieCode = fingerPrint.CookieCode,
                         Flagged = int.TryParse(fingerPrint.Flagged, out int output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : "",
@@ -164,22 +164,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             // Method intentionally left empty.
         }
-
-        [HttpGet("getCookie/{cookie?}")]
-        [ResponseCache(NoStore = true, Duration = 0)]
-        public ActionResult<string> GetCookie(string cookie)
-        {
-            var code = string.IsNullOrWhiteSpace(cookie) ? GenCookie() : cookie;
-
-            var id = fingerPrintService.UpdateCookie(code);
-
-            return Ok(new
-            {
-                Id = id,
-                Code = code
-            });
-        }
-
 
         private string GenCookie()
         {

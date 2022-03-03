@@ -8,8 +8,6 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
     {
         void InsertJsonFingerPrint(string jsonFingerPrint);
 
-        long UpdateCookie(string code);
-
         void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie);
     }
 
@@ -30,19 +28,6 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
             };
 
             repository.Execute(criteria);
-        }
-
-        public long UpdateCookie(string code)
-        {
-            var criteria = new UpdateCookieCriteria
-            {
-                Code = code,
-                Id = 0
-            };
-
-            repository.Execute(criteria);
-
-            return criteria.Id;
         }
 
         public void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie)
