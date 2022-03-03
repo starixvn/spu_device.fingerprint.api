@@ -14,11 +14,11 @@ namespace Device.FingerPrint.Features.FingerPrint.Model
 
         public string Attributes { get; set; }
 
-        public string DeviceInfo { get; set; }
+        public string UserAgent { get; set; }
 
-        public string DeviceCode { get; set; }
+        public string UserAgentCode { get; set; }
 
-        public long CookieId { get; set; }
+        public string CookieCode { get; set; }
 
         public string Flagged { get; set; }
 

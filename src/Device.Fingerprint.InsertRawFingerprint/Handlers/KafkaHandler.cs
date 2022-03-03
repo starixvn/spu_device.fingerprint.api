@@ -41,9 +41,9 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
             return new FingerPrintEntity
             {
                 Attributes = model.Attributes,
-                CookieId = model.CookieId,
-                DeviceCode = model.DeviceCode,
-                DeviceInfo = model.DeviceInfo,
+                CookieCode = model.CookieCode,
+                UserAgent = model.UserAgent,
+                UserAgentCode = model.UserAgentCode,
                 FingerPrint = model.FingerPrint,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,

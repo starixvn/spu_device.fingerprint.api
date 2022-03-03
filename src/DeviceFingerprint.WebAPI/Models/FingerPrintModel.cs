@@ -282,14 +282,14 @@ namespace Device.Fingerprint.WebAPI.Models
         [JsonProperty("attr")]
         public string FingerPrint { get; set; }
 
-        [JsonProperty("dev")]
-        public string Device { get; set; }
+        [JsonProperty("ua")]
+        public string UserAgent { get; set; }
 
-        [JsonProperty("devCode")]
-        public string DeviceCode { get; set; }
+        [JsonProperty("uaCode")]
+        public string UserAgentCode { get; set; }
 
-        [JsonProperty("cookieId")]
-        public long CookieId { get; set; }
+        [JsonProperty("cookieCode")]
+        public string CookieCode { get; set; }
 
         [JsonProperty("flagged")]
         public string Flagged { get; set; }

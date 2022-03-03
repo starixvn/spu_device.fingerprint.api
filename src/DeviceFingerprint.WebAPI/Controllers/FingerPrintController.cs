@@ -84,23 +84,21 @@ namespace Device.Fingerprint.WebAPI.Controllers
             try
             {
                 var scrypto = new Crypto(appSettings.EncryptPassword);
-
                 var decryptedData = scrypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
-                    int output;
-                    FingerPrintModel fingerPrintModel = new FingerPrintModel
+                    var fingerPrintModel = new FingerPrintModel
                     {
                         FingerPrint = fingerPrint.FingerPrintCode,
                         Attributes = fingerPrint.FingerPrint,
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
-                        DeviceInfo = fingerPrint.Device,
-                        DeviceCode = fingerPrint.DeviceCode,
-                        CookieId = fingerPrint.CookieId,
-                        Flagged = int.TryParse(fingerPrint.Flagged, out output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : "",
+                        UserAgent = fingerPrint.UserAgent,
+                        UserAgentCode = fingerPrint.UserAgentCode,
+                        CookieCode = fingerPrint.CookieCode,
+                        Flagged = int.TryParse(fingerPrint.Flagged, out int output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : "",
                         Url = fingerPrint.Url
                     };
 
