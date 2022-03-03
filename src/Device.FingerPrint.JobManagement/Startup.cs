@@ -61,8 +61,8 @@ namespace Device.FingerPrint.JobManagement
             authenticationOptions =>
             {
                 authenticationOptions.AuthScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                authenticationOptions.SilkierQuartzClaim = "Silkier";
-                authenticationOptions.SilkierQuartzClaimValue = "Quartz";
+                authenticationOptions.SilkierQuartzClaim = "Device";
+                authenticationOptions.SilkierQuartzClaimValue = "FingerPrint";
                 authenticationOptions.UserName = "admin";
                 authenticationOptions.UserPassword = "admin";
                 authenticationOptions.AccessRequirement = SilkierQuartzAuthenticationOptions.SimpleAccessRequirement.AllowOnlyUsersWithClaim;

@@ -7,8 +7,6 @@ namespace Device.FingerPrint.JobManagement
 {
     public interface IAppSettings
     {
-        string SPName { get; }
-
         string SentryDsn { get; }
 
         string Environment { get; }                
@@ -27,16 +25,12 @@ namespace Device.FingerPrint.JobManagement
         {
             this.configuration = configuration;
 
-            spName = GetValue<string>("AppConfig:SPName");
-
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
-            environment = GetValue<string>("AppConfig:Environment");
+            environment = GetValue<string>("Environment");
 
             Schedulers = GetSection<Scheduler>(nameof(Schedulers));
         }                
-
-        public string SPName => spName;
 
         public string SentryDsn => sentryDsn;
 
