@@ -3,7 +3,7 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.RawTransaction.Criterias
 {
-    class GetRawTransactionCriteria : NonQueryCommand
+    class GetRawTransactionCriteria : CriteriaBase
     {
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }

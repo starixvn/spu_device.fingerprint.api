@@ -1,17 +1,20 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class MergeTransactionNewCriteria : NonQueryCommand
+    public class UpdateForceMergeTransactionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_TransJson")]
-        public string TransJson { get; set; }
+        public string Transaction { get; set; }
 
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Transform_Transaction_Merge_NEW";
+            return "FPS_FP_Transform_ForceMergeTransaction_Update";
         }
 
         public override bool IsValid()

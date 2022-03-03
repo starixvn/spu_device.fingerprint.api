@@ -44,7 +44,24 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                this.deviceIdentifyServices.MergeTransaction(batchSize);                
+                transactionServices.MergeTrans(batchSize);                
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("forcemergetransaction")]
+        public bool ForceMergeTransaction([FromForm] int batchSize)
+        {
+            try
+            {
+                transactionServices.ForceMergeTrans(batchSize);
 
                 return true;
             }

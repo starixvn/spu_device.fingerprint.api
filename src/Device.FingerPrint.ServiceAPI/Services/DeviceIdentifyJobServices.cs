@@ -13,8 +13,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public interface IDeviceIdentifyJobServices
     {
         public void DeviceIdentify(int batchSize, int numberOfBatch);
-
-        public void MergeTransaction(int batchSize);
     }
 
     public class DeviceIdentifyJobServices : IDeviceIdentifyJobServices
@@ -77,10 +75,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        public void MergeTransaction(int batchSize)
-        {
-            transactionService.MergeTransaction(batchSize);
-        }
 
         private Task ProcessDeviceIdentify(IEnumerable<DeviceIdentifyEntity> rawTrans, int groupId)
         {

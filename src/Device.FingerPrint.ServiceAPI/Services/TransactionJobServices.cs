@@ -15,6 +15,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
         public void UpdateTransaction(int batchSize, int numberOfBatch);
 
         public void UpdateTransactionN(int batchSize, int numberOfBatch);
+
+        public void MergeTrans(int batchSize);
+
+        public void ForceMergeTrans(int batchSize);
     }
 
     public class TransactionJobServices : ITransactionJobServices
@@ -94,6 +98,32 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
 
                 Task.WhenAll(tasks.ToArray());
+            }
+        }
+                
+
+        public void MergeTrans(int batchSize)
+        {
+            var mergeTrans = transactionService.GetMergeTransaction(batchSize, 0);
+
+            if(mergeTrans != null && mergeTrans.Any())
+            {
+                var mergeTransJson = JsonConvert.SerializeObject(mergeTrans);
+
+                transactionService.MergeTransaction(mergeTransJson);
+            }
+
+        }
+
+        public void ForceMergeTrans(int batchSize)
+        {
+            var mergeTrans = transactionService.GetMergeTransaction(batchSize, 1);
+
+            if (mergeTrans != null && mergeTrans.Any())
+            {
+                var mergeTransJson = JsonConvert.SerializeObject(mergeTrans);
+
+                transactionService.ForceMergeTransaction(mergeTransJson);
             }
         }
     }

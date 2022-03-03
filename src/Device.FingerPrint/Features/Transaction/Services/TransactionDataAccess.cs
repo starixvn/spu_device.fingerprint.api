@@ -1,11 +1,7 @@
-﻿using Fanex.Data.Repository;
-using Device.FingerPrint.Features.Transaction.Criterias;
+﻿using Device.FingerPrint.Features.Transaction.Criterias;
 using Device.FingerPrint.Features.Transaction.Model;
-using Newtonsoft.Json;
-using System;
+using Fanex.Data.Repository;
 using System.Collections.Generic;
-using System.Text;
-using Device.FingerPrint.Model;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
@@ -17,9 +13,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity>, IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch);
 
-        void MergeTransaction(int batchSize);
+        void UpdateMergeTransaction(string transJson);
 
-        void MergeTransactionNew(string transJson);
+        IEnumerable<MergeTransEntity> GetMergeTransaction(int batchSize, int retry);
+
+        void UpdateForceMergeTransaction(string transJson);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -63,24 +61,35 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return repository.FetchMultiple<DeviceIdentifyEntity, DeviceIdentifyEntity, ulong>(criteria);
         }
 
-        public void MergeTransaction(int batchSize)
+        public IEnumerable<MergeTransEntity> GetMergeTransaction(int batchSize, int retry)
         {
-            var criteria = new MergeTransactionCriteria
+            var criteria = new GetMergeTransactionCriteria
             {
-                Size = batchSize
+                Size = batchSize,
+                Retry = retry
+            };
+
+            return repository.Fetch<MergeTransEntity>(criteria);
+        }
+
+        public void UpdateForceMergeTransaction(string transJson)
+        {
+            var criteria = new UpdateForceMergeTransactionCriteria
+            {
+                Transaction = transJson
             };
 
             repository.Execute(criteria);
         }
 
-        public void MergeTransactionNew(string transJson)
+        public void UpdateMergeTransaction(string transJson)
         {
-            var criteria = new MergeTransactionNewCriteria
+            var criteria = new UpdateMergeTransactionCriteria
             {
-                TransJson = transJson
+                Transaction = transJson
             };
 
             repository.Execute(criteria);
-        }        
+        }
     }
 }
