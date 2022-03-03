@@ -36,12 +36,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             listRawTrans.Add(Task.Run(() =>
             {
-                SetDeviceIdentify(rawTrans.Item1, 0);
+                SetDeviceIdentify(rawTrans.Item1, 1);
             }));
 
             listRawTrans.Add(Task.Run(() =>
             {
-                SetDeviceIdentify(rawTrans.Item2, 1);
+                SetDeviceIdentify(rawTrans.Item2, 0);
             }));
 
             listRawTrans.Add(Task.Run(() =>

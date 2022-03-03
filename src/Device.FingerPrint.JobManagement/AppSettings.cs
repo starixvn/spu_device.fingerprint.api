@@ -16,8 +16,8 @@ namespace Device.FingerPrint.JobManagement
 
     public class AppSettings: IAppSettings
     {
-        private readonly IConfiguration configuration;        
-        private readonly string spName;        
+        private readonly IConfiguration configuration;       
+                
         private readonly string sentryDsn;
         private readonly string environment;        
 
