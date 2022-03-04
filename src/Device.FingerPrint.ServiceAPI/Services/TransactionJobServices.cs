@@ -16,9 +16,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void UpdateTransactionN(int batchSize, int numberOfBatch);
 
-        public void MergeTrans(int batchSize);
+        public void MergeTrans(int batchSize, int numberOfBatch);
 
-        public void ForceMergeTrans(int batchSize);
+        public void ForceMergeTrans(int batchSize, int numberOfBatch);
     }
 
     public class TransactionJobServices : ITransactionJobServices
@@ -102,28 +102,49 @@ namespace Device.FingerPrint.ServiceAPI.Services
         }
                 
 
-        public void MergeTrans(int batchSize)
+        public void MergeTrans(int batchSize, int numberOfBatch)
         {
             var mergeTrans = transactionService.GetMergeTransaction(batchSize, 0);
 
             if(mergeTrans != null && mergeTrans.Any())
             {
-                var mergeTransJson = JsonConvert.SerializeObject(mergeTrans);
+                var mergeTransGroup  = mergeTrans.Chunk2(numberOfBatch);
+                var tasks = new List<Task>();
 
-                transactionService.MergeTransaction(mergeTransJson);
+                foreach(var trans in mergeTransGroup)
+                {
+                    tasks.Add(Task.Run(() => {
+                        var mergeTransJson = JsonConvert.SerializeObject(trans);
+
+                        transactionService.MergeTransaction(mergeTransJson);
+                    }));                    
+                }
+
+                Task.WaitAll(tasks.ToArray());
             }
 
         }
 
-        public void ForceMergeTrans(int batchSize)
+        public void ForceMergeTrans(int batchSize, int numberOfBatch)
         {
             var mergeTrans = transactionService.GetMergeTransaction(batchSize, 1);
 
             if (mergeTrans != null && mergeTrans.Any())
             {
-                var mergeTransJson = JsonConvert.SerializeObject(mergeTrans);
+                var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
+                var tasks = new List<Task>();
 
-                transactionService.ForceMergeTransaction(mergeTransJson);
+                foreach (var trans in mergeTransGroup)
+                {
+                    tasks.Add(Task.Run(() => {
+                        var mergeTransJson = JsonConvert.SerializeObject(mergeTrans);
+
+                        transactionService.ForceMergeTransaction(mergeTransJson);
+                    }));
+                }
+
+                Task.WaitAll(tasks.ToArray());
+                
             }
         }
     }

@@ -40,11 +40,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("mergetransaction")]
-        public bool MergeTransaction([FromForm] int batchSize)
+        public bool MergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                transactionServices.MergeTrans(batchSize);                
+                transactionServices.MergeTrans(batchSize, numberOfBatch);                
 
                 return true;
             }
@@ -57,11 +57,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("forcemergetransaction")]
-        public bool ForceMergeTransaction([FromForm] int batchSize)
+        public bool ForceMergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                transactionServices.ForceMergeTrans(batchSize);
+                transactionServices.ForceMergeTrans(batchSize, numberOfBatch);
 
                 return true;
             }
