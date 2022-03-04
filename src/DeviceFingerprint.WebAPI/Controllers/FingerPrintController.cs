@@ -124,7 +124,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         ClientIp = data.ClientIp,
                         LoginName = data.LoginName,
                         SessionKey = data.SessionKey,
-                        TransTime = data.TransTime,
+                        TransTime = DateTime.Now,
                         UserAgent = data.UserAgent,
                         Url = data.Url,
                         Action = data.Action,

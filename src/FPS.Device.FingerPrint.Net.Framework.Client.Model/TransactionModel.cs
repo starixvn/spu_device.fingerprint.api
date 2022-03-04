@@ -12,9 +12,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client.Model
 
         public string ClientIp { get; set; }
 
-        public string UserAgent { get; set; }
-
-        public DateTime TransTime { get; set; }
+        public string UserAgent { get; set; }        
 
         public string Url { get; set; }
 
