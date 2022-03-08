@@ -33,6 +33,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.Device.FingerPrint.Net.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Integration.Site", "src\Device.FingerPrint.Integration.Site\Device.FingerPrint.Integration.Site.csproj", "{11BE7AD5-D158-476C-AFA5-BC8CC4237E2F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net Standard", "Net Standard", "{C43090E7-0405-43CE-9A36-AF2AE4033C1A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.Device.FingerPrint.Net.Standard.Client", "src\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client.csproj", "{A31C9770-538A-4F3E-A3DF-EE9EB720B968}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.Device.FingerPrint.Net.Standard.Client.Model", "src\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model.csproj", "{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +93,14 @@ Global
 		{11BE7AD5-D158-476C-AFA5-BC8CC4237E2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11BE7AD5-D158-476C-AFA5-BC8CC4237E2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{11BE7AD5-D158-476C-AFA5-BC8CC4237E2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +118,8 @@ Global
 		{4B33BC79-D598-4521-9906-5D9DC8BFFE3A} = {BB6F1568-7665-4D03-9B5A-E55BF88C3441}
 		{554DDB77-B15B-434A-A1DE-9A737343A103} = {BB6F1568-7665-4D03-9B5A-E55BF88C3441}
 		{11BE7AD5-D158-476C-AFA5-BC8CC4237E2F} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
+		{A31C9770-538A-4F3E-A3DF-EE9EB720B968} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
+		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}
