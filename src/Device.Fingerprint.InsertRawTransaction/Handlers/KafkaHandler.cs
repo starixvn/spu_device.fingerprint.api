@@ -25,13 +25,13 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
 
         public Task HandleAsync(string key, TransactionModel value)
         {
-            listTrans.Add(TranformTransaction(value));
+            listTrans.Add(TranformData(value));
 
             if(listTrans.Count >= 1)
             {
                 try
                 {
-                    rawTransactionService.InsertRawTransaction(listTrans);
+                    rawTransactionService.InsertServerTransaction(listTrans);
                 }
                 catch(Exception ex)
                 {
@@ -45,7 +45,7 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
             return Task.CompletedTask;
         }
 
-        private TransactionEntity TranformTransaction(TransactionModel model)
+        private TransactionEntity TranformData(TransactionModel model)
         {
             return new TransactionEntity
             {

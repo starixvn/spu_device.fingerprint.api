@@ -3,10 +3,13 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.RawTransaction.Criterias
 {
-    class UpdateRawTransactionNCriteria : NonQueryCommand
+    class UpdateServerTransactionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_RawTransJson")]
         public string RawTransJson { get; set; }
+
+        [SpParam(SqlParamName = "ip_Retry")]
+        public int Retry { get; set; }
 
         [SpParam(SqlParamName = "ip_OffsetId")]
         public int OffsetId { get; set; }
@@ -16,7 +19,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Transform_RawTransactionN_Update";
+            return "FPS_FP_Transform_ServerTransaction_Update";
         }
 
         public override bool IsValid()

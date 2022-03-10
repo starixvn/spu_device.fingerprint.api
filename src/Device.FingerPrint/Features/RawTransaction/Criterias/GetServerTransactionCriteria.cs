@@ -3,7 +3,7 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.RawTransaction.Criterias
 {
-    class GetRawTransactionCriteria : CriteriaBase
+    class GetServerTransactionCriteria : CriteriaBase
     {
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
@@ -16,7 +16,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Transform_RawTransaction_Get";
+            return "FPS_FP_Transform_ServerTransaction_Get";
         }
 
         public override bool IsValid()

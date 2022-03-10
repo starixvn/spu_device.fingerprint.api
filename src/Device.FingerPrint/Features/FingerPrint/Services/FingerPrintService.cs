@@ -7,7 +7,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
 {
     public interface IFingerPrintService
     {
-        void InsertListFingerPrint(IEnumerable<FingerPrintEntity> listFingerPrint);
+        void InsertClientTransaction(IEnumerable<ClientTransactionEntity> listFingerPrint);
 
         void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie);
     }
@@ -21,11 +21,11 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
             this.fingerPrintDataAccess = fingerPrintDataAccess;
         }
 
-        public void InsertListFingerPrint(IEnumerable<FingerPrintEntity> listFingerPrint)
+        public void InsertClientTransaction(IEnumerable<ClientTransactionEntity> listFingerPrint)
         {
             string JsonFingerPrint = JsonConvert.SerializeObject(listFingerPrint);
 
-            fingerPrintDataAccess.InsertJsonFingerPrint(JsonFingerPrint);
+            fingerPrintDataAccess.InsertClientTransaction(JsonFingerPrint);
         }
 
         public void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie)

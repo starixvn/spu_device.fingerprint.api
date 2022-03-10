@@ -12,10 +12,10 @@
 	
 	</Function>
   <Function Name="RawTransaction">
-    <Setting Key="FPS_FP_Transform_RawTransaction_Get" SpName="FPS_FP_Transform_RawTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Transform_RawTransactionN_Get" SpName="FPS_FP_Transform_RawTransactionN_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_RawTransaction_Update" SpName="FPS_FP_Transform_RawTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_RawTransactionN_Update" SpName="FPS_FP_Transform_RawTransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_ServerTransaction_Get" SpName="FPS_FP_Transform_ServerTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_ServerTransactionN_Get" SpName="FPS_FP_Transform_ServerTransactionN_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	<Setting Key="FPS_FP_Transform_ServerTransaction_Update" SpName="FPS_FP_Transform_ServerTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	<Setting Key="FPS_FP_Transform_ServerTransactionN_Update" SpName="FPS_FP_Transform_ServerTransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
   <Function Name="Offset">
     <Setting Key="FPS_FP_Core_Offset_Get" SpName="FPS_FP_Core_Offset_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>

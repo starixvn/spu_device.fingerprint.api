@@ -6,7 +6,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
 {
     public interface IFingerPrintDataAccess
     {
-        void InsertJsonFingerPrint(string jsonFingerPrint);
+        void InsertClientTransaction(string jsonFingerPrint);
 
         void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie);
     }
@@ -20,9 +20,9 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
             repository = new DynamicRepository();
         }
 
-        public void InsertJsonFingerPrint(string jsonFingerPrint)
+        public void InsertClientTransaction(string jsonFingerPrint)
         {
-            var criteria = new InsertJsonFingerPrintCriteria
+            var criteria = new InsertClientTransactionCriteria
             {
                 FingerPrint = jsonFingerPrint
             };

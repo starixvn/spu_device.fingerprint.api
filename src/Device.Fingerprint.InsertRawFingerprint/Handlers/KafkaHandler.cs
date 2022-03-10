@@ -10,32 +10,32 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
     public class KafkaHandler : IKafkaHandler<string, FingerPrintModel>
     {
         private readonly IFingerPrintService fingerPrintService;
-        private readonly List<FingerPrintEntity> listFingerPrint;
+        private readonly List<ClientTransactionEntity> listTrans;
 
         public KafkaHandler(IFingerPrintService fingerPrintService)
         {
             this.fingerPrintService = fingerPrintService;
 
-            listFingerPrint = new List<FingerPrintEntity>();
+            listTrans = new List<ClientTransactionEntity>();
         }
 
         public Task HandleAsync(string key, FingerPrintModel value)
         {
-            listFingerPrint.Add(TranformFingerPrint(value));
+            listTrans.Add(TranformData(value));
 
-            if(listFingerPrint.Count >= 1)
+            if(listTrans.Count >= 1)
             {
-                fingerPrintService.InsertListFingerPrint(listFingerPrint);
+                fingerPrintService.InsertClientTransaction(listTrans);
 
-                listFingerPrint.Clear();
+                listTrans.Clear();
             }
             
             return Task.CompletedTask;
         }
 
-        private static FingerPrintEntity TranformFingerPrint(FingerPrintModel model)
+        private static ClientTransactionEntity TranformData(FingerPrintModel model)
         {
-            return new FingerPrintEntity
+            return new ClientTransactionEntity
             {
                 Attribute = model.Attribute,
                 CookieCode = model.CookieCode,

@@ -9,15 +9,15 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
 
     public interface IRawTransactionDataAccess
     {
-        IEnumerable<RawTransactionEntity> GetRawTrans(int batchSize, int retry, int offsetId);
+        IEnumerable<ServerTransactionEntity> GetServerTrans(int batchSize, int retry, int offsetId);
 
-        IEnumerable<RawTransactionEntity> GetRawTransN(int batchSize, int offsetId);
+        IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int offsetId);
 
-        void InsertRawTransaction(string transJson);
+        void InsertServerTransaction(string transJson);
 
-        void UpdateRawTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
+        void UpdateServerTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
 
-        void UpdateRawTransactionN(string rawTransJson, int offsetId, long offsetValue);
+        void UpdateServerTransactionN(string rawTransJson, int offsetId, long offsetValue);
 
     }
 
@@ -30,32 +30,32 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<RawTransactionEntity> GetRawTrans(int batchSize, int retry, int offsetId)
+        public IEnumerable<ServerTransactionEntity> GetServerTrans(int batchSize, int retry, int offsetId)
         {
-            var criteria = new GetRawTransactionCriteria 
+            var criteria = new GetServerTransactionCriteria 
             { 
                 Size = batchSize,
                 Retry = retry,
                 OffsetId = offsetId
             };
 
-            return repository.Fetch<RawTransactionEntity>(criteria);
+            return repository.Fetch<ServerTransactionEntity>(criteria);
         }
 
-        public IEnumerable<RawTransactionEntity> GetRawTransN(int batchSize, int offsetId)
+        public IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int offsetId)
         {
-            var criteria = new GetRawTransactionNCriteria 
+            var criteria = new GetServerTransactionNCriteria 
             { 
                 Size = batchSize,
                 OffsetId = offsetId
             };
 
-            return repository.Fetch<RawTransactionEntity>(criteria);
+            return repository.Fetch<ServerTransactionEntity>(criteria);
         }
 
-        public void InsertRawTransaction(string transJson)
+        public void InsertServerTransaction(string transJson)
         {
-            var criteria = new InsertRawTransactionCriteria
+            var criteria = new InsertServerTransactionCriteria
             {
                 Transaction = transJson
             };
@@ -63,9 +63,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             repository.Execute(criteria);
         }
 
-        public void UpdateRawTransaction(string rawTransJson, int retry, int offsetId, long offsetValue)
+        public void UpdateServerTransaction(string rawTransJson, int retry, int offsetId, long offsetValue)
         {
-            var criteria = new UpdateRawTransactionCriteria
+            var criteria = new UpdateServerTransactionCriteria
             {
                 RawTransJson = rawTransJson,
                 Retry = retry,
@@ -76,9 +76,9 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             repository.Execute(criteria);
         }
 
-        public void UpdateRawTransactionN(string rawTransJson, int offsetId, long offsetValue)
+        public void UpdateServerTransactionN(string rawTransJson, int offsetId, long offsetValue)
         {
-            var criteria = new UpdateRawTransactionNCriteria
+            var criteria = new UpdateServerTransactionNCriteria
             {
                 RawTransJson = rawTransJson,
                 OffsetId = offsetId,

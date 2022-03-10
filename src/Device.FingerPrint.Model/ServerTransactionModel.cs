@@ -2,7 +2,7 @@
 
 namespace Device.FingerPrint.Model
 {
-    public class RawTransactionModel
+    public class ServerTransactionModel
     {
         public long Id { get; set; }
 

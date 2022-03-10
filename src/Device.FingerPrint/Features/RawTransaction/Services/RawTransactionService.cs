@@ -9,11 +9,11 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
 
     public interface IRawTransactionService
     {
-        IEnumerable<RawTransactionModel> GetRawTransaction(int batchSize, int retry, int offsetId);
+        IEnumerable<ServerTransactionModel> GetServerTransaction(int batchSize, int retry, int offsetId);
 
-        IEnumerable<RawTransactionModel> GetRawTransactionN(int batchSize, int offsetId);
+        IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int offsetId);
 
-        void InsertRawTransaction(IEnumerable<TransactionEntity> transactions);
+        void InsertServerTransaction(IEnumerable<TransactionEntity> transactions);
 
         void UpdateRawTransaction(string rawTrans, int retry, int offsetId, long offsetValue);
 
@@ -30,13 +30,13 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
             this.rawTransactionDataAccess = rawTransactionDataAccess;
         }
 
-        public IEnumerable<RawTransactionModel> GetRawTransaction(int batchSize, int retry, int offsetId)
+        public IEnumerable<ServerTransactionModel> GetServerTransaction(int batchSize, int retry, int offsetId)
         {
-            var rawTrans = rawTransactionDataAccess.GetRawTrans(batchSize, retry, offsetId);
+            var rawTrans = rawTransactionDataAccess.GetServerTrans(batchSize, retry, offsetId);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                return rawTrans.Select(x => new RawTransactionModel
+                return rawTrans.Select(x => new ServerTransactionModel
                 {
                     Id = x.Id,
                     SessionKey = x.SessionKey,
@@ -54,16 +54,16 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
                 });
             }
 
-            return new List<RawTransactionModel>();
+            return new List<ServerTransactionModel>();
         }
 
-        public IEnumerable<RawTransactionModel> GetRawTransactionN(int batchSize, int offsetId)
+        public IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int offsetId)
         {
             var rawTrans = rawTransactionDataAccess.GetRawTransN(batchSize, offsetId);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                return rawTrans.Select(x => new RawTransactionModel
+                return rawTrans.Select(x => new ServerTransactionModel
                 {
                     Id = x.Id,
                     SessionKey = x.SessionKey,
@@ -81,24 +81,24 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
                 });
             }
 
-            return new List<RawTransactionModel>();
+            return new List<ServerTransactionModel>();
         }
 
-        public void InsertRawTransaction(IEnumerable<TransactionEntity> transactions)
+        public void InsertServerTransaction(IEnumerable<TransactionEntity> transactions)
         {
             string JsonFingerPrint = JsonConvert.SerializeObject(transactions);
 
-            rawTransactionDataAccess.InsertRawTransaction(JsonFingerPrint);
+            rawTransactionDataAccess.InsertServerTransaction(JsonFingerPrint);
         }
 
         public void UpdateRawTransaction(string rawTrans, int retry, int offsetId, long offsetValue)
         {
-            rawTransactionDataAccess.UpdateRawTransaction(rawTrans, retry, offsetId, offsetValue);
+            rawTransactionDataAccess.UpdateServerTransaction(rawTrans, retry, offsetId, offsetValue);
         }
 
         public void UpdateRawTransactionN(string rawTrans, int offsetId, long offsetValue)
         {
-            rawTransactionDataAccess.UpdateRawTransactionN(rawTrans, offsetId, offsetValue);
+            rawTransactionDataAccess.UpdateServerTransactionN(rawTrans, offsetId, offsetValue);
         }       
     }
 }
