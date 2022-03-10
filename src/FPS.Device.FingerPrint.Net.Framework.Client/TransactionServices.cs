@@ -34,7 +34,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
         }
 
-        public void Insert(string action, string loginName, DateTime loginTime)
+        public async void Insert(string action, string loginName, DateTime loginTime)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
@@ -54,12 +54,11 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                     SubAccId = 0
                 };
                 var cancelToken = new CancellationToken();
-
-                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
+                await PostBasicAsync(transactionUrl, transaction, cancelToken);
             }
         }
 
-        public void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
+        public async void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
             {
@@ -80,7 +79,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                PostBasicAsync(transactionUrl, transaction, cancelToken).Wait();
+                await PostBasicAsync(transactionUrl, transaction, cancelToken);
             }
         }
 
