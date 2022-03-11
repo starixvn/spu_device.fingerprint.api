@@ -12,7 +12,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface ITransactionJobServices
     {
-        public void UpdateTransaction(int batchSize, int numberOfBatch);
+        public void UpdateTransaction(int batchSize, int numberOfBatch, int retry);
 
         public void UpdateTransactionN(int batchSize, int numberOfBatch);
 
@@ -25,22 +25,20 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         private readonly ITransactionService transactionService;
         private readonly IRawTransactionService rawTransactionServices;
-        private readonly IAppSettings appSettings;
 
-        public TransactionJobServices(IAppSettings appSettings, ITransactionService transactionService, IRawTransactionService rawTransactionServices)
+        public TransactionJobServices(ITransactionService transactionService, IRawTransactionService rawTransactionServices)
         {
             this.transactionService = transactionService;
             this.rawTransactionServices = rawTransactionServices;
-            this.appSettings = appSettings;
         }
 
-        public void UpdateTransaction(int batchSize, int numberOfBatch)
+        public void UpdateTransaction(int batchSize, int numberOfBatch, int retry)
         {
-            var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, appSettings.RawTransactionRetry, (int)Offset.RawTransaction);
+            var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.RawTransaction);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessUpdateTransaction(rawTrans, batchSize, appSettings.RawTransactionRetry, (int)Offset.RawTransaction);
+                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.RawTransaction);
             }
         }
 

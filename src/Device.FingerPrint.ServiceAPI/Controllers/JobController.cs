@@ -74,11 +74,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransaction")]
-        public bool UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        public bool UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
             try
             {
-                transactionServices.UpdateTransaction(batchSize, numberOfBatch);
+                transactionServices.UpdateTransaction(batchSize, numberOfBatch, retry);
 
                 return true;
             }
