@@ -56,17 +56,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
 
-                if (subscribers != null && subscribers.Any())
+                if (subscribers != null)
                 {
-                    var subscriberId = subscribers
-                    .Select(x => x.SubscriberId).First();
+                    var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
 
-                    var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings, sessionKey);
                     return new JavascriptResult(bundleContent.Content);
                 }
                 else
                 {
-                    sentryClient.CaptureMessage("Subscriber " + subscriberName + " is not exists");
+                    sentryClient.CaptureMessage("Subscriber " + subscriberName + " dose not exists");
                 }
             }
 
@@ -81,7 +79,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
             {
-                EncryptedKey = appSettings.EncryptPassword,               
+                EncryptedKey = appSettings.EncryptPassword,
                 Token = JWTService.GenerateJwtToken()
             });
 
@@ -105,7 +103,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         FingerPrintCode = fingerPrint.FingerPrintCode,
                         Attribute = fingerPrint.FingerPrint,
                         SessionKey = fingerPrint.SessionKey,
-                        SubscriberId = CheckExistSubscriberById(fingerPrint.SubscriberId),
+                        SubscriberId = fingerPrint.SubscriberId,
                         UserAgentAttribute = fingerPrint.UserAgentAttribute,
                         UserAgentCode = fingerPrint.UserAgentCode,
                         CookieCode = fingerPrint.CookieCode,
@@ -129,45 +127,37 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
-                    var transaction = new TransactionModel
-                    {
-                        SubscriberId = CheckExistSubscriberByName(data.SubscriberName),
-                        ClientIp = data.ClientIp,
-                        LoginName = data.LoginName,
-                        SessionKey = data.SessionKey,
-                        TransTime = DateTime.Now,
-                        UserAgent = data.UserAgent,
-                        Url = data.Url,
-                        Action = data.Action,
-                        TransKey = data.TransKey,
-                        CustId = data.CustId,
-                        SubAccId = data.SubAccId
-                    };
+                    var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
 
-                    kafkaServices.SendTransactionToKafka(transaction);
+                    if(subscriber != null)
+                    {
+                        var transaction = new TransactionModel
+                        {
+                            SubscriberId = subscriber.SubscriberId,
+                            ClientIp = data.ClientIp,
+                            LoginName = data.LoginName,
+                            SessionKey = data.SessionKey,
+                            TransTime = DateTime.Now,
+                            UserAgent = data.UserAgent,
+                            Url = data.Url,
+                            Action = data.Action,
+                            TransKey = data.TransKey,
+                            CustId = data.CustId,
+                            SubAccId = data.SubAccId
+                        };
+
+                        kafkaServices.SendTransactionToKafka(transaction);
+                    }
+                    else
+                    {
+                        sentryClient.CaptureMessage($"{data.SubscriberName} dose not exists.");
+                    }                    
                 }
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);               
+                sentryClient.CaptureException(ex);
             }
-        }
-
-        [HttpGet("subscriber/{subscriberId}")]
-        [ResponseCache(NoStore = true, Duration = 0)]
-        public ActionResult<IEnumerable<string>> GetSubscriberInfo(int subscriberId)
-        {
-            var subscribers = subscriberServices.GetSubscriberById(subscriberId);
-
-            if (subscribers != null && subscribers.Any())
-            {
-                var domains = subscribers
-                .Select(x => x.SubscriberName);
-
-                return Ok(domains);
-            }
-
-            return null;
         }
 
         [HttpGet("hc")]
@@ -176,38 +166,5 @@ namespace Device.Fingerprint.WebAPI.Controllers
             // Method intentionally left empty.
         }
 
-        private int CheckExistSubscriberById(int subscriberId)
-        {
-            var subscribers = subscriberServices.GetSubscriberById(subscriberId);
-
-            if (subscribers != null && subscribers.Any())
-            {
-                var subscriber = subscribers.FirstOrDefault();
-
-                if (subscriber != null)
-                {
-                    return subscriber.SubscriberId;
-                }
-            }
-
-            return -1;
-        }
-
-        private int CheckExistSubscriberByName(string subscriberName)
-        {
-            var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
-
-            if (subscribers != null && subscribers.Any())
-            {
-                var subscriber = subscribers.FirstOrDefault();
-
-                if (subscriber != null)
-                {
-                    return subscriber.SubscriberId;
-                }
-            }
-
-            return -1;
-        }
     }
 }

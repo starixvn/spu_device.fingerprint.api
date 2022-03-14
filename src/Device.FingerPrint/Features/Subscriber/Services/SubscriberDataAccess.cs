@@ -4,13 +4,16 @@ using Device.FingerPrint.Features.Subscriber.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using Fanex.Data;
 
 namespace Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberDataAccess
     {
-        IEnumerable<SubscriberEntity> GetSubscriberById(int subscriberId);
-        IEnumerable<SubscriberEntity> GetSubscriberByName(string subscriberName);
+        SubscriberEntity GetSubscriberById(int subscriberId);
+
+        SubscriberEntity GetSubscriberByName(string subscriberName);
+
         IEnumerable<SubscriberEntity> GetSubscriberList();
     }
     public class SubscriberDataAccess : ISubscriberDataAccess
@@ -22,31 +25,37 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<SubscriberEntity> GetSubscriberById(int subscriberId)
+        public IEnumerable<SubscriberEntity> GetSubscriberList()
+        {
+            var criteria = new GetSubscriberListCriteria();
+
+            return repository.Fetch<SubscriberEntity>(criteria);
+        }
+
+        public SubscriberEntity GetSubscriberById(int subscriberId)
         {
             var criteria = new GetSubscriberInfoByIdCriteria
             {
                 SubscriberId = subscriberId
             };
 
-            return repository.Fetch<SubscriberEntity>(criteria);
+            using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
+            {
+                return db.QueryEntity<SubscriberEntity>(criteria);
+            }
         }
 
-        public IEnumerable<SubscriberEntity> GetSubscriberByName(string subscriberName)
+        public SubscriberEntity GetSubscriberByName(string subscriberName)
         {
             var criteria = new GetSubscriberInfoByNameCriteria
             {
                 SubscriberName = subscriberName
             };
 
-            return repository.Fetch<SubscriberEntity>(criteria);
-        }
-
-        public IEnumerable<SubscriberEntity> GetSubscriberList()
-        {
-            var criteria = new GetSubscriberListCriteria();
-
-            return repository.Fetch<SubscriberEntity>(criteria);
+            using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
+            {
+                return db.QueryEntity<SubscriberEntity>(criteria);
+            }
         }
     }
 }

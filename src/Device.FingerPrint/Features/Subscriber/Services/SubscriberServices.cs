@@ -8,8 +8,10 @@ namespace Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberServices
     {
-       IEnumerable<SubscriberModel> GetSubscriberById(int subscriberId);
-       IEnumerable<SubscriberModel> GetSubscriberByName(string subscriberName);
+        SubscriberModel GetSubscriberById(int subscriberId);
+
+        SubscriberModel GetSubscriberByName(string subscriberName);
+
        IEnumerable<SubscriberModel> GetSubscriberList();
     }
 
@@ -23,35 +25,36 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             this.subscriberDataAccess = subscriberDataAccess;
         }
 
-        public IEnumerable<SubscriberModel> GetSubscriberById(int subscriberId)
+        public SubscriberModel GetSubscriberById(int subscriberId)
         {
             var subcribers = subscriberDataAccess.GetSubscriberById(subscriberId);
 
-            if(subcribers != null && subcribers.Any())
+            if(subcribers != null)
             {
-                return subcribers.Select(x => new SubscriberModel {
-                    SubscriberId  = x.SubscriberId,
-                    SubscriberName =x.SubscriberName
-                });
+                return new SubscriberModel
+                {
+                    SubscriberId = subcribers.SubscriberId,
+                    SubscriberName = subcribers.SubscriberName
+                };
             }
 
-            return new List<SubscriberModel>();
+            return new SubscriberModel();
         }
 
-        public IEnumerable<SubscriberModel> GetSubscriberByName(string subscriberName)
+        public SubscriberModel GetSubscriberByName(string subscriberName)
         {
             var subcribers = subscriberDataAccess.GetSubscriberByName(subscriberName);
 
-            if (subcribers != null && subcribers.Any())
+            if (subcribers != null)
             {
-                return subcribers.Select(x => new SubscriberModel
+                return new SubscriberModel
                 {
-                    SubscriberId = x.SubscriberId,
-                    SubscriberName = x.SubscriberName
-                });
+                    SubscriberId = subcribers.SubscriberId,
+                    SubscriberName = subcribers.SubscriberName
+                };
             }
 
-            return new List<SubscriberModel>();
+            return new SubscriberModel();
         }
 
         public IEnumerable<SubscriberModel> GetSubscriberList()
