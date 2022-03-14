@@ -12,6 +12,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
     public interface ITransactionServices
     {
         void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl);
+        void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl);
 
         string GetScriptUrl();
     }
@@ -66,6 +67,30 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
                     TransKey = loginName + "#" + loginTime.Ticks,
                     CustId = 0,
                     SubAccId = 0
+                };
+                var cancelToken = new CancellationToken();
+
+                await PostBasicAsync(transactionUrl, transaction, cancelToken);
+            }
+        }
+
+        public async void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl)
+        {
+            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
+            {
+                var clientIp = await GetIPAsync();
+                var transaction = new TransactionModel
+                {
+                    LoginName = loginName,
+                    SessionKey = sessionKey,
+                    SubscriberName = subscriberName,
+                    UserAgent = userAgent,
+                    ClientIp = clientIp.ToString(),
+                    Url = hostUrl,
+                    Action = action,
+                    TransKey = loginName + "#" + loginTime.Ticks,
+                    CustId = custId,
+                    SubAccId = subAccId
                 };
                 var cancelToken = new CancellationToken();
 
