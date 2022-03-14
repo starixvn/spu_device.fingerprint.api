@@ -11,7 +11,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 {
     public interface ITransactionServices
     {
-        void Insert(string action, string loginName, DateTime loginTime);
+        Task Insert(string action, string loginName, DateTime loginTime);
 
         void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime);
 
@@ -20,23 +20,23 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 
     public class TransactionServices : ITransactionServices
     {
-        private readonly int subscriberId;
+        private readonly string subscriberName;
         private readonly string apiUrl;
         private readonly string sessionKey;
         private readonly string transactionUrl;
 
-        public TransactionServices(int subscriberId, string apiUrl)
+        public TransactionServices(string subscriberName, string apiUrl)
         {
-            this.subscriberId = subscriberId;
+            this.subscriberName = subscriberName;
             this.apiUrl = apiUrl;
             this.sessionKey = Guid.NewGuid().ToString("N");
 
             transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
         }
 
-        public async void Insert(string action, string loginName, DateTime loginTime)
+        public async Task Insert(string action, string loginName, DateTime loginTime)
         {
-            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
@@ -44,7 +44,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 {
                     LoginName = loginName,
                     SessionKey = sessionKey,
-                    SubscriberId = subscriberId,
+                    SubscriberName = subscriberName,
                     UserAgent = userAgent,
                     ClientIp = clientIp,                    
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
@@ -60,7 +60,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 
         public async void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
         {
-            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
@@ -68,7 +68,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 {
                     LoginName = loginName,
                     SessionKey = sessionKey,
-                    SubscriberId = subscriberId,
+                    SubscriberName = subscriberName,
                     UserAgent = userAgent,
                     ClientIp = clientIp,                    
                     Url = HttpContext.Current.Request.Url.AbsoluteUri,
@@ -124,7 +124,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 
         public string GetScriptUrl()
         {
-            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberId}");
+            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
     }
 }

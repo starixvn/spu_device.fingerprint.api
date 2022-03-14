@@ -9,7 +9,8 @@ namespace Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberDataAccess
     {
-        IEnumerable<SubscriberEntity> GetSubscriber(int subscriberId);
+        IEnumerable<SubscriberEntity> GetSubscriberById(int subscriberId);
+        IEnumerable<SubscriberEntity> GetSubscriberByName(string subscriberName);
         IEnumerable<SubscriberEntity> GetSubscriberList();
     }
     public class SubscriberDataAccess : ISubscriberDataAccess
@@ -21,11 +22,21 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<SubscriberEntity> GetSubscriber(int subscriberId)
+        public IEnumerable<SubscriberEntity> GetSubscriberById(int subscriberId)
         {
-            var criteria = new GetSubscriberInfoCriteria
+            var criteria = new GetSubscriberInfoByIdCriteria
             {
                 SubscriberId = subscriberId
+            };
+
+            return repository.Fetch<SubscriberEntity>(criteria);
+        }
+
+        public IEnumerable<SubscriberEntity> GetSubscriberByName(string subscriberName)
+        {
+            var criteria = new GetSubscriberInfoByNameCriteria
+            {
+                SubscriberName = subscriberName
             };
 
             return repository.Fetch<SubscriberEntity>(criteria);

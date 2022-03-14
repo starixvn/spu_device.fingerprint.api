@@ -8,8 +8,9 @@ namespace Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberServices
     {
-       IEnumerable<SubscriberModel> GetSubscriber(int subscriberId);
-        IEnumerable<SubscriberModel> GetSubscriberList();
+       IEnumerable<SubscriberModel> GetSubscriberById(int subscriberId);
+       IEnumerable<SubscriberModel> GetSubscriberByName(string subscriberName);
+       IEnumerable<SubscriberModel> GetSubscriberList();
     }
 
     public class SubscriberServices : ISubscriberServices
@@ -22,15 +23,31 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             this.subscriberDataAccess = subscriberDataAccess;
         }
 
-        public IEnumerable<SubscriberModel> GetSubscriber(int subscriberId)
+        public IEnumerable<SubscriberModel> GetSubscriberById(int subscriberId)
         {
-            var subcribers = subscriberDataAccess.GetSubscriber(subscriberId);
+            var subcribers = subscriberDataAccess.GetSubscriberById(subscriberId);
 
             if(subcribers != null && subcribers.Any())
             {
                 return subcribers.Select(x => new SubscriberModel {
                     SubscriberId  = x.SubscriberId,
                     SubscriberName =x.SubscriberName
+                });
+            }
+
+            return new List<SubscriberModel>();
+        }
+
+        public IEnumerable<SubscriberModel> GetSubscriberByName(string subscriberName)
+        {
+            var subcribers = subscriberDataAccess.GetSubscriberByName(subscriberName);
+
+            if (subcribers != null && subcribers.Any())
+            {
+                return subcribers.Select(x => new SubscriberModel
+                {
+                    SubscriberId = x.SubscriberId,
+                    SubscriberName = x.SubscriberName
                 });
             }
 

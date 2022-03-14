@@ -45,7 +45,7 @@ namespace Device.Fingerprint.InsertRawTransaction.Handlers
             return Task.CompletedTask;
         }
 
-        private TransactionEntity TranformData(TransactionModel model)
+        private static TransactionEntity TranformData(TransactionModel model)
         {
             return new TransactionEntity
             {

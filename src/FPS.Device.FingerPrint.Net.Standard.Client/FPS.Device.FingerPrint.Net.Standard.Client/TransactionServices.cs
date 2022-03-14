@@ -17,16 +17,16 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
     }
     public class TransactionServices : ITransactionServices
     {
-        private readonly int subscriberId;
+        private readonly string subscriberName;
         private readonly string apiUrl;
         private readonly string userAgent;
         private readonly string hostUrl;
         private readonly string sessionKey;
         private readonly string transactionUrl;
 
-        public TransactionServices(int subscriberId, string apiUrl, string userAgent, string hostUrl)
+        public TransactionServices(string subscriberName, string apiUrl, string userAgent, string hostUrl)
         {
-            this.subscriberId = subscriberId;
+            this.subscriberName = subscriberName;
             this.apiUrl = apiUrl;
             this.userAgent = userAgent;
             this.hostUrl = hostUrl;
@@ -50,19 +50,19 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
         }
         public string GetScriptUrl()
         {
-            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberId}");
+            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
 
         public async void Insert(string action, string loginName, DateTime loginTime)
         {
-            if (!string.IsNullOrWhiteSpace(loginName) && subscriberId != 0)
+            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
                 var clientIp = await GetIPAsync();
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
                     SessionKey = sessionKey,
-                    SubscriberId = subscriberId,
+                    SubscriberName = subscriberName,
                     UserAgent = userAgent,
                     ClientIp = clientIp.ToString(),
                     Url = hostUrl,

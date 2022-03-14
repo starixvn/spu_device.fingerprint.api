@@ -28,13 +28,13 @@ namespace demoAPI.Controllers
         {
             if (Session["IsPushTrans"] == null)
             {
-                var subscriberId = Convert.ToInt32(ConfigurationManager.AppSettings["subscriberId"]);
+                var subscriberName = ConfigurationManager.AppSettings["subscriberName"].ToString();
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
-                var fpsService = new TransactionServices(subscriberId, apiUrl);
+                var fpsService = new TransactionServices(subscriberName, apiUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
-                fpsService.Insert("Login", loginName, DateTime.Now);
+                _ = fpsService.Insert("Login", loginName, DateTime.Now);
 
                 Session["IsPushTrans"] = "Ok";
             }

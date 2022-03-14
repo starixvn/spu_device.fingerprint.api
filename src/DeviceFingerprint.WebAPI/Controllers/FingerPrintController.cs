@@ -40,8 +40,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.kafkaServices = kafkaServices;
         }
 
-        [HttpGet("scr/{sessionKey}/{subscriberId}")]
-        public ActionResult Script(string sessionKey, int subscriberId = 0)
+        [HttpGet("scr/{sessionKey}/{subscriberName}")]
+        public ActionResult Script(string sessionKey, string subscriberName)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
 
@@ -54,9 +54,20 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings, sessionKey);
+                var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
 
-                return new JavascriptResult(bundleContent.Content);
+                if (subscribers != null && subscribers.Any())
+                {
+                    var subscriberId = subscribers
+                    .Select(x => x.SubscriberId).First();
+
+                    var bundleContent = new BundleContent(subscriberId, bundleFile.Content, appSettings, sessionKey);
+                    return new JavascriptResult(bundleContent.Content);
+                }
+                else
+                {
+                    sentryClient.CaptureMessage("Subscriber " + subscriberName + " is not exists");
+                }
             }
 
             return null;
@@ -94,7 +105,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         FingerPrintCode = fingerPrint.FingerPrintCode,
                         Attribute = fingerPrint.FingerPrint,
                         SessionKey = fingerPrint.SessionKey,
-                        SubscriberId = CheckExistSubscriber(fingerPrint.SubscriberId),
+                        SubscriberId = CheckExistSubscriberById(fingerPrint.SubscriberId),
                         UserAgentAttribute = fingerPrint.UserAgentAttribute,
                         UserAgentCode = fingerPrint.UserAgentCode,
                         CookieCode = fingerPrint.CookieCode,
@@ -112,15 +123,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpPost("transaction")]
-        public void Transaction([FromBody] TransactionModel data)
+        public void Transaction([FromBody] TransactionDTO data)
         {
             try
             {
-                if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId != 0)
+                if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
                     var transaction = new TransactionModel
                     {
-                        SubscriberId = CheckExistSubscriber(data.SubscriberId),
+                        SubscriberId = CheckExistSubscriberByName(data.SubscriberName),
                         ClientIp = data.ClientIp,
                         LoginName = data.LoginName,
                         SessionKey = data.SessionKey,
@@ -146,7 +157,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult<IEnumerable<string>> GetSubscriberInfo(int subscriberId)
         {
-            var subscribers = subscriberServices.GetSubscriber(subscriberId);
+            var subscribers = subscriberServices.GetSubscriberById(subscriberId);
 
             if (subscribers != null && subscribers.Any())
             {
@@ -165,16 +176,26 @@ namespace Device.Fingerprint.WebAPI.Controllers
             // Method intentionally left empty.
         }
 
-        private string GenCookie()
+        private int CheckExistSubscriberById(int subscriberId)
         {
-            Guid guiId = Guid.NewGuid();
+            var subscribers = subscriberServices.GetSubscriberById(subscriberId);
 
-            return guiId.ToString();
+            if (subscribers != null && subscribers.Any())
+            {
+                var subscriber = subscribers.FirstOrDefault();
+
+                if (subscriber != null)
+                {
+                    return subscriber.SubscriberId;
+                }
+            }
+
+            return -1;
         }
 
-        private int CheckExistSubscriber(int subscriberId)
+        private int CheckExistSubscriberByName(string subscriberName)
         {
-            var subscribers = subscriberServices.GetSubscriber(subscriberId);
+            var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
 
             if (subscribers != null && subscribers.Any())
             {

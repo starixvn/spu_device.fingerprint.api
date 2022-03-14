@@ -13,5 +13,6 @@
   </Function>
 	<Function Name="Subscriber">
 		<Setting Key="FPS_FP_Core_SubscriberInfoById_Get" SpName="FPS_FP_Core_SubscriberInfoById_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Core_SubscriberInfoByName_Get" SpName="FPS_FP_Core_SubscriberInfoByName_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>

@@ -3,7 +3,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client.Model
 {
     public class TransactionModel
     {
-        public int SubscriberId { get; set; }
+        public string SubscriberName { get; set; }
 
         public string LoginName { get; set; }
 

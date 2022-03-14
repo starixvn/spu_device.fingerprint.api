@@ -31,9 +31,9 @@ namespace DemoNetCore.Controllers
             {
                 var userAgent = Request.Headers["User-Agent"].ToString();
                 var hostUrl = Request.Scheme.ToString() + "://" + Request.Host.ToString();
-                var subscriberId = Convert.ToInt32(configuration.GetSection("SubscriberId").Value.ToString());
+                var subscriberName = configuration.GetSection("SubscriberName").Value.ToString();
                 var apiUrl = configuration.GetSection("ApiUrl").Value.ToString();
-                var fpsService = new TransactionServices(subscriberId, apiUrl, userAgent, hostUrl);
+                var fpsService = new TransactionServices(subscriberName, apiUrl, userAgent, hostUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
