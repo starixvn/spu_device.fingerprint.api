@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace FPS.Device.FingerPrint.Net.Framework.Client.Model
 {
     public class TransactionModel

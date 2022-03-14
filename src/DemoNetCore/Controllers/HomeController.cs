@@ -29,15 +29,16 @@ namespace DemoNetCore.Controllers
         {
             if (HttpContext.Session.GetString("IsPushTrans") == null)
             {
-                var userAgent = Request.Headers["User-Agent"].ToString();
-                var hostUrl = Request.Scheme.ToString() + "://" + Request.Host.ToString();
                 var subscriberName = configuration.GetSection("SubscriberName").Value.ToString();
                 var apiUrl = configuration.GetSection("ApiUrl").Value.ToString();
-                var fpsService = new TransactionServices(subscriberName, apiUrl, userAgent, hostUrl);
+                var fpsService = new TransactionServices(subscriberName, apiUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
-                fpsService.Insert("Login", loginName, DateTime.Now);
+                var userAgent = Request.Headers["User-Agent"].ToString();
+                var hostUrl = Request.Scheme.ToString() + "://" + Request.Host.ToString();
+                fpsService.Insert("Login", loginName, DateTime.Now, userAgent, hostUrl);
+
                 HttpContext.Session.SetString("IsPushTrans", "Ok");
             }
         }

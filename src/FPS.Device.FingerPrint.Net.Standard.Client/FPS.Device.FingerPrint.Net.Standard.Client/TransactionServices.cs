@@ -11,7 +11,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
 {
     public interface ITransactionServices
     {
-        void Insert(string action, string loginName, DateTime loginTime);
+        void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl);
 
         string GetScriptUrl();
     }
@@ -19,17 +19,13 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
     {
         private readonly string subscriberName;
         private readonly string apiUrl;
-        private readonly string userAgent;
-        private readonly string hostUrl;
         private readonly string sessionKey;
         private readonly string transactionUrl;
 
-        public TransactionServices(string subscriberName, string apiUrl, string userAgent, string hostUrl)
+        public TransactionServices(string subscriberName, string apiUrl)
         {
             this.subscriberName = subscriberName;
             this.apiUrl = apiUrl;
-            this.userAgent = userAgent;
-            this.hostUrl = hostUrl;
             this.sessionKey = Guid.NewGuid().ToString("N");
 
             transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
@@ -53,7 +49,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
             return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
 
-        public async void Insert(string action, string loginName, DateTime loginTime)
+        public async void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
