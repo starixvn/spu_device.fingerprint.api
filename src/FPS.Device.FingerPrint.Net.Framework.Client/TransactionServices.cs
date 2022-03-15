@@ -11,7 +11,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 {
     public interface ITransactionServices
     {
-        Task Insert(string action, string loginName, DateTime loginTime);
+        void Insert(string action, string loginName, DateTime loginTime);
 
         void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime);
 
@@ -34,7 +34,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
         }
 
-        public async Task Insert(string action, string loginName, DateTime loginTime)
+        public void Insert(string action, string loginName, DateTime loginTime)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
@@ -54,11 +54,12 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                     SubAccId = 0
                 };
                 var cancelToken = new CancellationToken();
-                await PostBasicAsync(transactionUrl, transaction, cancelToken);
+
+                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
             }
         }
 
-        public async void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
+        public void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
@@ -79,7 +80,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                await PostBasicAsync(transactionUrl, transaction, cancelToken);
+                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
             }
         }
 
@@ -102,7 +103,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             return ip;
         }
 
-        private static async Task PostBasicAsync(string url, object content, CancellationToken cancellationToken)
+        private async Task PostBasicAsync(string url, object content, CancellationToken cancellationToken)
         {
             using (var client = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Post, url))

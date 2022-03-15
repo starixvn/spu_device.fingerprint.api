@@ -43,6 +43,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
         {
             var hostName = System.Net.Dns.GetHostName();
             var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
+
             return ips[2].ToString();
         }
         public string GetScriptUrl()
@@ -58,11 +59,11 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
         /// <param name="loginTime">Login time</param>
         /// <param name="userAgent">UserAgent from httpcontext</param>
         /// <param name="hostUrl">Url from httpcontext</param>
-        public async void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl)
+        public void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
-                var clientIp = await GetIPAsync();
+                var clientIp = GetIPAsync().Result;
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
@@ -78,7 +79,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                await PostBasicAsync(transactionUrl, transaction, cancelToken);
+                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
             }
         }
 
@@ -92,11 +93,11 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
         /// <param name="loginTime">Login time</param>
         /// <param name="userAgent">UserAgent from httpcontext</param>
         /// <param name="hostUrl">Url from httpcontext</param>
-        public async void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl)
+        public void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
-                var clientIp = await GetIPAsync();
+                var clientIp = GetIPAsync().Result;
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
@@ -112,11 +113,11 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
                 };
                 var cancelToken = new CancellationToken();
 
-                await PostBasicAsync(transactionUrl, transaction, cancelToken);
+                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
             }
         }
 
-        private static async Task PostBasicAsync(string url, object content, CancellationToken cancellationToken)
+        private async Task PostBasicAsync(string url, object content, CancellationToken cancellationToken)
         {
             using (var client = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Post, url))
