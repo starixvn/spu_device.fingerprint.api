@@ -1,4 +1,4 @@
-﻿using FPS.Device.FingerPrint.Net.Framework.Client;
+﻿using FPS.Device.FingerPrint.Net.Standard.Client;
 using System;
 using System.Configuration;
 using System.Web.Mvc;
@@ -32,9 +32,12 @@ namespace demoAPI.Controllers
                 var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
                 var fpsService = new TransactionServices(subscriberName, apiUrl);
 
+                var userAgent = HttpContext.Request.UserAgent;
+                var host = HttpContext.Request.Url.AbsoluteUri;
+
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
-                _ = fpsService.Insert("Login", loginName, DateTime.Now);
+                fpsService.Insert("Login", loginName, DateTime.Now, userAgent, host);
 
                 Session["IsPushTrans"] = "Ok";
             }

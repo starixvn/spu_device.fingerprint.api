@@ -50,6 +50,14 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
             return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
 
+        /// <summary>
+        /// Insert transaction
+        /// </summary>
+        /// <param name="action">User action</param>
+        /// <param name="loginName">User name</param>
+        /// <param name="loginTime">Login time</param>
+        /// <param name="userAgent">UserAgent from httpcontext</param>
+        /// <param name="hostUrl">Url from httpcontext</param>
         public async void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
@@ -74,6 +82,16 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
             }
         }
 
+        /// <summary>
+        /// Insert transaction
+        /// </summary>
+        /// <param name="action">User action</param>
+        /// <param name="loginName">User name</param>
+        /// <param name="custId">Cust Id</param>
+        /// <param name="subAccId">Sub Account Id</param>
+        /// <param name="loginTime">Login time</param>
+        /// <param name="userAgent">UserAgent from httpcontext</param>
+        /// <param name="hostUrl">Url from httpcontext</param>
         public async void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl)
         {
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))

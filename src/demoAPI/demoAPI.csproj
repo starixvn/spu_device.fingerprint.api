@@ -196,13 +196,13 @@
     <Content Include="Scripts\jquery-3.4.1.min.map" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Framework.Client.Model\FPS.Device.FingerPrint.Net.Framework.Client.Model.csproj">
-      <Project>{554ddb77-b15b-434a-a1de-9a737343a103}</Project>
-      <Name>FPS.Device.FingerPrint.Net.Framework.Client.Model</Name>
+    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model.csproj">
+      <Project>{28e10bd4-e712-4bec-b3de-d4cfce6c8639}</Project>
+      <Name>FPS.Device.FingerPrint.Net.Standard.Client.Model</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Fps.Device.FingerPrint.Net.Framework.Client\FPS.Device.FingerPrint.Net.Framework.Client.csproj">
-      <Project>{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}</Project>
-      <Name>FPS.Device.FingerPrint.Net.Framework.Client</Name>
+    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client.csproj">
+      <Project>{a31c9770-538a-4f3e-a3df-ee9eb720b968}</Project>
+      <Name>FPS.Device.FingerPrint.Net.Standard.Client</Name>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
