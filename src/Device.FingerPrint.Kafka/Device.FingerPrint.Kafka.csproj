@@ -15,4 +15,8 @@
     <PackageReference Include="Sentry.AspNetCore" Version="2.1.8" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Ultilities\" />
+  </ItemGroup>
+
 </Project>

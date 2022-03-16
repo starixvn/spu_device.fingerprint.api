@@ -1,17 +1,13 @@
-﻿using Fanex.Data.Repository;
-using Device.FingerPrint.Features.Subscriber.Criterias;
+﻿using Device.FingerPrint.Features.Subscriber.Criterias;
 using Device.FingerPrint.Features.Subscriber.Model;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Fanex.Data;
+using Fanex.Data.Repository;
+using System.Collections.Generic;
 
 namespace Device.FingerPrint.Features.Subscriber.Services
 {
     public interface ISubscriberDataAccess
     {
-        SubscriberEntity GetSubscriberById(int subscriberId);
-
         SubscriberEntity GetSubscriberByName(string subscriberName);
 
         IEnumerable<SubscriberEntity> GetSubscriberList();
@@ -32,19 +28,6 @@ namespace Device.FingerPrint.Features.Subscriber.Services
             return repository.Fetch<SubscriberEntity>(criteria);
         }
 
-        public SubscriberEntity GetSubscriberById(int subscriberId)
-        {
-            var criteria = new GetSubscriberInfoByIdCriteria
-            {
-                SubscriberId = subscriberId
-            };
-
-            using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
-            {
-                return db.QueryEntity<SubscriberEntity>(criteria);
-            }
-        }
-
         public SubscriberEntity GetSubscriberByName(string subscriberName)
         {
             var criteria = new GetSubscriberInfoByNameCriteria
@@ -52,10 +35,8 @@ namespace Device.FingerPrint.Features.Subscriber.Services
                 SubscriberName = subscriberName
             };
 
-            using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
-            {
-                return db.QueryEntity<SubscriberEntity>(criteria);
-            }
+            using var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey());
+            return db.QueryEntity<SubscriberEntity>(criteria);
         }
     }
 }

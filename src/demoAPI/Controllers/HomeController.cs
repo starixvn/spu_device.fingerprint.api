@@ -6,12 +6,7 @@ using System.Web.Mvc;
 namespace demoAPI.Controllers
 {
     public class HomeController : Controller
-    {        
-        public HomeController()
-        {
-            
-        }
-
+    {
         public ActionResult Index()
         {
             if (Session["Username"] == null)
@@ -29,7 +24,7 @@ namespace demoAPI.Controllers
             if (Session["IsPushTrans"] == null)
             {
                 var subscriberName = ConfigurationManager.AppSettings["subscriberName"].ToString();
-                var apiUrl = ConfigurationManager.AppSettings["apiUrl"];
+                var apiUrl = ConfigurationManager.AppSettings["apiUrl"].ToString();
                 var fpsService = new TransactionServices(subscriberName, apiUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();

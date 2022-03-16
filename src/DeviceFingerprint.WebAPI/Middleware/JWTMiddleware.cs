@@ -1,6 +1,5 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,10 +13,10 @@ namespace Device.Fingerprint.WebAPI.Middleware
         private readonly RequestDelegate next;
         private readonly IAppSettings appSettings;
 
-        public JWTMiddleware(RequestDelegate next, IConfiguration configuration)
+        public JWTMiddleware(RequestDelegate next, IAppSettings appSettings)
         {
             this.next = next;
-            appSettings = new AppSettings(configuration);
+            this.appSettings = appSettings;
         }
 
         public async Task Invoke(HttpContext context)

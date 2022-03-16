@@ -1,9 +1,7 @@
 ﻿using Device.FingerPrint.Features.RawTransaction.Services;
-using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -98,29 +96,29 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 Task.WhenAll(tasks.ToArray());
             }
         }
-                
+
 
         public void MergeTrans(int batchSize, int numberOfBatch)
         {
             var mergeTrans = transactionService.GetMergeTransaction(batchSize, 0);
 
-            if(mergeTrans != null && mergeTrans.Any())
+            if (mergeTrans != null && mergeTrans.Any())
             {
-                var mergeTransGroup  = mergeTrans.Chunk2(numberOfBatch);
+                var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
                 var tasks = new List<Task>();
 
-                foreach(var trans in mergeTransGroup)
+                foreach (var trans in mergeTransGroup)
                 {
-                    tasks.Add(Task.Run(() => {
+                    tasks.Add(Task.Run(() =>
+                    {
                         var mergeTransJson = JsonConvert.SerializeObject(trans);
 
                         transactionService.MergeTransaction(mergeTransJson);
-                    }));                    
+                    }));
                 }
 
                 Task.WaitAll(tasks.ToArray());
             }
-
         }
 
         public void ForceMergeTrans(int batchSize, int numberOfBatch)
@@ -134,7 +132,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 foreach (var trans in mergeTransGroup)
                 {
-                    tasks.Add(Task.Run(() => {
+                    tasks.Add(Task.Run(() =>
+                    {
                         var mergeTransJson = JsonConvert.SerializeObject(mergeTrans);
 
                         transactionService.ForceMergeTransaction(mergeTransJson);
@@ -142,7 +141,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
 
                 Task.WaitAll(tasks.ToArray());
-                
             }
         }
     }

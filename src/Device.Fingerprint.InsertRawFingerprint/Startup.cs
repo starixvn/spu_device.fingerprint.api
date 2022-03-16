@@ -1,24 +1,23 @@
+using Confluent.Kafka;
+using Device.Fingerprint.InsertRawFingerprint.Handlers;
+using Device.FingerPrint.Features.FingerPrint.Services;
+using Device.FingerPrint.Kafka;
+using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
+using Device.FingerPrint.Model;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
-using Device.FingerPrint.Features.FingerPrint.Services;
-using Device.Fingerprint.InsertRawFingerprint.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sentry;
 using System.Collections.Generic;
 using System.Linq;
-using Device.FingerPrint.Kafka;
-using Device.FingerPrint.Kafka.Handlers;
-using Microsoft.AspNetCore.Http;
-using Confluent.Kafka;
-using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
-using Device.FingerPrint.Model;
 
 namespace Device.Fingerprint.InsertRawFingerprint
 {
@@ -56,7 +55,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
 
             services.AddScoped<IKafkaHandler<string, FingerPrintModel>, KafkaHandler>();
             services.AddSingleton(typeof(IKafkaConsumer<,>), typeof(KafkaConsumer<,>));
-            services.AddHostedService<KafkaConsumer>();                        
+            services.AddHostedService<KafkaConsumer>();
 
             services.AddHealthChecks();
 

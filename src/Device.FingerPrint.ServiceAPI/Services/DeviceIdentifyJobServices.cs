@@ -1,11 +1,8 @@
-﻿using Device.FingerPrint.Features.RawTransaction.Services;
-using Device.FingerPrint.Features.Transaction.Model;
+﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
-using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
@@ -17,11 +14,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
     public class DeviceIdentifyJobServices : IDeviceIdentifyJobServices
     {
-
         private readonly ITransactionService transactionService;
 
-
-        public DeviceIdentifyJobServices(ITransactionService transactionService, IAppSettings appSettings, IRawTransactionService rawTransactionServices)
+        public DeviceIdentifyJobServices(ITransactionService transactionService)
         {
             this.transactionService = transactionService;
         }
@@ -74,7 +69,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
             }
         }
-
 
         private Task ProcessDeviceIdentify(IEnumerable<DeviceIdentifyEntity> rawTrans, int groupId)
         {

@@ -17,7 +17,7 @@ namespace Device.FingerPrint.ServiceAPI
         string Environment { get; }
     }
 
-    public class AppSettings: IAppSettings
+    public class AppSettings : IAppSettings
     {
         private readonly IConfiguration configuration;
 
@@ -30,7 +30,7 @@ namespace Device.FingerPrint.ServiceAPI
         public AppSettings(IConfiguration configuration)
         {
             this.configuration = configuration;
-                        
+
             apiUrl = GetValue<string>("AppConfig:ApiUrl");
 
             encryptPassword = GetValue<string>("AppConfig:EncryptPassword");

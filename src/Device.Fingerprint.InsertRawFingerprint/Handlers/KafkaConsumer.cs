@@ -1,19 +1,15 @@
-﻿using Device.FingerPrint.Features.FingerPrint.Model;
-using Device.FingerPrint.Features.FingerPrint.Services;
-using Device.FingerPrint.Kafka.Handlers;
+﻿using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Device.FingerPrint.Model;
 using Microsoft.Extensions.Hosting;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Linq;
 using Sentry;
 using System;
-using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Device.Fingerprint.InsertRawFingerprint.Handlers
 {
     public class KafkaConsumer : BackgroundService
-    {        
+    {
         private readonly ISentryClient sentryClient;
         private readonly IKafkaConsumer<string, FingerPrintModel> consumer;
 

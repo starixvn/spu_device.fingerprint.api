@@ -1,6 +1,5 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
-using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -9,8 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
@@ -21,21 +18,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISentryClient sentryClient;
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        private readonly IFingerPrintService fingerPrintService;
         private readonly ISubscriberServices subscriberServices;
         private readonly IKafkaServices kafkaServices;
 
         public FingerPrintController(ISentryClient sentryClient,
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            IFingerPrintService fingerPrintService,
             ISubscriberServices subscriberServices,
             IKafkaServices kafkaServices)
         {
             this.sentryClient = sentryClient;
             this.environment = Environment;
             this.appSettings = appSettings;
-            this.fingerPrintService = fingerPrintService;
             this.subscriberServices = subscriberServices;
             this.kafkaServices = kafkaServices;
         }
@@ -43,47 +37,63 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
         public ActionResult Script(string sessionKey, string subscriberName)
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
-
-            if (appSettings.Environment != "DEV")
+            try
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
+
+                if (appSettings.Environment != "DEV")
+                {
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
+                }
+
+                var bundleFile = new BundleFile(scriptPath);
+
+                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                {
+                    var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
+
+                    if (subscribers != null)
+                    {
+                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
+
+                        return new JavascriptResult(bundleContent.Content);
+                    }
+                    else
+                    {
+                        sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists");
+                    }
+                }
+
+                return null;
             }
-
-            var bundleFile = new BundleFile(scriptPath);
-
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+            catch (Exception ex)
             {
-                var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
-
-                if (subscribers != null)
-                {
-                    var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
-
-                    return new JavascriptResult(bundleContent.Content);
-                }
-                else
-                {
-                    sentryClient.CaptureMessage("Subscriber " + subscriberName + " dose not exists");
-                }
+                sentryClient.CaptureException(ex);
+                return null;
             }
-
-            return null;
         }
 
         [HttpGet("conf")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult<ScriptConfigModel> AppConfig()
         {
-            var JWTService = new JWT(appSettings);
-
-            string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
+            try
             {
-                EncryptedKey = appSettings.EncryptPassword,
-                Token = JWTService.GenerateJwtToken()
-            });
+                var JWTService = new JWT(appSettings);
 
-            return Ok(jsonString);
+                string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
+                {
+                    EncryptedKey = appSettings.EncryptPassword,
+                    Token = JWTService.GenerateJwtToken()
+                });
+
+                return Ok(jsonString);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+                return Ok("");
+            }
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
@@ -113,6 +123,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                     kafkaServices.SendFingerprintToKafka(fingerPrintModel);
                 }
+                else
+                {
+                    sentryClient.CaptureMessage($"FingerPrint does not exists. ({data})");
+                }
             }
             catch (Exception ex)
             {
@@ -129,7 +143,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
 
-                    if(subscriber != null)
+                    if (subscriber != null)
                     {
                         var transaction = new TransactionModel
                         {
@@ -150,8 +164,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     }
                     else
                     {
-                        sentryClient.CaptureMessage($"{data.SubscriberName} dose not exists.");
-                    }                    
+                        sentryClient.CaptureMessage($"{data.SubscriberName} does not exists.");
+                    }
                 }
             }
             catch (Exception ex)

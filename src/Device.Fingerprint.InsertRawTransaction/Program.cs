@@ -24,7 +24,6 @@ namespace Device.Fingerprint.InsertRawTransaction
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-
                     webBuilder
                     .UseSentry()
                     .UseStartup<Startup>();

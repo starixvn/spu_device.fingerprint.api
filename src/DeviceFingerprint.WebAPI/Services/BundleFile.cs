@@ -15,10 +15,8 @@ namespace Device.Fingerprint.WebAPI.Ultilities
         {
             get
             {
-                using (var streamReader = new StreamReader(virtualPath))
-                {
-                    return streamReader.ReadToEnd();
-                }
+                using var streamReader = new StreamReader(virtualPath);
+                return streamReader.ReadToEnd();
             }
         }
     }

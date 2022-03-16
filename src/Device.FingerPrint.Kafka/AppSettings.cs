@@ -10,6 +10,7 @@ namespace Device.FingerPrint.Kafka
         string SPName { get; }
         string SentryDsn { get; }
         string Environment { get; }
+        int ConsumerBatchSize { get; }
     }
     public class AppSettings : IAppSettings
     {
@@ -18,6 +19,7 @@ namespace Device.FingerPrint.Kafka
         private readonly string apiUrl;
         private readonly string sentryDsn;
         private readonly string environment;
+        private readonly int consumerBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -26,11 +28,13 @@ namespace Device.FingerPrint.Kafka
             spName = GetValue<string>("AppConfig:SPName");
             sentryDsn = GetValue<string>("Sentry:Dsn");
             environment = GetValue<string>("AppConfig:Environment");
+            consumerBatchSize = GetValue<int>("Kafka:Consumer:BatchSize");
         }
         public string ApiUrl => apiUrl;
         public string SPName => spName;
         public string SentryDsn => sentryDsn;
         public string Environment => environment;
+        public int ConsumerBatchSize => consumerBatchSize;
 
         public T GetValue<T>(string key)
         {

@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string FingerPrintCode { get; set; }
 
-        public string CookieCode { get; set; }                       
+        public string CookieCode { get; set; }
 
         public long GroupId { get; set; }
 

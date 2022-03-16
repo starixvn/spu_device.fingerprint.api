@@ -29,7 +29,7 @@ namespace Device.FingerPrint.Integration.Site.Controllers
         private SelectList GetSubscriberList()
         {
             var subscribers = subscriberServices.GetSubscriberList();
-            SelectList selectList = new SelectList(subscribers, "SubscriberId", "SubscriberName");
+            var selectList = new SelectList(subscribers, "SubscriberId", "SubscriberName");
             return selectList;
         }
 
@@ -71,8 +71,6 @@ namespace Device.FingerPrint.Integration.Site.Controllers
             ";
             return strResult;
         }
-
-        
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

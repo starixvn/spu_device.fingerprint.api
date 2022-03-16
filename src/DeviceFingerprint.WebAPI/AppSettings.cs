@@ -17,11 +17,13 @@ namespace Device.Fingerprint.WebAPI
         string Environment { get; }
 
         string BootstrapServers { get; }
+
         string TransactionTopicName { get; }
+
         string FingerprintTopicName { get; }
     }
 
-    public class AppSettings: IAppSettings
+    public class AppSettings : IAppSettings
     {
         private readonly IConfiguration configuration;
 
@@ -38,7 +40,7 @@ namespace Device.Fingerprint.WebAPI
         public AppSettings(IConfiguration configuration)
         {
             this.configuration = configuration;
-                        
+
             apiUrl = GetValue<string>("AppConfig:ApiUrl");
 
             encryptPassword = GetValue<string>("AppConfig:EncryptPassword");
@@ -67,7 +69,9 @@ namespace Device.Fingerprint.WebAPI
         public string Environment => environment;
 
         public string BootstrapServers => bootstrapServers;
+
         public string TransactionTopicName => transactionTopicname;
+
         public string FingerprintTopicName => fingerprintTopicname;
 
         public T GetValue<T>(string key)

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Net.Http.Headers;
-using FPS.Device.FingerPrint.Net.Standard.Client.Model;
-using System.Threading;
-using System.Net.Http;
+﻿using FPS.Device.FingerPrint.Net.Standard.Client.Model;
 using Newtonsoft.Json;
+using System;
+using System.Net.Http;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FPS.Device.FingerPrint.Net.Standard.Client
 {
@@ -13,7 +12,6 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
     {
         void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl);
         void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl);
-
         string GetScriptUrl();
     }
     public class TransactionServices : ITransactionServices
@@ -45,10 +43,6 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
             var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
 
             return ips[2].ToString();
-        }
-        public string GetScriptUrl()
-        {
-            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
 
         /// <summary>
@@ -135,6 +129,11 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
                     }
                 }
             }
+        }
+
+        public string GetScriptUrl()
+        {
+            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
     }
 }

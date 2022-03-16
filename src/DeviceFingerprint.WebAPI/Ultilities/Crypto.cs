@@ -6,7 +6,7 @@ namespace Device.Fingerprint.WebAPI.Ultilities
 {
     public class Crypto
     {
-        private readonly RijndaelManaged myRijndael = new RijndaelManaged();
+        private readonly RijndaelManaged myRijndael = new();
         private readonly int iterations;
         private readonly byte[] salt;
 
@@ -16,7 +16,6 @@ namespace Device.Fingerprint.WebAPI.Ultilities
             myRijndael.KeySize = 128;
             myRijndael.IV = HexStringToByteArray(ivHexString ?? "c3eef06037e837f4ee390bda69c05023");
             
-
             myRijndael.Padding = PaddingMode.PKCS7;
             myRijndael.Mode = CipherMode.CBC;
             iterations = 1000;
@@ -54,7 +53,7 @@ namespace Device.Fingerprint.WebAPI.Ultilities
 
         private byte[] GenerateKey(string strPassword)
         {
-            Rfc2898DeriveBytes rfc2898 = new Rfc2898DeriveBytes(System.Text.Encoding.UTF8.GetBytes(strPassword), salt, iterations);
+            var rfc2898 = new Rfc2898DeriveBytes(System.Text.Encoding.UTF8.GetBytes(strPassword), salt, iterations);
 
             return rfc2898.GetBytes(128 / 8);
         }

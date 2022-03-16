@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Device.Fingerprint.InsertRawTransaction.Handlers
 {
     public class KafkaConsumer : BackgroundService
-    {        
+    {
         private readonly ISentryClient sentryClient;
         private readonly IKafkaConsumer<string, TransactionModel> consumer;
 

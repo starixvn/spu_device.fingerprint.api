@@ -52,6 +52,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
         {
             return transactionDataAccess.GetMergeTransaction(batchSize, retry);
         }
+
         public void MergeTransaction(string transJson)
         {
             transactionDataAccess.UpdateMergeTransaction(transJson);

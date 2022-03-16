@@ -1,9 +1,13 @@
+using Confluent.Kafka;
+using Device.Fingerprint.InsertRawTransaction.Handlers;
+using Device.FingerPrint.Features.RawTransaction.Services;
+using Device.FingerPrint.Kafka;
+using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
+using Device.FingerPrint.Model;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
-using Device.FingerPrint.Features.Transaction.Services;
-using Device.Fingerprint.InsertRawTransaction.Handlers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -13,13 +17,6 @@ using Microsoft.Extensions.Hosting;
 using Sentry;
 using System.Collections.Generic;
 using System.Linq;
-using Device.FingerPrint.Kafka;
-using Device.FingerPrint.Kafka.Handlers;
-using Microsoft.AspNetCore.Http;
-using Confluent.Kafka;
-using Device.FingerPrint.Model;
-using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
-using Device.FingerPrint.Features.RawTransaction.Services;
 
 namespace Device.Fingerprint.InsertRawTransaction
 {

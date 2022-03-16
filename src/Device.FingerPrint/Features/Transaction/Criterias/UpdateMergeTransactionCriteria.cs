@@ -1,8 +1,5 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
@@ -10,7 +7,6 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
     {
         [SpParam(SqlParamName = "ip_TransJson")]
         public string Transaction { get; set; }
-
 
         public override string GetSettingKey()
         {

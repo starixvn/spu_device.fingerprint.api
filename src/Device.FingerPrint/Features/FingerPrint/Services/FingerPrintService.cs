@@ -1,5 +1,4 @@
 ﻿using Device.FingerPrint.Features.FingerPrint.Model;
-using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -8,8 +7,6 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
     public interface IFingerPrintService
     {
         void InsertClientTransaction(IEnumerable<ClientTransactionEntity> listFingerPrint);
-
-        void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie);
     }
 
     public class FingerPrintService : IFingerPrintService
@@ -26,11 +23,6 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
             string JsonFingerPrint = JsonConvert.SerializeObject(listFingerPrint);
 
             fingerPrintDataAccess.InsertClientTransaction(JsonFingerPrint);
-        }
-
-        public void UpdateFingerPrintCookie(FingerPrintCookieEntity fingerprintCookie)
-        {
-            fingerPrintDataAccess.UpdateFingerPrintCookie(fingerprintCookie);
         }
     }
 }

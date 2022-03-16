@@ -1,18 +1,20 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using FPS.Device.FingerPrint.Net.Standard.Client;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
-using FPS.Device.FingerPrint.Net.Standard.Client;
 
 namespace DemoNetCore.Controllers
 {
     public class HomeController : Controller
     {
         private readonly IConfiguration configuration;
+
         public HomeController(IConfiguration configuration)
         {
             this.configuration = configuration;
         }
+
         public IActionResult Index()
         {
             if (HttpContext.Session.GetString("Username") == null)

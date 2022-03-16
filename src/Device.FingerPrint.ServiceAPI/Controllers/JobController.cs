@@ -27,11 +27,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                this.deviceIdentifyServices.DeviceIdentify(batchSize, numberOfBatch);
+                deviceIdentifyServices.DeviceIdentify(batchSize, numberOfBatch);
 
                 return true;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
 
@@ -44,7 +44,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                transactionServices.MergeTrans(batchSize, numberOfBatch);                
+                transactionServices.MergeTrans(batchSize, numberOfBatch);
 
                 return true;
             }
