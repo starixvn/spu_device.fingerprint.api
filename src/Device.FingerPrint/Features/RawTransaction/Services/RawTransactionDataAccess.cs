@@ -1,5 +1,5 @@
 ﻿using Device.FingerPrint.Features.RawTransaction.Criterias;
-using Device.FingerPrint.Features.Transaction.Model;
+using Device.FingerPrint.Features.RawTransaction.Model;
 using Fanex.Data.Repository;
 using System.Collections.Generic;
 

@@ -21,13 +21,15 @@ namespace Device.Fingerprint.WebAPI.Services
             this.kafkaProducerFP = kafkaProducerFP;
             this.kafkaProducerTrans = kafkaProducerTrans;
         }
+
         public void SendTransactionToKafka(TransactionModel model)
         {
-            kafkaProducerTrans.ProduceAsync(appSettings.TransactionTopicName, null, model);
+            kafkaProducerTrans.ProduceAsync(appSettings.ServerTransTopicName, null, model);
         }
+
         public void SendFingerprintToKafka(FingerPrintModel model)
         {
-            kafkaProducerFP.ProduceAsync(appSettings.FingerprintTopicName, null, model);
+            kafkaProducerFP.ProduceAsync(appSettings.ClientTransTopicName, null, model);
         }
     }
 }

@@ -45,7 +45,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
 
             var consumerConfig = new ConsumerConfig(clientConfig)
             {
-                GroupId = "fingerprint_topic_app",
+                GroupId = Configuration["Kafka:ClientConfigs:GroupId"],
                 EnableAutoCommit = true,
                 AutoOffsetReset = AutoOffsetReset.Earliest,
                 StatisticsIntervalMs = 5000,

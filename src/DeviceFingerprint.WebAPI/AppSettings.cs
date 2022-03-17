@@ -18,9 +18,9 @@ namespace Device.Fingerprint.WebAPI
 
         string BootstrapServers { get; }
 
-        string TransactionTopicName { get; }
+        string ServerTransTopicName { get; }
 
-        string FingerprintTopicName { get; }
+        string ClientTransTopicName { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -34,8 +34,8 @@ namespace Device.Fingerprint.WebAPI
         private readonly string environment;
 
         private readonly string bootstrapServers;
-        private readonly string transactionTopicname;
-        private readonly string fingerprintTopicname;
+        private readonly string serverTransTopicName;
+        private readonly string clientTransTopicName;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -53,9 +53,9 @@ namespace Device.Fingerprint.WebAPI
 
             bootstrapServers = GetValue<string>("Kafka:ClientConfigs:BootstrapServers");
 
-            transactionTopicname = GetValue<string>("Kafka:ClientConfigs:TransactionTopicName");
+            serverTransTopicName = GetValue<string>("Kafka:ClientConfigs:ServerTransTopicName");
 
-            fingerprintTopicname = GetValue<string>("Kafka:ClientConfigs:FingerprintTopicName");
+            clientTransTopicName = GetValue<string>("Kafka:ClientConfigs:ClientTransTopicName");
         }
 
         public string ApiUrl => apiUrl;
@@ -70,9 +70,9 @@ namespace Device.Fingerprint.WebAPI
 
         public string BootstrapServers => bootstrapServers;
 
-        public string TransactionTopicName => transactionTopicname;
+        public string ServerTransTopicName => serverTransTopicName;
 
-        public string FingerprintTopicName => fingerprintTopicname;
+        public string ClientTransTopicName => clientTransTopicName;
 
         public T GetValue<T>(string key)
         {
