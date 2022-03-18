@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Device.FingerPrint.Features.FingerPrint.Model
 {
-   public class ClientTransactionEntity
+    public class ClientTransactionEntity
     {
         public string FingerPrintCode { get; set; }
 
@@ -23,5 +21,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Model
         public string Flagged { get; set; }
 
         public string Url { get; set; }
+
+        public DateTime TransTime { get; set; }
     }
 }

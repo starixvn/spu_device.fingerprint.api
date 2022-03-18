@@ -1,4 +1,5 @@
-﻿
+﻿using System;
+
 namespace Device.FingerPrint.Model
 {
     public class FingerPrintModel
@@ -20,5 +21,7 @@ namespace Device.FingerPrint.Model
         public string Flagged { get; set; }
 
         public string Url { get; set; }
+
+        public DateTime TransTime { get; set; }
     }
 }

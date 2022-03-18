@@ -16,7 +16,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Model
 
         public int SubscriberId { get; set; }
 
-        public DateTime Transtime { get; set; }
+        public DateTime TransTime { get; set; }
 
         public string ClientIP { get; set; }
 

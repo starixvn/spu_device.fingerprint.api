@@ -60,7 +60,8 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 Flagged = model.Flagged,
-                Url = model.Url
+                Url = model.Url,
+                TransTime = model.TransTime
             };
         }
     }
