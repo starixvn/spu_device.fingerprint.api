@@ -1,4 +1,4 @@
-﻿using Device.FingerPrint.Features.RawTransaction.Services;
+﻿using Device.FingerPrint.Features.ServerTransaction.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;

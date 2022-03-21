@@ -1,6 +1,6 @@
 using Confluent.Kafka;
 using Device.Fingerprint.InsertRawFingerprint.Handlers;
-using Device.FingerPrint.Features.FingerPrint.Services;
+using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Device.FingerPrint.Model;
@@ -35,8 +35,8 @@ namespace Device.Fingerprint.InsertRawFingerprint
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
 
-            services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
-            services.AddSingleton<IFingerPrintService, FingerPrintService>();
+            services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
+            services.AddSingleton<IClientTransactionService, ClientTransactionService>();
 
             var clientConfig = new ClientConfig()
             {
@@ -53,7 +53,7 @@ namespace Device.Fingerprint.InsertRawFingerprint
             };
             services.AddSingleton(consumerConfig);
 
-            services.AddScoped<IKafkaHandler<string, FingerPrintModel>, KafkaHandler>();
+            services.AddScoped<IKafkaHandler<string, ClientTransactionModel>, KafkaHandler>();
             services.AddSingleton(typeof(IKafkaConsumer<,>), typeof(KafkaConsumer<,>));
             services.AddHostedService<KafkaConsumer>();
 

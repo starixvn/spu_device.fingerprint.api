@@ -2,7 +2,7 @@
 
 namespace Device.FingerPrint.Model
 {
-    public class FingerPrintModel
+    public class ClientTransactionModel
     {
         public string FingerPrintCode { get; set; }
 

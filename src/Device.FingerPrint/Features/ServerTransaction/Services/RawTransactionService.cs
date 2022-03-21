@@ -1,10 +1,10 @@
-﻿using Device.FingerPrint.Features.RawTransaction.Model;
+﻿using Device.FingerPrint.Features.ServerTransaction.Model;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Device.FingerPrint.Features.RawTransaction.Services
+namespace Device.FingerPrint.Features.ServerTransaction.Services
 {
 
     public interface IRawTransactionService

@@ -1,5 +1,5 @@
-﻿using Device.FingerPrint.Features.RawTransaction.Model;
-using Device.FingerPrint.Features.RawTransaction.Services;
+﻿using Device.FingerPrint.Features.ServerTransaction.Model;
+using Device.FingerPrint.Features.ServerTransaction.Services;
 using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Device.FingerPrint.Model;
