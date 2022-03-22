@@ -40,7 +40,7 @@ namespace Device.FingerPrint.ServiceAPI
 
             services.AddHealthChecks();
 
-            services.RegisterService();
+            services.RegisterService(Configuration);
 
             FanexDataConfig(appSettings);
             RegisterLogging(appSettings);
@@ -51,7 +51,7 @@ namespace Device.FingerPrint.ServiceAPI
         {
             if (env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();                
+                app.UseDeveloperExceptionPage();
             }
 
             app.UseSwagger();
