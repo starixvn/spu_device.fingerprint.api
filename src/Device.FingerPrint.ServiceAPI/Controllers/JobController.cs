@@ -126,5 +126,22 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                 return false;
             }
         }
+
+        [HttpPost("monthlysum")]
+        public bool MonthlySum()
+        {
+            try
+            {
+                monitorJobServices.MonthlySum();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
     }
 }

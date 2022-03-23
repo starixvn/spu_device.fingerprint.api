@@ -33,10 +33,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private static void RegisterMonitorService(this IServiceCollection services)
         {
             services.AddSingleton<IMonitorJobServices, MonitorJobServices>();
-            services.AddSingleton<IServerTransDailySumDataAccess, ServerTransDailySumDataAccess>();
-            services.AddSingleton<IServerTransDailySumServices, ServerTransDailySumServices>();
-            services.AddSingleton<IClientTransDailySumDataAccess, ClientTransDailySumDataAccess>();
-            services.AddSingleton<IClientTransDailySumServices, ClientTransDailySumServices>();
+            services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
+            services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
         }
     }
 }

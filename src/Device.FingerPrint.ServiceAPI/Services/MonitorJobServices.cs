@@ -7,20 +7,18 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public interface IMonitorJobServices
     {
         public void DailyReport();
+        public void MonthlySum();
     }
     public class MonitorJobServices : IMonitorJobServices
     {
         private readonly IAppSettings appSettings;
-        private readonly IServerTransDailySumServices serverTransDailySumServices;
-        private readonly IClientTransDailySumServices clientTransDailySumServices;
+        private readonly ITransactionReportServices transactionReportServices;
 
         public MonitorJobServices(IAppSettings appSettings
-                                , IServerTransDailySumServices serverTransDailySumServices
-                                , IClientTransDailySumServices clientTransDailySumServices)
+                                , ITransactionReportServices transactionReportServices)
         {
             this.appSettings = appSettings;
-            this.serverTransDailySumServices = serverTransDailySumServices;
-            this.clientTransDailySumServices = clientTransDailySumServices;
+            this.transactionReportServices = transactionReportServices;
         }
         public void DailyReport()
         {
@@ -31,9 +29,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
             Notification("Daily Report", "Daily Report Date " + currentDate, moreInfo);
         }
 
+        public void MonthlySum()
+        {
+            var currentMonth = DateTime.UtcNow.AddHours(7).ToString("MM/yyyy");
+            transactionReportServices.MonthlySum(currentMonth);
+        }
+
         private void ServerTransDailySum(string currentDate, ref string moreInfo)
         {
-            var listDailySum = serverTransDailySumServices.GetServerTransDailySumList(currentDate);
+            var listDailySum = transactionReportServices.GetServerTransDailySumList(currentDate);
             moreInfo += "\n\rThe List data ServerTransactionDailySum:";
 
             foreach (var item in listDailySum)
@@ -46,7 +50,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private void ClientTransDailySum(string currentDate, ref string moreInfo)
         {
-            var listDailySum = clientTransDailySumServices.GetClientTransDailySumList(currentDate);
+            var listDailySum = transactionReportServices.GetClientTransDailySumList(currentDate);
             moreInfo += "\n\rThe List data ClientTransactionDailySum:";
 
             foreach (var item in listDailySum)
