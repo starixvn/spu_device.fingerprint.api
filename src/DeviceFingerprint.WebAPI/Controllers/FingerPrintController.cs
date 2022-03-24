@@ -177,11 +177,25 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [HttpGet("getsubscriber/{subscriberName}")]
+        public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)
+        {
+            var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
+            if (subscriber != null)
+            {
+                return Ok(subscriber);
+            }
+            else
+            {
+                // sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
+                return Ok(null);
+            }
+        }
+
         [HttpGet("hc")]
         public void HealthCheck()
         {
             // Method intentionally left empty.
         }
-
     }
 }

@@ -34,7 +34,7 @@ namespace Device.FingerPrint.Features.Subscriber.Services
                 };
             }
 
-            return new SubscriberModel();
+            return null;
         }
 
         public IEnumerable<SubscriberModel> GetSubscriberList()
