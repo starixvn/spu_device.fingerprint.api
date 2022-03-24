@@ -1,5 +1,5 @@
-﻿using Device.FingerPrint.Features.FingerPrint.Model;
-using Device.FingerPrint.Features.FingerPrint.Services;
+﻿using Device.FingerPrint.Features.ClientTransaction.Model;
+using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Kafka;
 using Device.FingerPrint.Kafka.Handlers.Kafka.Handlers;
 using Device.FingerPrint.Model;
@@ -10,15 +10,15 @@ using System.Threading.Tasks;
 
 namespace Device.Fingerprint.InsertRawFingerprint.Handlers
 {
-    public class KafkaHandler : IKafkaHandler<string, FingerPrintModel>
+    public class KafkaHandler : IKafkaHandler<string, ClientTransactionModel>
     {
-        private readonly IFingerPrintService fingerPrintService;
+        private readonly IClientTransactionService fingerPrintService;
         private readonly ISentryClient sentryClient;
         private readonly IAppSettings appSettings;
 
         private readonly List<ClientTransactionEntity> listTrans;
 
-        public KafkaHandler(ISentryClient sentryClient, IFingerPrintService fingerPrintService, IAppSettings appSettings)
+        public KafkaHandler(ISentryClient sentryClient, IClientTransactionService fingerPrintService, IAppSettings appSettings)
         {
             this.fingerPrintService = fingerPrintService;
             this.sentryClient = sentryClient;
@@ -27,7 +27,7 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
             listTrans = new List<ClientTransactionEntity>();
         }
 
-        public Task HandleAsync(string key, FingerPrintModel value)
+        public Task HandleAsync(string key, ClientTransactionModel value)
         {
             listTrans.Add(TranformData(value));
 
@@ -48,7 +48,7 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
             return Task.CompletedTask;
         }
 
-        private static ClientTransactionEntity TranformData(FingerPrintModel model)
+        private static ClientTransactionEntity TranformData(ClientTransactionModel model)
         {
             return new ClientTransactionEntity
             {
@@ -60,7 +60,8 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 Flagged = model.Flagged,
-                Url = model.Url
+                Url = model.Url,
+                TransTime = model.TransTime
             };
         }
     }

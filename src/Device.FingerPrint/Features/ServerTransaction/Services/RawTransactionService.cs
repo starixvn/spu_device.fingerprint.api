@@ -1,10 +1,10 @@
-﻿using Device.FingerPrint.Features.RawTransaction.Model;
+﻿using Device.FingerPrint.Features.ServerTransaction.Model;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Device.FingerPrint.Features.RawTransaction.Services
+namespace Device.FingerPrint.Features.ServerTransaction.Services
 {
 
     public interface IRawTransactionService
@@ -44,7 +44,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
                     SubAccId = x.SubAccId,
                     LoginName = x.LoginName,
                     SubscriberId = x.SubscriberId,
-                    Transtime = x.Transtime,
+                    TransTime = x.TransTime,
                     ClientIP = x.ClientIP,
                     UserAgent = x.UserAgent,
                     Url = x.Url,
@@ -71,7 +71,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Services
                     SubAccId = x.SubAccId,
                     LoginName = x.LoginName,
                     SubscriberId = x.SubscriberId,
-                    Transtime = x.Transtime,
+                    TransTime = x.TransTime,
                     ClientIP = x.ClientIP,
                     UserAgent = x.UserAgent,
                     Url = x.Url,

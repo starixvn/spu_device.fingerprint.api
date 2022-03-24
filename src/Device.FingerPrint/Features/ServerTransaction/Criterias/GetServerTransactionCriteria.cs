@@ -1,7 +1,7 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
 
-namespace Device.FingerPrint.Features.RawTransaction.Criterias
+namespace Device.FingerPrint.Features.ServerTransaction.Criterias
 {
     class GetServerTransactionCriteria : CriteriaBase
     {

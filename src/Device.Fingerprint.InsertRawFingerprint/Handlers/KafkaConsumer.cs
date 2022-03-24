@@ -13,9 +13,9 @@ namespace Device.Fingerprint.InsertRawFingerprint.Handlers
     {
         private readonly ISentryClient sentryClient;
         private readonly IAppSettings appSettings;
-        private readonly IKafkaConsumer<string, FingerPrintModel> consumer;
+        private readonly IKafkaConsumer<string, ClientTransactionModel> consumer;
 
-        public KafkaConsumer(ISentryClient sentryClient, IAppSettings appSettings, IKafkaConsumer<string, FingerPrintModel> consumer)
+        public KafkaConsumer(ISentryClient sentryClient, IAppSettings appSettings, IKafkaConsumer<string, ClientTransactionModel> consumer)
         {
             this.sentryClient = sentryClient;
             this.appSettings = appSettings;

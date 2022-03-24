@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Device.FingerPrint.Features.RawTransaction.Model
+namespace Device.FingerPrint.Features.ServerTransaction.Model
 {
    public class TransactionEntity
     {

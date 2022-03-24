@@ -41,6 +41,9 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var uriAddress = new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
+                var pathQuery = url.Query;
+                var minUrl = url.Query.ToString().Replace(pathQuery, "");
+
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
@@ -67,6 +70,8 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
                 var clientIp = GetIP();
                 var uriAddress = new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
+                var pathQuery = url.Query;
+                var minUrl = url.Query.ToString().Replace(pathQuery, "");
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,

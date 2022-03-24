@@ -108,7 +108,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
                 {
-                    var fingerPrintModel = new FingerPrintModel
+                    var clientTransactionModel = new ClientTransactionModel
                     {
                         FingerPrintCode = fingerPrint.FingerPrintCode,
                         Attribute = fingerPrint.FingerPrint,
@@ -118,10 +118,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         UserAgentCode = fingerPrint.UserAgentCode,
                         CookieCode = fingerPrint.CookieCode,
                         Flagged = int.TryParse(fingerPrint.Flagged, out int output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : "",
-                        Url = fingerPrint.Url
+                        Url = fingerPrint.Url,
+                        TransTime = DateTime.Now
                     };
 
-                    kafkaServices.SendFingerprintToKafka(fingerPrintModel);
+                    kafkaServices.SendFingerprintToKafka(clientTransactionModel);
                 }
                 else
                 {

@@ -1,9 +1,9 @@
-﻿using Device.FingerPrint.Features.RawTransaction.Criterias;
-using Device.FingerPrint.Features.RawTransaction.Model;
+﻿using Device.FingerPrint.Features.ServerTransaction.Criterias;
+using Device.FingerPrint.Features.ServerTransaction.Model;
 using Fanex.Data.Repository;
 using System.Collections.Generic;
 
-namespace Device.FingerPrint.Features.RawTransaction.Services
+namespace Device.FingerPrint.Features.ServerTransaction.Services
 {
 
     public interface IRawTransactionDataAccess

@@ -1,7 +1,8 @@
-﻿
+﻿using System;
+
 namespace Device.FingerPrint.Model
 {
-    public class FingerPrintModel
+    public class ClientTransactionModel
     {
         public string FingerPrintCode { get; set; }
 
@@ -20,5 +21,7 @@ namespace Device.FingerPrint.Model
         public string Flagged { get; set; }
 
         public string Url { get; set; }
+
+        public DateTime TransTime { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Device.FingerPrint.Features.RawTransaction.Model
+namespace Device.FingerPrint.Features.ServerTransaction.Model
 {
     public class ServerTransactionEntity
     {
@@ -16,7 +16,7 @@ namespace Device.FingerPrint.Features.RawTransaction.Model
 
         public int SubscriberId { get; set; }
 
-        public DateTime Transtime { get; set; }
+        public DateTime TransTime { get; set; }
 
         public string ClientIP { get; set; }
 
