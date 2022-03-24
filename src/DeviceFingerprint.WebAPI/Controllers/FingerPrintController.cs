@@ -146,6 +146,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                     if (subscriber != null)
                     {
+                        var urlAddress = new Uri(data.Url);
+
                         var transaction = new TransactionModel
                         {
                             SubscriberId = subscriber.SubscriberId,
@@ -154,7 +156,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SessionKey = data.SessionKey,
                             TransTime = DateTime.Now,
                             UserAgent = data.UserAgent,
-                            Url = data.Url,
+                            Url = urlAddress.GetLeftPart(UriPartial.Path),
                             Action = data.Action,
                             TransKey = data.TransKey,
                             CustId = data.CustId,

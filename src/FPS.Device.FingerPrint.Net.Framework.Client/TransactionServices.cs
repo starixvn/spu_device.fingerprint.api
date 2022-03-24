@@ -39,11 +39,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
-                var clientIp = GetIP();
-                var uriAddress = new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
-                var pathQuery = url.Query;
-                var minUrl = url.Query.ToString().Replace(pathQuery, "");
-
+                var clientIp = GetIP();                           
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
@@ -51,7 +47,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                     SubscriberName = subscriberName,
                     UserAgent = userAgent,
                     ClientIp = clientIp,                    
-                    Url = uriAddress.Fragment,
+                    Url = HttpContext.Current.Request.Url.AbsoluteUri,
                     Action = action,
                     TransKey = loginName + "#" + loginTime.Ticks,
                     CustId = 0,
@@ -68,10 +64,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
             {
                 var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
-                var clientIp = GetIP();
-                var uriAddress = new Uri(HttpContext.Current.Request.Url.AbsoluteUri);
-                var pathQuery = url.Query;
-                var minUrl = url.Query.ToString().Replace(pathQuery, "");
+                var clientIp = GetIP();                             
                 var transaction = new TransactionModel
                 {
                     LoginName = loginName,
@@ -79,7 +72,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                     SubscriberName = subscriberName,
                     UserAgent = userAgent,
                     ClientIp = clientIp,                    
-                    Url = uriAddress.Fragment,
+                    Url = HttpContext.Current.Request.Url.AbsoluteUri,
                     Action = action,
                     TransKey = loginName + "#" + loginTime.Ticks,
                     CustId = custId,
