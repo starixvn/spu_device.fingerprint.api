@@ -3126,23 +3126,13 @@ function initStorage() {
     if (isIndexDB()) {
         localForageDrives.push(localForage.INDEXEDDB);
     }
-    if (isWebSQL()) {
+    {
         localForageDrives.push(localForage.WEBSQL);
     }
     if (isLocalStorage()) {
         localForageDrives.push(localForage.LOCALSTORAGE);
     }
     return Promise.resolve(localForageDrives);
-}
-function isWebSQL() {
-    try {
-        if (!window.openDatabase)
-            return false;
-    }
-    catch (_a) {
-        return false;
-    }
-    return true;
 }
 function isIndexDB() {
     try {
@@ -3310,7 +3300,7 @@ function processData(result, sessionKey, cookieCode) {
                 uaCode: HashMD5(device),
                 cookieCode: cookieCode,
                 flagged: flagged,
-                url: window.location && window.location.origin ? `${window.location.origin}/` : ''
+                url: window.location && window.location.href ? `${window.location.href}/` : ''
             }, response.a);
             postData(apiUrl, encryptedFP, response.b);
         }
