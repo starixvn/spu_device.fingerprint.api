@@ -3,6 +3,7 @@
     public enum FlaggedStatus
     {
         human,
-        bot
+        bot,
+        undefined
     }
 }
