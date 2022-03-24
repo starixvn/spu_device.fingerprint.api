@@ -3,14 +3,14 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Monitor.Criterias
 {
-    public class GetClientTransDailySumCriteria : NonQueryCommand
+    public class TransactionMonthlySumCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_dmyDate")]
-        public string DMYDate { get; set; }
+        [SpParam(SqlParamName = "ip_Month")]
+        public string Month { get; set; }
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Monitor_ClientTransactionDailySum_Get";
+            return "FPS_FP_Monitor_TransactionMonthlySum_Sum";
         }
 
         public override bool IsValid()

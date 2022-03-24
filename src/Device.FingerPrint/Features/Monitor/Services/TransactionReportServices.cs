@@ -1,14 +1,14 @@
 ﻿using Device.FingerPrint.Features.Monitor.Model;
-using Device.FingerPrint.Model;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Device.FingerPrint.Features.Monitor.Services
 {
 
     public interface ITransactionReportServices
     {
-        (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetServerTransDailySumList(string DMYDate);
+        (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetTransactionDailySumList(string DMYDate);
+
+        (IEnumerable<ServerTransMonthlySumEntity>, IEnumerable<ClientTransMonthlySumEntity>) GetTransactionMonthlySumList(string Month);
 
         void MonthlySum(string Month);
     }
@@ -23,9 +23,14 @@ namespace Device.FingerPrint.Features.Monitor.Services
             this.dataAccess = dataAccess;
         }
 
-        public (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetServerTransDailySumList(string DMYDate)
+        public (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetTransactionDailySumList(string DMYDate)
         {
-            return dataAccess.GetServerTransDailySumList(DMYDate);
+            return dataAccess.GetTransactionDailySumList(DMYDate);
+        }
+
+        public (IEnumerable<ServerTransMonthlySumEntity>, IEnumerable<ClientTransMonthlySumEntity>) GetTransactionMonthlySumList(string Month)
+        {
+            return dataAccess.GetTransactionMonthlySumList(Month);
         }
 
         public void MonthlySum(string Month)

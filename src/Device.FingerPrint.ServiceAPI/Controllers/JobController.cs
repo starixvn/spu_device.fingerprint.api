@@ -132,7 +132,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                monitorJobServices.DailyReport();
+                monitorJobServices.MonthlyReport();
 
                 return true;
             }
