@@ -187,7 +187,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             else
             {
-                // sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
+                sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
                 return Ok(null);
             }
         }
