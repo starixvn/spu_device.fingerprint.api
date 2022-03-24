@@ -110,8 +110,25 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("monitordailysum")]
-        public bool MonitorDailySum()
+        [HttpPost("monitordailyreport")]
+        public bool MonitorDailyReport()
+        {
+            try
+            {
+                monitorJobServices.DailyReport();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("monitormonthlyreport")]
+        public bool MonitorMonthlyReport()
         {
             try
             {

@@ -8,9 +8,7 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
     public interface ITransactionReportDataAccess
     {
-        IEnumerable<ServerTransDailySumEntity> GetServerTransDailySumList(string DMYDate);
-
-        IEnumerable<ClientTransDailySumEntity> GetClientTransDailySumList(string DMYDate);
+        (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetServerTransDailySumList(string DMYDate);
 
         void MonthlySum(string Month);
     }
@@ -24,24 +22,14 @@ namespace Device.FingerPrint.Features.Monitor.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<ServerTransDailySumEntity> GetServerTransDailySumList(string DMYDate)
+        public (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetServerTransDailySumList(string DMYDate)
         {
-            var criteria = new GetServerTransDailySumCriteria
+            var criteria = new GetTransactionDailySumCriteria
             {
                 DMYDate = DMYDate
             };
 
-            return repository.Fetch<ServerTransDailySumEntity>(criteria);
-        }
-
-        public IEnumerable<ClientTransDailySumEntity> GetClientTransDailySumList(string DMYDate)
-        {
-            var criteria = new GetClientTransDailySumCriteria
-            {
-                DMYDate = DMYDate
-            };
-
-            return repository.Fetch<ClientTransDailySumEntity>(criteria);
+            return repository.FetchMultiple<ServerTransDailySumEntity, ClientTransDailySumEntity>(criteria);
         }
 
         public void MonthlySum(string Month)
