@@ -100,7 +100,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void MergeTrans(int batchSize, int numberOfBatch)
         {
-            var mergeTrans = transactionService.GetMergeTransaction(batchSize, 0);
+            var mergeTrans = transactionService.GetMergeTransaction(batchSize, 3);
 
             if (mergeTrans != null && mergeTrans.Any())
             {
@@ -123,7 +123,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void ForceMergeTrans(int batchSize, int numberOfBatch)
         {
-            var mergeTrans = transactionService.GetMergeTransaction(batchSize, 1);
+            var mergeTrans = transactionService.GetForceMergeTransaction(batchSize, 3);
 
             if (mergeTrans != null && mergeTrans.Any())
             {
