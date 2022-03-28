@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Device.FingerPrint.Model
+namespace Device.FingerPrint.Features.Monitor.Model
 {
-    public class ServerTransMonthlySumModel
+    public class TransactionReportEntity
     {
-        public DateTime TransMonth { get; set; }
+        public DateTime TransDate { get; set; }
 
         public int SubscriberId { get; set; }
 

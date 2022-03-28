@@ -5,8 +5,8 @@ namespace Device.FingerPrint.Features.Monitor.Criterias
 {
     public class GetTransactionDailySumCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_dmyDate")]
-        public string DMYDate { get; set; }
+        [SpParam(SqlParamName = "ip_mdyDate")]
+        public string MDYDate { get; set; }
 
         public override string GetSettingKey()
         {

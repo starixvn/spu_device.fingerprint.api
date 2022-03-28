@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace Device.FingerPrint.Features.Monitor.Model
+namespace Device.FingerPrint.Model
 {
-    public class ServerTransDailySumEntity
+    public class TransactionReportModel
     {
         public DateTime TransDate { get; set; }
 

@@ -8,9 +8,9 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
     public interface ITransactionReportDataAccess
     {
-        (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetTransactionDailySumList(string DMYDate);
+        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionDailySumList(string mdyDate);
 
-        (IEnumerable<ServerTransMonthlySumEntity>, IEnumerable<ClientTransMonthlySumEntity>) GetTransactionMonthlySumList(string DMYDate);
+        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
 
         void MonthlySum(string Month);
     }
@@ -24,24 +24,24 @@ namespace Device.FingerPrint.Features.Monitor.Services
             repository = new DynamicRepository();
         }
 
-        public (IEnumerable<ServerTransDailySumEntity>, IEnumerable<ClientTransDailySumEntity>) GetTransactionDailySumList(string DMYDate)
+        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionDailySumList(string mdyDate)
         {
             var criteria = new GetTransactionDailySumCriteria
             {
-                DMYDate = DMYDate
+                MDYDate = mdyDate
             };
 
-            return repository.FetchMultiple<ServerTransDailySumEntity, ClientTransDailySumEntity>(criteria);
+            return repository.FetchMultiple<TransactionReportEntity, TransactionReportEntity>(criteria);
         }
 
-        public (IEnumerable<ServerTransMonthlySumEntity>, IEnumerable<ClientTransMonthlySumEntity>) GetTransactionMonthlySumList(string Month)
+        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month)
         {
             var criteria = new GetTransactionMonthlySumCriteria
             {
                 Month = Month
             };
 
-            return repository.FetchMultiple<ServerTransMonthlySumEntity, ClientTransMonthlySumEntity>(criteria);
+            return repository.FetchMultiple<TransactionReportEntity, TransactionReportEntity>(criteria);
         }
 
         public void MonthlySum(string Month)

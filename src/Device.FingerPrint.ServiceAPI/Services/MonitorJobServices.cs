@@ -31,17 +31,17 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void DailyReport()
         {
-            var currentDate = DateTime.UtcNow.AddHours(7).ToString("dd/MM/yyyy");
+            var mdyDate = DateTime.UtcNow.AddHours(7).ToString("MM/dd/yyyy");
             var moreInfo = new StringBuilder("");
-            GetInfoDailyReport(currentDate, ref moreInfo);
-            Notification("Daily Report", "Daily Report " + currentDate, moreInfo);
+            moreInfo = GetInfoDailyReport(mdyDate, moreInfo);
+            Notification("Daily Report", "Daily Report " + mdyDate, moreInfo);
         }
 
         public void MonthlyReport()
         {
             var currentMonth = DateTime.UtcNow.AddHours(7).ToString("MM/yyyy");
             var moreInfo = new StringBuilder("");
-            GetInfoMonthlyReport(currentMonth, ref moreInfo);
+            moreInfo = GetInfoMonthlyReport(currentMonth, moreInfo);
             Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
         }
 
@@ -51,14 +51,14 @@ namespace Device.FingerPrint.ServiceAPI.Services
             transactionReportServices.MonthlySum(currentMonth);
         }
 
-        private void GetInfoDailyReport(string currentDate, ref StringBuilder moreInfo)
+        private StringBuilder GetInfoDailyReport(string mdyDate, StringBuilder moreInfo)
         {
-            var listDailySum = transactionReportServices.GetTransactionDailySumList(currentDate);
+            var listDailySum = transactionReportServices.GetTransactionDailySumList(mdyDate);
 
             // Server Daily report
             moreInfo.Append("\n\r");
             moreInfo.Append("The List data ServerTransactionDailySum:");
-            var serverTransDaily = ConvertEntityToModel_ServerTransDailySum(listDailySum.Item1);
+            var serverTransDaily = TranformData(listDailySum.Item1);
             foreach (var item in serverTransDaily)
             {
                 moreInfo.Append("\n\r");
@@ -70,7 +70,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             // Client Daily report
             moreInfo.Append("\n\r");
             moreInfo.Append("The List data ClientTransactionDailySum:");
-            var clientTransDaily = ConvertEntityToModel_ClientTransDailySum(listDailySum.Item2);
+            var clientTransDaily = TranformData(listDailySum.Item2);
             foreach (var item in clientTransDaily)
             {
                 moreInfo.Append("\n\r");
@@ -78,16 +78,18 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 moreInfo.Append(", TotalTrans: " + item.TotalTrans.ToString());
                 moreInfo.Append(", TotalValidTrans: " + item.TotalValidTrans.ToString());
             }
+
+            return moreInfo;
         }
 
-        private void GetInfoMonthlyReport(string currentMonth, ref StringBuilder moreInfo)
+        private StringBuilder GetInfoMonthlyReport(string currentMonth, StringBuilder moreInfo)
         {
             var listMonthlySum = transactionReportServices.GetTransactionMonthlySumList(currentMonth);
 
             // Server Daily report
             moreInfo.Append("\n\r");
             moreInfo.Append("The List data ServerTransactionMonthlySum:");
-            var serverTransDaily = ConvertEntityToModel_ServerTransMonthlySum(listMonthlySum.Item1);
+            var serverTransDaily = TranformData(listMonthlySum.Item1);
             foreach (var item in serverTransDaily)
             {
                 moreInfo.Append("\n\r");
@@ -99,7 +101,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             // Client Daily report
             moreInfo.Append("\n\r");
             moreInfo.Append("The List data ClientTransactionMonthlySum:");
-            var clientTransDaily = ConvertEntityToModel_ClientTransMonthlySum(listMonthlySum.Item2);
+            var clientTransDaily = TranformData(listMonthlySum.Item2);
             foreach (var item in clientTransDaily)
             {
                 moreInfo.Append("\n\r");
@@ -107,13 +109,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 moreInfo.Append(", TotalTrans: " + item.TotalTrans.ToString());
                 moreInfo.Append(", TotalValidTrans: " + item.TotalValidTrans.ToString());
             }
+
+            return moreInfo;
         }
 
-        private static IEnumerable<ServerTransDailySumModel> ConvertEntityToModel_ServerTransDailySum(IEnumerable<ServerTransDailySumEntity> entity)
+        private static IEnumerable<TransactionReportModel> TranformData(IEnumerable<TransactionReportEntity> entity)
         {
             if (entity != null && entity.Any())
             {
-                return entity.Select(x => new ServerTransDailySumModel
+                return entity.Select(x => new TransactionReportModel
                 {
                     TransDate = x.TransDate,
                     SubscriberId = x.SubscriberId,
@@ -122,55 +126,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     TotalValidTrans = x.TotalValidTrans
                 });
             }
-            return new List<ServerTransDailySumModel>();
-        }
-
-        private static IEnumerable<ClientTransDailySumModel> ConvertEntityToModel_ClientTransDailySum(IEnumerable<ClientTransDailySumEntity> entity)
-        {
-            if (entity != null && entity.Any())
-            {
-                return entity.Select(x => new ClientTransDailySumModel
-                {
-                    TransDate = x.TransDate,
-                    SubscriberId = x.SubscriberId,
-                    SubscriberName = x.SubscriberName,
-                    TotalTrans = x.TotalTrans,
-                    TotalValidTrans = x.TotalValidTrans
-                });
-            }
-            return new List<ClientTransDailySumModel>();
-        }
-
-        private static IEnumerable<ServerTransMonthlySumModel> ConvertEntityToModel_ServerTransMonthlySum(IEnumerable<ServerTransMonthlySumEntity> entity)
-        {
-            if (entity != null && entity.Any())
-            {
-                return entity.Select(x => new ServerTransMonthlySumModel
-                {
-                    TransMonth = x.TransMonth,
-                    SubscriberId = x.SubscriberId,
-                    SubscriberName = x.SubscriberName,
-                    TotalTrans = x.TotalTrans,
-                    TotalValidTrans = x.TotalValidTrans
-                });
-            }
-            return new List<ServerTransMonthlySumModel>();
-        }
-
-        private static IEnumerable<ClientTransMonthlySumModel> ConvertEntityToModel_ClientTransMonthlySum(IEnumerable<ClientTransMonthlySumEntity> entity)
-        {
-            if (entity != null && entity.Any())
-            {
-                return entity.Select(x => new ClientTransMonthlySumModel
-                {
-                    TransMonth = x.TransMonth,
-                    SubscriberId = x.SubscriberId,
-                    SubscriberName = x.SubscriberName,
-                    TotalTrans = x.TotalTrans,
-                    TotalValidTrans = x.TotalValidTrans
-                });
-            }
-            return new List<ClientTransMonthlySumModel>();
+            return new List<TransactionReportModel>();
         }
 
         private void Notification(string jobName, string message, StringBuilder moreInfo)
