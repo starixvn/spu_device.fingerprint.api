@@ -39,7 +39,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Net.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Net.Standard.Client.Model", "src\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model.csproj", "{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DemoNetCore", "src\DemoNetCore\DemoNetCore.csproj", "{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoNetCore", "src\DemoNetCore\DemoNetCore.csproj", "{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Queue", "src\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj", "{01740610-56C4-4052-8B53-10B4CED06BCB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.QueueConsumer", "src\Device.FingerPrint.QueueConsumer\Device.FingerPrint.QueueConsumer.csproj", "{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +111,18 @@ Global
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01740610-56C4-4052-8B53-10B4CED06BCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01740610-56C4-4052-8B53-10B4CED06BCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01740610-56C4-4052-8B53-10B4CED06BCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01740610-56C4-4052-8B53-10B4CED06BCB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{65FD092B-A5A8-4207-8272-16C1796F9E19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{65FD092B-A5A8-4207-8272-16C1796F9E19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{65FD092B-A5A8-4207-8272-16C1796F9E19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{65FD092B-A5A8-4207-8272-16C1796F9E19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +143,9 @@ Global
 		{A31C9770-538A-4F3E-A3DF-EE9EB720B968} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
+		{01740610-56C4-4052-8B53-10B4CED06BCB} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{65FD092B-A5A8-4207-8272-16C1796F9E19} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}

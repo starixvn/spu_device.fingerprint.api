@@ -1,0 +1,8 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Functions>
+  <Function Name="Transaction">
+    <Setting Key="FPS_FP_Transform_ServerTransaction_Insert" SpName="FPS_FP_Transform_ServerTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_ClientTransaction_Insert" SpName="FPS_FP_Transform_ClientTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
+</Functions>

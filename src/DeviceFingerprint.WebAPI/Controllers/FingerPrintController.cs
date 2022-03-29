@@ -20,18 +20,25 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
         private readonly IKafkaServices kafkaServices;
+        private readonly IEasyNetQService easyNetQService;
+
+        private readonly int queueType;
 
         public FingerPrintController(ISentryClient sentryClient,
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,
-            IKafkaServices kafkaServices)
+            IKafkaServices kafkaServices,
+            IEasyNetQService easyNetQService)
         {
             this.sentryClient = sentryClient;
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.kafkaServices = kafkaServices;
+            this.easyNetQService = easyNetQService;
+
+            queueType = appSettings.QueueType;
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -122,7 +129,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         TransTime = DateTime.Now
                     };
 
-                    kafkaServices.SendFingerprintToKafka(clientTransactionModel);
+                    if (queueType == (int) QueueType.Kafka)
+                    {
+                        kafkaServices.SendFingerprintToKafka(clientTransactionModel);
+                    }
+                    else
+                    {
+                        easyNetQService.PushClientTransactionToMonitor(clientTransactionModel);
+                    }
                 }
                 else
                 {
@@ -163,7 +177,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SubAccId = data.SubAccId
                         };
 
-                        kafkaServices.SendTransactionToKafka(transaction);
+                        if (queueType == (int)QueueType.Kafka)
+                        {
+                            kafkaServices.SendTransactionToKafka(transaction);
+                        }
+                        else
+                        {
+                            easyNetQService.PushServerTransactionToMonitor(transaction);
+                        }
                     }
                     else
                     {

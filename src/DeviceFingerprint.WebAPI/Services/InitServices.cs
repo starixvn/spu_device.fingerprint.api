@@ -15,6 +15,7 @@ namespace Device.Fingerprint.WebAPI.Services
             RegisterRawTransactionService(services);
             RegisterSubscriberService(services);
             RegisterKafkaService(services);
+            RegisterQueueService(services);
         }
 
         private static void RegisterFingerPrintService(this IServiceCollection services)
@@ -44,6 +45,11 @@ namespace Device.Fingerprint.WebAPI.Services
         private static void RegisterKafkaService(this IServiceCollection services)
         {
             services.AddSingleton<IKafkaServices, KafkaServices>();
+        }
+
+        private static void RegisterQueueService(this IServiceCollection services)
+        {
+            services.AddSingleton<IEasyNetQService, EasyNetQService>();
         }
     }
 }

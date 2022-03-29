@@ -16,6 +16,8 @@ namespace Device.Fingerprint.WebAPI
 
         string Environment { get; }
 
+        int QueueType { get; }
+
         string BootstrapServers { get; }
 
         string ServerTransTopicName { get; }
@@ -32,6 +34,7 @@ namespace Device.Fingerprint.WebAPI
         private readonly string encryptPassword;
         private readonly string sentryDsn;
         private readonly string environment;
+        private readonly int queueType;
 
         private readonly string bootstrapServers;
         private readonly string serverTransTopicName;
@@ -51,6 +54,8 @@ namespace Device.Fingerprint.WebAPI
 
             environment = GetValue<string>("AppConfig:Environment");
 
+            queueType = GetValue<int>("QueueType");
+
             bootstrapServers = GetValue<string>("Kafka:ClientConfigs:BootstrapServers");
 
             serverTransTopicName = GetValue<string>("Kafka:ClientConfigs:ServerTransTopicName");
@@ -67,6 +72,8 @@ namespace Device.Fingerprint.WebAPI
         public string SentryDsn => sentryDsn;
 
         public string Environment => environment;
+
+        public int QueueType => queueType;
 
         public string BootstrapServers => bootstrapServers;
 
