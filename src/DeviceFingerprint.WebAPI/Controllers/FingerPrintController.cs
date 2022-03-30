@@ -177,7 +177,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SubAccId = data.SubAccId
                         };
 
-                        if (queueType == (int)QueueType.Kafka)
+                        if (queueType == (int) QueueType.Kafka)
                         {
                             kafkaServices.SendTransactionToKafka(transaction);
                         }

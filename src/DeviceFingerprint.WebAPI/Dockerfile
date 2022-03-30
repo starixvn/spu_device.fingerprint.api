@@ -8,6 +8,8 @@ COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint.Kafka", "Device.FingerPrint.Kafka/"]
 
+COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
+
 COPY ["./src/DeviceFingerprint.WebAPI/Device.Fingerprint.WebAPI.csproj", "DeviceFingerprint.WebAPI/"]
 
 WORKDIR "/src/DeviceFingerprint.WebAPI"
