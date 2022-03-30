@@ -5,9 +5,9 @@ using Device.FingerPrint.Features.ServerTransaction.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.Queue;
 using EasyNetQ;
+using EasyNetQ.Consumer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using Sentry;
 using System;
 using System.Collections.Generic;
@@ -44,32 +44,31 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
         {
             try
             {
-                _rabbitMQConsume.AdvanceBus.Consume<TransactionModel>(_rabbitMQConsume.Queue, (message, info) =>
+                _rabbitMQConsume.AdvanceBus.Consume(_rabbitMQConsume.Queue, x =>
                 {
-                    var messageBody = message.Body;
-                    var json = JsonConvert.SerializeObject(messageBody);
-                    listServerTrans.Add(TranformTransactionEntity(messageBody));
-                    if (listServerTrans.Count >= consumerBatchSize)
+                    x.Add<TransactionModel>((message, info) =>
                     {
-                        rawTransactionService.InsertServerTransaction(listServerTrans);
+                        var messageBody = message.Body;
+                        listServerTrans.Add(TranformTransactionEntity(messageBody));
+                        if (listServerTrans.Count >= consumerBatchSize)
+                        {
+                            rawTransactionService.InsertServerTransaction(listServerTrans);
 
-                        listServerTrans.Clear();
-                    }
-                    // Console.WriteLine("TransactionModel {0}", json);
-                });
-
-                _rabbitMQConsume.AdvanceBus.Consume<ClientTransactionModel>(_rabbitMQConsume.Queue, (message, info) =>
-                {
-                    var messageBody = message.Body;
-                    var json = JsonConvert.SerializeObject(messageBody);
-                    listClientTrans.Add(TranformClientTransactionEntity(messageBody));
-                    if (listClientTrans.Count >= consumerBatchSize)
+                            listServerTrans.Clear();
+                        }
+                    })
+                    .Add<ClientTransactionModel>((message, info) =>
                     {
-                        fingerPrintService.InsertClientTransaction(listClientTrans);
+                        var messageBody = message.Body;
+                        listClientTrans.Add(TranformClientTransactionEntity(messageBody));
+                        if (listClientTrans.Count >= consumerBatchSize)
+                        {
+                            fingerPrintService.InsertClientTransaction(listClientTrans);
 
-                        listClientTrans.Clear();
-                    }
-                    // Console.WriteLine("ClientTransactionModel {0}", json);
+                            listClientTrans.Clear();
+                        }
+
+                    });
                 });
             }
             catch (Exception ex)
@@ -128,6 +127,5 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                     .DeclareRoutingKey(configuration["RabbitMQ:RoutingKey"])
                     .Bind();
         }
-
     }
 }
