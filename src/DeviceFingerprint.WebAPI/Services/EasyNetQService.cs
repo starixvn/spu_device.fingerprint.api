@@ -8,9 +8,7 @@ namespace Device.Fingerprint.WebAPI.Services
 
     public interface IEasyNetQService
     {
-        public void PushServerTransactionToMonitor(TransactionModel model);
-
-        public void PushClientTransactionToMonitor(ClientTransactionModel model);
+        public void PushToMonitor<T>(T model);
     }
 
     public class EasyNetQService : IEasyNetQService
@@ -40,16 +38,9 @@ namespace Device.Fingerprint.WebAPI.Services
                     .Bind();
         }
 
-        public void PushClientTransactionToMonitor(ClientTransactionModel model)
+        public void PushToMonitor<T>(T model)
         {
-            var message = new Message<ClientTransactionModel>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
-
-            _rabbitMQMonitor.AdvanceBus.Publish(_rabbitMQMonitor.Exchange, _rabbitMQMonitor.RoutingKey, true, message);
-        }
-
-        public void PushServerTransactionToMonitor(TransactionModel model)
-        {
-            var message = new Message<TransactionModel>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
+            var message = new Message<T>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
 
             _rabbitMQMonitor.AdvanceBus.Publish(_rabbitMQMonitor.Exchange, _rabbitMQMonitor.RoutingKey, true, message);
         }

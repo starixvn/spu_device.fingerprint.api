@@ -135,7 +135,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     }
                     else
                     {
-                        easyNetQService.PushClientTransactionToMonitor(clientTransactionModel);
+                        easyNetQService.PushToMonitor(clientTransactionModel);
                     }
                 }
                 else
@@ -183,7 +183,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         }
                         else
                         {
-                            easyNetQService.PushServerTransactionToMonitor(transaction);
+                            easyNetQService.PushToMonitor(transaction);
                         }
                     }
                     else
