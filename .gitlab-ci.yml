@@ -11,6 +11,10 @@ include:
     ref: master
     file: "gitlab-ci-mixing.yml"
     
+  - project: "ci/repos-ci/spu_fps_fp_trans_consumer_service"
+    ref: master
+    file: "gitlab-ci-mixing.yml"
+    
   - project: "ci/repos-ci/spu_fps_fp_api_job_service"
     ref: master
     file: "gitlab-ci-mixing.yml"    
