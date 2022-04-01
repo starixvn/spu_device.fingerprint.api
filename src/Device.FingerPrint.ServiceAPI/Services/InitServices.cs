@@ -1,12 +1,13 @@
-﻿using Device.FingerPrint.Features.FPDevices.Services;
-using Device.FingerPrint.Features.Monitor.Services;
-using Device.FingerPrint.Features.ServerTransaction.Services;
-using Device.FingerPrint.Features.Transaction.Services;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-
-namespace Device.FingerPrint.ServiceAPI.Services
+﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
+    using Device.FingerPrint.Features.FPDevices.Services;
+    using Device.FingerPrint.Features.FPTransactions.Services;
+    using Device.FingerPrint.Features.Monitor.Services;
+    using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Features.Transaction.Services;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+
     public static class InitServices
     {
         public static void RegisterService(this IServiceCollection services, IConfiguration configuration)
@@ -15,6 +16,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             RegisterRawTransactionService(services);
             RegisterMonitorService(services);
             RegisterFPDevicesService(services);
+            RegisterFPTransformTransaction(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -44,6 +46,13 @@ namespace Device.FingerPrint.ServiceAPI.Services
             services.AddSingleton<IFPDeviceJobService, FPDeviceJobService>();
             services.AddSingleton<IFPDeviceDataAccess, FPDeviceDataAccess>();
             services.AddSingleton<IFPDeviceServices, FPDeviceServices>();
+        }
+
+        private static void RegisterFPTransformTransaction(this IServiceCollection services)
+        {
+            services.AddSingleton<IFPTransactionDataAccess, FPTransactionDataAccess>();
+            services.AddSingleton<IFPTransactionServices, FPTransactionServices>();
+            services.AddSingleton<IFPTransactionJobService, FPTransactionJobService>();
         }
     }
 }

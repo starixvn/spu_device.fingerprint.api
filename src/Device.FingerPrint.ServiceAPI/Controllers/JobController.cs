@@ -15,18 +15,21 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
         private readonly IFPDeviceJobService fpdeviceJobService;
+        private readonly IFPTransactionJobService fPTransactionJobService;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ISentryClient sentryClient
                             , ITransactionJobServices transactionServices
                             , IMonitorJobServices monitorJobServices
-                            , IFPDeviceJobService fpdeviceJobService)
+                            , IFPDeviceJobService fpdeviceJobService
+                            , IFPTransactionJobService fPTransactionJobService)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.sentryClient = sentryClient;
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
+            this.fPTransactionJobService = fPTransactionJobService;
         }
 
         [HttpPost("deviceidentify")]
@@ -132,10 +135,16 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         [HttpPost("transformfptransaction")]
         public async Task<bool> TransformFPTransaction([FromForm] int size, [FromForm] int numberOfBatch)
         {
-            //LogService.Info($"TransformFPTransaction called");
+            try
+            {
+                return await this.fPTransactionJobService.Execute(size, numberOfBatch);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
 
-            //return await this.fPTransactionJobService.Execute(size, numberOfBatch);
-            return false;
+                return false;
+            }
         }
 
         [HttpPost("monitordailyreport")]
