@@ -32,6 +32,7 @@
   </Function>
   
   <Function Name="TransformTransaction">
-    <Setting Key="test_delay_sp" SpName="test_delay_sp" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FP_DCS_DC_Transform_Device_GetPackage" SpName="FP_DCS_DC_Transform_Device_GetPackage" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
+    <Setting Key="FP_DCS_DC_Transform_Device_Insert" SpName="FP_DCS_DC_Transform_Device_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
   </Function>
 </Functions>
