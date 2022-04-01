@@ -13,10 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Features\FPTransactions\Criteria\" />
-    <Folder Include="Features\FPTransactions\Entities\" />
     <Folder Include="Features\FPTransactions\Services\" />
-    <Folder Include="Features\TransformTransaction\Model\" />
   </ItemGroup>
 
 </Project>

@@ -19,14 +19,14 @@ namespace Device.FingerPrint.Features.FPDevices.Services
 
         public FPDeviceServices(IFPDeviceDataAccess deviceDataAcess)
         {
-            this._deviceDataAcess = deviceDataAcess;
+            _deviceDataAcess = deviceDataAcess;
         }
 
         public IEnumerable<FPStagingTransIdEntity> GetStagingTransIdForDevice(int size, int noOfBatch)
         {
             if (size != 0 && noOfBatch != 0)
             {
-                return this._deviceDataAcess.GetFPStagingTransIdForDevice(size, noOfBatch);
+                return _deviceDataAcess.GetFPStagingTransIdForDevice(size, noOfBatch);
             }
 
             return new List<FPStagingTransIdEntity>();
@@ -39,7 +39,7 @@ namespace Device.FingerPrint.Features.FPDevices.Services
             {
                 var transIdJson = JsonConvert.SerializeObject(stagingTransId);
 
-                return this._deviceDataAcess.UpdateDevice(transIdJson);
+                return _deviceDataAcess.UpdateDevice(transIdJson);
             }
 
             return new DataResult

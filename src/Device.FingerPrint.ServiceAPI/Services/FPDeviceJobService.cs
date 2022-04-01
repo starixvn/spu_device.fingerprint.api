@@ -7,7 +7,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IFPDeviceJobService
     {
-        Task<bool> Execute(int size, int numberOfBatch);
+        Task Execute(int size, int numberOfBatch);
     }
 
     public class FPDeviceJobService : IFPDeviceJobService
@@ -19,16 +19,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             this.deviceService = deviceService;
         }
-        public async Task<bool> Execute(int size, int numberOfBatch)
+        public async Task Execute(int size, int numberOfBatch)
         {
             if (size > 0 && numberOfBatch > 0)
             {
-                var task = JobRun(size, numberOfBatch);
-
-                await task;
+                await JobRun(size, numberOfBatch);
             }
-
-            return true;
         }
         private async Task JobRun(int size, int numberOfBatch)
         {

@@ -122,7 +122,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             try
             {
-                return await fpdeviceJobService.Execute(size, numberOfBatch);
+                await fpdeviceJobService.Execute(size, numberOfBatch);
+                return true;
             }
             catch (Exception ex)
             {

@@ -69,7 +69,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     tasks.Add(task);
                 }
 
-                Task.WhenAll(tasks.ToArray());
+                Task.WaitAll(tasks.ToArray());
             }
         }
 
@@ -93,7 +93,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     tasks.Add(task);
                 }
 
-                Task.WhenAll(tasks.ToArray());
+                Task.WaitAll(tasks.ToArray());
             }
         }
 
