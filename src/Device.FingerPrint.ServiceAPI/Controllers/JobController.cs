@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
 {
@@ -13,16 +14,19 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IDeviceIdentifyJobServices deviceIdentifyServices;
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
+        private readonly ITransformJobServices transformJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ISentryClient sentryClient
                             , ITransactionJobServices transactionServices
-                            , IMonitorJobServices monitorJobServices)
+                            , IMonitorJobServices monitorJobServices
+                            , ITransformJobServices transformJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.sentryClient = sentryClient;
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
+            this.transformJobServices = transformJobServices;
         }
 
         [HttpPost("deviceidentify")]
@@ -108,6 +112,32 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
 
                 return false;
             }
+        }
+
+        [HttpPost("transformfpdevice")]
+        public bool TransformFPDevice([FromForm] int key, [FromForm] int delay)
+        {
+            try
+            {
+                transformJobServices.Execute(key, delay);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("transformfptransaction")]
+        public async Task<bool> TransformFPTransaction([FromForm] int size, [FromForm] int numberOfBatch)
+        {
+            //LogService.Info($"TransformFPTransaction called");
+
+            //return await this.fPTransactionJobService.Execute(size, numberOfBatch);
+            return false;
         }
 
         [HttpPost("monitordailyreport")]

@@ -30,4 +30,8 @@
     <Setting Key="FPS_FP_Monitor_TransactionMonthlySum_Get" SpName="FPS_FP_Monitor_TransactionMonthlySum_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Monitor_TransactionMonthlySum_Sum" SpName="FPS_FP_Monitor_TransactionMonthlySum_Sum" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
+  
+  <Function Name="TransformTransaction">
+    <Setting Key="test_delay_sp" SpName="test_delay_sp" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
 </Functions>

@@ -12,4 +12,8 @@
     <ProjectReference Include="..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\TransformTransaction\Model\" />
+  </ItemGroup>
+
 </Project>
