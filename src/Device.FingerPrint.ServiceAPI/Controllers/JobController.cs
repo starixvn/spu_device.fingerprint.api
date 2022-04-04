@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
 {
@@ -118,11 +117,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("transformfpdevice")]
-        public async Task<bool> TransformFPDevice([FromForm] int size, [FromForm] int numberOfBatch)
+        public bool TransformFPDevice([FromForm] int size, [FromForm] int numberOfBatch)
         {
             try
             {
-                await fpdeviceJobService.Execute(size, numberOfBatch);
+                fpdeviceJobService.Execute(size, numberOfBatch);
                 return true;
             }
             catch (Exception ex)
@@ -134,11 +133,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("transformfptransaction")]
-        public async Task<bool> TransformFPTransaction([FromForm] int size, [FromForm] int numberOfBatch)
+        public bool TransformFPTransaction([FromForm] int size, [FromForm] int numberOfBatch)
         {
             try
             {
-                return await this.fPTransactionJobService.Execute(size, numberOfBatch);
+                fPTransactionJobService.Execute(size, numberOfBatch);
+                return true;
             }
             catch (Exception ex)
             {

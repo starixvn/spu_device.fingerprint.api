@@ -1,6 +1,9 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Newtonsoft.Json;
+using Sentry;
+using Sentry.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -15,10 +18,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class DeviceIdentifyJobServices : IDeviceIdentifyJobServices
     {
         private readonly ITransactionService transactionService;
+        private readonly ISentryClient sentryClient;
 
-        public DeviceIdentifyJobServices(ITransactionService transactionService)
+        public DeviceIdentifyJobServices(ITransactionService transactionService, ISentryClient sentryClient)
         {
             this.transactionService = transactionService;
+            this.sentryClient = sentryClient;
         }
 
         public void DeviceIdentify(int batchSize, int numberOfBatch)
@@ -29,12 +34,30 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             listRawTrans.Add(Task.Run(() =>
             {
-                SetDeviceIdentify(rawTrans.Item1, 1);
+                try
+                {
+                    SetDeviceIdentify(rawTrans.Item1, 1);
+                }
+                catch (Exception ex)
+                {
+                    var rawTransIds = string.Join(",", rawTrans.Item1);
+                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
+                    throw;
+                }
             }));
 
             listRawTrans.Add(Task.Run(() =>
             {
-                SetDeviceIdentify(rawTrans.Item2, 0);
+                try
+                {
+                    SetDeviceIdentify(rawTrans.Item2, 0);
+                }
+                catch (Exception ex)
+                {
+                    var rawTransIds = string.Join(",", rawTrans.Item2);
+                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
+                    throw;
+                }
             }));
 
             listRawTrans.Add(Task.Run(() =>
@@ -42,8 +65,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 if (rawTrans.Item3 != null && rawTrans.Item3.Any())
                 {
                     var rawTransIds = string.Join(",", rawTrans.Item3);
-
-                    transactionService.DeviceIdentifyNoFingerprint(rawTransIds);
+                    try
+                    {
+                        transactionService.DeviceIdentifyNoFingerprint(rawTransIds);
+                    }
+                    catch (Exception ex)
+                    {
+                        sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
+                        throw;
+                    }
                 }
             }));
 
@@ -76,7 +106,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             return Task.Run(() =>
             {
-                transactionService.DeviceIdentify(rawTransJson, groupId);
+                try
+                {
+                    transactionService.DeviceIdentify(rawTransJson, groupId);
+                }
+                catch (Exception ex)
+                {
+                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransJson, SentryLevel.Error);
+                    throw;
+                }
             });
         }
     }

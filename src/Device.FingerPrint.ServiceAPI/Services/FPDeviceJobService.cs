@@ -1,4 +1,8 @@
 ﻿using Device.FingerPrint.Features.FPDevices.Services;
+using Newtonsoft.Json;
+using Sentry;
+using Sentry.Protocol;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -7,26 +11,33 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IFPDeviceJobService
     {
-        Task Execute(int size, int numberOfBatch);
+        void Execute(int size, int numberOfBatch);
     }
 
     public class FPDeviceJobService : IFPDeviceJobService
     {
         private readonly IFPDeviceServices deviceService;
-        private const int delayTime = 100; // milliseconds
+        private readonly ISentryClient sentryClient;
+        private readonly IList<string> ignoreMessages;
 
-        public FPDeviceJobService(IFPDeviceServices deviceService)
+        public FPDeviceJobService(IFPDeviceServices deviceService, ISentryClient sentryClient)
         {
             this.deviceService = deviceService;
+            this.sentryClient = sentryClient;
+            ignoreMessages = new List<string> {
+                "Deadlock found when trying to get lock; try restarting transaction"
+            };
         }
-        public async Task Execute(int size, int numberOfBatch)
+
+        public void Execute(int size, int numberOfBatch)
         {
             if (size > 0 && numberOfBatch > 0)
             {
-                await JobRun(size, numberOfBatch);
+                JobRun(size, numberOfBatch);
             }
         }
-        private async Task JobRun(int size, int numberOfBatch)
+
+        private void JobRun(int size, int numberOfBatch)
         {
             var stagingTransIds = deviceService.GetStagingTransIdForDevice(size, numberOfBatch);
 
@@ -39,17 +50,25 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 {
                     var task = Task.Run(() =>
                     {
-                        deviceService.UpdateDevices(trans);
+                        try
+                        {
+                            deviceService.UpdateDevices(trans);
+                        }
+                        catch (Exception ex)
+                        {
+                            if (!ignoreMessages.Contains(ex.Message))
+                            {
+                                var transIdJson = JsonConvert.SerializeObject(trans);
+                                sentryClient.CaptureMessage(ex.Message + "\n" + transIdJson, SentryLevel.Error);
+                                throw;
+                            }
+                        }
                     });
-
-                    await Task.Delay(delayTime);
 
                     tasks.Add(task);
                 }
 
-                var taskCompleted = Task.WhenAll(tasks.ToArray());
-
-                await taskCompleted;
+                Task.WaitAll(tasks.ToArray());
             }
         }
     }
