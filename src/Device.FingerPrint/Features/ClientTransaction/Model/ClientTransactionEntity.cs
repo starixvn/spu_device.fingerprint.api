@@ -12,10 +12,6 @@ namespace Device.FingerPrint.Features.ClientTransaction.Model
 
         public string Attribute { get; set; }
 
-        public string UserAgentAttribute { get; set; }
-
-        public string UserAgentCode { get; set; }
-
         public string CookieCode { get; set; }
 
         public string Flagged { get; set; }
