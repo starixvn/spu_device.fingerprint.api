@@ -90,6 +90,7 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                 Url = model.Url,
                 Action = model.Action,
                 UserAgent = model.UserAgent,
+                UserAgentCode = model.UserAgentCode,
                 CustId = model.CustId,
                 SubAccId = model.SubAccId
             };
@@ -101,8 +102,6 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
             {
                 Attribute = model.Attribute,
                 CookieCode = model.CookieCode,
-                UserAgentAttribute = model.UserAgentAttribute,
-                UserAgentCode = model.UserAgentCode,
                 FingerPrintCode = model.FingerPrintCode,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,

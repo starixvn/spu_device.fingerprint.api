@@ -1,67 +1,44 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
     using Device.FingerPrint.Features.FPTransactions.Services;
-    using Fanex.Logging;
-    using Fanex.Logging.Extensions;
-    using Fanex.Logging.Extensions.Database;
+    using Newtonsoft.Json;
     using Sentry;
+    using Sentry.Protocol;
     using System;
-    using System.Collections.Generic;    
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public interface IFPTransactionJobService
     {
-        Task<bool> Execute(int numberOfTrans, int numberOfBatch);
+        void Execute(int numberOfTrans, int numberOfBatch);
     }
 
     public class FPTransactionJobService : IFPTransactionJobService
     {
-        private readonly ISentryClient sentryClient;
         private readonly IFPTransactionServices transactionService;
-        private readonly IList<string> IgnoreMessages;
-        private const int delayTime = 200;
+        private readonly ISentryClient sentryClient;
+        private readonly IList<string> ignoreMessages;
 
-        public FPTransactionJobService(ISentryClient sentryClient, IFPTransactionServices transactionService)
+        public FPTransactionJobService(IFPTransactionServices transactionService, ISentryClient sentryClient)
         {
-            this.sentryClient = sentryClient;
             this.transactionService = transactionService;
-            IgnoreMessages = new List<string> {
+            this.sentryClient = sentryClient;
+            ignoreMessages = new List<string> {
                 "Deadlock found when trying to get lock; try restarting transaction"
             };
         }
 
-        public async Task<bool> Execute(int numberOfTrans, int numberOfBatch)
+        public void Execute(int numberOfTrans, int numberOfBatch)
         {
-            try
+            if (numberOfTrans > 0 && numberOfBatch > 0)
             {
-                if (numberOfTrans > 0 && numberOfBatch > 0)
-                {
-                    var task = JobRun(numberOfTrans, numberOfBatch);
-
-                    await task;
-
-                    return true;
-                }
-
-                return false;
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                var logMessage = new LogMessage(ex.Message)
-                  .AddSection("Data Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
-                  .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex)).ToString();
-
-                LogService.Error($"FP Transaction Job Service Execute exception message:  {logMessage}");
-
-                return false;
+                JobRun(numberOfTrans, numberOfBatch);
             }
         }
 
-        private async Task JobRun(int numberOfTrans, int numberOfBatch)
+        private void JobRun(int numberOfTrans, int numberOfBatch)
         {
-            var rawTrans = this.transactionService.GetFPRawTransaction(0, numberOfTrans, numberOfBatch);
+            var rawTrans = transactionService.GetFPRawTransaction(0, numberOfTrans, numberOfBatch);
 
             var tasks = new List<Task>();
 
@@ -71,29 +48,26 @@
                 {
                     try
                     {
-                        this.transactionService
+                        transactionService
                            .UnhandleFPSubscriberActionProcessing(trans.MinTransId, trans.MaxTransId)
                            .UserAgentProcessing(trans.MinTransId, trans.MaxTransId)
                            .TransactionProcessing(trans.MinTransId, trans.MaxTransId);
                     }
                     catch (Exception ex)
                     {
-                        var logMessage = new LogMessage(ex.Message)
-                             .AddSection("Data Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
-                             .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex)).ToString();
-
-                        LogService.Error($"FP Transaction Job Service JobRun exception message:  {logMessage}");
+                        if (!ignoreMessages.Contains(ex.Message))
+                        {
+                            var transIdJson = JsonConvert.SerializeObject(trans);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + transIdJson, SentryLevel.Error);
+                            throw;
+                        }
                     }
                 });
 
                 tasks.Add(task);
-
-                await Task.Delay(delayTime);
             }
 
-            var taskCompleted = Task.WhenAll(tasks.ToArray());
-
-            await taskCompleted;
+            Task.WaitAll(tasks.ToArray());
         }
     }
 }

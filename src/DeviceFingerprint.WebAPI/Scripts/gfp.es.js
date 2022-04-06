@@ -2950,9 +2950,6 @@ function Encrypting(data, key) {
     var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key128Bits1000Iterations, cfg);
     return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
 }
-function HashMD5(data) {
-    return CryptoJS.MD5(data).toString();
-}
 
 function getDevicePixelRatio() {
     return window.devicePixelRatio;
@@ -3126,13 +3123,23 @@ function initStorage() {
     if (isIndexDB()) {
         localForageDrives.push(localForage.INDEXEDDB);
     }
-    {
+    if (isWebSQL()) {
         localForageDrives.push(localForage.WEBSQL);
     }
     if (isLocalStorage()) {
         localForageDrives.push(localForage.LOCALSTORAGE);
     }
     return Promise.resolve(localForageDrives);
+}
+function isWebSQL() {
+    try {
+        if (!window.openDatabase)
+            return false;
+    }
+    catch (_a) {
+        return false;
+    }
+    return true;
 }
 function isIndexDB() {
     try {
@@ -3290,17 +3297,15 @@ function processData(result, sessionKey, cookieCode) {
             const response = yield conf.json();
             const deviceInfo = getDeviceInfo();
             const flagged = checkHeadless();
-            const device = JSON.stringify(deviceInfo);
+            JSON.stringify(deviceInfo);
             let encryptedFP = Encrypting({
                 di: result.Id,
                 attr: result.Properties,
                 fk: sessionKey,
                 subs: subscriberId,
-                ua: device,
-                uaCode: HashMD5(device),
                 cookieCode: cookieCode,
                 flagged: flagged,
-                url: window.location && window.location.href ? `${window.location.href}/` : ''
+                url: window.location && window.location.href ? window.location.href : ''
             }, response.a);
             postData(apiUrl, encryptedFP, response.b);
         }

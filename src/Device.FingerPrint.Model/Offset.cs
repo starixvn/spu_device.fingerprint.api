@@ -7,10 +7,12 @@ namespace Device.FingerPrint.Model
 
         UpdateServerTransactionN = 2,
 
-        ForceMergeTransaction = 3,
+        DetectRawUserAgent = 3,
 
         SummaryClientTransaction = 4,
 
-        SummaryServerTransaction = 5
+        SummaryServerTransaction = 5,
+
+        SummaryTransaction = 6
     }
 }

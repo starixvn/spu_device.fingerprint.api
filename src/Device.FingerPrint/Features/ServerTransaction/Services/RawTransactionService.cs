@@ -46,6 +46,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
                     SubscriberId = x.SubscriberId,
                     TransTime = x.TransTime,
                     ClientIP = x.ClientIP,
+                    UserAgentId = x.UserAgentId,
                     UserAgent = x.UserAgent,
                     Url = x.Url,
                     TransKey = x.TransKey,
@@ -73,6 +74,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
                     SubscriberId = x.SubscriberId,
                     TransTime = x.TransTime,
                     ClientIP = x.ClientIP,
+                    UserAgentId = x.UserAgentId,
                     UserAgent = x.UserAgent,
                     Url = x.Url,
                     TransKey = x.TransKey,
@@ -86,8 +88,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
 
         public void InsertServerTransaction(IEnumerable<TransactionEntity> transactions)
         {
-            string JsonFingerPrint = JsonConvert.SerializeObject(transactions);
-
+            var JsonFingerPrint = JsonConvert.SerializeObject(transactions);
             rawTransactionDataAccess.InsertServerTransaction(JsonFingerPrint);
         }
 
@@ -99,6 +100,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
         public void UpdateRawTransactionN(string rawTrans, int offsetId, long offsetValue)
         {
             rawTransactionDataAccess.UpdateServerTransactionN(rawTrans, offsetId, offsetValue);
-        }       
+        }
+
     }
 }

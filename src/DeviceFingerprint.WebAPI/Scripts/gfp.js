@@ -2998,9 +2998,6 @@ var globalFP = (function (exports) {
         var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key128Bits1000Iterations, cfg);
         return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
     }
-    function HashMD5(data) {
-        return CryptoJS.MD5(data).toString();
-    }
 
     /**
      * FingerprintJS v3.3.1 - Copyright (c) FingerprintJS, Inc, 2021 (https://fingerprintjs.com)
@@ -8520,13 +8517,23 @@ var globalFP = (function (exports) {
         if (isIndexDB()) {
             localForageDrives.push(localForage.INDEXEDDB);
         }
-        {
+        if (isWebSQL()) {
             localForageDrives.push(localForage.WEBSQL);
         }
         if (isLocalStorage()) {
             localForageDrives.push(localForage.LOCALSTORAGE);
         }
         return Promise.resolve(localForageDrives);
+    }
+    function isWebSQL() {
+        try {
+            if (!window.openDatabase)
+                return false;
+        }
+        catch (_a) {
+            return false;
+        }
+        return true;
     }
     function isIndexDB() {
         try {
@@ -8684,17 +8691,15 @@ var globalFP = (function (exports) {
                 const response = yield conf.json();
                 const deviceInfo = getDeviceInfo();
                 const flagged = checkHeadless();
-                const device = JSON.stringify(deviceInfo);
+                JSON.stringify(deviceInfo);
                 let encryptedFP = Encrypting({
                     di: result.Id,
                     attr: result.Properties,
                     fk: sessionKey,
                     subs: subscriberId,
-                    ua: device,
-                    uaCode: HashMD5(device),
                     cookieCode: cookieCode,
                     flagged: flagged,
-                    url: window.location && window.location.href ? `${window.location.href}/` : ''
+                    url: window.location && window.location.href ? window.location.href : ''
                 }, response.a);
                 postData(apiUrl, encryptedFP, response.b);
             }

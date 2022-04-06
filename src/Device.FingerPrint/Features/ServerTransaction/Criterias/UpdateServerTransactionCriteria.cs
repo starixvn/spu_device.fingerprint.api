@@ -12,7 +12,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Criterias
         public int Retry { get; set; }
 
         [SpParam(SqlParamName = "ip_OffsetId")]
-        public int OffsetId { get; set; }
+        public long OffsetId { get; set; }
 
         [SpParam(SqlParamName = "ip_OffsetValue")]
         public long OffsetValue { get; set; }
