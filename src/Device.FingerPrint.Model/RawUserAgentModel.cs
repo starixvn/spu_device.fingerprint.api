@@ -1,6 +1,6 @@
-﻿namespace Device.FingerPrint.Features.UserAgent.Model
+﻿namespace Device.FingerPrint.Model
 {
-    public class UserAgentEntity
+    public class RawUserAgentModel
     {
         public int Id { get; set; }
 

@@ -1,9 +1,9 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
 
-namespace Device.FingerPrint.Features.UserAgent.Criterias
+namespace Device.FingerPrint.Features.RawUserAgent.Criterias
 {
-    public class GetUserAgentCriteria : NonQueryCommand
+    public class GetRawUserAgentCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
@@ -13,7 +13,7 @@ namespace Device.FingerPrint.Features.UserAgent.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Detect_UserAgent_Get";
+            return "FPS_FP_Detect_RawUserAgent_Get";
         }
 
         public override bool IsValid()

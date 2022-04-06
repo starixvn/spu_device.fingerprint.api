@@ -1,19 +1,19 @@
 ﻿using Device.FingerPrint.Model;
 
-namespace Device.FingerPrint.Features.UserAgent.Services
+namespace Device.FingerPrint.Features.RawUserAgent.Services
 {
 
-    public interface IUserAgentService
+    public interface IRawUserAgentService
     {
         UserAgentModel GetUserAgent(int batchSize, int offsetId);
     }
 
-    public class UserAgentService : IUserAgentService
+    public class RawUserAgentService : IRawUserAgentService
     {
 
-        private readonly IUserAgentDataAccess userAgentDataAccess;
+        private readonly IRawUserAgentDataAccess userAgentDataAccess;
 
-        public UserAgentService(IUserAgentDataAccess userAgentDataAccess)
+        public RawUserAgentService(IRawUserAgentDataAccess userAgentDataAccess)
         {
             this.userAgentDataAccess = userAgentDataAccess;
         }
