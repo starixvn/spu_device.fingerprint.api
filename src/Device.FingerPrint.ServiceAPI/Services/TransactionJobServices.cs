@@ -32,21 +32,21 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void UpdateTransaction(int batchSize, int numberOfBatch, int retry)
         {
-            var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.RawTransaction);
+            var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransaction);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.RawTransaction);
+                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransaction);
             }
         }
 
         public void UpdateTransactionN(int batchSize, int numberOfBatch)
         {
-            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, (int)Offset.RawTransactionN);
+            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, (int)Offset.UpdateServerTransactionN);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.RawTransactionN);
+                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
             }
         }
 

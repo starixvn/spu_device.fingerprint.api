@@ -3,10 +3,14 @@ namespace Device.FingerPrint.Model
 {
     public enum Offset
     {
-        RawTransaction = 1,
+        UpdateServerTransaction = 1,
 
-        RawTransactionN = 2,
+        UpdateServerTransactionN = 2,
 
-        ForceMergeTransaction = 3
+        ForceMergeTransaction = 3,
+
+        SummaryClientTransaction = 4,
+
+        SummaryServerTransaction = 5
     }
 }
