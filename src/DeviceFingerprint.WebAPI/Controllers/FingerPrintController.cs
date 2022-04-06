@@ -127,7 +127,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         TransTime = DateTime.Now
                     };
 
-                    if (queueType == (int) QueueType.Kafka)
+                    if (queueType == (int)QueueType.Kafka)
                     {
                         kafkaServices.SendFingerprintToKafka(clientTransactionModel);
                     }
@@ -159,6 +159,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (subscriber != null)
                     {
                         var urlAddress = new Uri(data.Url);
+                        var crypto = new Crypto("");
+                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                         var transaction = new TransactionModel
                         {
@@ -168,6 +170,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SessionKey = data.SessionKey,
                             TransTime = DateTime.Now,
                             UserAgent = data.UserAgent,
+                            UserAgentCode = userAgentCode,
                             Url = urlAddress.GetLeftPart(UriPartial.Path),
                             Action = data.Action,
                             TransKey = data.TransKey,
@@ -175,7 +178,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SubAccId = data.SubAccId
                         };
 
-                        if (queueType == (int) QueueType.Kafka)
+                        if (queueType == (int)QueueType.Kafka)
                         {
                             kafkaServices.SendTransactionToKafka(transaction);
                         }
