@@ -1,6 +1,5 @@
 ﻿using Device.FingerPrint.Features.ServerTransaction.Model;
 using Device.FingerPrint.Model;
-using DeviceDetectorNET;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;

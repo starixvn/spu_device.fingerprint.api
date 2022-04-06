@@ -13,6 +13,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IDeviceIdentifyJobServices deviceIdentifyServices;
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
+        private readonly IRawUserAgentJobServices rawUserAgentJobServices;
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
 
@@ -20,6 +21,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , ISentryClient sentryClient
                             , ITransactionJobServices transactionServices
                             , IMonitorJobServices monitorJobServices
+                            , IRawUserAgentJobServices rawUserAgentJobServices
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService)
         {
@@ -27,6 +29,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.sentryClient = sentryClient;
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
+            this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
         }
@@ -188,6 +191,23 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             try
             {
                 monitorJobServices.MonthlySum();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("devicedetector")]
+        public bool DeviceDetector([FromForm] int size, [FromForm] int numberOfBatch)
+        {
+            try
+            {
+                rawUserAgentJobServices.UpdateRawUserAgent(size, numberOfBatch);
 
                 return true;
             }

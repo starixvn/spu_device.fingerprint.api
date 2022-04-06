@@ -1,11 +1,15 @@
 ﻿using Device.FingerPrint.Model;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Device.FingerPrint.Features.RawUserAgent.Services
 {
 
     public interface IRawUserAgentService
     {
-        RawUserAgentModel GetUserAgent(int batchSize, int offsetId);
+        IEnumerable<RawUserAgentModel> GetRawUserAgents(int batchSize, int offsetId);
+
+        void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue);
     }
 
     public class RawUserAgentService : IRawUserAgentService
@@ -18,21 +22,26 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
             this.userAgentDataAccess = userAgentDataAccess;
         }
 
-        public RawUserAgentModel GetUserAgent(int batchSize, int offsetId)
+        public IEnumerable<RawUserAgentModel> GetRawUserAgents(int batchSize, int offsetId)
         {
-            var userAgent = userAgentDataAccess.GetUserAgent(batchSize, offsetId);
+            var userAgent = userAgentDataAccess.GetRawUserAgents(batchSize, offsetId);
 
-            if (userAgent != null)
+            if (userAgent != null && userAgent.Any())
             {
-                return new RawUserAgentModel
+                return userAgent.Select(x => new RawUserAgentModel
                 {
-                    Id = userAgent.Id,
-                    UserAgent = userAgent.UserAgent,
-                    UserAgentCode = userAgent.UserAgentCode
-                };
+                    Id = x.Id,
+                    UserAgent = x.UserAgent,
+                    UserAgentCode = x.UserAgentCode
+                });
             }
 
             return null;
+        }
+
+        public void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue)
+        {
+            userAgentDataAccess.UpdateRawUserAgent(rawUserAgentJson, offsetId, offsetValue);
         }
     }
 }

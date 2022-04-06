@@ -1,17 +1,27 @@
 ﻿using Device.FingerPrint.Features.RawUserAgent.Criterias;
 using Device.FingerPrint.Features.RawUserAgent.Model;
-using Fanex.Data;
+using Fanex.Data.Repository;
+using System.Collections.Generic;
 
 namespace Device.FingerPrint.Features.RawUserAgent.Services
 {
     public interface IRawUserAgentDataAccess
     {
-        RawUserAgentEntity GetUserAgent(int batchSize, int offsetId);
+        IEnumerable<RawUserAgentEntity> GetRawUserAgents(int batchSize, int offsetId);
+
+        void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue);
     }
 
     public class RawUserAgentDataAccess : IRawUserAgentDataAccess
     {
-        public RawUserAgentEntity GetUserAgent(int batchSize, int offsetId)
+        private readonly IDynamicRepository repository;
+
+        public RawUserAgentDataAccess()
+        {
+            repository = new DynamicRepository();
+        }
+
+        public IEnumerable<RawUserAgentEntity> GetRawUserAgents(int batchSize, int offsetId)
         {
             var criteria = new GetRawUserAgentCriteria
             {
@@ -19,8 +29,19 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
                 OffsetId = offsetId
             };
 
-            using var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey());
-            return db.QueryEntity<RawUserAgentEntity>(criteria);
+            return repository.Fetch<RawUserAgentEntity>(criteria);
+        }
+
+        public void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue)
+        {
+            var criteria = new UpdateRawUserAgentCriteria
+            {
+                RawUserAgentJson = rawUserAgentJson,
+                OffsetId = offsetId,
+                OffsetValue = offsetValue
+            };
+
+            repository.Execute(criteria);
         }
     }
 }
