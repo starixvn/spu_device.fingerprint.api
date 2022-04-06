@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
 
     public interface IRawUserAgentService
     {
-        UserAgentModel GetUserAgent(int batchSize, int offsetId);
+        RawUserAgentModel GetUserAgent(int batchSize, int offsetId);
     }
 
     public class RawUserAgentService : IRawUserAgentService
@@ -18,13 +18,13 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
             this.userAgentDataAccess = userAgentDataAccess;
         }
 
-        public UserAgentModel GetUserAgent(int batchSize, int offsetId)
+        public RawUserAgentModel GetUserAgent(int batchSize, int offsetId)
         {
             var userAgent = userAgentDataAccess.GetUserAgent(batchSize, offsetId);
 
             if (userAgent != null)
             {
-                return new UserAgentModel
+                return new RawUserAgentModel
                 {
                     Id = userAgent.Id,
                     UserAgent = userAgent.UserAgent,
