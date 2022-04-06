@@ -46,9 +46,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         }
 
         private void ProcessUpdateTransaction(IEnumerable<ServerTransactionModel> rawTrans, int batchSize, int retry, int offsetId)
-        {
-            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, (int)Offset.UpdateServerTransactionN);
-                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
+        {  
             if (rawTrans != null && rawTrans.Any())
             {
                 var tasks = new List<Task>();
@@ -81,11 +79,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void UpdateTransactionN(int batchSize, int numberOfBatch)
         {
-            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, (int)Offset.RawTransactionN);
+            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, (int)Offset.UpdateServerTransactionN);
 
             if (rawTrans != null && rawTrans.Any())
             {
-                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.RawTransactionN);
+                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
             }
         }
 
