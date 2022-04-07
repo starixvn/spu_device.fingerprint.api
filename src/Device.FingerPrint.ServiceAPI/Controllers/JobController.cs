@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.ServiceAPI.Services;
+﻿using Device.FingerPrint.Features.SummaryTransaction.Services;
+using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
@@ -13,6 +14,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IDeviceIdentifyJobServices deviceIdentifyServices;
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
+        private readonly ISummaryJobServices summaryJobServices;
         private readonly IRawUserAgentJobServices rawUserAgentJobServices;
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
@@ -21,6 +23,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , ISentryClient sentryClient
                             , ITransactionJobServices transactionServices
                             , IMonitorJobServices monitorJobServices
+                            , ISummaryJobServices summaryJobServices
                             , IRawUserAgentJobServices rawUserAgentJobServices
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService)
@@ -29,6 +32,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.sentryClient = sentryClient;
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
+            this.summaryJobServices = summaryJobServices;
             this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
@@ -141,6 +145,40 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             try
             {
                 fPTransactionJobService.Execute(batchSize, numberOfBatch);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("summaryservertransactiondaily")]
+        public bool SummaryServerTransactionDaily([FromForm] int batchSize)
+        {
+            try
+            {
+                summaryJobServices.SummaryServerTransactionDaily(batchSize);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("summaryclienttransactiondaily")]
+        public bool SummaryClientTransactionDaily([FromForm] int batchSize)
+        {
+            try
+            {
+                summaryJobServices.SummaryClientTransactionDaily(batchSize);
+
                 return true;
             }
             catch (Exception ex)

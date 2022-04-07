@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <Folder Include="Features\FPTransactions\Services\" />
+    <Folder Include="Features\SummaryTransaction\Model\" />
   </ItemGroup>
 
 </Project>

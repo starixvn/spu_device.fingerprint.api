@@ -5,6 +5,7 @@
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.RawUserAgent.Services;
     using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Features.SummaryTransaction.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -16,6 +17,7 @@
             RegisterTransactionService(services);
             RegisterRawTransactionService(services);
             RegisterMonitorService(services);
+            RegisterSummaryTransactionService(services);
             RegisterRawUserAgentService(services);
             RegisterFPDevicesService(services);
             RegisterFPTransformTransaction(services);
@@ -41,6 +43,13 @@
             services.AddSingleton<IMonitorJobServices, MonitorJobServices>();
             services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
             services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
+        }
+
+        private static void RegisterSummaryTransactionService(this IServiceCollection services)
+        {
+            services.AddSingleton<ISummaryJobServices, SummaryJobServices>();
+            services.AddSingleton<ISummaryTransactionDataAccess, SummaryTransactionDataAccess>();
+            services.AddSingleton<ISummaryTransactionService, SummaryTransactionService>();
         }
 
         private static void RegisterRawUserAgentService(this IServiceCollection services)

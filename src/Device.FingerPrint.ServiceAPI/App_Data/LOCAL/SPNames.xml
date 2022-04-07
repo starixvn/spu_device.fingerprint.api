@@ -30,6 +30,12 @@
     <Setting Key="FPS_FP_Monitor_TransactionMonthlySum_Get" SpName="FPS_FP_Monitor_TransactionMonthlySum_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Monitor_TransactionMonthlySum_Sum" SpName="FPS_FP_Monitor_TransactionMonthlySum_Sum" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
+  
+  <Function Name="Summary">
+    <Setting Key="FPS_FP_Summary_ServerTransaction_Daily" SpName="FPS_FP_Summary_ServerTransaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Summary_ClientTransaction_Daily" SpName="FPS_FP_Summary_ClientTransaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Summary_ClientServerTransaction_Monthly" SpName="FPS_FP_Summary_ClientServerTransaction_Monthly" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
 
   <Function Name="DetectRawUserAgent">
     <Setting Key="FPS_FP_Detect_RawUserAgent_Get" SpName="FPS_FP_Detect_RawUserAgent_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
