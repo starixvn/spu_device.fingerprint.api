@@ -257,23 +257,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("monthlysum")]
-        public bool MonthlySum()
-        {
-            try
-            {
-                monitorJobServices.MonthlySum();
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return false;
-            }
-        }
-
         [HttpPost("devicedetector")]
         public bool DeviceDetector([FromForm] int batchSize)
         {

@@ -9,8 +9,6 @@ namespace Device.FingerPrint.Features.Monitor.Services
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionDailySumList(string mdyDate);
 
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
-
-        void MonthlySum(string Month);
     }
 
     public class TransactionReportServices : ITransactionReportServices
@@ -31,11 +29,6 @@ namespace Device.FingerPrint.Features.Monitor.Services
         public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month)
         {
             return dataAccess.GetTransactionMonthlySumList(Month);
-        }
-
-        public void MonthlySum(string Month)
-        {
-            dataAccess.MonthlySum(Month);
         }
     }
 }

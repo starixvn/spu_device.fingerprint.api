@@ -28,7 +28,6 @@
   <Function Name="Monitor">
     <Setting Key="FPS_FP_Monitor_TransactionDailySum_Get" SpName="FPS_FP_Monitor_TransactionDailySum_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Monitor_TransactionMonthlySum_Get" SpName="FPS_FP_Monitor_TransactionMonthlySum_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Monitor_TransactionMonthlySum_Sum" SpName="FPS_FP_Monitor_TransactionMonthlySum_Sum" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
   
   <Function Name="Summary">

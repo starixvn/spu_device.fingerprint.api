@@ -14,9 +14,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
         public void DailyReport();
 
         public void MonthlyReport();
-
-        public void MonthlySum();
     }
+
     public class MonitorJobServices : IMonitorJobServices
     {
         private readonly IAppSettings appSettings;
@@ -43,12 +42,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var moreInfo = new StringBuilder("");
             moreInfo = GetInfoMonthlyReport(currentMonth, moreInfo);
             Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
-        }
-
-        public void MonthlySum()
-        {
-            var currentMonth = DateTime.UtcNow.AddHours(7).ToString("MM/yyyy");
-            transactionReportServices.MonthlySum(currentMonth);
         }
 
         private StringBuilder GetInfoDailyReport(string mdyDate, StringBuilder moreInfo)
