@@ -189,6 +189,40 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
+        [HttpPost("summarytransactiondaily")]
+        public bool SummaryTransactionDaily([FromForm] int batchSize)
+        {
+            try
+            {
+                summaryJobServices.SummaryTransactionDaily(batchSize);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
+        [HttpPost("summarytransactionmonthly")]
+        public bool SummaryTransactionMonthly()
+        {
+            try
+            {
+                summaryJobServices.SummaryTransactionMonthly();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return false;
+            }
+        }
+
         [HttpPost("monitordailyreport")]
         public bool MonitorDailyReport()
         {

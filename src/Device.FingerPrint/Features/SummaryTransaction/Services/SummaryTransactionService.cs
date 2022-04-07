@@ -10,6 +10,8 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
+
+        void SummaryTransactionMonthly();
     }
     public class SummaryTransactionService : ISummaryTransactionService
     {
@@ -32,7 +34,12 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
 
         public void SummaryTransactionDaily(int batchSize)
         {
-            throw new NotImplementedException();
+            summaryTransactionDataAccess.SummaryTransactionDaily(batchSize);
+        }
+
+        public void SummaryTransactionMonthly()
+        {
+            summaryTransactionDataAccess.SummaryTransactionMonthly();
         }
     }
 }

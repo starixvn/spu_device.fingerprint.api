@@ -11,6 +11,8 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
+
+        void SummaryTransactionMonthly();
     }
     public class SummaryTransactionDataAccess : ISummaryTransactionDataAccess
     {
@@ -43,7 +45,19 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
 
         public void SummaryTransactionDaily(int batchSize)
         {
-            throw new NotImplementedException();
+            var criteria = new SummaryTransactionDailyCriteria
+            {
+                BatchSize = batchSize
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void SummaryTransactionMonthly()
+        {
+            var criteria = new SummaryTransactionMonthlyCriteria();
+
+            repository.Execute(criteria);
         }
     }
 }
