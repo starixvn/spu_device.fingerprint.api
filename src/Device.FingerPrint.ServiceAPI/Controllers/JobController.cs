@@ -120,11 +120,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("transformfpdevice")]
-        public bool TransformFPDevice([FromForm] int size, [FromForm] int numberOfBatch)
+        public bool TransformFPDevice([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                fpdeviceJobService.Execute(size, numberOfBatch);
+                fpdeviceJobService.Execute(batchSize, numberOfBatch);
                 return true;
             }
             catch (Exception ex)
@@ -136,11 +136,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("transformfptransaction")]
-        public bool TransformFPTransaction([FromForm] int size, [FromForm] int numberOfBatch)
+        public bool TransformFPTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                fPTransactionJobService.Execute(size, numberOfBatch);
+                fPTransactionJobService.Execute(batchSize, numberOfBatch);
                 return true;
             }
             catch (Exception ex)
@@ -203,11 +203,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("devicedetector")]
-        public bool DeviceDetector([FromForm] int size, [FromForm] int numberOfBatch)
+        public bool DeviceDetector([FromForm] int batchSize)
         {
             try
             {
-                rawUserAgentJobServices.UpdateRawUserAgent(size, numberOfBatch);
+                rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
 
                 return true;
             }
