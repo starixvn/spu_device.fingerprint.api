@@ -257,7 +257,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("devicedetector")]
+        [HttpPost("updateuseragent")]
         public bool DeviceDetector([FromForm] int batchSize)
         {
             try

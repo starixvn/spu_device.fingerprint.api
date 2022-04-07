@@ -36,7 +36,7 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
                 });
             }
 
-            return null;
+            return new List<RawUserAgentModel>();
         }
 
         public void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue)

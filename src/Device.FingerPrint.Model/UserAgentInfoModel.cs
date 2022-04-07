@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.Model
 {
-    public class DeviceDetectorModel
+    public class UserAgentInfoModel
     {
         public long Id { get; set; }
 
