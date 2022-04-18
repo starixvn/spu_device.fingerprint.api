@@ -3047,86 +3047,6 @@ function set(appAPIUrl, subscriber, sessionKey) {
     this.sessionKey = sessionKey;
 }
 
-const flaggedEnum = {
-    HUMAN: 0,
-    BOT_HEADLESS_CHROME: 1
-};
-function checkHeadless() {
-    const userAgent = navigator.userAgent;
-    let isBot = isHeadlessChrome(userAgent);
-    return isBot ? flaggedEnum.BOT_HEADLESS_CHROME : flaggedEnum.HUMAN;
-}
-function isHeadlessChrome(userAgent) {
-    return /HeadlessChrome/i.test(userAgent);
-}
-function getDeviceInfo() {
-    const userAgent = navigator.userAgent;
-    const isMobile = isMobileAndroid(userAgent) ||
-        isMobileBlackBerry(userAgent) ||
-        isMobileIOS(userAgent) ||
-        isMobileOpera(userAgent) ||
-        isMobileWindows(userAgent);
-    const isDesktop = isWindows(userAgent) ||
-        isMac(userAgent) ||
-        isLinux(userAgent) ||
-        isSolaris(userAgent) ||
-        isUbuntu(userAgent);
-    return {
-        ua: userAgent,
-        isMobile: isMobile,
-        isDesktop: isMobile ? false : isDesktop,
-        isOther: isMobile || isDesktop ? false : true,
-    };
-}
-function isWindows(userAgent) {
-    return /Windows/i.test(userAgent);
-}
-function isMac(userAgent) {
-    return /Mac/i.test(userAgent);
-}
-function isLinux(userAgent) {
-    return /Linux/i.test(userAgent);
-}
-function isSolaris(userAgent) {
-    return /Solaris/i.test(userAgent);
-}
-function isUbuntu(userAgent) {
-    return /Ubuntu/i.test(userAgent);
-}
-function isMobileAndroid(userAgent) {
-    if (userAgent.match(/Android/i)) {
-        return true;
-    }
-    return false;
-}
-function isMobileOpera(userAgent) {
-    if (userAgent.match(/Opera Mini/i)) {
-        return true;
-    }
-    return false;
-}
-// Is Mobile Windows.  Check if the browser is on a windows mobile device.
-function isMobileWindows(userAgent) {
-    if (userAgent.match(/IEMobile/i)) {
-        return true;
-    }
-    return false;
-}
-// Is Mobile BlackBerry.  Check if the browser is on a blackberry mobile device.
-function isMobileBlackBerry(userAgent) {
-    if (userAgent.match(/BlackBerry/i)) {
-        return true;
-    }
-    return false;
-}
-// Is Mobile iOS.  Check if the browser is on an Apple iOS device.
-function isMobileIOS(userAgent) {
-    if (userAgent.match(/iPhone|iPad|iPod/i)) {
-        return true;
-    }
-    return false;
-}
-
 function initStorage() {
     let localForageDrives = [];
     if (isIndexDB()) {
@@ -3201,19 +3121,25 @@ function isGuid(cookieCode) {
     return regexGuid.test(cookieCode);
 }
 function generateUUID() {
+    // Public Domain/MIT
     var d = new Date().getTime(); //Timestamp
-    var d2 = ((typeof performance !== 'undefined') && performance.now && (performance.now() * 1000)) || 0; //Time in microseconds since page-load or 0 if unsupported
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var d2 = (typeof performance !== "undefined" &&
+        performance.now &&
+        performance.now() * 1000) ||
+        0; //Time in microseconds since page-load or 0 if unsupported
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
         var r = Math.random() * 16; //random number between 0 and 16
-        if (d > 0) { //Use timestamp until depleted
+        if (d > 0) {
+            //Use timestamp until depleted
             r = (d + r) % 16 | 0;
             d = Math.floor(d / 16);
         }
-        else { //Use microseconds since page-load if supported
+        else {
+            //Use microseconds since page-load if supported
             r = (d2 + r) % 16 | 0;
             d2 = Math.floor(d2 / 16);
         }
-        return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+        return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
     });
 }
 function setStorage(name, value) {
@@ -3272,6 +3198,86 @@ function storageHandler(name) {
     });
 }
 
+const HEADLESS = "Headless";
+const HEADFUL = "Headful";
+const UNDEFINED = "Undefined";
+function testWebdriver() {
+    let webdriver = navigator.webdriver;
+    return webdriver ? HEADLESS : HEADFUL;
+}
+function testUserAgent() {
+    let agent = navigator.userAgent;
+    return /headless/i.test(agent) ? HEADLESS : HEADFUL;
+}
+// Test for app version (almost equal to user agent)
+function testAppVersion() {
+    let appVersion = navigator.appVersion;
+    return /headless/i.test(appVersion) ? HEADLESS : HEADFUL;
+}
+// Test for plugins
+function testPlugins() {
+    let length = navigator.plugins.length;
+    return length === 0 ? UNDEFINED : HEADFUL;
+}
+// Test for mime type
+function testMime() {
+    let length = navigator.mimeTypes.length;
+    return length === 0 ? UNDEFINED : HEADFUL;
+}
+// Test for languages
+function testLanguages() {
+    let language = navigator.language;
+    let languagesLength = navigator.languages.length;
+    if (!language || languagesLength === 0)
+        return HEADLESS;
+    return HEADFUL;
+}
+// Test for chrome element (especific for google chrome browser)
+function testChrome() {
+    let chrome = window.chrome;
+    return chrome ? HEADFUL : UNDEFINED;
+}
+// Test for permission
+function testPermission() {
+    let permissionStatus, notificationPermission;
+    if (!navigator.permissions) {
+        return UNDEFINED;
+    }
+    permissionStatus = navigator.permissions.query({
+        name: "notifications",
+    });
+    notificationPermission = Notification.permission;
+    if (notificationPermission === "denied" &&
+        permissionStatus.state === "prompt")
+        return HEADLESS;
+    return HEADFUL;
+}
+// Test for outerHeight and outerWidth
+function testOuter() {
+    let outerHeight = window.outerHeight;
+    let outerWidth = window.outerWidth;
+    return outerHeight === 0 && outerWidth === 0 ? HEADLESS : HEADFUL;
+}
+function testBrowser() {
+    let results = "";
+    let tests = [
+        { name: "UserAgent", testFunction: testUserAgent },
+        { name: "AppVersion", testFunction: testAppVersion },
+        { name: "Plugins", testFunction: testPlugins },
+        { name: "Mime", testFunction: testMime },
+        { name: "Languages", testFunction: testLanguages },
+        { name: "Webdriver", testFunction: testWebdriver },
+        { name: "Chrome", testFunction: testChrome },
+        { name: "Permission", testFunction: testPermission },
+        { name: "OuterDimensions", testFunction: testOuter },
+    ];
+    tests.forEach((test) => {
+        let tested = test.testFunction();
+        results += test.name + ":" + JSON.stringify(tested) + ",";
+    });
+    return "{" + results.substring(0, results.length - 1) + "}";
+}
+
 var _isDebug = false;
 var _cookieName = "__fp";
 function isDebug(isDebug) {
@@ -3304,9 +3310,7 @@ function processData(result, sessionKey, cookieCode) {
     getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
         if (conf.ok) {
             const response = yield conf.json();
-            const deviceInfo = getDeviceInfo();
-            const flagged = checkHeadless();
-            JSON.stringify(deviceInfo);
+            const flagged = testBrowser();
             let encryptedFP = Encrypting({
                 di: result.Id,
                 attr: result.Properties,
@@ -3314,7 +3318,7 @@ function processData(result, sessionKey, cookieCode) {
                 subs: subscriberId,
                 cookieCode: cookieCode,
                 flagged: flagged,
-                url: window.location && window.location.href ? window.location.href : ''
+                url: window.location && window.location.href ? window.location.href : "",
             }, response.a);
             postData(apiUrl, encryptedFP, response.b);
         }

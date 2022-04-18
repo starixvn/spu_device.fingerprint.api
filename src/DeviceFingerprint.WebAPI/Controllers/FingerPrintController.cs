@@ -18,8 +18,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISentryClient sentryClient;
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        private readonly ISubscriberServices subscriberServices;
-        private readonly IKafkaServices kafkaServices;
+        private readonly ISubscriberServices subscriberServices;        
         private readonly IEasyNetQService easyNetQService;
 
         private readonly int queueType;
@@ -27,18 +26,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public FingerPrintController(ISentryClient sentryClient,
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            ISubscriberServices subscriberServices,
-            IKafkaServices kafkaServices,
+            ISubscriberServices subscriberServices,            
             IEasyNetQService easyNetQService)
         {
             this.sentryClient = sentryClient;
             this.environment = Environment;
             this.appSettings = appSettings;
-            this.subscriberServices = subscriberServices;
-            this.kafkaServices = kafkaServices;
-            this.easyNetQService = easyNetQService;
-
-            queueType = appSettings.QueueType;
+            this.subscriberServices = subscriberServices;            
+            this.easyNetQService = easyNetQService;            
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -122,19 +117,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = fingerPrint.SubscriberId,
                         CookieCode = fingerPrint.CookieCode,
-                        Flagged = int.TryParse(fingerPrint.Flagged, out int output) ? Enum.GetName(typeof(FlaggedStatus), int.Parse(fingerPrint.Flagged)) : "",
+                        Flagged = fingerPrint.Flagged,
                         Url = fingerPrint.Url,
                         TransTime = DateTime.Now
                     };
 
-                    if (queueType == (int)QueueType.Kafka)
-                    {
-                        kafkaServices.SendFingerprintToKafka(clientTransactionModel);
-                    }
-                    else
-                    {
-                        easyNetQService.PushToMonitor(clientTransactionModel);
-                    }
+                    easyNetQService.PushData(clientTransactionModel);
                 }
                 else
                 {
@@ -178,14 +166,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SubAccId = data.SubAccId
                         };
 
-                        if (queueType == (int)QueueType.Kafka)
-                        {
-                            kafkaServices.SendTransactionToKafka(transaction);
-                        }
-                        else
-                        {
-                            easyNetQService.PushToMonitor(transaction);
-                        }
+                        easyNetQService.PushData(transaction);
                     }
                     else
                     {

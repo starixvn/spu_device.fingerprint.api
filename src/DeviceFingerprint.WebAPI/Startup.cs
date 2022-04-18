@@ -54,14 +54,6 @@ namespace Device.Fingerprint.WebAPI
 
             services.AddHealthChecks();
 
-            var producerConfig = new ProducerConfig(new ClientConfig
-            {
-                BootstrapServers = Configuration["Kafka:ClientConfigs:BootstrapServers"]
-            });
-
-            services.AddSingleton(producerConfig);
-            services.AddSingleton(typeof(IKafkaProducer<,>), typeof(KafkaProducer<,>));
-
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>
             {
