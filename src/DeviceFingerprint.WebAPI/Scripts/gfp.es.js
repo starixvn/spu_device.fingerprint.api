@@ -3189,9 +3189,9 @@ function storageHandler(name) {
     });
 }
 
-const HEADLESS = "Headless";
-const HEADFUL = "Headful";
-const UNDEFINED = "Undefined";
+const HEADLESS = 1;
+const HEADFUL = 0;
+const UNDEFINED = -1;
 function testWebdriver() {
     let webdriver = navigator.webdriver;
     return webdriver ? HEADLESS : HEADFUL;
@@ -3264,7 +3264,7 @@ function testBrowser() {
     ];
     tests.forEach((test) => {
         let tested = test.testFunction();
-        results += test.name + ":" + JSON.stringify(tested) + ",";
+        results += JSON.stringify(test.name) + ":" + tested + ", ";
     });
     return "{" + results.substring(0, results.length - 1) + "}";
 }

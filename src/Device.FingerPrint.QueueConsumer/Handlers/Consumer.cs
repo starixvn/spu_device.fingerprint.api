@@ -105,7 +105,7 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                 FingerPrintCode = model.FingerPrintCode,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
-                Flagged = model.Flagged,
+                RobotDetail = model.Flagged,
                 Url = model.Url,
                 TransTime = model.TransTime
             };

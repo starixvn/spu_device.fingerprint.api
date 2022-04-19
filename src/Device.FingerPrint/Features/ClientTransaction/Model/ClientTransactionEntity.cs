@@ -14,7 +14,7 @@ namespace Device.FingerPrint.Features.ClientTransaction.Model
 
         public string CookieCode { get; set; }
 
-        public string Flagged { get; set; }
+        public string RobotDetail { get; set; }
 
         public string Url { get; set; }
 
