@@ -3000,14 +3000,14 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v3.3.1 - Copyright (c) FingerprintJS, Inc, 2021 (https://fingerprintjs.com)
+     * FingerprintJS v3.3.3 - Copyright (c) FingerprintJS, Inc, 2022 (https://fingerprintjs.com)
      * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
      *
      * This software contains code from open-source projects:
      * MurmurHash3 by Karan Lyons (https://github.com/karanlyons/murmurHash3.js)
      */
 
-    var version = "3.3.1";
+    var version = "3.3.3";
 
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
@@ -3996,9 +3996,32 @@ var globalFP = (function (exports) {
         var element = document.createElement(tag !== null && tag !== void 0 ? tag : 'div');
         for (var _i = 0, _b = Object.keys(attributes); _i < _b.length; _i++) {
             var name_1 = _b[_i];
-            element.setAttribute(name_1, attributes[name_1].join(' '));
+            var value = attributes[name_1].join(' ');
+            // Changing the `style` attribute can cause a CSP error, therefore we change the `style.cssText` property.
+            // https://github.com/fingerprintjs/fingerprintjs/issues/733
+            if (name_1 === 'style') {
+                addStyleString(element.style, value);
+            }
+            else {
+                element.setAttribute(name_1, value);
+            }
         }
         return element;
+    }
+    /**
+     * Adds CSS styles from a string in such a way that doesn't trigger a CSP warning (unsafe-inline or unsafe-eval)
+     */
+    function addStyleString(style, source) {
+        // We don't use `style.cssText` because browsers must block it when no `unsafe-eval` CSP is presented: https://csplite.com/csp145/#w3c_note
+        // Even though the browsers ignore this standard, we don't use `cssText` just in case.
+        for (var _i = 0, _a = source.split(';'); _i < _a.length; _i++) {
+            var property = _a[_i];
+            var match = /^\s*([\w-]+)\s*:\s*(.+?)(\s*!([\w-]+))?\s*$/.exec(property);
+            if (match) {
+                var name_2 = match[1], value = match[2], priority = match[4];
+                style.setProperty(name_2, value, priority || ''); // The last argument can't be undefined in IE11
+            }
+        }
     }
 
     // We use m or w because these two characters take up the maximum width.
@@ -4644,7 +4667,8 @@ var globalFP = (function (exports) {
         adGuardAnnoyances: ['amp-embed[type="zen"]', '.hs-sosyal', '#cookieconsentdiv', 'div[class^="app_gdpr"]', '.as-oil'],
         adGuardBase: ['#ad-after', '#ad-p3', '.BetterJsPopOverlay', '#ad_300X250', '#bannerfloat22'],
         adGuardChinese: [
-            '#piao_div_0[style*="width:140px;"]',
+            // Disabled because not reproducible. Will be replaced during the next filter update.
+            // '#piao_div_0[style*="width:140px;"]',
             'a[href*=".ttz5.cn"]',
             'a[href*=".yabovip2027.com/"]',
             '.tm3all2h4b',
@@ -5482,12 +5506,12 @@ var globalFP = (function (exports) {
      */
     function monitor() {
         // The FingerprintJS CDN (https://github.com/fingerprintjs/cdn) replaces `window.__fpjs_d_m` with `true`
-        if (window.__fpjs_d_m) {
+        if (window.__fpjs_d_m || Math.random() >= 0.001) {
             return;
         }
         try {
             var request = new XMLHttpRequest();
-            request.open('get', "https://openfpcdn.io/fingerprintjs/v" + version + "/npm-monitoring", true);
+            request.open('get', "https://m1.openfpcdn.io/fingerprintjs/v" + version + "/npm-monitoring", true);
             request.send();
         }
         catch (error) {
@@ -8583,84 +8607,94 @@ var globalFP = (function (exports) {
         });
     }
 
-    const HEADLESS = 1;
-    const HEADFUL = 0;
-    const UNDEFINED = -1;
-    function testWebdriver() {
-        let webdriver = navigator.webdriver;
-        return webdriver ? HEADLESS : HEADFUL;
-    }
+    let allTestFunctions = [
+        {
+            name: "UserAgent",
+            testFunction: testUserAgent,
+        },
+        { name: "ChromeWindow", testFunction: testChromeWindow },
+        { name: "Plugins", testFunction: testPlugins },
+        { name: "AppVersion", testFunction: testAppVersion },
+        { name: "ConnectionRtt", testFunction: testConnectionRtt },
+    ];
+    //* All Tests *//
+    // User Agent
     function testUserAgent() {
-        let agent = navigator.userAgent;
-        return /headless/i.test(agent) ? HEADLESS : HEADFUL;
+        console.log(window.navigator.userAgent);
+        if (/Headless/.test(window.navigator.userAgent)) {
+            // Headless
+            return 1;
+        }
+        else {
+            // Not Headless
+            return 0;
+        }
     }
-    // Test for app version (almost equal to user agent)
-    function testAppVersion() {
-        let appVersion = navigator.appVersion;
-        return /headless/i.test(appVersion) ? HEADLESS : HEADFUL;
+    // Window.Chrome
+    function testChromeWindow() {
+        if (eval.toString().length == 33 && !window.chrome) {
+            // Headless
+            return 1;
+        }
+        else {
+            // Not Headless
+            return 0;
+        }
     }
-    // Test for plugins
+    // Notification Permissions
+    function testNotificationPermissions(callback) {
+        navigator.permissions
+            .query({ name: "notifications" })
+            .then(function (permissionStatus) {
+            if (Notification.permission === "denied" &&
+                permissionStatus.state === "prompt") {
+                // Headless
+                callback(1);
+            }
+            else {
+                // Not Headless
+                callback(0);
+            }
+        });
+    }
+    // No Plugins
     function testPlugins() {
         let length = navigator.plugins.length;
-        return length === 0 ? UNDEFINED : HEADFUL;
+        return length === 0 ? 1 : 0;
     }
-    // Test for mime type
-    function testMime() {
-        let length = navigator.mimeTypes.length;
-        return length === 0 ? UNDEFINED : HEADFUL;
+    // App Version
+    function testAppVersion() {
+        let appVersion = navigator.appVersion;
+        return /headless/i.test(appVersion) ? 1 : 0;
     }
-    // Test for languages
-    function testLanguages() {
-        let language = navigator.language;
-        let languagesLength = navigator.languages.length;
-        if (!language || languagesLength === 0)
-            return HEADLESS;
-        return HEADFUL;
-    }
-    // Test for chrome element (especific for google chrome browser)
-    function testChrome() {
-        let chrome = window.chrome;
-        return chrome ? HEADFUL : UNDEFINED;
-    }
-    // Test for permission
-    function testPermission() {
-        let permissionStatus, notificationPermission;
-        if (!navigator.permissions) {
-            return UNDEFINED;
+    // Connection Rtt
+    function testConnectionRtt() {
+        let connection = navigator.connection;
+        let connectionRtt = connection ? connection.rtt : undefined;
+        if (connectionRtt === undefined) {
+            return 0; // Flag doesn't even exists so just return NOT HEADLESS
         }
-        permissionStatus = navigator.permissions.query({
-            name: "notifications",
-        });
-        notificationPermission = Notification.permission;
-        if (notificationPermission === "denied" &&
-            permissionStatus.state === "prompt")
-            return HEADLESS;
-        return HEADFUL;
+        else {
+            return connectionRtt === 0 ? 1 : 0;
+        }
     }
-    // Test for outerHeight and outerWidth
-    function testOuter() {
-        let outerHeight = window.outerHeight;
-        let outerWidth = window.outerWidth;
-        return outerHeight === 0 && outerWidth === 0 ? HEADLESS : HEADFUL;
-    }
-    function testBrowser() {
-        let results = "";
-        let tests = [
-            { name: "UserAgent", testFunction: testUserAgent },
-            { name: "AppVersion", testFunction: testAppVersion },
-            { name: "Plugins", testFunction: testPlugins },
-            { name: "Mime", testFunction: testMime },
-            { name: "Languages", testFunction: testLanguages },
-            { name: "Webdriver", testFunction: testWebdriver },
-            { name: "Chrome", testFunction: testChrome },
-            { name: "Permission", testFunction: testPermission },
-            { name: "OuterDimensions", testFunction: testOuter },
-        ];
-        tests.forEach((test) => {
-            let tested = test.testFunction();
-            results += JSON.stringify(test.name) + ":" + tested + ", ";
+    //* Main Functions *//
+    function getHeadlessScore() {
+        let score = 0;
+        let testsRun = 0;
+        // Notification Permissions test has to be done using Callbacks
+        // That's why it's done separately from all the other tests.
+        testNotificationPermissions(function (v) {
+            score += v;
+            testsRun++;
         });
-        return "{" + results.substring(0, results.length - 1) + "}";
+        allTestFunctions.forEach((test) => {
+            score += test.testFunction();
+            testsRun++;
+        });
+        console.log(score);
+        console.log(testsRun);
+        return score / testsRun + " - (" + `${score}` + " / " + `${testsRun}` + ")";
     }
 
     var _isDebug = false;
@@ -8695,7 +8729,7 @@ var globalFP = (function (exports) {
         getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
             if (conf.ok) {
                 const response = yield conf.json();
-                const flagged = testBrowser();
+                const flagged = getHeadlessScore();
                 let encryptedFP = Encrypting({
                     di: result.Id,
                     attr: result.Properties,

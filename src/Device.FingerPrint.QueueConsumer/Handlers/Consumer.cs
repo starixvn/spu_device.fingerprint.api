@@ -106,6 +106,7 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 RobotDetail = model.Flagged,
+                Flagged =Convert.ToDouble(model.Flagged.Substring(0, model.Flagged.IndexOf("-"))) > 0.25 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),
                 Url = model.Url,
                 TransTime = model.TransTime
             };

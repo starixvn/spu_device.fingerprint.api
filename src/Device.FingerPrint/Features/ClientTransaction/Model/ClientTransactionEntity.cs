@@ -16,6 +16,8 @@ namespace Device.FingerPrint.Features.ClientTransaction.Model
 
         public string RobotDetail { get; set; }
 
+        public string Flagged { get; set; }
+
         public string Url { get; set; }
 
         public DateTime TransTime { get; set; }
