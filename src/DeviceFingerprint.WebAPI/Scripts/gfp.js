@@ -8616,8 +8616,13 @@ var globalFP = (function (exports) {
         { name: "Plugins", testFunction: testPlugins },
         { name: "AppVersion", testFunction: testAppVersion },
         { name: "ConnectionRtt", testFunction: testConnectionRtt },
+        { name: "Webdriver", testFunction: testWebdriver },
     ];
     //* All Tests *//
+    function testWebdriver() {
+        let webdriver = navigator.webdriver;
+        return webdriver ? 1 : 0;
+    }
     // User Agent
     function testUserAgent() {
         console.log(window.navigator.userAgent);
@@ -8681,20 +8686,23 @@ var globalFP = (function (exports) {
     //* Main Functions *//
     function getHeadlessScore() {
         let score = 0;
-        let testsRun = 0;
+        let testsRun = 1;
+        let testFunction = "";
         // Notification Permissions test has to be done using Callbacks
         // That's why it's done separately from all the other tests.
         testNotificationPermissions(function (v) {
             score += v;
             testsRun++;
         });
+        testFunction = "NotificationPermissions = " + (score > 0 ? 1 : 0) + ", ";
         allTestFunctions.forEach((test) => {
-            score += test.testFunction();
+            let result = test.testFunction();
+            score += result;
             testsRun++;
+            testFunction += test.name + " = " + result + ", ";
         });
-        console.log(score);
-        console.log(testsRun);
-        return score / testsRun + " - (" + `${score}` + " / " + `${testsRun}` + ")";
+        testFunction = testFunction.substring(0, testFunction.length - 2);
+        return `${score}` + " / " + `${testsRun}` + " - (" + testFunction + ")";
     }
 
     var _isDebug = false;
