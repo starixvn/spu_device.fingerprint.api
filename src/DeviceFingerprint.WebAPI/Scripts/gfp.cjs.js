@@ -3238,20 +3238,21 @@ function testChromeWindow() {
     }
 }
 // Notification Permissions
-function testNotificationPermissions(callback) {
-    navigator.permissions
+function testNotificationPermissions() {
+    const res = navigator.permissions
         .query({ name: "notifications" })
         .then(function (permissionStatus) {
         if (Notification.permission === "denied" &&
             permissionStatus.state === "prompt") {
             // Headless
-            callback(1);
+            return 1;
         }
         else {
             // Not Headless
-            callback(0);
+            return 0;
         }
     });
+    return res;
 }
 // No Plugins
 function testPlugins() {
@@ -3276,24 +3277,22 @@ function testConnectionRtt() {
 }
 //* Main Functions *//
 function getHeadlessScore() {
-    let score = 0;
-    let testsRun = 1;
-    let testFunction = "";
-    // Notification Permissions test has to be done using Callbacks
-    // That's why it's done separately from all the other tests.
-    testNotificationPermissions(function (v) {
-        score += v;
+    return __awaiter(this, void 0, void 0, function* () {
+        let score = 0;
+        let testsRun = 0;
+        let testFunction = "";
+        score += yield testNotificationPermissions();
+        testFunction = "NotificationPermissions = " + score + ", ";
         testsRun++;
+        allTestFunctions.forEach((test) => {
+            let result = test.testFunction();
+            score += result;
+            testsRun++;
+            testFunction += test.name + " = " + result + ", ";
+        });
+        testFunction = testFunction.substring(0, testFunction.length - 2);
+        return `${score}` + " / " + `${testsRun}` + " - (" + testFunction + ")";
     });
-    testFunction = "NotificationPermissions = " + (score > 0 ? 1 : 0) + ", ";
-    allTestFunctions.forEach((test) => {
-        let result = test.testFunction();
-        score += result;
-        testsRun++;
-        testFunction += test.name + " = " + result + ", ";
-    });
-    testFunction = testFunction.substring(0, testFunction.length - 2);
-    return `${score}` + " / " + `${testsRun}` + " - (" + testFunction + ")";
 }
 
 var _isDebug = false;
@@ -3328,7 +3327,7 @@ function processData(result, sessionKey, cookieCode) {
     getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
         if (conf.ok) {
             const response = yield conf.json();
-            const flagged = getHeadlessScore();
+            const flagged = yield getHeadlessScore();
             let encryptedFP = Encrypting({
                 di: result.Id,
                 attr: result.Properties,
