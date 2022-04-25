@@ -48,24 +48,38 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                 {
                     x.Add<TransactionModel>((message, info) =>
                     {
-                        var messageBody = message.Body;
-                        listServerTrans.Add(TranformTransactionEntity(messageBody));
-                        if (listServerTrans.Count >= consumerBatchSize)
+                        try
                         {
-                            rawTransactionService.InsertServerTransaction(listServerTrans);
+                            var messageBody = message.Body;
+                            listServerTrans.Add(TranformTransactionEntity(messageBody));
+                            if (listServerTrans.Count >= consumerBatchSize)
+                            {
+                                rawTransactionService.InsertServerTransaction(listServerTrans);
 
-                            listServerTrans.Clear();
+                                listServerTrans.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sentryClient.CaptureException(ex);
                         }
                     })
                     .Add<ClientTransactionModel>((message, info) =>
                     {
-                        var messageBody = message.Body;
-                        listClientTrans.Add(TranformClientTransactionEntity(messageBody));
-                        if (listClientTrans.Count >= consumerBatchSize)
+                        try
                         {
-                            fingerPrintService.InsertClientTransaction(listClientTrans);
+                            var messageBody = message.Body;
+                            listClientTrans.Add(TranformClientTransactionEntity(messageBody));
+                            if (listClientTrans.Count >= consumerBatchSize)
+                            {
+                                fingerPrintService.InsertClientTransaction(listClientTrans);
 
-                            listClientTrans.Clear();
+                                listClientTrans.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sentryClient.CaptureException(ex);                            
                         }
 
                     });
