@@ -1,5 +1,4 @@
-﻿using Device.FingerPrint.Features.SummaryTransaction.Services;
-using Device.FingerPrint.ServiceAPI.Services;
+﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using System;
@@ -195,23 +194,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             try
             {
                 summaryJobServices.SummaryTransactionDaily(batchSize);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return false;
-            }
-        }
-
-        [HttpPost("summarytransactionmonthly")]
-        public bool SummaryTransactionMonthly()
-        {
-            try
-            {
-                summaryJobServices.SummaryTransactionMonthly();
 
                 return true;
             }

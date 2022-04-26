@@ -1,8 +1,4 @@
 ﻿using Device.FingerPrint.Features.SummaryTransaction.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
@@ -13,8 +9,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
-
-        void SummaryTransactionMonthly();
     }
 
     public class SummaryJobServices : ISummaryJobServices
@@ -39,11 +33,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
         public void SummaryTransactionDaily(int batchSize)
         {
             summaryTransactionService.SummaryTransactionDaily(batchSize);
-        }
-
-        public void SummaryTransactionMonthly()
-        {
-            summaryTransactionService.SummaryTransactionMonthly();
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using Device.FingerPrint.Features.SummaryTransaction.Criterias;
 using Fanex.Data.Repository;
-using System;
 
 namespace Device.FingerPrint.Features.SummaryTransaction.Services
 {
@@ -11,8 +10,6 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
-
-        void SummaryTransactionMonthly();
     }
     public class SummaryTransactionDataAccess : ISummaryTransactionDataAccess
     {
@@ -49,13 +46,6 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
             {
                 BatchSize = batchSize
             };
-
-            repository.Execute(criteria);
-        }
-
-        public void SummaryTransactionMonthly()
-        {
-            var criteria = new SummaryTransactionMonthlyCriteria();
 
             repository.Execute(criteria);
         }

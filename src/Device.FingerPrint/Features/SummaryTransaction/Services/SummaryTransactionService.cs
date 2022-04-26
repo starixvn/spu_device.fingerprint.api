@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Device.FingerPrint.Features.SummaryTransaction.Services
+﻿namespace Device.FingerPrint.Features.SummaryTransaction.Services
 {
 
     public interface ISummaryTransactionService
@@ -10,8 +8,6 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
-
-        void SummaryTransactionMonthly();
     }
     public class SummaryTransactionService : ISummaryTransactionService
     {
@@ -35,11 +31,6 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         public void SummaryTransactionDaily(int batchSize)
         {
             summaryTransactionDataAccess.SummaryTransactionDaily(batchSize);
-        }
-
-        public void SummaryTransactionMonthly()
-        {
-            summaryTransactionDataAccess.SummaryTransactionMonthly();
         }
     }
 }

@@ -34,7 +34,6 @@
     <Setting Key="FPS_FP_Summary_ServerTransaction_Daily" SpName="FPS_FP_Summary_ServerTransaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Summary_ClientTransaction_Daily" SpName="FPS_FP_Summary_ClientTransaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Summary_Transaction_Daily" SpName="FPS_FP_Summary_Transaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Summary_ClientServerTransaction_Monthly" SpName="FPS_FP_Summary_ClientServerTransaction_Monthly" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 
   <Function Name="DetectRawUserAgent">

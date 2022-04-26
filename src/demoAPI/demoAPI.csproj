@@ -130,6 +130,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\LoginController.cs" />
+    <Compile Include="Controllers\ViewPageController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -178,6 +179,11 @@
     <Content Include="Web.LOCAL.Release.config">
       <DependentUpon>Web.LOCAL.config</DependentUpon>
     </Content>
+    <Content Include="Views\ViewPage\ViewPage1.cshtml" />
+    <Content Include="Views\ViewPage\ViewPage2.cshtml" />
+    <Content Include="Views\ViewPage\ViewPage3.cshtml" />
+    <Content Include="Views\ViewPage\ViewPage4.cshtml" />
+    <Content Include="Views\ViewPage\ViewPage5.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
