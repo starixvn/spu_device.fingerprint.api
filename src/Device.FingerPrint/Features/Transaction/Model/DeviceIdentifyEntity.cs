@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public ulong RawFingerPrintId { get; set; }
 
-        public string CookieCode { get; set; }
+        public ulong CookieId { get; set; }
 
         public long GroupId { get; set; }
 
