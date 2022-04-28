@@ -4,11 +4,11 @@ namespace Device.FingerPrint.Features.Transaction.Model
 {
     public class DeviceIdentifyEntity
     {
-        public long Id { get; set; }
+        public ulong Id { get; set; }
 
         public DateTime TransTime { get; set; }
 
-        public string FingerPrintCode { get; set; }
+        public ulong RawFingerPrintId { get; set; }
 
         public string CookieCode { get; set; }
 
