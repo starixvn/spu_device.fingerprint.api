@@ -1,22 +1,23 @@
-using Device.FingerPrint.Features.ClientTransaction.Services;
-using Device.FingerPrint.Features.ServerTransaction.Services;
-using Device.FingerPrint.QueueConsumer.Handlers;
-using Fanex.Data;
-using Fanex.Data.MySql;
-using Fanex.Logging;
-using Fanex.Logging.Sentry;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Sentry;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Device.FingerPrint.QueueConsumer
 {
+    using Device.FingerPrint.Features.ClientTransaction.Services;
+    using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Queue;
+    using Device.FingerPrint.QueueConsumer.Handlers;
+    using Fanex.Data;
+    using Fanex.Data.MySql;
+    using Fanex.Logging;
+    using Fanex.Logging.Sentry;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Sentry;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public class Startup
     {
         public IConfiguration Configuration { get; }
@@ -38,9 +39,11 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
             services.AddSingleton<IClientTransactionService, ClientTransactionService>();
 
-            services.AddHostedService<Consumer>();
-
             services.AddHealthChecks();
+
+            RabbitMQBus(services);
+
+            services.AddHostedService<Consumer>();
 
             FanexDataConfig(appSettings);
             RegisterLogging(appSettings);
@@ -75,6 +78,24 @@ namespace Device.FingerPrint.QueueConsumer
                         Environment = appSettings.Environment
                      })
                 });
+        }
+
+        private void RabbitMQBus(IServiceCollection services)
+        {
+            var easyNetQConnector = new EasyNetQConnector(Configuration["RabbitMQ:Host"] + ":" + Configuration["RabbitMQ:Port"],
+                                      Configuration["RabbitMQ:VirtualHost"],
+                                      int.Parse(Configuration["RabbitMQ:PrefetchCount"]),
+                                      Configuration["RabbitMQ:UserName"],
+                                      Configuration["RabbitMQ:Password"]);
+
+            easyNetQConnector
+                    .CreateBus()
+                    .DeclareExchange(Configuration["RabbitMQ:Exchange"])
+                    .DeclareQueue(Configuration["RabbitMQ:Name"])
+                    .DeclareRoutingKey(Configuration["RabbitMQ:RoutingKey"])
+                    .Bind();
+
+            services.AddSingleton(easyNetQConnector);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

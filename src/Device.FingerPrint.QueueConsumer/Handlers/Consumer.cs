@@ -1,40 +1,41 @@
-﻿using Device.FingerPrint.Features.ClientTransaction.Model;
-using Device.FingerPrint.Features.ClientTransaction.Services;
-using Device.FingerPrint.Features.ServerTransaction.Model;
-using Device.FingerPrint.Features.ServerTransaction.Services;
-using Device.FingerPrint.Model;
-using Device.FingerPrint.Queue;
-using EasyNetQ;
-using EasyNetQ.Consumer;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Sentry;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.QueueConsumer.Handlers
+﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    public class Consumer : BackgroundService
+    using Device.FingerPrint.Features.ClientTransaction.Model;
+    using Device.FingerPrint.Features.ClientTransaction.Services;
+    using Device.FingerPrint.Features.ServerTransaction.Model;
+    using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Model;
+    using Device.FingerPrint.Queue;
+    using EasyNetQ;
+    using EasyNetQ.Consumer;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.Hosting;
+    using Sentry;
+    using System;
+    using System.Collections.Generic;
+    using System.Threading;
+    using System.Threading.Tasks;
+
+    public class Consumer: BackgroundService
     {
-        private EasyNetQConnector _rabbitMQConsume;
+        private readonly EasyNetQConnector easyNetQConnector;
         private readonly ISentryClient sentryClient;
         private readonly IRawTransactionService rawTransactionService;
         private readonly IClientTransactionService fingerPrintService;
 
-        private readonly int consumerBatchSize;
+        
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
+        private readonly IAppSettings appSettings;
 
-        public Consumer(IConfiguration _configuration, ISentryClient sentryClient, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService)
+        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService, EasyNetQConnector easyNetQConnector)
         {
             this.sentryClient = sentryClient;
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
-            consumerBatchSize = int.Parse(_configuration["Consumer:BatchSize"]);
-
-            ConsumeMessageBus(_configuration);
+            this.appSettings = appSettings;
+            this.easyNetQConnector = easyNetQConnector;
+            
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
@@ -44,15 +45,17 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
         {
             try
             {
-                _rabbitMQConsume.AdvanceBus.Consume(_rabbitMQConsume.Queue, x =>
+                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
                     x.Add<TransactionModel>((message, info) =>
                     {
                         try
                         {
                             var messageBody = message.Body;
+
                             listServerTrans.Add(TranformTransactionEntity(messageBody));
-                            if (listServerTrans.Count >= consumerBatchSize)
+
+                            if (listServerTrans.Count >= appSettings.ConsumeBatchSize)
                             {
                                 rawTransactionService.InsertServerTransaction(listServerTrans);
 
@@ -69,8 +72,10 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                         try
                         {
                             var messageBody = message.Body;
+
                             listClientTrans.Add(TranformClientTransactionEntity(messageBody));
-                            if (listClientTrans.Count >= consumerBatchSize)
+
+                            if (listClientTrans.Count >= appSettings.ConsumeBatchSize)
                             {
                                 fingerPrintService.InsertClientTransaction(listClientTrans);
 
@@ -79,9 +84,8 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureException(ex);                            
+                            sentryClient.CaptureException(ex);
                         }
-
                     });
                 });
             }
@@ -124,22 +128,6 @@ namespace Device.FingerPrint.QueueConsumer.Handlers
                 Url = model.Url,
                 TransTime = model.TransTime
             };
-        }
-
-        private void ConsumeMessageBus(IConfiguration configuration)
-        {
-
-            _rabbitMQConsume = new EasyNetQConnector(configuration["RabbitMQ:Host"] + ":" + configuration["RabbitMQ:Port"],
-                                      configuration["RabbitMQ:VirtualHost"],
-                                      int.Parse(configuration["RabbitMQ:PrefetchCount"].ToString()),
-                                      configuration["RabbitMQ:UserName"],
-                                      configuration["RabbitMQ:Password"]);
-
-            _rabbitMQConsume.CreateBus()
-                    .DeclareExchange(configuration["RabbitMQ:Exchange"])
-                    .DeclareQueue(configuration["RabbitMQ:Name"])
-                    .DeclareRoutingKey(configuration["RabbitMQ:RoutingKey"])
-                    .Bind();
-        }
+        }        
     }
 }

@@ -147,7 +147,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (subscriber != null)
                     {
                         var urlAddress = new Uri(data.Url);
-                        var crypto = new Crypto("");
+                        var crypto = new Crypto(appSettings.EncryptPassword);
                         var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                         var transaction = new TransactionModel

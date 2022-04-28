@@ -13,6 +13,9 @@ namespace Device.FingerPrint.QueueConsumer
         string SentryDsn { get; }
 
         string Environment { get; }
+
+        int ConsumeBatchSize { get; }
+
     }
     public class AppSettings : IAppSettings
     {
@@ -21,6 +24,7 @@ namespace Device.FingerPrint.QueueConsumer
         private readonly string apiUrl;
         private readonly string sentryDsn;
         private readonly string environment;
+        private readonly int consumeBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -33,6 +37,8 @@ namespace Device.FingerPrint.QueueConsumer
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
             environment = GetValue<string>("AppConfig:Environment");
+
+            consumeBatchSize = GetValue<int>("Consumer:BatchSize");
         }
 
         public string ApiUrl => apiUrl;
@@ -42,6 +48,8 @@ namespace Device.FingerPrint.QueueConsumer
         public string SentryDsn => sentryDsn;
 
         public string Environment => environment;
+
+        public int ConsumeBatchSize => consumeBatchSize;                
 
         public T GetValue<T>(string key)
         {
