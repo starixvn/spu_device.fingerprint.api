@@ -10,6 +10,7 @@
     using EasyNetQ.Consumer;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
+    using Newtonsoft.Json;
     using Sentry;
     using System;
     using System.Collections.Generic;
@@ -124,10 +125,15 @@
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 RobotDetail = model.Flagged,
-                Flagged = Convert.ToInt16(model.Flagged.Split('/')[0]) > 0 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),                
+                Flagged = TransformRobotDetectionDetail(model.Flagged).Score == 1 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),                
                 Url = model.Url,
                 TransTime = model.TransTime
             };
-        }        
+        }  
+        
+        private static RobotDetectionDetail TransformRobotDetectionDetail(string robotDetectDetail)
+        {
+            return JsonConvert.DeserializeObject<RobotDetectionDetail>(robotDetectDetail);
+        }
     }
 }

@@ -21,8 +21,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISubscriberServices subscriberServices;        
         private readonly IEasyNetQService easyNetQService;
 
-        private readonly int queueType;
-
         public FingerPrintController(ISentryClient sentryClient,
             IWebHostEnvironment Environment,
             IAppSettings appSettings,

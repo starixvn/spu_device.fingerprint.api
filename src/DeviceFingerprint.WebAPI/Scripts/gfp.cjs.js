@@ -3200,14 +3200,16 @@ function storageHandler(name) {
 
 let allTestFunctions = [
     {
-        name: "UserAgent",
-        testFunction: testUserAgent,
+        name: "NotificationPermissions",
+        testFunction: testNotificationPermissions,
+        active: 1,
     },
-    { name: "ChromeWindow", testFunction: testChromeWindow },
-    { name: "Plugins", testFunction: testPlugins },
-    { name: "AppVersion", testFunction: testAppVersion },
-    { name: "ConnectionRtt", testFunction: testConnectionRtt },
-    { name: "Webdriver", testFunction: testWebdriver },
+    { name: "UserAgent", testFunction: testUserAgent, active: 1 },
+    { name: "ChromeWindow", testFunction: testChromeWindow, active: 1 },
+    { name: "Plugins", testFunction: testPlugins, active: 0 },
+    { name: "AppVersion", testFunction: testAppVersion, active: 1 },
+    { name: "ConnectionRtt", testFunction: testConnectionRtt, active: 1 },
+    { name: "Webdriver", testFunction: testWebdriver, active: 1 },
 ];
 //* All Tests *//
 function testWebdriver() {
@@ -3216,7 +3218,6 @@ function testWebdriver() {
 }
 // User Agent
 function testUserAgent() {
-    console.log(window.navigator.userAgent);
     if (/Headless/.test(window.navigator.userAgent)) {
         // Headless
         return 1;
@@ -3279,19 +3280,20 @@ function testConnectionRtt() {
 function getHeadlessScore() {
     return __awaiter(this, void 0, void 0, function* () {
         let score = 0;
-        let testsRun = 0;
-        let testFunction = "";
-        score += yield testNotificationPermissions();
-        testFunction = "NotificationPermissions = " + score + ", ";
-        testsRun++;
-        allTestFunctions.forEach((test) => {
-            let result = test.testFunction();
-            score += result;
-            testsRun++;
-            testFunction += test.name + " = " + result + ", ";
-        });
-        testFunction = testFunction.substring(0, testFunction.length - 2);
-        return `${score}` + " / " + `${testsRun}` + " - (" + testFunction + ")";
+        let testsRun = 1;
+        let resultTest = allTestFunctions.map((test) => __awaiter(this, void 0, void 0, function* () {
+            if (test.active == 1) {
+                let result = yield test.testFunction();
+                score += result;
+                testsRun++;
+                return test.name + " : " + result;
+            }
+        }));
+        return {
+            score: yield score,
+            testsRun: yield testsRun,
+            testsDetail: (yield Promise.all(resultTest)).join(", "),
+        };
     });
 }
 
@@ -3327,7 +3329,7 @@ function processData(result, sessionKey, cookieCode) {
     getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
         if (conf.ok) {
             const response = yield conf.json();
-            const flagged = yield getHeadlessScore();
+            const flagged = JSON.stringify(yield getHeadlessScore());
             let encryptedFP = Encrypting({
                 di: result.Id,
                 attr: result.Properties,
