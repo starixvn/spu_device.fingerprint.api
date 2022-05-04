@@ -43,7 +43,7 @@ namespace Device.FingerPrint.QueueConsumer
 
             RabbitMQBus(services);
 
-            services.AddHostedService<Consumer>();
+           // services.AddHostedService<Consumer>();
 
             FanexDataConfig(appSettings);
             RegisterLogging(appSettings);
