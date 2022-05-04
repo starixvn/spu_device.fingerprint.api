@@ -72,7 +72,7 @@
                     {
                         try
                         {
-                            var messageBody = message.Body;
+                            var messageBody = message.Body;                            
 
                             listClientTrans.Add(TranformClientTransactionEntity(messageBody));
 
