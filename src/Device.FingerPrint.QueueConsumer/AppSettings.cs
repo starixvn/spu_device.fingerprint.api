@@ -16,6 +16,8 @@ namespace Device.FingerPrint.QueueConsumer
 
         int ConsumeBatchSize { get; }
 
+        IConfiguration Configuration { get; }
+
     }
     public class AppSettings : IAppSettings
     {
@@ -49,7 +51,9 @@ namespace Device.FingerPrint.QueueConsumer
 
         public string Environment => environment;
 
-        public int ConsumeBatchSize => consumeBatchSize;                
+        public int ConsumeBatchSize => consumeBatchSize;
+
+        public IConfiguration Configuration => configuration;
 
         public T GetValue<T>(string key)
         {

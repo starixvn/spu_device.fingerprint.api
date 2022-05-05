@@ -17,9 +17,8 @@
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class Consumer: BackgroundService
-    {
-        private readonly EasyNetQConnector easyNetQConnector;
+    public class Consumer:BackgroundService
+    {        
         private readonly ISentryClient sentryClient;
         private readonly IRawTransactionService rawTransactionService;
         private readonly IClientTransactionService fingerPrintService;
@@ -29,71 +28,17 @@
         private readonly List<ClientTransactionEntity> listClientTrans;
         private readonly IAppSettings appSettings;
 
-        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService, EasyNetQConnector easyNetQConnector)
+        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService)
         {
             this.sentryClient = sentryClient;
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
-            this.appSettings = appSettings;
-            this.easyNetQConnector = easyNetQConnector;
+            this.appSettings = appSettings;            
             
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
-        }
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            try
-            {
-                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
-                {
-                    x.Add<TransactionModel>((message, info) =>
-                    {
-                        try
-                        {
-                            var messageBody = message.Body;
-
-                            listServerTrans.Add(TranformTransactionEntity(messageBody));
-
-                            if (listServerTrans.Count >= appSettings.ConsumeBatchSize)
-                            {
-                                rawTransactionService.InsertServerTransaction(listServerTrans);
-
-                                listServerTrans.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureException(ex);
-                        }
-                    })
-                    .Add<ClientTransactionModel>((message, info) =>
-                    {
-                        try
-                        {
-                            var messageBody = message.Body;                            
-
-                            listClientTrans.Add(TranformClientTransactionEntity(messageBody));
-
-                            if (listClientTrans.Count >= appSettings.ConsumeBatchSize)
-                            {
-                                fingerPrintService.InsertClientTransaction(listClientTrans);
-
-                                listClientTrans.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureException(ex);
-                        }
-                    });
-                });
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
+           
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -134,6 +79,87 @@
         private static RobotDetectionDetail TransformRobotDetectionDetail(string robotDetectDetail)
         {
             return JsonConvert.DeserializeObject<RobotDetectionDetail>(robotDetectDetail);
+        }
+
+        private void StartConsuming()
+        {
+            try
+            {
+                var easyNetQConnector = RabbitMQBus();
+
+                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+                {
+                    x.Add<TransactionModel>((message, info) =>
+                    {
+                        try
+                        {
+                            var messageBody = message.Body;
+
+                            listServerTrans.Add(TranformTransactionEntity(messageBody));
+
+                            if (listServerTrans.Count >= appSettings.ConsumeBatchSize)
+                            {
+                                rawTransactionService.InsertServerTransaction(listServerTrans);
+
+                                listServerTrans.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sentryClient.CaptureException(ex);
+                        }
+                    })
+                    .Add<ClientTransactionModel>((message, info) =>
+                    {
+                        try
+                        {
+                            var messageBody = message.Body;
+
+                            listClientTrans.Add(TranformClientTransactionEntity(messageBody));
+
+                            if (listClientTrans.Count >= appSettings.ConsumeBatchSize)
+                            {
+                                fingerPrintService.InsertClientTransaction(listClientTrans);
+
+                                listClientTrans.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sentryClient.CaptureException(ex);
+                        }
+                    });
+                });
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
+        private EasyNetQConnector RabbitMQBus()
+        {
+            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
+                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
+                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
+                                      appSettings.Configuration["RabbitMQ:UserName"],
+                                      appSettings.Configuration["RabbitMQ:Password"]);
+
+            easyNetQConnector
+                    .CreateBus()
+                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Exchange"])
+                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Name"])
+                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:RoutingKey"])
+                    .Bind();
+
+            return easyNetQConnector;
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            StartConsuming();
+
+            return Task.CompletedTask;
         }
     }
 }
