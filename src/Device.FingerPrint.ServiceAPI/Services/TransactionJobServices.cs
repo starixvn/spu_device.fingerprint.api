@@ -17,9 +17,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void UpdateTransactionN(int batchSize, int numberOfBatch);
 
-        public void MergeTrans(int batchSize, int numberOfBatch);
+        public void MergeTrans(int batchSize, int numberOfBatch, int retry);
 
-        public void ForceMergeTrans(int batchSize, int numberOfBatch);
+        public void ForceMergeTrans(int batchSize, int numberOfBatch, int retry);
     }
 
     public class TransactionJobServices : ITransactionJobServices
@@ -119,9 +119,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
         }
 
 
-        public void MergeTrans(int batchSize, int numberOfBatch)
+        public void MergeTrans(int batchSize, int numberOfBatch, int retry)
         {
-            var mergeTrans = transactionService.GetMergeTransaction(batchSize * numberOfBatch, 3);
+            var mergeTrans = transactionService.GetMergeTransaction(batchSize * numberOfBatch, retry);
 
             if (mergeTrans != null && mergeTrans.Any())
             {
@@ -149,9 +149,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        public void ForceMergeTrans(int batchSize, int numberOfBatch)
+        public void ForceMergeTrans(int batchSize, int numberOfBatch, int retry)
         {
-            var mergeTrans = transactionService.GetForceMergeTransaction(batchSize * numberOfBatch, 3);
+            var mergeTrans = transactionService.GetForceMergeTransaction(batchSize * numberOfBatch, retry);
 
             if (mergeTrans != null && mergeTrans.Any())
             {

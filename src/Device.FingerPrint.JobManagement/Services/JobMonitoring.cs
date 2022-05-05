@@ -50,7 +50,7 @@
 
                     if (result.Any())
                     {
-                        var jobName = string.Join("", result.Select(x => "\n\r - " + x));
+                        var jobName = string.Join("", result.OrderBy(x => x.ToString()).Select(x => "\n\r - " + x));
 
                         Notification("Jobs Monitoring", "The JOBS are PAUSED.", "The List of jobs. \n\r" + jobName);
                     }

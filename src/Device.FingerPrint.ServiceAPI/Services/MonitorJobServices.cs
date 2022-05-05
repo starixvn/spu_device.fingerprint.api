@@ -129,7 +129,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             notification
                       .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken")
                       .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), appSettings.Environment, message, moreInfo.ToString()))
-                      .SendWithDelay(300, true);
+                      .SendWithDelay(1, true);
         }
     }
 }
