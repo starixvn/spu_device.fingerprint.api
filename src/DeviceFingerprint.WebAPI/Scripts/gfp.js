@@ -8608,11 +8608,6 @@ var globalFP = (function (exports) {
     }
 
     let allTestFunctions = [
-        {
-            name: "NotificationPermissions",
-            testFunction: testNotificationPermissions,
-            active: 1,
-        },
         { name: "UserAgent", testFunction: testUserAgent, active: 1 },
         { name: "ChromeWindow", testFunction: testChromeWindow, active: 1 },
         { name: "Plugins", testFunction: testPlugins, active: 0 },
@@ -8649,20 +8644,21 @@ var globalFP = (function (exports) {
     }
     // Notification Permissions
     function testNotificationPermissions() {
-        const res = navigator.permissions
-            .query({ name: "notifications" })
-            .then(function (permissionStatus) {
-            if (Notification.permission === "denied" &&
-                permissionStatus.state === "prompt") {
-                // Headless
-                return 1;
-            }
-            else {
-                // Not Headless
-                return 0;
-            }
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield navigator.permissions
+                .query({ name: "notifications" })
+                .then(function (permissionStatus) {
+                if (Notification.permission === "denied" &&
+                    permissionStatus.state === "prompt") {
+                    // Headless
+                    return 1;
+                }
+                else {
+                    // Not Headless
+                    return 0;
+                }
+            });
         });
-        return res;
     }
     // No Plugins
     function testPlugins() {
@@ -8689,20 +8685,29 @@ var globalFP = (function (exports) {
     function getHeadlessScore() {
         return __awaiter(this, void 0, void 0, function* () {
             let score = 0;
-            let testsRun = 1;
-            let resultTest = allTestFunctions.map((test) => __awaiter(this, void 0, void 0, function* () {
-                if (test.active == 1) {
-                    let result = yield test.testFunction();
-                    score += result;
-                    testsRun++;
-                    return test.name + " : " + result;
-                }
-            }));
-            return {
-                score: yield score,
-                testsRun: yield testsRun,
-                testsDetail: (yield Promise.all(resultTest)).join(", "),
-            };
+            let testsRun = 0;
+            let testRunDetail = "";
+            return yield testNotificationPermissions()
+                .then((x) => {
+                score = x;
+                testsRun++;
+                testRunDetail = "NotificationPermissions : " + x + ", ";
+            })
+                .then(() => {
+                allTestFunctions.forEach((test) => {
+                    if (test.active == 1) {
+                        let result = test.testFunction();
+                        score += result;
+                        testsRun++;
+                        testRunDetail += test.name + " : " + result + ", ";
+                    }
+                });
+                return {
+                    score: score,
+                    testsRun: testsRun,
+                    testsDetail: testRunDetail.substring(0, testRunDetail.length - 2),
+                };
+            });
         });
     }
 

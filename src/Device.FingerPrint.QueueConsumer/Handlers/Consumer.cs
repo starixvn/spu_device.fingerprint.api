@@ -70,7 +70,7 @@
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 RobotDetail = model.Flagged,
-                Flagged = TransformRobotDetectionDetail(model.Flagged).Score == 1 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),                
+                Flagged = TransformRobotDetectionDetail(model.Flagged).Score > 0 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),                
                 Url = model.Url,
                 TransTime = model.TransTime
             };
