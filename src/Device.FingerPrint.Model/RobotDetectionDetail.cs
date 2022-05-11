@@ -6,7 +6,7 @@ namespace Device.FingerPrint.Model
 {
    public class RobotDetectionDetail
     {
-        public int Score { get; set; }
+        public float Score { get; set; }
 
         public int TestsRun { get; set; }
 
