@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
-<Functions>
-	<Function Name="JobSerice">
-		<Setting Key="DCS_DC_Transform_UserAgent_GetNullBrowserOSList" SpName="DCS_DC_Transform_UserAgent_GetNullBrowserOSList" DbName="MySQL.DCS_DataCenter.ctsService"/>
+<Functions>	
+	<Function Name="Subscriber">
+		<Setting Key="FPS_FP_Core_SubscriberInfoByName_Get" SpName="FPS_FP_Core_SubscriberInfoByName_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>
