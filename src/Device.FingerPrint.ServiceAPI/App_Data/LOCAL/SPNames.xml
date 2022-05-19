@@ -2,15 +2,15 @@
 
 <Functions>
 	<Function Name="Transaction">
-    <Setting Key="FPS_FP_Transform_DeviceIdentify_Get" SpName="FPS_FP_Transform_DeviceIdentify_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Transform_DeviceIdentify" SpName="FPS_FP_Transform_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" SpName="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+        <Setting Key="FPS_FP_Transform_DeviceIdentify_Get" SpName="FPS_FP_Transform_DeviceIdentify_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+        <Setting Key="FPS_FP_Transform_DeviceIdentify" SpName="FPS_FP_Transform_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+        <Setting Key="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" SpName="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 		
-	  <Setting Key="FPS_FP_Transform_MergeTransaction_Get" SpName="FPS_FP_Transform_MergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	  <Setting Key="FPS_FP_Transform_MergeTransaction_Update" SpName="FPS_FP_Transform_MergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	    <Setting Key="FPS_FP_Transform_MergeTransaction_Get" SpName="FPS_FP_Transform_MergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	    <Setting Key="FPS_FP_Transform_MergeTransaction_Update" SpName="FPS_FP_Transform_MergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 
 		<Setting Key="FPS_FP_Transform_ForceMergeTransaction_Get" SpName="FPS_FP_Transform_ForceMergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	  <Setting Key="FPS_FP_Transform_ForceMergeTransaction_Update" SpName="FPS_FP_Transform_ForceMergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	    <Setting Key="FPS_FP_Transform_ForceMergeTransaction_Update" SpName="FPS_FP_Transform_ForceMergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
   
   <Function Name="RawTransaction">

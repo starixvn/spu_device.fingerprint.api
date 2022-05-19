@@ -184,6 +184,13 @@
     <Content Include="Views\ViewPage\ViewPage3.cshtml" />
     <Content Include="Views\ViewPage\ViewPage4.cshtml" />
     <Content Include="Views\ViewPage\ViewPage5.cshtml" />
+    <None Include="Web.PROD.config" />
+    <None Include="Web.PROD.Debug.config">
+      <DependentUpon>Web.PROD.config</DependentUpon>
+    </None>
+    <None Include="Web.PROD.Release.config">
+      <DependentUpon>Web.PROD.config</DependentUpon>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

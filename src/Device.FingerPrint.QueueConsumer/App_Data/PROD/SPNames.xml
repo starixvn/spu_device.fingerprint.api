@@ -1,7 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <Functions>
-  <Function Name="JobSerice">
-    <Setting Key="DCS_DC_Transform_UserAgent_GetNullBrowserOSList" SpName="DCS_DC_Transform_UserAgent_GetNullBrowserOSList" DbName="MySQL.DCS_DataCenter.ctsService"/>
-  </Function>
+	<Function Name="Transaction">
+		<Setting Key="FPS_FP_Transform_ServerTransaction_Insert" SpName="FPS_FP_Transform_ServerTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+		<Setting Key="FPS_FP_Transform_ClientTransaction_Insert" SpName="FPS_FP_Transform_ClientTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+	</Function>
 </Functions>
