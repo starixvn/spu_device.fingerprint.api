@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace DemoNetCore
 {
@@ -24,8 +25,9 @@ namespace DemoNetCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddHealthChecks();
             services.AddControllersWithViews();
-            services.AddSession();
+            services.AddSession();            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,6 +50,11 @@ namespace DemoNetCore
             app.UseSession();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            app.UseHealthChecks("/healthz", new HealthCheckOptions
+            {
+                Predicate = _ => true
+            });
 
             app.UseRouting();
 
