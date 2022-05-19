@@ -2,9 +2,9 @@ FROM registry.nexdev.net:5050/docker/dotnet/core/sdk:5.0.102-ca-patch-buster-sli
 
 WORKDIR /src
 
-COPY ["./src/FPS.Device.FingerPrint.Net.Standard.Client.Model", "FPS.Device.FingerPrint.Net.Standard.Client.Model/"]
+COPY ["./src/FPS.Device.FingerPrint.Net.Standard.Client.Model/FPS.Device.FingerPrint.Net.Standard.Client.Model", "FPS.Device.FingerPrint.Net.Standard.Client.Model/"]
 
-COPY ["./src/FPS.Device.FingerPrint.Net.Standard.Client", "FPS.Device.FingerPrint.Net.Standard.Client/"]
+COPY ["./src/FPS.Device.FingerPrint.Net.Standard.Client/FPS.Device.FingerPrint.Net.Standard.Client", "FPS.Device.FingerPrint.Net.Standard.Client/"]
 
 COPY ["./src/DemoNetCore/DemoNetCore.csproj", "DemoNetCore/"]
 
