@@ -2,6 +2,7 @@
 using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
+using Fanex.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -15,19 +16,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class FingerPrintController : ControllerBase
     {
-        private readonly ISentryClient sentryClient;
+        
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;        
         private readonly IEasyNetQService easyNetQService;
 
-        public FingerPrintController(ISentryClient sentryClient,
+        public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,            
             IEasyNetQService easyNetQService)
-        {
-            this.sentryClient = sentryClient;
+        {            
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;            
@@ -60,7 +60,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     }
                     else
                     {
-                        sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists");
+                        LogService.Info("Subscriber " + subscriberName + " does not exists");
                     }
                 }
 
@@ -68,7 +68,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
+
                 return null;
             }
         }
@@ -91,7 +92,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
+
                 return Ok("");
             }
         }
@@ -102,7 +104,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                sentryClient.CaptureMessage($"Run API fp local dev!");
                 var scrypto = new Crypto(appSettings.EncryptPassword);
                 var decryptedData = scrypto.Decrypt(data);
 
@@ -125,12 +126,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 }
                 else
                 {
-                    sentryClient.CaptureMessage($"FingerPrint does not exists. ({data})");
+                    LogService.Info($"FingerPrint does not exists. ({data})");
                 }
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
             }
         }
 
@@ -169,13 +170,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     }
                     else
                     {
-                        sentryClient.CaptureMessage($"{data.SubscriberName} does not exists.");
+                        LogService.Info($"{data.SubscriberName} does not exists.");
                     }
                 }
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
             }
         }
 
@@ -189,7 +190,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             else
             {
-                sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
+                LogService.Info("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
+
                 return Ok(null);
             }
         }
@@ -197,7 +199,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [HttpGet("hc")]
         public void HealthCheck()
         {
-            // Method intentionally left empty.
+            // Method intentionally left empty.            
         }
     }
 }
