@@ -102,6 +102,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
+                sentryClient.CaptureMessage($"Run API fp local dev!");
                 var scrypto = new Crypto(appSettings.EncryptPassword);
                 var decryptedData = scrypto.Decrypt(data);
 
