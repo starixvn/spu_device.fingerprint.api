@@ -132,7 +132,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                LogService.Error("abc."+ex.Message, ex);
             }
         }
 
@@ -141,6 +141,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
+                LogService.Info($"Transaction capture data.");
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
