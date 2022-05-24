@@ -106,6 +106,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scrypto = new Crypto(appSettings.EncryptPassword);
                 var decryptedData = scrypto.Decrypt(data);
+                LogService.Info($"FingerPrint capture decryptedData. ({decryptedData})");
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
