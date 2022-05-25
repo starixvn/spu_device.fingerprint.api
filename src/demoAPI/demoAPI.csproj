@@ -184,12 +184,16 @@
     <Content Include="Views\ViewPage\ViewPage3.cshtml" />
     <Content Include="Views\ViewPage\ViewPage4.cshtml" />
     <Content Include="Views\ViewPage\ViewPage5.cshtml" />
-    <None Include="Web.PROD.config" />
+    <None Include="Web.PROD.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Web.PROD.Debug.config">
       <DependentUpon>Web.PROD.config</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Web.PROD.Release.config">
       <DependentUpon>Web.PROD.config</DependentUpon>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
   <ItemGroup>
