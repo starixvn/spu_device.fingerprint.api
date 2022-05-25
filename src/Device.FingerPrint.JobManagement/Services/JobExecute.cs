@@ -1,28 +1,24 @@
 ﻿namespace Device.FingerPrint.JobManagement.Services
 {
+    using Fanex.Logging;
     using ONEbook.UM.Services;
     using Quartz;
-    using Sentry;
-    using Sentry.Protocol;
     using System;
     using System.Threading.Tasks;
 
     [DisallowConcurrentExecution, PersistJobDataAfterExecution]
     public class JobExecute : IJob
     {
-        private readonly ISentryClient sentryClient;
         private readonly IJobService jobService;
         private readonly IScheduler scheduler;
         private readonly IMaintenanceService _maintenanceService;
         private readonly IAppSettings _appSettings;
 
-        public JobExecute(ISentryClient sentryClient
-             , IJobService jobService
+        public JobExecute(IJobService jobService
             , ISchedulerFactory schedulerFactory
             , IMaintenanceService maintenanceService
             , IAppSettings appSettings)
         {
-            this.sentryClient = sentryClient;
             this.jobService = jobService;
             scheduler = schedulerFactory.GetScheduler().Result;
             _maintenanceService = maintenanceService;
@@ -50,7 +46,7 @@
 
                     dataMap.PutAsString("count", 0);
 
-                    sentryClient.CaptureMessage($"{jobName} is STOPPED. Cause of RETRIED EXECEEDED.", SentryLevel.Error);
+                    LogService.Error($"{jobName} is STOPPED. Cause of RETRIED EXECEEDED.");
 
                     throw e;
                 }
@@ -70,7 +66,7 @@
                         dataMap.PutAsString("count", count);
                         var errorMessage = $"{jobName} is failed at {DateTime.Now}.";
 
-                        throw JobHelper.JobExecuteFailed(errorMessage, sentryClient);
+                        throw JobHelper.JobExecuteFailed(errorMessage);
                     }
                     else
                     {
@@ -83,7 +79,7 @@
 
                     dataMap.PutAsString("count", count);
 
-                    throw JobHelper.JobExecuteFailed(ex.Message, sentryClient);
+                    throw JobHelper.JobExecuteFailed(ex.Message);
                 }
             }
         }

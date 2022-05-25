@@ -1,8 +1,7 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
+using Fanex.Logging;
 using Newtonsoft.Json;
-using Sentry;
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +17,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class DeviceIdentifyJobServices : IDeviceIdentifyJobServices
     {
         private readonly ITransactionService transactionService;
-        private readonly ISentryClient sentryClient;
 
-        public DeviceIdentifyJobServices(ITransactionService transactionService, ISentryClient sentryClient)
+        public DeviceIdentifyJobServices(ITransactionService transactionService)
         {
             this.transactionService = transactionService;
-            this.sentryClient = sentryClient;
         }
 
         public void DeviceIdentify(int batchSize, int numberOfBatch)
@@ -41,7 +38,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 catch (Exception ex)
                 {
                     var rawTransIds = string.Join(",", rawTrans.Item1);
-                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
+                    LogService.Error(ex.Message + "\n" + rawTransIds, ex);
                     throw;
                 }
             }));
@@ -55,7 +52,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 catch (Exception ex)
                 {
                     var rawTransIds = string.Join(",", rawTrans.Item2);
-                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
+                    LogService.Error(ex.Message + "\n" + rawTransIds, ex);
                     throw;
                 }
             }));
@@ -71,7 +68,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     }
                     catch (Exception ex)
                     {
-                        sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
+                        LogService.Error(ex.Message + "\n" + rawTransIds, ex);
                         throw;
                     }
                 }
@@ -112,7 +109,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
                 catch (Exception ex)
                 {
-                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransJson, SentryLevel.Error);
+                    LogService.Error(ex.Message + "\n" + rawTransJson, ex);
                     throw;
                 }
             });

@@ -1,7 +1,6 @@
 ﻿using Device.FingerPrint.Features.FPDevices.Services;
+using Fanex.Logging;
 using Newtonsoft.Json;
-using Sentry;
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,13 +16,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class FPDeviceJobService : IFPDeviceJobService
     {
         private readonly IFPDeviceServices deviceService;
-        private readonly ISentryClient sentryClient;
         private readonly IList<string> ignoreMessages;
 
-        public FPDeviceJobService(IFPDeviceServices deviceService, ISentryClient sentryClient)
+        public FPDeviceJobService(IFPDeviceServices deviceService)
         {
             this.deviceService = deviceService;
-            this.sentryClient = sentryClient;
             ignoreMessages = new List<string> {
                 "Deadlock found when trying to get lock; try restarting transaction"
             };
@@ -59,7 +56,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                             if (!ignoreMessages.Contains(ex.Message))
                             {
                                 var transIdJson = JsonConvert.SerializeObject(trans);
-                                sentryClient.CaptureMessage(ex.Message + "\n" + transIdJson, SentryLevel.Error);
+                                LogService.Error(ex.Message + "\n" + transIdJson, ex);
                                 throw;
                             }
                         }

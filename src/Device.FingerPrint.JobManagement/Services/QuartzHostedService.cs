@@ -1,12 +1,10 @@
 ﻿namespace Device.FingerPrint.JobManagement.Services
 {
     using Device.FingerPrint.JobManagement.Models;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Quartz;
     using Quartz.Impl.Matchers;
     using Quartz.Spi;
-    using Sentry;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -17,22 +15,14 @@
     {
         private readonly ISchedulerFactory _schedulerFactory;
         private readonly IJobFactory _jobFactory;
-        private readonly IConfiguration _configuration;
-        private readonly IAppSettings _appSettings;
         private readonly IScheduler _scheduler;
-        private readonly ISentryClient sentryClient;
 
         public QuartzHostedService(ISchedulerFactory schedulerFactory,
             IJobFactory jobFactory,
-            IConfiguration _configuration,
-            IAppSettings _appSettings,
-            ISentryClient sentryClient)
+            IAppSettings _appSettings)
         {
-            this.sentryClient = sentryClient;
             _schedulerFactory = schedulerFactory;
             _jobFactory = jobFactory;
-            this._configuration = _configuration;
-            this._appSettings = _appSettings;
             _scheduler = _schedulerFactory.GetScheduler().Result;
             JobSchedulers = _appSettings.Schedulers;
         }

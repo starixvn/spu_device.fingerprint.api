@@ -1,4 +1,5 @@
 using Confluent.Kafka;
+using Fanex.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Sentry;
 using System;
@@ -26,17 +27,15 @@ namespace Device.FingerPrint.Kafka.Handlers.Kafka.Handlers
         private readonly ConsumerConfig _config;
         private IKafkaHandler<TKey, TValue> _handler;
         private IConsumer<TKey, TValue> _consumer;
-        private readonly ISentryClient _sentryClient;
 
         private string _topic;
 
         private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public KafkaConsumer(ConsumerConfig config, IServiceScopeFactory serviceScopeFactory, ISentryClient sentryClient)
+        public KafkaConsumer(ConsumerConfig config, IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
             _config = config;
-            _sentryClient = sentryClient;
         }
 
         public async Task Consume(string topic, CancellationToken stoppingToken)
@@ -81,7 +80,7 @@ namespace Device.FingerPrint.Kafka.Handlers.Kafka.Handlers
                 }
                 catch (ConsumeException ex)
                 {
-                    _sentryClient.CaptureException(ex);
+                    LogService.Error(ex.Message, ex);
 
                     if (ex.Error.IsFatal)
                     {
@@ -90,7 +89,7 @@ namespace Device.FingerPrint.Kafka.Handlers.Kafka.Handlers
                 }
                 catch (Exception ex)
                 {
-                    _sentryClient.CaptureException(ex);
+                    LogService.Error(ex.Message, ex);
                     break;
                 }
             }

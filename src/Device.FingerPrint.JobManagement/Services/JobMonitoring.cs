@@ -1,5 +1,6 @@
 ﻿namespace Device.FingerPrint.JobManagement.Services
 {
+    using Fanex.Logging;
     using Fanex.NAP.SPU.Notification.Services;
     using ONEbook.UM.Services;
     using Quartz;
@@ -13,17 +14,15 @@
     [DisallowConcurrentExecution, PersistJobDataAfterExecution]
     public class JobMonitoring : IJob
     {
-        private readonly ISentryClient _sentryClient;
         private readonly IScheduler _scheduler;
         private readonly IMaintenanceService _maintenanceService;
         private readonly IAppSettings _appSettings;
 
-        public JobMonitoring(ISentryClient sentryClient, IAppSettings appSettings, ISchedulerFactory schedulerFactory, IMaintenanceService maintenanceService)
+        public JobMonitoring(IAppSettings appSettings, ISchedulerFactory schedulerFactory, IMaintenanceService maintenanceService)
         {
             _scheduler = schedulerFactory.GetScheduler().Result;
             _maintenanceService = maintenanceService;
             _appSettings = appSettings;
-            _sentryClient = sentryClient;
         }
 
         public async Task Execute(IJobExecutionContext context)
@@ -58,7 +57,7 @@
             }
             catch (Exception ex)
             {
-                _sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
             }
         }
 

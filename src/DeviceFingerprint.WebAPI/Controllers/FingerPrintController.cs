@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Sentry;
 using System;
 
 namespace Device.Fingerprint.WebAPI.Controllers
@@ -16,22 +15,22 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class FingerPrintController : ControllerBase
     {
-        
+
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        private readonly ISubscriberServices subscriberServices;        
+        private readonly ISubscriberServices subscriberServices;
         private readonly IEasyNetQService easyNetQService;
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            ISubscriberServices subscriberServices,            
+            ISubscriberServices subscriberServices,
             IEasyNetQService easyNetQService)
-        {            
+        {
             this.environment = Environment;
             this.appSettings = appSettings;
-            this.subscriberServices = subscriberServices;            
-            this.easyNetQService = easyNetQService;            
+            this.subscriberServices = subscriberServices;
+            this.easyNetQService = easyNetQService;
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -106,7 +105,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scrypto = new Crypto(appSettings.EncryptPassword);
                 var decryptedData = scrypto.Decrypt(data);
-                LogService.Info($"FingerPrint capture decryptedData. ({decryptedData})");
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
@@ -132,7 +130,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             catch (Exception ex)
             {
-                LogService.Error("abc."+ex.Message, ex);
+                LogService.Error(ex.Message, ex);
             }
         }
 
@@ -141,7 +139,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                LogService.Info($"Transaction capture data.");
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);

@@ -1,5 +1,6 @@
 ﻿namespace Device.FingerPrint.JobManagement.Services
 {
+    using Fanex.Logging;
     using Quartz;
     using Sentry;
     using Sentry.Protocol;
@@ -46,11 +47,11 @@
             return new Dictionary<string, object>();
         }
 
-        public static JobExecutionException JobExecuteFailed(string errorMessage, ISentryClient sentryClient)
+        public static JobExecutionException JobExecuteFailed(string errorMessage)
         {
             var jobExecutionException = new JobExecutionException(errorMessage);
 
-            sentryClient.CaptureMessage(errorMessage, SentryLevel.Error);
+            LogService.Error(errorMessage);
 
             Thread.Sleep(60000);
 

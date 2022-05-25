@@ -1,6 +1,6 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
+using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
-using Sentry;
 using System;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
@@ -9,7 +9,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
     [Route("api/job")]
     public class JobController : ControllerBase
     {
-        private readonly ISentryClient sentryClient;
         private readonly IDeviceIdentifyJobServices deviceIdentifyServices;
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
@@ -19,7 +18,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IFPTransactionJobService fPTransactionJobService;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
-                            , ISentryClient sentryClient
                             , ITransactionJobServices transactionServices
                             , IMonitorJobServices monitorJobServices
                             , ISummaryJobServices summaryJobServices
@@ -28,7 +26,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPTransactionJobService fPTransactionJobService)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
-            this.sentryClient = sentryClient;
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
             this.summaryJobServices = summaryJobServices;
@@ -48,7 +45,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -65,7 +62,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -82,7 +79,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -99,7 +96,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -116,7 +113,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -132,7 +129,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -148,7 +145,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -165,7 +162,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -182,7 +179,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -199,7 +196,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -216,7 +213,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -233,7 +230,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }
@@ -250,7 +247,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
 
                 return false;
             }

@@ -8,37 +8,35 @@
     using Device.FingerPrint.Queue;
     using EasyNetQ;
     using EasyNetQ.Consumer;
+    using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
-    using Sentry;
     using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
 
-    public class Consumer:BackgroundService
-    {        
-        private readonly ISentryClient sentryClient;
+    public class Consumer : BackgroundService
+    {
         private readonly IRawTransactionService rawTransactionService;
         private readonly IClientTransactionService fingerPrintService;
 
-        
+
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
         private readonly IAppSettings appSettings;
 
-        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService)
+        public Consumer(IAppSettings appSettings, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService)
         {
-            this.sentryClient = sentryClient;
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
-            this.appSettings = appSettings;            
-            
+            this.appSettings = appSettings;
+
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
-           
+
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -70,12 +68,12 @@
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 RobotDetail = model.Flagged,
-                Flagged = TransformRobotDetectionDetail(model.Flagged).Score > 0.5 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),                
+                Flagged = TransformRobotDetectionDetail(model.Flagged).Score > 0.5 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),
                 Url = model.Url,
                 TransTime = model.TransTime
             };
-        }  
-        
+        }
+
         private static RobotDetectionDetail TransformRobotDetectionDetail(string robotDetectDetail)
         {
             return JsonConvert.DeserializeObject<RobotDetectionDetail>(robotDetectDetail);
@@ -106,7 +104,7 @@
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureException(ex);
+                            LogService.Error(ex.Message, ex);
                         }
                     })
                     .Add<ClientTransactionModel>((message, info) =>
@@ -126,14 +124,14 @@
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureException(ex);
+                            LogService.Error(ex.Message, ex);
                         }
                     });
                 });
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                LogService.Error(ex.Message, ex);
             }
         }
 
