@@ -106,6 +106,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var scrypto = new Crypto(appSettings.EncryptPassword);
                 var decryptedData = scrypto.Decrypt(data);
 
+                LogService.Info(decryptedData);
+
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrintCode))
                 {
@@ -140,6 +142,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
+                    LogService.Info(data.LoginName);
+
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
 
                     if (subscriber != null)
