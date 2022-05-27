@@ -17,17 +17,26 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
     public class TransactionServices : ITransactionServices
     {
         private readonly string subscriberName;
-        private readonly string apiUrl;
+        private readonly string externalAPIUrl;
         private readonly string sessionKey;
         private readonly string transactionUrl;
 
-        public TransactionServices(string subscriberName, string apiUrl)
+        public TransactionServices(string subscriberName, string externalAPIUrl)
         {
             this.subscriberName = subscriberName;
-            this.apiUrl = apiUrl;
+            this.externalAPIUrl = externalAPIUrl;
             this.sessionKey = Guid.NewGuid().ToString("N");
 
-            transactionUrl = "http:" + GetUrl(apiUrl, "api/transaction");
+            transactionUrl = "http:" + GetUrl(externalAPIUrl, "api/transaction");
+        }
+
+        public TransactionServices(string subscriberName, string externalAPIUrl, string internalAPIUrl)
+        {
+            this.subscriberName = subscriberName;
+            this.externalAPIUrl = externalAPIUrl;
+            this.sessionKey = Guid.NewGuid().ToString("N");
+
+            transactionUrl = "http:" + GetUrl(string.IsNullOrWhiteSpace(internalAPIUrl) ? externalAPIUrl : internalAPIUrl, "api/transaction");
         }
 
         private string GetUrl(string baseUrl, string relativeUrl)
@@ -133,7 +142,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
 
         public string GetScriptUrl()
         {
-            return GetUrl(apiUrl, $"api/scr/{sessionKey}/{subscriberName}");
+            return GetUrl(externalAPIUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
     }
 }

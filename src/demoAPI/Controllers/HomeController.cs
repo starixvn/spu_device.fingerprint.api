@@ -13,8 +13,14 @@ namespace demoAPI.Controllers
             {
                 return Redirect("Login");
             }
-
-            FpsIntegration(Session["Username"].ToString());
+            try
+            {
+                FpsIntegration(Session["Username"].ToString());
+            }
+            catch(Exception ex)
+            {
+                return View(ex.Message);
+            }
 
             return View();
         }
@@ -24,8 +30,10 @@ namespace demoAPI.Controllers
             if (Session["IsPushTrans"] == null)
             {
                 var subscriberName = ConfigurationManager.AppSettings["subscriberName"].ToString();
-                var apiUrl = ConfigurationManager.AppSettings["apiUrl"].ToString();
-                var fpsService = new TransactionServices(subscriberName, apiUrl);
+                var externalAPIUrl = ConfigurationManager.AppSettings["externalAPIUrl"].ToString();
+                var internalAPIUrl = ConfigurationManager.AppSettings["internalAPIUrl"].ToString();
+
+                var fpsService = new TransactionServices(subscriberName, externalAPIUrl, internalAPIUrl);
 
                 ViewBag.fpsScript = fpsService.GetScriptUrl();
 
