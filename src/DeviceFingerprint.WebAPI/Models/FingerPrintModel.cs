@@ -279,9 +279,6 @@ namespace Device.Fingerprint.WebAPI.Models
         [JsonProperty("fk")]
         public string SessionKey { get; set; }
 
-        [JsonProperty("attr")]
-        public string FingerPrint { get; set; }
-
         [JsonProperty("cookieCode")]
         public string CookieCode { get; set; }
 
@@ -290,5 +287,15 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("url")]
         public string Url { get; set; }
+    }
+
+
+    public class FingerPrintAttributesModel
+    {
+        [JsonProperty("di")]
+        public string FingerPrintCode { get; set; }
+
+        [JsonProperty("attr")]
+        public string Attributes { get; set; }
     }
 }

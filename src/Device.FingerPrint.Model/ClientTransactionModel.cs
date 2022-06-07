@@ -11,8 +11,6 @@ namespace Device.FingerPrint.Model
 
         public int SubscriberId { get; set; }
 
-        public string Attribute { get; set; }
-
         public string CookieCode { get; set; }
 
         public string Flagged { get; set; }

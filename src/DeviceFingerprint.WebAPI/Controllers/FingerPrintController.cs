@@ -107,12 +107,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var decryptedData = scrypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
-                if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrint))
+                if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrintCode))
                 {
                     var clientTransactionModel = new ClientTransactionModel
                     {
                         FingerPrintCode = fingerPrint.FingerPrintCode,
-                        Attribute = fingerPrint.FingerPrint,
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = fingerPrint.SubscriberId,
                         CookieCode = fingerPrint.CookieCode,
@@ -178,6 +177,37 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 LogService.Error(ex.Message, ex);
             }
         }
+
+        [HttpPost("fp-attributes")]
+        public void FpAttributes([FromBody] string data)
+        {
+            try
+            {
+                var scrypto = new Crypto(appSettings.EncryptPassword);
+                var decryptedData = scrypto.Decrypt(data);
+
+                var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
+                if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
+                {
+                    var fpAttributesModel = new FingerprintAttributesModel
+                    {
+                        FingerPrintCode = fpAttributes.FingerPrintCode,
+                        Attribute = fpAttributes.Attributes
+                    };
+
+                    easyNetQService.PushData(fpAttributesModel);
+                }
+                else
+                {
+                    LogService.Info($"FingerPrintCode cannot null. ({data})");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
+        }
+
 
         [HttpGet("getsubscriber/{subscriberName}")]
         public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)

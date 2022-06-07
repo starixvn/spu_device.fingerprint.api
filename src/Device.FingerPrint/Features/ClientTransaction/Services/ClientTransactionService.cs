@@ -7,6 +7,8 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
     public interface IClientTransactionService
     {
         void InsertClientTransaction(IEnumerable<ClientTransactionEntity> listClientTransaction);
+
+        void InsertFingerprintAttributes(IEnumerable<FingerprintAttributesEntity> listFpAttributes);
     }
 
     public class ClientTransactionService : IClientTransactionService
@@ -23,6 +25,13 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
             string JsonClientTransaction = JsonConvert.SerializeObject(listClientTransaction);
 
             clientTransactionDataAccess.InsertClientTransaction(JsonClientTransaction);
+        }
+
+        public void InsertFingerprintAttributes(IEnumerable<FingerprintAttributesEntity> listFpAttributes)
+        {
+            string JsonFpAttributes = JsonConvert.SerializeObject(listFpAttributes);
+
+            clientTransactionDataAccess.InsertFingerprintAttributes(JsonFpAttributes);
         }
     }
 }

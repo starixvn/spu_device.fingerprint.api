@@ -8744,20 +8744,35 @@ var globalFP = (function (exports) {
             if (conf.ok) {
                 const response = yield conf.json();
                 const flagged = JSON.stringify(yield getHeadlessScore());
-                let encryptedFP = Encrypting({
+                const encryptedAttributes = Encrypting({
                     di: result.Id,
-                    attr: result.Properties,
+                    attr: result.Properties
+                }, response.a);
+                postData(apiUrl + "/fp-attributes", encryptedAttributes);
+                const encryptedFP = Encrypting({
+                    di: result.Id,
                     fk: sessionKey,
                     subs: subscriberId,
                     cookieCode: cookieCode,
                     flagged: flagged,
                     url: window.location && window.location.href ? window.location.href : "",
                 }, response.a);
-                postData(apiUrl, encryptedFP, response.b);
+                postDataFp(apiUrl, encryptedFP, response.b);
             }
         }));
     }
-    function postData(url, data, token) {
+    function postData(url, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(data),
+            });
+        });
+    }
+    function postDataFp(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url + "/fp", {
                 method: "POST",

@@ -25,6 +25,7 @@
 
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
+        private readonly List<FingerprintAttributesEntity> listFpAttributes;
         private readonly IAppSettings appSettings;
 
         public Consumer(IAppSettings appSettings, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService)
@@ -36,6 +37,7 @@
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
+            listFpAttributes = new List<FingerprintAttributesEntity>();
 
         }
 
@@ -62,7 +64,6 @@
         {
             return new ClientTransactionEntity
             {
-                Attribute = model.Attribute,
                 CookieCode = model.CookieCode,
                 FingerPrintCode = model.FingerPrintCode,
                 SessionKey = model.SessionKey,
@@ -71,6 +72,15 @@
                 Flagged = TransformRobotDetectionDetail(model.Flagged).Score > 0.5 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),
                 Url = model.Url,
                 TransTime = model.TransTime
+            };
+        }
+
+        private static FingerprintAttributesEntity TranformFingerprintAttributesEntity(FingerprintAttributesModel model)
+        {
+            return new FingerprintAttributesEntity
+            {
+                FingerPrintCode = model.FingerPrintCode,
+                Attribute = model.Attribute
             };
         }
 
@@ -120,6 +130,26 @@
                                 fingerPrintService.InsertClientTransaction(listClientTrans);
 
                                 listClientTrans.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogService.Error(ex.Message, ex);
+                        }
+                    })
+                    .Add<FingerprintAttributesModel>((message, info) =>
+                    {
+                        try
+                        {
+                            var messageBody = message.Body;
+
+                            listFpAttributes.Add(TranformFingerprintAttributesEntity(messageBody));
+
+                            if (listFpAttributes.Count >= appSettings.ConsumeBatchSize)
+                            {
+                                fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
+
+                                listFpAttributes.Clear();
                             }
                         }
                         catch (Exception ex)
