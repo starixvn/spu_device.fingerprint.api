@@ -11,6 +11,10 @@ namespace Device.FingerPrint.Features.Monitor.Services
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionDailySumList(string mdyDate);
 
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
+
+        void InsertClientTransactionDailySum(string json);
+
+        void InsertServerTransactionDailySum(string json);
     }
 
     public class TransactionReportDataAccess : ITransactionReportDataAccess
@@ -40,6 +44,26 @@ namespace Device.FingerPrint.Features.Monitor.Services
             };
 
             return repository.FetchMultiple<TransactionReportEntity, TransactionReportEntity>(criteria);
+        }
+
+        public void InsertClientTransactionDailySum(string json)
+        {
+            var criteria = new InsertClientTransactionDailySumCriteria
+            {
+                Data = json
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void InsertServerTransactionDailySum(string json)
+        {
+            var criteria = new InsertServerTransactionDailySumCriteria
+            {
+                Data = json
+            };
+
+            repository.Execute(criteria);
         }
     }
 }

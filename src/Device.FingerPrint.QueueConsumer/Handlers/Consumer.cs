@@ -2,6 +2,8 @@
 {
     using Device.FingerPrint.Features.ClientTransaction.Model;
     using Device.FingerPrint.Features.ClientTransaction.Services;
+    using Device.FingerPrint.Features.Monitor.Model;
+    using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.ServerTransaction.Model;
     using Device.FingerPrint.Features.ServerTransaction.Services;
     using Device.FingerPrint.Model;
@@ -14,6 +16,7 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -21,24 +24,26 @@
     {
         private readonly IRawTransactionService rawTransactionService;
         private readonly IClientTransactionService fingerPrintService;
-
+        private readonly ITransactionReportServices transactionReportServices;
 
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
         private readonly List<FingerprintAttributesEntity> listFpAttributes;
         private readonly IAppSettings appSettings;
 
-        public Consumer(IAppSettings appSettings, IRawTransactionService rawTransactionService, IClientTransactionService fingerPrintService)
+        public Consumer(IAppSettings appSettings
+                        , IRawTransactionService rawTransactionService
+                        , IClientTransactionService fingerPrintService
+                        , ITransactionReportServices transactionReportServices)
         {
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
             this.appSettings = appSettings;
-
+            this.transactionReportServices = transactionReportServices;
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
             listFpAttributes = new List<FingerprintAttributesEntity>();
-
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -109,6 +114,12 @@
                             {
                                 rawTransactionService.InsertServerTransaction(listServerTrans);
 
+                                var groupTrans = listServerTrans.GroupBy(x => new { x.TransTime, x.SubscriberId })
+                                                .Select(x => new TransactionSumEntity { TransDate = x.Key.TransTime, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() });
+
+                                // async function
+                                InsertServerTransactionDailySum(groupTrans);
+
                                 listServerTrans.Clear();
                             }
                         }
@@ -128,6 +139,12 @@
                             if (listClientTrans.Count >= appSettings.ConsumeBatchSize)
                             {
                                 fingerPrintService.InsertClientTransaction(listClientTrans);
+
+                                var groupTrans = listClientTrans.GroupBy(x => new { x.TransTime, x.SubscriberId })
+                                                .Select(x => new TransactionSumEntity { TransDate = x.Key.TransTime, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() });
+
+                                // async function
+                                InsertClientTransactionDailySum(groupTrans);
 
                                 listClientTrans.Clear();
                             }
@@ -181,6 +198,30 @@
                     .Bind();
 
             return easyNetQConnector;
+        }
+
+        private async void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
+        {
+            try
+            {
+                transactionReportServices.InsertServerTransactionDailySum(groupTrans);
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
+        }
+
+        private async void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
+        {
+            try
+            {
+                transactionReportServices.InsertClientTransactionDailySum(groupTrans);
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)

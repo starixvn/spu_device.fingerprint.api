@@ -1,6 +1,7 @@
 namespace Device.FingerPrint.QueueConsumer
 {
     using Device.FingerPrint.Features.ClientTransaction.Services;
+    using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.ServerTransaction.Services;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Handlers;
@@ -38,6 +39,9 @@ namespace Device.FingerPrint.QueueConsumer
 
             services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
             services.AddSingleton<IClientTransactionService, ClientTransactionService>();
+
+            services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
+            services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
 
             services.AddHealthChecks();            
 

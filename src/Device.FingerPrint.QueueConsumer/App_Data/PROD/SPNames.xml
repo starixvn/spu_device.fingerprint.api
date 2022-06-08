@@ -6,4 +6,9 @@
 		<Setting Key="FPS_FP_Transform_ClientTransaction_Insert" SpName="FPS_FP_Transform_ClientTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_FingerprintAttributes_Insert" SpName="FPS_FP_Transform_FingerprintAttributes_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 	</Function>
+
+  <Function Name="Monitor">
+    <Setting Key="FPS_FP_Monitor_ClientTransactionDailySum_Insert" SpName="FPS_FP_Monitor_ClientTransactionDailySum_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Monitor_ServerTransactionDailySum_Insert" SpName="FPS_FP_Monitor_ServerTransactionDailySum_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
 </Functions>
