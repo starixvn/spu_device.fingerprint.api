@@ -110,7 +110,7 @@
 
                             listServerTrans.Add(TranformTransactionEntity(messageBody));
 
-                            if (listServerTrans.Count >= appSettings.ConsumeBatchSize)
+                            if (listServerTrans.Count >= appSettings.ServerTransBatchSize)
                             {
                                 rawTransactionService.InsertServerTransaction(listServerTrans);
 
@@ -136,7 +136,7 @@
 
                             listClientTrans.Add(TranformClientTransactionEntity(messageBody));
 
-                            if (listClientTrans.Count >= appSettings.ConsumeBatchSize)
+                            if (listClientTrans.Count >= appSettings.ClientTransBatchSize)
                             {
                                 fingerPrintService.InsertClientTransaction(listClientTrans);
 
@@ -162,7 +162,7 @@
 
                             listFpAttributes.Add(TranformFingerprintAttributesEntity(messageBody));
 
-                            if (listFpAttributes.Count >= appSettings.ConsumeBatchSize)
+                            if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
                             {
                                 fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
 

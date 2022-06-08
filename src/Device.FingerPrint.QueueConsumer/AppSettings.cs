@@ -14,7 +14,11 @@ namespace Device.FingerPrint.QueueConsumer
 
         string Environment { get; }
 
-        int ConsumeBatchSize { get; }
+        int ClientTransBatchSize { get; }
+
+        int ServerTransBatchSize { get; }
+
+        int FPAttributeBatchSize { get; }
 
         IConfiguration Configuration { get; }
 
@@ -26,7 +30,9 @@ namespace Device.FingerPrint.QueueConsumer
         private readonly string apiUrl;
         private readonly string sentryDsn;
         private readonly string environment;
-        private readonly int consumeBatchSize;
+        private readonly int clientTransBatchSize;
+        private readonly int serverTransBatchSize;
+        private readonly int fpAttributeBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -40,7 +46,11 @@ namespace Device.FingerPrint.QueueConsumer
 
             environment = GetValue<string>("AppConfig:Environment");
 
-            consumeBatchSize = GetValue<int>("Consumer:BatchSize");
+            clientTransBatchSize = GetValue<int>("Consumer:ClientTrans");
+
+            serverTransBatchSize = GetValue<int>("Consumer:ServerTrans");
+
+            fpAttributeBatchSize = GetValue<int>("Consumer:FPAttribute");
         }
 
         public string ApiUrl => apiUrl;
@@ -51,9 +61,13 @@ namespace Device.FingerPrint.QueueConsumer
 
         public string Environment => environment;
 
-        public int ConsumeBatchSize => consumeBatchSize;
+        public int ClientTransBatchSize => clientTransBatchSize;
 
         public IConfiguration Configuration => configuration;
+
+        public int ServerTransBatchSize => serverTransBatchSize;
+
+        public int FPAttributeBatchSize => fpAttributeBatchSize;
 
         public T GetValue<T>(string key)
         {
