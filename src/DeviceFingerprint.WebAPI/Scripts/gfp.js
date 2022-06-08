@@ -2998,6 +2998,12 @@ var globalFP = (function (exports) {
         var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key128Bits1000Iterations, cfg);
         return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
     }
+    function EncryptingAsync(data, key) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let result = Encrypting(data, key);
+            return Promise.resolve(result);
+        });
+    }
 
     /**
      * FingerprintJS v3.3.3 - Copyright (c) FingerprintJS, Inc, 2022 (https://fingerprintjs.com)
@@ -8711,6 +8717,34 @@ var globalFP = (function (exports) {
         });
     }
 
+    function postData(url, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            });
+        });
+    }
+    function postDataFp(url, data, token) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return fetch(url + "/fp", {
+                method: "POST",
+                cache: "no-cache",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token,
+                },
+                redirect: "follow",
+                referrerPolicy: "no-referrer",
+                body: JSON.stringify(data),
+            });
+        });
+    }
+
     var _isDebug = false;
     var _cookieName = "__fp";
     function isDebug(isDebug) {
@@ -8743,51 +8777,25 @@ var globalFP = (function (exports) {
         getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
             if (conf.ok) {
                 const response = yield conf.json();
-                const flagged = JSON.stringify(yield getHeadlessScore());
-                const encryptedAttributes = Encrypting({
+                const fingerPrintAttribute = EncryptingAsync({
                     di: result.Id,
-                    attr: result.Properties
-                }, response.a);
-                const encryptedFP = Encrypting({
+                    attr: result.Properties,
+                }, response.a).then((res) => {
+                    return postData(apiUrl + "/fpa", res);
+                });
+                const transaction = EncryptingAsync({
                     di: result.Id,
                     fk: sessionKey,
                     subs: subscriberId,
                     cookieCode: cookieCode,
-                    flagged: flagged,
+                    flagged: JSON.stringify(yield getHeadlessScore()),
                     url: window.location && window.location.href ? window.location.href : "",
-                }, response.a);
-                const promise1 = postDataFp(apiUrl, encryptedFP, response.b);
-                const promise2 = postData(apiUrl + "/fp-attributes", encryptedAttributes);
-                Promise.all([promise1, promise2]);
+                }, response.a).then((res) => {
+                    return postDataFp(apiUrl, res, response.b);
+                });
+                Promise.all([fingerPrintAttribute, transaction]);
             }
         }));
-    }
-    function postData(url, data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data),
-            });
-        });
-    }
-    function postDataFp(url, data, token) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url + "/fp", {
-                method: "POST",
-                cache: "no-cache",
-                credentials: "include",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: "Bearer " + token,
-                },
-                redirect: "follow",
-                referrerPolicy: "no-referrer",
-                body: JSON.stringify(data),
-            });
-        });
     }
     function getConfig(url) {
         return fetch(url + "/conf", {
