@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Features.Monitor.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Device.FingerPrint.Features.Monitor.Services
 {
@@ -38,14 +39,23 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
         public void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> data)
         {
-            var json = JsonConvert.SerializeObject(data);
-            dataAccess.InsertClientTransactionDailySum(json);
+            if (data != null && data.Any())
+            {
+                var json = JsonConvert.SerializeObject(data);
+
+                dataAccess.InsertClientTransactionDailySum(json);
+            }
+            
         }
 
         public void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> data)
         {
-            var json = JsonConvert.SerializeObject(data);
-            dataAccess.InsertServerTransactionDailySum(json);
+            if(data != null && data.Any())
+            {
+                var json = JsonConvert.SerializeObject(data);
+
+                dataAccess.InsertServerTransactionDailySum(json);
+            }           
         }
     }
 }

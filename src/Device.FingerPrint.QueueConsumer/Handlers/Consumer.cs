@@ -117,8 +117,17 @@
                                 var groupTrans = listServerTrans.GroupBy(x => new { x.TransTime, x.SubscriberId })
                                                 .Select(x => new TransactionSumEntity { TransDate = x.Key.TransTime, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() });
 
-                                // async function
-                                InsertServerTransactionDailySum(groupTrans);
+                                Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        InsertServerTransactionDailySum(groupTrans);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        LogService.Error(ex.Message, ex);
+                                    }
+                                });                                
 
                                 listServerTrans.Clear();
                             }
@@ -143,8 +152,18 @@
                                 var groupTrans = listClientTrans.GroupBy(x => new { x.TransTime, x.SubscriberId })
                                                 .Select(x => new TransactionSumEntity { TransDate = x.Key.TransTime, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() });
 
-                                // async function
-                                InsertClientTransactionDailySum(groupTrans);
+                                Task.Run(() =>
+                                {
+                                    try
+                                    {
+                                        InsertClientTransactionDailySum(groupTrans);
+                                    }
+                                    catch(Exception ex)
+                                    {
+                                        LogService.Error(ex.Message, ex);
+                                    }
+                                    
+                                });
 
                                 listClientTrans.Clear();
                             }
@@ -200,28 +219,14 @@
             return easyNetQConnector;
         }
 
-        private async void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
+        private void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
         {
-            try
-            {
-                transactionReportServices.InsertServerTransactionDailySum(groupTrans);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-            }
+            transactionReportServices.InsertServerTransactionDailySum(groupTrans);
         }
 
-        private async void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
+        private void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
         {
-            try
-            {
-                transactionReportServices.InsertClientTransactionDailySum(groupTrans);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-            }
+            transactionReportServices.InsertClientTransactionDailySum(groupTrans);
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
