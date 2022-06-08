@@ -178,7 +178,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
-        [HttpPost("fp-attributes")]
+        [HttpPost("fpa")]
         public void FpAttributes([FromBody] string data)
         {
             try
