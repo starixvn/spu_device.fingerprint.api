@@ -12,9 +12,9 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
 
-        void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> data);
+        void InsertClientTransactionDailySum(string json);
 
-        void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> data);
+        void InsertServerTransactionDailySum(string json);
     }
 
     public class TransactionReportServices : ITransactionReportServices
@@ -37,25 +37,14 @@ namespace Device.FingerPrint.Features.Monitor.Services
             return dataAccess.GetTransactionMonthlySumList(Month);
         }
 
-        public void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> data)
+        public void InsertClientTransactionDailySum(string json)
         {
-            if (data != null && data.Any())
-            {
-                var json = JsonConvert.SerializeObject(data);
-
-                dataAccess.InsertClientTransactionDailySum(json);
-            }
-            
+            dataAccess.InsertClientTransactionDailySum(json);
         }
 
-        public void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> data)
+        public void InsertServerTransactionDailySum(string json)
         {
-            if(data != null && data.Any())
-            {
-                var json = JsonConvert.SerializeObject(data);
-
-                dataAccess.InsertServerTransactionDailySum(json);
-            }           
+            dataAccess.InsertServerTransactionDailySum(json);
         }
     }
 }

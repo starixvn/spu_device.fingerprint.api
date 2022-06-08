@@ -114,22 +114,13 @@
                             {
                                 rawTransactionService.InsertServerTransaction(listServerTrans);
 
-                                var groupTrans = listServerTrans.GroupBy(x => new { x.TransTime, x.SubscriberId })
-                                                .Select(x => new TransactionSumEntity { TransDate = x.Key.TransTime, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() });
+                                var groupTrans = listServerTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
+                                                .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
+                                                .ToList();
 
-                                Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        InsertServerTransactionDailySum(groupTrans);
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                        LogService.Error(ex.Message, ex);
-                                    }
-                                });                                
+                                Task.Run(() => InsertServerTransactionDailySum(groupTrans));
 
-                                listServerTrans.Clear();
+                                listServerTrans.Clear(); 
                             }
                         }
                         catch (Exception ex)
@@ -149,21 +140,11 @@
                             {
                                 fingerPrintService.InsertClientTransaction(listClientTrans);
 
-                                var groupTrans = listClientTrans.GroupBy(x => new { x.TransTime, x.SubscriberId })
-                                                .Select(x => new TransactionSumEntity { TransDate = x.Key.TransTime, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() });
+                                var groupTrans = listClientTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
+                                                .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
+                                                .ToList();
 
-                                Task.Run(() =>
-                                {
-                                    try
-                                    {
-                                        InsertClientTransactionDailySum(groupTrans);
-                                    }
-                                    catch(Exception ex)
-                                    {
-                                        LogService.Error(ex.Message, ex);
-                                    }
-                                    
-                                });
+                                Task.Run(() => InsertClientTransactionDailySum(groupTrans));
 
                                 listClientTrans.Clear();
                             }
@@ -221,12 +202,34 @@
 
         private void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
         {
-            transactionReportServices.InsertServerTransactionDailySum(groupTrans);
+            try
+            {
+                if (groupTrans != null && groupTrans.Any())
+                {
+                    var json = JsonConvert.SerializeObject(groupTrans);
+                    transactionReportServices.InsertServerTransactionDailySum(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
         }
 
         private void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
         {
-            transactionReportServices.InsertClientTransactionDailySum(groupTrans);
+            try
+            {
+                if (groupTrans != null && groupTrans.Any())
+                {
+                    var json = JsonConvert.SerializeObject(groupTrans);
+                    transactionReportServices.InsertClientTransactionDailySum(json);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)
