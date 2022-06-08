@@ -3330,7 +3330,6 @@ function processData(result, sessionKey, cookieCode) {
                 di: result.Id,
                 attr: result.Properties
             }, response.a);
-            postData(apiUrl + "/fp-attributes", encryptedAttributes);
             const encryptedFP = Encrypting({
                 di: result.Id,
                 fk: sessionKey,
@@ -3339,7 +3338,9 @@ function processData(result, sessionKey, cookieCode) {
                 flagged: flagged,
                 url: window.location && window.location.href ? window.location.href : "",
             }, response.a);
-            postDataFp(apiUrl, encryptedFP, response.b);
+            const promise1 = postDataFp(apiUrl, encryptedFP, response.b);
+            const promise2 = postData(apiUrl + "/fp-attributes", encryptedAttributes);
+            Promise.all([promise1, promise2]);
         }
     }));
 }
