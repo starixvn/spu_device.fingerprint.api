@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+https://go.microsoft.com/fwlink/?LinkID=208121. 
+-->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <_PublishTargetUrl>D:\Code\device.fingerprint.api\src\Device.Fingerprint.InsertRawTransaction\Publish</_PublishTargetUrl>
+    <History>True|2022-03-15T01:50:38.4738165Z;True|2022-03-14T10:19:02.4984102+07:00;True|2022-01-24T16:11:35.1379806+07:00;True|2022-01-24T14:28:20.9402708+07:00;True|2022-01-24T14:21:42.2708085+07:00;True|2022-01-24T14:13:59.8087627+07:00;True|2022-01-24T14:11:05.4653466+07:00;True|2022-01-24T09:12:33.2922732+07:00;True|2022-01-11T16:06:59.8935593+07:00;</History>
+  </PropertyGroup>
+</Project>

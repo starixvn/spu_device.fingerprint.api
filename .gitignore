@@ -1,0 +1,13 @@
+
+WebApi/bin/*
+WebApi/obj/*
+WebMVC/bin/*
+WebMVC/obj/*
+
+obj/
+bin/
+.vs/*
+publish/*
+src/Device.Fingerprint.InsertRawFingerprint/publish/*
+src/Device.Fingerprint.InsertRawTransaction/publish/*
+src/Device.FingerPrint.Kafka/DockerCompose/*
