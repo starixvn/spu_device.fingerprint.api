@@ -106,9 +106,9 @@
                     {
                         try
                         {
-                            var messageBody = message.Body;
+                            var serverTransaction = TranformTransactionEntity(message.Body);
 
-                            listServerTrans.Add(TranformTransactionEntity(messageBody));
+                            listServerTrans.Add(serverTransaction);
 
                             if (listServerTrans.Count >= appSettings.ServerTransBatchSize)
                             {
@@ -120,7 +120,7 @@
 
                                 Task.Run(() => InsertServerTransactionDailySum(groupTrans));
 
-                                listServerTrans.Clear(); 
+                                listServerTrans.Clear();
                             }
                         }
                         catch (Exception ex)
@@ -132,9 +132,12 @@
                     {
                         try
                         {
-                            var messageBody = message.Body;
+                            var clientTrans = TranformClientTransactionEntity(message.Body);
 
-                            listClientTrans.Add(TranformClientTransactionEntity(messageBody));
+                            if (!listClientTrans.Exists(x => x.SessionKey == clientTrans.SessionKey))
+                            {
+                                listClientTrans.Add(clientTrans);
+                            }
 
                             if (listClientTrans.Count >= appSettings.ClientTransBatchSize)
                             {
@@ -157,10 +160,8 @@
                     .Add<FingerprintAttributesModel>((message, info) =>
                     {
                         try
-                        {
-                            var messageBody = message.Body;
-
-                            listFpAttributes.Add(TranformFingerprintAttributesEntity(messageBody));
+                        {         
+                            listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
 
                             if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
                             {

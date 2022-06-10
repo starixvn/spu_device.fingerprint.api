@@ -2995,7 +2995,7 @@ function componentsToCanonicalString(components) {
     for (const componentKey of Object.keys(components).sort()) {
         const component = components[componentKey];
         const value = component.error ? "error" : JSON.stringify(component.value);
-        result += `${result ? "," : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
+        result += `${result ? "|" : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
     }
     return "{" + result + "}";
 }
@@ -3242,6 +3242,9 @@ function testChromeWindow() {
 // Notification Permissions
 function testNotificationPermissions() {
     return __awaiter(this, void 0, void 0, function* () {
+        if (!navigator.permissions) {
+            return 0;
+        }
         return yield navigator.permissions
             .query({ name: "notifications" })
             .then(function (permissionStatus) {
