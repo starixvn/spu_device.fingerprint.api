@@ -25856,6 +25856,7 @@ var globalFP = (function (exports) {
     // Notification Permissions
     function testNotificationPermissions() {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('testNotificationPermissions');
             return 0;
         });
     }
