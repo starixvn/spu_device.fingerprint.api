@@ -25856,8 +25856,22 @@ var globalFP = (function (exports) {
     // Notification Permissions
     function testNotificationPermissions() {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('testNotificationPermissions');
-            return 0;
+            if (!navigator.permissions) {
+                return 0;
+            }
+            return yield navigator.permissions
+                .query({ name: "notifications" })
+                .then(function (permissionStatus) {
+                if (Notification.permission === "denied" &&
+                    permissionStatus.state === "prompt") {
+                    // Headless
+                    return 0.5;
+                }
+                else {
+                    // Not Headless
+                    return 0;
+                }
+            });
         });
     }
     // No Plugins
@@ -25968,6 +25982,7 @@ var globalFP = (function (exports) {
         });
     }
     function processData(result, sessionKey, cookieCode) {
+        console.log('processData');
         getConfig(apiUrl).then(function (conf) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (conf.ok) {
