@@ -25982,7 +25982,6 @@ var globalFP = (function (exports) {
         });
     }
     function processData(result, sessionKey, cookieCode) {
-        console.log('processData');
         getConfig(apiUrl).then(function (conf) {
             return __awaiter(this, void 0, void 0, function* () {
                 if (conf.ok) {
