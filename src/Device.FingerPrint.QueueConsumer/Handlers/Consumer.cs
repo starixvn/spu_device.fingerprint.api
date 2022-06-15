@@ -1,5 +1,7 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
+    using Device.FingerPrint.Features.BrowserInfo.Model;
+    using Device.FingerPrint.Features.BrowserInfo.Services;
     using Device.FingerPrint.Features.ClientTransaction.Model;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Features.Monitor.Model;
@@ -25,25 +27,30 @@
         private readonly IRawTransactionService rawTransactionService;
         private readonly IClientTransactionService fingerPrintService;
         private readonly ITransactionReportServices transactionReportServices;
+        private readonly IBrowserInfoService browserInfoService;
 
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
         private readonly List<FingerprintAttributesEntity> listFpAttributes;
+        private readonly List<BrowserInfoEntity> listBrowserInfo;
         private readonly IAppSettings appSettings;
 
         public Consumer(IAppSettings appSettings
                         , IRawTransactionService rawTransactionService
                         , IClientTransactionService fingerPrintService
-                        , ITransactionReportServices transactionReportServices)
+                        , ITransactionReportServices transactionReportServices
+                        , IBrowserInfoService browserInfoService)
         {
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
+            this.browserInfoService = browserInfoService;
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
             listFpAttributes = new List<FingerprintAttributesEntity>();
+            listBrowserInfo = new List<BrowserInfoEntity>();
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -58,8 +65,6 @@
                 TransTime = model.TransTime,
                 Url = model.Url,
                 Action = model.Action,
-                UserAgent = model.UserAgent,
-                UserAgentCode = model.UserAgentCode,
                 CustId = model.CustId,
                 SubAccId = model.SubAccId
             };
@@ -73,8 +78,6 @@
                 FingerPrintCode = model.FingerPrintCode,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
-                RobotDetail = model.Flagged,
-                Flagged = TransformRobotDetectionDetail(model.Flagged).Score > 0.5 ? FlaggedStatus.bot.ToString() : FlaggedStatus.human.ToString(),
                 Url = model.Url,
                 TransTime = model.TransTime
             };
@@ -89,9 +92,16 @@
             };
         }
 
-        private static RobotDetectionDetail TransformRobotDetectionDetail(string robotDetectDetail)
+        private static BrowserInfoEntity TranformBrowserInfoEntityEntity(BrowserInfoModel model)
         {
-            return JsonConvert.DeserializeObject<RobotDetectionDetail>(robotDetectDetail);
+            return new BrowserInfoEntity
+            {
+                SessionKey = model.SessionKey,
+                UserAgent = model.UserAgent,
+                UserAgentCode = model.UserAgentCode,
+                HeadlessScore = model.HeadlessScore,
+                BrowserInfo = model.BrowserInfo
+            };
         }
 
         private void StartConsuming()
@@ -160,7 +170,7 @@
                     .Add<FingerprintAttributesModel>((message, info) =>
                     {
                         try
-                        {         
+                        {
                             listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
 
                             if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
@@ -168,6 +178,24 @@
                                 fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
 
                                 listFpAttributes.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            LogService.Error(ex.Message, ex);
+                        }
+                    })
+                    .Add<BrowserInfoModel>((message, info) =>
+                    {
+                        try
+                        {
+                            listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
+
+                            if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
+                            {
+                                browserInfoService.InsertBrowserInfo(listBrowserInfo);
+
+                                listBrowserInfo.Clear();
                             }
                         }
                         catch (Exception ex)

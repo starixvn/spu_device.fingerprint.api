@@ -20,6 +20,8 @@ namespace Device.FingerPrint.QueueConsumer
 
         int FPAttributeBatchSize { get; }
 
+        int BrowserInfoBatchSize { get; }
+
         IConfiguration Configuration { get; }
 
     }
@@ -33,6 +35,7 @@ namespace Device.FingerPrint.QueueConsumer
         private readonly int clientTransBatchSize;
         private readonly int serverTransBatchSize;
         private readonly int fpAttributeBatchSize;
+        private readonly int browserInfoBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -51,6 +54,8 @@ namespace Device.FingerPrint.QueueConsumer
             serverTransBatchSize = GetValue<int>("Consumer:ServerTrans");
 
             fpAttributeBatchSize = GetValue<int>("Consumer:FPAttribute");
+
+            browserInfoBatchSize = GetValue<int>("Consumer:BrowserInfo");
         }
 
         public string ApiUrl => apiUrl;
@@ -68,6 +73,8 @@ namespace Device.FingerPrint.QueueConsumer
         public int ServerTransBatchSize => serverTransBatchSize;
 
         public int FPAttributeBatchSize => fpAttributeBatchSize;
+
+        public int BrowserInfoBatchSize => browserInfoBatchSize;
 
         public T GetValue<T>(string key)
         {

@@ -115,7 +115,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         SessionKey = fingerPrint.SessionKey,
                         SubscriberId = fingerPrint.SubscriberId,
                         CookieCode = fingerPrint.CookieCode,
-                        Flagged = fingerPrint.Flagged,
                         Url = fingerPrint.Url,
                         TransTime = DateTime.Now
                     };
@@ -145,8 +144,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (subscriber != null)
                     {
                         var urlAddress = new Uri(data.Url);
-                        var crypto = new Crypto(appSettings.EncryptPassword);
-                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                         var transaction = new TransactionModel
                         {
@@ -155,8 +152,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             LoginName = data.LoginName,
                             SessionKey = data.SessionKey,
                             TransTime = DateTime.Now,
-                            UserAgent = data.UserAgent,
-                            UserAgentCode = userAgentCode,
                             Url = urlAddress.GetLeftPart(UriPartial.Path),
                             Action = data.Action,
                             TransKey = data.TransKey,
@@ -208,6 +203,44 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [HttpPost("browserinfo")]
+        public void Browserinfo([FromBody] string data)
+        {
+            try
+            {
+                var crypto = new Crypto(appSettings.EncryptPassword);
+                var decryptedData = crypto.Decrypt(data);
+
+                var model = JsonConvert.DeserializeObject<Models.BrowserInfoJsonModel>(decryptedData);
+                if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
+                {
+                    var browserInfo = new BrowserInfo();
+                    var browserInfoModel = browserInfo.GetBrowserInfo(HttpContext, model.BrowserInfo);
+                    var browserInfoJson = JsonConvert.SerializeObject(browserInfoModel);
+
+                    var userAgentCode = crypto.GetMD5Hash(model.UserAgent);
+
+                    var rawBrowserInfoModel = new BrowserInfoModel
+                    {
+                        SessionKey = model.SessionKey,
+                        UserAgent = model.UserAgent,
+                        UserAgentCode = userAgentCode,
+                        HeadlessScore = model.HeadlessScore,
+                        BrowserInfo = browserInfoJson
+                    };
+
+                    easyNetQService.PushData(rawBrowserInfoModel);
+                }
+                else
+                {
+                    LogService.Info($"SessionKey does not exists. ({data})");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
+        }
 
         [HttpGet("getsubscriber/{subscriberName}")]
         public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)

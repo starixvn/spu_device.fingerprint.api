@@ -2995,7 +2995,7 @@ function componentsToCanonicalString(components) {
     for (const componentKey of Object.keys(components).sort()) {
         const component = components[componentKey];
         const value = component.error ? "error" : JSON.stringify(component.value);
-        result += `${result ? "|" : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
+        result += `${result ? "," : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
     }
     return "{" + result + "}";
 }
@@ -3339,6 +3339,68 @@ function postDataFp(url, data, token) {
     });
 }
 
+function getBrowserName() {
+    // OPERA 8.0+
+    var isOpera = (!!window.opr && !!window.opr.addons) ||
+        !!window.opera ||
+        navigator.userAgent.indexOf(" OPR/") >= 0;
+    if (isOpera)
+        return "Opera";
+    // FIREFOX 1.0+
+    var isFirefox = typeof InstallTrigger !== "undefined";
+    if (isFirefox)
+        return "Firefox";
+    // SAFARI 3.0+
+    var isSafari = /constructor/i.test(window["HTMLElement"]) ||
+        (function (p) {
+            return p.toString() === "[object SafariRemoteNotification]";
+        })(!window["safari"] ||
+            (typeof safari !== "undefined" && safari.pushNotification));
+    if (isSafari)
+        return "Safari";
+    // INTERNET EXPLORER 6-11
+    var isIE = /*@cc_on!@*/ !!document["documentMode"];
+    if (isIE)
+        return "IE";
+    // EDGE 20+
+    var isEdge = !isIE && !!window["StyleMedia"];
+    if (isEdge)
+        return "Edge";
+    // CHROME 1+
+    var isChrome = !!window.chrome;
+    if (isChrome)
+        return "Chrome";
+    // // BLINK ENGINE DETECTION
+    // var isBlink = (isChrome || isOpera) && !!window.CSS;
+    // if(isBlink) return 'Blink';
+    return "Other";
+}
+function getOS() {
+    var userAgent = window.navigator.userAgent, platform = window.navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], iosPlatforms = ["iPhone", "iPad", "iPod"], os = null;
+    if (macosPlatforms.indexOf(platform) !== -1) {
+        os = "Mac OS";
+    }
+    else if (iosPlatforms.indexOf(platform) !== -1) {
+        os = "iOS";
+    }
+    else if (windowsPlatforms.indexOf(platform) !== -1) {
+        os = "Windows";
+    }
+    else if (/Android/.test(userAgent)) {
+        os = "Android";
+    }
+    else if (!os && /Linux/.test(platform)) {
+        os = "Linux";
+    }
+    return os;
+}
+function getBrowserInfo() {
+    return {
+        OSName: getOS(),
+        BrowserName: getBrowserName(),
+    };
+}
+
 var _isDebug = false;
 var _cookieName = "__fp";
 function isDebug(isDebug) {
@@ -3382,19 +3444,28 @@ function processData(result, sessionKey, cookieCode) {
                 fk: sessionKey,
                 subs: subscriberId,
                 cookieCode: cookieCode,
-                flagged: JSON.stringify(yield getHeadlessScore()),
                 url: window.location && window.location.href ? window.location.href : "",
             }, response.a).then((res) => {
                 return postDataFp(apiUrl, res, response.b);
             });
-            Promise.all([fingerPrintAttribute, transaction]);
+            const browserInfo = EncryptingAsync({
+                fk: sessionKey,
+                ua: navigator.userAgent,
+                hscore: JSON.stringify(yield getHeadlessScore()),
+                binfo: JSON.stringify(getBrowserInfo()),
+            }, response.a).then((res) => {
+                return postData(apiUrl + "/browserinfo", res);
+            });
+            Promise.all([fingerPrintAttribute, transaction, browserInfo]);
         }
     }));
 }
 function getConfig(url) {
-    return fetch(url + "/conf", {
-        method: "GET",
-        redirect: "follow",
+    return __awaiter(this, void 0, void 0, function* () {
+        return fetch(url + "/conf", {
+            method: "GET",
+            redirect: "follow",
+        });
     });
 }
 getFP();

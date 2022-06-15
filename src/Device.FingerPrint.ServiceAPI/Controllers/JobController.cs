@@ -18,6 +18,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
         private readonly IArchiveJobServices archiveJobServices;
+        private readonly IBrowserInfoJobServices browserInfoJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -27,6 +28,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices)
+                            , IBrowserInfoJobServices browserInfoJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -35,6 +37,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
+            this.browserInfoJobServices = browserInfoJobServices;
             this.archiveJobServices = archiveJobServices;
         }
 

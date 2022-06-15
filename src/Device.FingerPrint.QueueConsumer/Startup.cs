@@ -1,9 +1,9 @@
 namespace Device.FingerPrint.QueueConsumer
 {
+    using Device.FingerPrint.Features.BrowserInfo.Services;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.ServerTransaction.Services;
-    using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Handlers;
     using Fanex.Data;
     using Fanex.Data.MySql;
@@ -43,7 +43,10 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
             services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
 
-            services.AddHealthChecks();            
+            services.AddSingleton<IBrowserInfoDataAccess, BrowserInfoDataAccess>();
+            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
+
+            services.AddHealthChecks();
 
             FanexDataConfig(appSettings);
 
@@ -83,7 +86,7 @@ namespace Device.FingerPrint.QueueConsumer
                 });
         }
 
-        
+
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

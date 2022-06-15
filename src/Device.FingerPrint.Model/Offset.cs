@@ -16,5 +16,6 @@ namespace Device.FingerPrint.Model
         SummaryTransaction = 6,
 
         UpdateServerTransactionRetry = 9,
+        UpdateBrowserInfo = 9
     }
 }
