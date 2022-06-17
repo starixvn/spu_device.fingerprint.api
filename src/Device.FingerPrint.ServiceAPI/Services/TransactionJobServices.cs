@@ -14,7 +14,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         public void UpdateTransaction(int batchSize, int numberOfBatch, int retry);
 
-        public void UpdateTransactionN(int batchSize, int numberOfBatch);
+        public void UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry);
+
+        public void UpdateTransactionN(int batchSize, int numberOfBatch, int retry);
 
         public void MergeTrans(int batchSize, int numberOfBatch, int retry);
 
@@ -74,9 +76,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        public void UpdateTransactionN(int batchSize, int numberOfBatch)
+        public void UpdateTransactionN(int batchSize, int numberOfBatch, int retry)
         {
-            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, (int)Offset.UpdateServerTransactionN);
+            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionN);
 
             if (rawTrans != null && rawTrans.Any())
             {
@@ -173,6 +175,16 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
 
                 Task.WaitAll(tasks.ToArray());
+            }
+        }
+
+        public void UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry)
+        {
+            var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
+
+            if (rawTrans != null && rawTrans.Any())
+            {
+                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
             }
         }
     }

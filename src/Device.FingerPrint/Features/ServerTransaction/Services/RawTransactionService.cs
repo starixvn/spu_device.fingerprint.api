@@ -11,7 +11,9 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
     {
         IEnumerable<ServerTransactionModel> GetServerTransaction(int batchSize, int retry, int offsetId);
 
-        IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int offsetId);
+        IEnumerable<ServerTransactionModel> GetServerTransactionRetry(int batchSize, int retry, int offsetId);
+
+        IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int retry, int offsetId);
 
         void InsertServerTransaction(IEnumerable<TransactionEntity> transactions);
 
@@ -57,9 +59,36 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
             return new List<ServerTransactionModel>();
         }
 
-        public IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int offsetId)
+        public IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int retry, int offsetId)
         {
-            var rawTrans = rawTransactionDataAccess.GetRawTransN(batchSize, offsetId);
+            var rawTrans = rawTransactionDataAccess.GetRawTransN(batchSize, retry, offsetId);
+
+            if (rawTrans != null && rawTrans.Any())
+            {
+                return rawTrans.Select(x => new ServerTransactionModel
+                {
+                    Id = x.Id,
+                    SessionKey = x.SessionKey,
+                    CustId = x.CustId,
+                    SubAccId = x.SubAccId,
+                    LoginName = x.LoginName,
+                    SubscriberId = x.SubscriberId,
+                    TransTime = x.TransTime,
+                    ClientIP = x.ClientIP,
+                    UserAgentId = x.UserAgentId,
+                    Url = x.Url,
+                    TransKey = x.TransKey,
+                    Action = x.Action,
+                    Retry = x.Retry
+                });
+            }
+
+            return new List<ServerTransactionModel>();
+        }
+
+        public IEnumerable<ServerTransactionModel> GetServerTransactionRetry(int batchSize, int retry, int offsetId)
+        {
+            var rawTrans = rawTransactionDataAccess.GetServerTransRetry(batchSize, retry, offsetId);
 
             if (rawTrans != null && rawTrans.Any())
             {

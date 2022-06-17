@@ -13,6 +13,8 @@ namespace Device.FingerPrint.Model
 
         SummaryServerTransaction = 5,
 
-        SummaryTransaction = 6
+        SummaryTransaction = 6,
+
+        UpdateServerTransactionRetry = 9,
     }
 }

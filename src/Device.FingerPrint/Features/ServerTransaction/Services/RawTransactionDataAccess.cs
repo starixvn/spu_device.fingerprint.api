@@ -10,11 +10,13 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
     {
         IEnumerable<ServerTransactionEntity> GetServerTrans(int batchSize, int retry, int offsetId);
 
-        IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int offsetId);
+        IEnumerable<ServerTransactionEntity> GetServerTransRetry(int batchSize, int retry, int offsetId);
+
+        IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int retry, int offsetId);
 
         void InsertServerTransaction(string transJson);
 
-        void UpdateServerTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);
+        void UpdateServerTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);                
 
         void UpdateServerTransactionN(string rawTransJson, int offsetId, long offsetValue);
 
@@ -41,12 +43,13 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
             return repository.Fetch<ServerTransactionEntity>(criteria);
         }
 
-        public IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int offsetId)
+        public IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int retry, int offsetId)
         {
             var criteria = new GetServerTransactionNCriteria 
             { 
                 Size = batchSize,
-                OffsetId = offsetId
+                OffsetId = offsetId,
+                Retry = retry
             };
 
             return repository.Fetch<ServerTransactionEntity>(criteria);
@@ -85,6 +88,18 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
             };
 
             repository.Execute(criteria);
+        }
+
+        public IEnumerable<ServerTransactionEntity> GetServerTransRetry(int batchSize, int retry, int offsetId)
+        {
+            var criteria = new GetServerTransactionRetryCriteria
+            {
+                Size = batchSize,
+                Retry = retry,
+                OffsetId = offsetId
+            };
+
+            return repository.Fetch<ServerTransactionEntity>(criteria);
         }
     }
 }
