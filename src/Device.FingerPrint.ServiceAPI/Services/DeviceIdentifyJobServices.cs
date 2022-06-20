@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
@@ -45,36 +46,25 @@ namespace Device.FingerPrint.ServiceAPI.Services
             {
                 var groupRawTrans = trans.GroupBy(x => x.BatchNumber);                                
 
-                var tasks = new List<Task>();
-
                 foreach (var group in groupRawTrans)
                 {
-                    tasks.Add(ProcessDeviceIdentify(group, groupType));
-                }
-
-                if (tasks.Any())
-                {
-                    Task.WaitAll(tasks.ToArray());
+                    ProcessDeviceIdentify(group, groupType);
                 }
             }
         }
 
-        private Task ProcessDeviceIdentify(IEnumerable<DeviceIdentifyEntity> rawTrans, int groupId)
+        private void ProcessDeviceIdentify(IEnumerable<DeviceIdentifyEntity> rawTrans, int groupType)
         {
             var rawTransJson = JsonConvert.SerializeObject(rawTrans);
 
-            return Task.Run(() =>
+            if (groupType == 1)
             {
-                try
-                {
-                    transactionService.DeviceIdentify(rawTransJson, groupId);
-                }
-                catch (Exception ex)
-                {
-                    LogService.Error(ex.Message + "\n" + rawTransJson, ex);
-                    throw;
-                }
-            });
+                transactionService.DeviceIdentify(rawTransJson);
+            }
+            else if (groupType == 0)
+            {
+                transactionService.DeviceIdentifyNoGroup(rawTransJson);
+            }
         }
     }
 }

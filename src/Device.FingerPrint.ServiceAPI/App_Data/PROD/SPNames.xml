@@ -4,6 +4,7 @@
 	<Function Name="Transaction">
 		<Setting Key="FPS_FP_Transform_DeviceIdentify_Get" SpName="FPS_FP_Transform_DeviceIdentify_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_DeviceIdentify" SpName="FPS_FP_Transform_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+		<Setting Key="FPS_FP_Transform_DeviceIdentify_NoGroup" SpName="FPS_FP_Transform_DeviceIdentify_NoGroup" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" SpName="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 
 		<Setting Key="FPS_FP_Transform_MergeTransaction_Get" SpName="FPS_FP_Transform_MergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
