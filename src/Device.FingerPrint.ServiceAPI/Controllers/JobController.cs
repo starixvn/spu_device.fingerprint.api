@@ -260,12 +260,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("updateuseragent")]
-        public Task<bool> DeviceDetector([FromForm] int batchSize)
+        [HttpPost("detectbots")]
+        public bool DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             try
             {
-                rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
+                browserInfoJobServices.DetectBots(batchSize, numberOfBatch);
 
                 return Task.FromResult(true);
             }
@@ -284,14 +284,15 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             {
                 archiveJobServices.UpdateModifiedDate(batchSize);
 
-                return Task.FromResult(true);
+                return true;
             }
             catch (Exception ex)
             {
                 LogService.Error(ex.Message, ex);
 
-                return Task.FromResult(false);
+                return false;
             }
         }
+
     }
 }
