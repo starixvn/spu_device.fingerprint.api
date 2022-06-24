@@ -14,7 +14,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
     public interface IBrowserInfoJobServices
     {
-        public void DetectBots(int batchSize, int numberOfBatch);
+        public void DetectBots(int batchSize, int numberOfBatch, int detectionLevel);
     }
 
     public class BrowserInfoJobServices : IBrowserInfoJobServices
@@ -30,7 +30,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             this.offsetService = offsetService;
         }
 
-        public void DetectBots(int batchSize, int numberOfBatch)
+        public void DetectBots(int batchSize, int numberOfBatch, int detectionLevel)
         {
             int offsetId = (int)Offset.UpdateBrowserInfo;
             var browserInfos = browserInfoService.GetBrowserInfo(batchSize * numberOfBatch, offsetId);
@@ -47,12 +47,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     {
                         try
                         {
-                            var browserInfoParsed = TransformData(browserInfoModel.Where(x => x.IsParsed == 1));
                             if (browserInfoParsed != null && browserInfoParsed.Any())
                             {
-                                ExecuteRules(browserInfoParsed);
+                                var browserInfoExecuted = ExecuteRules(browserInfoParsed, detectionLevel);
 
-                                UpdateFlagged(browserInfoParsed, batchSize);
+                                UpdateFlagged(browserInfoExecuted, batchSize);
                             }
                         }
                         catch (Exception ex)
@@ -65,13 +64,16 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     {
                         try
                         {
-                            var browserInfoModel = rawUserAgentJobServices.ParseUserAgentFromBrowserInfo(browserInfoNotParsed);
-
-                            if (browserInfoModel != null && browserInfoModel.Any())
+                            if (browserInfoNotParsed != null && browserInfoNotParsed.Any())
                             {
-                                ExecuteRules(browserInfoModel);
+                                var browserInfoMerged = rawUserAgentJobServices.ParseUserAgentFromBrowserInfo(browserInfoNotParsed);
 
-                                UpdateFlagged(browserInfoModel, batchSize);
+                                if (browserInfoMerged != null && browserInfoMerged.Any())
+                                {
+                                    var browserInfoExecuted = ExecuteRules(browserInfoMerged, detectionLevel);
+
+                                    UpdateFlagged(browserInfoExecuted, batchSize);
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -129,6 +131,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     OSName = browserInfo.OSName,
                     UABrowserName = browserInfo.UABrowserName,
                     UAOSName = browserInfo.UAOSName,
+                    IsParsed = browserInfo.IsParsed
                 });
             }
 
@@ -168,34 +171,43 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return (browserInfoParsed, browserInfoNotParsed);
         }
 
-        private void ExecuteRules(IEnumerable<BrowserInfoDetectionModel> browserInfos)
+        private IEnumerable<BrowserInfoDetectionModel> ExecuteRules(IEnumerable<BrowserInfoDetectionModel> browserInfos, int detectionLevel)
         {
-            foreach (var browserInfo in browserInfos)
+            if(browserInfos != null && browserInfos.Any())
             {
-                var headlessScore = TransformRobotDetectionDetail(browserInfo.HeadlessScore);
-                if (headlessScore.Score > 0.5)
+                var browserInfosList = browserInfos.ToList();
+
+                foreach (var browserInfo in browserInfosList)
                 {
-                    browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                    browserInfo.Reason = BrowserInfoReason.HeadlessScore.ToString();
-                }
-                else
-                {
-                    if (!CompareBrowserName(browserInfo))
+                    var headlessScore = TransformRobotDetectionDetail(browserInfo.HeadlessScore);
+                    if (headlessScore.Score > 0.5)
                     {
                         browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                        browserInfo.Reason = BrowserInfoReason.BrowserName.ToString();
-                    }
-                    else if (!CompareOSName(browserInfo))
-                    {
-                        browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                        browserInfo.Reason = BrowserInfoReason.OSName.ToString();
+                        browserInfo.Reason = BrowserInfoReason.HeadlessScore.ToString();
                     }
                     else
                     {
-                        browserInfo.Flagged = FlaggedStatus.human.ToString();
+                        if (detectionLevel > 1 && !CompareBrowserName(browserInfo))
+                        {
+                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
+                            browserInfo.Reason = BrowserInfoReason.BrowserName.ToString();
+                        }
+                        else if (detectionLevel > 1 && !CompareOSName(browserInfo))
+                        {
+                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
+                            browserInfo.Reason = BrowserInfoReason.OSName.ToString();
+                        }
+                        else
+                        {
+                            browserInfo.Flagged = FlaggedStatus.human.ToString();
+                        }
                     }
                 }
+
+                return browserInfosList;
             }
+
+            return new List<BrowserInfoDetectionModel>();
         }
 
         private RobotDetectionDetail TransformRobotDetectionDetail(string robotDetectDetail)

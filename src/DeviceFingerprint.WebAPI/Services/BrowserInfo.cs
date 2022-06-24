@@ -30,20 +30,20 @@ namespace Device.Fingerprint.WebAPI.Services
             return (nodeAddressV4 != null ? nodeAddressV4.ToString() : "", nodeAddressV6 != null ? nodeAddressV6.ToString() : "");
         }
 
-        public BrowserInfoModel GetBrowserInfo(HttpContext httpContext, string browserInfoJs)
+        public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HttpContext httpContext, BrowserInfoJsonModel browserInfoJsonModel)
         {
-            var browsers = new List<string> { "CocCoc", "Opera", "Chrome", "Microsoft Edge", "Other" };
+            var browsers = new List<string> { "CocCoc", "Opera", "Google Chrome", "Microsoft Edge", "Chrome", "Other" };
             var secChUa = httpContext.Request.Headers["sec-ch-ua"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua"].ToString() : "Other";
             var browserName = secChUa;
             var osName = httpContext.Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "");
 
             if (browserName == "Other" || String.IsNullOrEmpty(browserName))
             {
-                if (!String.IsNullOrEmpty(browserInfoJs))
+                if (!String.IsNullOrEmpty(browserInfoJsonModel.BrowserInfo))
                 {
                     try
                     {
-                        var objBrowserInfoJs = Newtonsoft.Json.JsonConvert.DeserializeObject<BrowserInfoJs>(browserInfoJs);
+                        var objBrowserInfoJs = Newtonsoft.Json.JsonConvert.DeserializeObject<BrowserInfoJs>(browserInfoJsonModel.BrowserInfo);
                         browserName = objBrowserInfoJs.BrowserName;
                         osName = objBrowserInfoJs.OSName;
                     }
@@ -65,12 +65,21 @@ namespace Device.Fingerprint.WebAPI.Services
                 }
             }
 
-            return new BrowserInfoModel
+            var browserInfoModel = new BrowserInfoModel
             {
                 ClientIp = GetIP(),
                 BrowserName = browserName,
                 OSName = osName
             };
+
+            var browserInfoAttributeModel = new BrowserInfoAttributeModel
+            {
+                SecChUa = secChUa,
+                BrowserInfoJs = browserInfoJsonModel.BrowserInfo,
+                UserAgentData = browserInfoJsonModel.UserAgentData
+            };
+
+            return (browserInfoModel, browserInfoAttributeModel);
         }
 
         private class BrowserInfoJs

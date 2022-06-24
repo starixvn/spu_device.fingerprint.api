@@ -14,7 +14,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
         private readonly ISummaryJobServices summaryJobServices;
-        private readonly IRawUserAgentJobServices rawUserAgentJobServices;
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
         private readonly IArchiveJobServices archiveJobServices;
@@ -24,7 +23,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , ITransactionJobServices transactionServices
                             , IMonitorJobServices monitorJobServices
                             , ISummaryJobServices summaryJobServices
-                            , IRawUserAgentJobServices rawUserAgentJobServices
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices)
@@ -34,7 +32,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
             this.summaryJobServices = summaryJobServices;
-            this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
             this.browserInfoJobServices = browserInfoJobServices;
@@ -261,11 +258,15 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("detectbots")]
-        public bool DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        public bool DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int detectionLevel)
         {
             try
             {
-                browserInfoJobServices.DetectBots(batchSize, numberOfBatch);
+                /* detectionLevel: 
+                 * 0 || 1 => Check Headless score
+                 * 2 => Check BrowserName & OSName
+                 */
+                browserInfoJobServices.DetectBots(batchSize, numberOfBatch, detectionLevel);
 
                 return Task.FromResult(true);
             }

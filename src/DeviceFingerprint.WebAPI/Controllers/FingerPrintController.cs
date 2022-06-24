@@ -203,7 +203,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
-        [HttpPost("browserinfo")]
+        [HttpPost("bi")]
         public void Browserinfo([FromBody] string data)
         {
             try
@@ -215,8 +215,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
                 {
                     var browserInfo = new BrowserInfo();
-                    var browserInfoModel = browserInfo.GetBrowserInfo(HttpContext, model.BrowserInfo);
+                    var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model);
+
                     var browserInfoJson = JsonConvert.SerializeObject(browserInfoModel);
+                    var browserInfoAttributeJson = JsonConvert.SerializeObject(browserInfoAttributeModel);
+                    var browserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeJson);
 
                     var userAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
@@ -226,7 +229,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         UserAgent = model.UserAgent,
                         UserAgentCode = userAgentCode,
                         HeadlessScore = model.HeadlessScore,
-                        BrowserInfo = browserInfoJson
+                        BrowserInfo = browserInfoJson,
+                        browserInfoAttribute = browserInfoAttributeJson,
+                        browserInfoAttributeCode = browserInfoAttributeCode
                     };
 
                     easyNetQService.PushData(rawBrowserInfoModel);

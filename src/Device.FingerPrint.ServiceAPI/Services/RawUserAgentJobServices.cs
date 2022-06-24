@@ -31,28 +31,29 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if (browserInfos != null && browserInfos.Any())
             {
                 // Get userAgentInfoList & Update browserInfos
-                var userAgentInfoList = DeviceDetectionFromBrowserInfo(browserInfos);
+                var (userAgentInfoList, browserInfoParsed) = DeviceDetectionFromBrowserInfo(browserInfos);
 
                 if (userAgentInfoList != null && userAgentInfoList.Any())
                 {
                     _ = ProcessUpdateUserAgent(userAgentInfoList);
                 }
 
-                return browserInfos;
+                return browserInfoParsed;
             }
 
             return new List<BrowserInfoDetectionModel>();
         }
 
-        private IEnumerable<UserAgentInfoModel> DeviceDetectionFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos)
+        private (IEnumerable<UserAgentInfoModel>, IEnumerable<BrowserInfoDetectionModel>) DeviceDetectionFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos)
         {
-            var userAgentInfoList = new List<UserAgentInfoModel>();
-
             if (browserInfos != null && browserInfos.Any())
             {
+                var userAgentInfoList = new List<UserAgentInfoModel>();
+                var browserInfosList = browserInfos.ToList();
+
                 DeviceDetector.SetVersionTruncation(VersionTruncation.VERSION_TRUNCATION_NONE);
 
-                foreach (var browserInfo in browserInfos)
+                foreach (var browserInfo in browserInfosList)
                 {
                     var rawUserAgent = new RawUserAgentModel
                     {
@@ -66,9 +67,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                     userAgentInfoList.Add(userAgentInfo);
                 }
+
+                return (userAgentInfoList, browserInfosList);
             }
 
-            return userAgentInfoList;
+            return (new List<UserAgentInfoModel>(), new List<BrowserInfoDetectionModel>());
         }
 
         private async Task ProcessUpdateUserAgent(IEnumerable<UserAgentInfoModel> rawUserAgents)

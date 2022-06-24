@@ -3451,10 +3451,11 @@ function processData(result, sessionKey, cookieCode) {
             const browserInfo = EncryptingAsync({
                 fk: sessionKey,
                 ua: navigator.userAgent,
+                uad: JSON.stringify(navigator.userAgentData),
                 hscore: JSON.stringify(yield getHeadlessScore()),
                 binfo: JSON.stringify(getBrowserInfo()),
             }, response.a).then((res) => {
-                return postData(apiUrl + "/browserinfo", res);
+                return postData(apiUrl + "/bi", res);
             });
             Promise.all([fingerPrintAttribute, transaction, browserInfo]);
         }
