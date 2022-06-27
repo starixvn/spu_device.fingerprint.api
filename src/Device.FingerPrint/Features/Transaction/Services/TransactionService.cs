@@ -6,9 +6,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
     public interface ITransactionService
     {
        
-        void DeviceIdentify(string transJson);
-       
-        void DeviceIdentifyNoGroup(string transJson);
+        void DeviceIdentify(string transJson, int groupType);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
 
@@ -32,14 +30,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             this.transactionDataAccess = transactionDataAccess;
         }
 
-        public void DeviceIdentify(string transJson)
+        public void DeviceIdentify(string transJson, int groupType)
         {
-            transactionDataAccess.DeviceIdentify(transJson);
-        }
-
-        public void DeviceIdentifyNoGroup(string transJson)
-        {
-            transactionDataAccess.DeviceIdentifyNoGroup(transJson);
+            transactionDataAccess.DeviceIdentify(transJson, groupType);
         }
 
         public void DeviceIdentifyNoFingerprint(string rawTransIds)
