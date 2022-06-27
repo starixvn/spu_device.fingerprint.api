@@ -20,6 +20,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
         private readonly IEasyNetQService easyNetQService;
+        private readonly Crypto crypto;
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
@@ -31,6 +32,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.easyNetQService = easyNetQService;
+            crypto = new Crypto(appSettings.EncryptPassword);
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -102,9 +104,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public void FingerPrint([FromBody] string data)
         {
             try
-            {
-                var scrypto = new Crypto(appSettings.EncryptPassword);
-                var decryptedData = scrypto.Decrypt(data);                                
+            {                
+                var decryptedData = crypto.Decrypt(data);                                
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrintCode))
@@ -144,8 +145,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                     if (subscriber != null)
                     {
-                        var urlAddress = new Uri(data.Url);
-                        var crypto = new Crypto(appSettings.EncryptPassword);
+                        var urlAddress = new Uri(data.Url);                        
                         var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                         var transaction = new TransactionModel
@@ -182,9 +182,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public void FpAttributes([FromBody] string data)
         {
             try
-            {
-                var scrypto = new Crypto(appSettings.EncryptPassword);
-                var decryptedData = scrypto.Decrypt(data);
+            {                
+                var decryptedData = crypto.Decrypt(data);
 
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
@@ -229,6 +228,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public void HealthCheck()
         {
             // Method intentionally left empty.            
+        }
+
+        [HttpGet("sessionkey")]
+        public ActionResult<string> SessionKey()
+        {
+            return crypto.Encrypt(Guid.NewGuid().ToString("N") + "-" + DateTime.Now);
         }
     }
 }
