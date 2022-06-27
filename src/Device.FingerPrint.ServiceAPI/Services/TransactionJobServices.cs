@@ -65,7 +65,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         catch (Exception ex)
                         {
                             LogService.Error(ex.Message + "\n" + rawTransJson, ex);
-                            throw;
                         }
                     });
 
@@ -106,7 +105,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         catch (Exception ex)
                         {
                             LogService.Error(ex.Message + "\n" + rawTransJson, ex);
-                            throw;
                         }
                     });
 
@@ -139,7 +137,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         catch (Exception ex)
                         {
                             LogService.Error(ex.Message + "\n" + mergeTransJson, ex);
-                            throw;
                         }
                     }));
                 }
@@ -169,7 +166,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         catch (Exception ex)
                         {
                             LogService.Error(ex.Message + "\n" + mergeTransJson, ex);
-                            throw;
                         }
                     }));
                 }

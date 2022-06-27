@@ -108,7 +108,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 catch (Exception ex)
                 {
                     LogService.Error(ex.Message + "\n" + rawTransJson, ex);
-                    throw;
                 }
             });
         }

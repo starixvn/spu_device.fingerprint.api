@@ -56,7 +56,6 @@
                         {
                             var transIdJson = JsonConvert.SerializeObject(trans);
                             LogService.Error(ex.Message + "\n" + transIdJson, ex);
-                            throw;
                         }
                     }
                 });
