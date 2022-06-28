@@ -15,7 +15,7 @@
 
 	<Function Name="RawTransaction">
 		<Setting Key="FPS_FP_Transform_ServerTransaction_Get" SpName="FPS_FP_Transform_ServerTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-		<Setting Key="FPS_FP_Transform_ServerTransactionRetry_Get" SpName="FPS_FP_Transform_ServerTransactionRetry_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="FPS_FP_Transform_ServerTransactionRetry_Get" SpName="FPS_FP_Transform_ServerTransactionRetry_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_ServerTransactionN_Get" SpName="FPS_FP_Transform_ServerTransactionN_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_ServerTransaction_Update" SpName="FPS_FP_Transform_ServerTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_ServerTransactionN_Update" SpName="FPS_FP_Transform_ServerTransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
