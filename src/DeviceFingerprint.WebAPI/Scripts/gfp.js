@@ -2990,9 +2990,9 @@ var globalFP = (function (exports) {
     var CryptoJS = cryptoJs.exports;
 
     function Encrypting(data, key) {
-        var iv = CryptoJS.enc.Hex.parse("c3eef06037e837f4ee390bda69c05023");
-        var pass = CryptoJS.enc.Utf8.parse(key);
-        var salt = CryptoJS.enc.Utf8.parse("234292a9fce031f2");
+        var iv = CryptoJS.enc.Hex.parse(key.iv);
+        var pass = CryptoJS.enc.Utf8.parse(key.pass);
+        var salt = CryptoJS.enc.Utf8.parse(key.salt);
         var key128Bits1000Iterations = CryptoJS.PBKDF2(pass.toString(CryptoJS.enc.Utf8), salt, { keySize: 128 / 32, iterations: 1000 });
         var cfg = { mode: CryptoJS.mode.CBC, iv: iv, padding: CryptoJS.pad.Pkcs7 };
         var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key128Bits1000Iterations, cfg);
@@ -5551,9 +5551,9 @@ var globalFP = (function (exports) {
 
     // The default export is a syntax sugar (`import * as FP from '...' → import FP from '...'`).
     // It should contain all the public exported values.
-    var index = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
+    var index$1 = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
 
-    var FingerprintJS = index;
+    var FingerprintJS = index$1;
 
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
@@ -5584,7 +5584,7 @@ var globalFP = (function (exports) {
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
             const value = component.error ? "error" : JSON.stringify(component.value);
-            result += `${result ? "|" : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
+            result += `${result ? "," : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
         }
         return "{" + result + "}";
     }
@@ -5610,7 +5610,7 @@ var globalFP = (function (exports) {
             systemLanguage: window.navigator["systemLanguage"],
         };
     }
-    function getDI() {
+    function getFP() {
         let visitorId;
         let properties;
         const fpPromise = FingerprintJS.load({
@@ -8514,7 +8514,7 @@ var globalFP = (function (exports) {
         }
         document.cookie = name + "=" + (value || "") + expires + "; path=/";
     }
-    function getCookie(name) {
+    function getCookie$1(name) {
         var nameEQ = name + "=";
         var ca = document.cookie.split(";");
         for (var i = 0; i < ca.length; i++) {
@@ -8567,7 +8567,7 @@ var globalFP = (function (exports) {
                 });
                 storageDriver
                     .setItem(name, value, () => { })
-                    .then(console.log)
+                    //.then(console.log)
                     .catch((e) => {
                     console.log(e.message);
                 });
@@ -8593,7 +8593,7 @@ var globalFP = (function (exports) {
                     }
                 }
             }));
-            cookies.push(Promise.resolve(getCookie(name)));
+            cookies.push(Promise.resolve(getCookie$1(name)));
             return cookies;
         })
             .then((res) => {
@@ -8748,68 +8748,61 @@ var globalFP = (function (exports) {
         });
     }
 
-    var _isDebug = false;
     var _cookieName = "__fp";
-    function isDebug(isDebug) {
-        _isDebug = isDebug;
-        return this;
-    }
     function config(apiUrl, subscriberId, sessionKey) {
         set(apiUrl, subscriberId, sessionKey);
     }
-    function getFP() {
-        let start = Date.now();
-        storageHandler(_cookieName).then((cookieCode) => {
-            getDI()
-                .then((result) => {
-                if (_isDebug) {
-                    console.log(result.Id);
-                    console.log(result.Properties);
-                }
-                else {
-                    processData(result, sessionKey, cookieCode);
-                }
-            })
-                .then(() => {
-                let end = Date.now() - start;
-                console.log(`milliseconds elapsed of collect fp = ${end}ms`);
-            });
+    function index() {
+        const configs = getConfig(apiUrl, sessionKey).then((conf) => {
+            return conf.json();
         });
-    }
-    function processData(result, sessionKey, cookieCode) {
-        getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
-            if (conf.ok) {
-                const response = yield conf.json();
-                const fingerPrintAttribute = EncryptingAsync({
-                    di: result.Id,
-                    attr: result.Properties,
-                }, response.a).then((res) => {
+        const cookies = getCookie();
+        const fps = getFP();
+        const headless = getHeadlessScore();
+        Promise.all([configs, cookies, fps, headless]).then(([config, cookie, fp, hl]) => {
+            if (config != null && config != "") {
+                EncryptingAsync({
+                    di: fp.Id,
+                    attr: fp.Properties,
+                }, {
+                    iv: config.iv,
+                    pass: config.ek,
+                    salt: config.sa,
+                }).then((res) => {
                     return postData(apiUrl + "/fpa", res);
                 });
-                const transaction = EncryptingAsync({
-                    di: result.Id,
+                EncryptingAsync({
+                    di: fp.Id,
                     fk: sessionKey,
                     subs: subscriberId,
-                    cookieCode: cookieCode,
-                    flagged: JSON.stringify(yield getHeadlessScore()),
-                    url: window.location && window.location.href ? window.location.href : "",
-                }, response.a).then((res) => {
-                    return postDataFp(apiUrl, res, response.b);
+                    cookieCode: cookie,
+                    flagged: JSON.stringify(hl),
+                    url: window.location && window.location.href
+                        ? window.location.href
+                        : "",
+                }, {
+                    iv: config.iv,
+                    pass: config.ek,
+                    salt: config.sa,
+                }).then((res) => {
+                    return postDataFp(apiUrl, res, config.tk);
                 });
-                Promise.all([fingerPrintAttribute, transaction]);
             }
-        }));
+        });
     }
-    function getConfig(url) {
-        return fetch(url + "/conf", {
+    function getCookie() {
+        return storageHandler(_cookieName);
+    }
+    function getConfig(url, sessionKey) {
+        return fetch(url + "/conf/" + sessionKey, {
             method: "GET",
             redirect: "follow",
         });
     }
-    getFP();
+    index();
 
     exports.config = config;
-    exports.isDebug = isDebug;
+    exports.index = index;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

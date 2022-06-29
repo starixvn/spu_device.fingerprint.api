@@ -4,13 +4,16 @@ namespace Device.FingerPrint.Model
 {
     public class ScriptConfigModel
     {
-        [JsonProperty("a")]
+        [JsonProperty("ek")]
         public string EncryptedKey { get; set; }
 
-        [JsonProperty("b")]
+        [JsonProperty("tk")]
         public string Token { get; set; }
 
-        [JsonProperty("c")]
-        public string SessionKey { get; set; }
+        [JsonProperty("iv")]
+        public string IV { get; set; }
+
+        [JsonProperty("sa")]
+        public string Salt { get; set; }
     }
 }
