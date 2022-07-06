@@ -42,6 +42,10 @@
 		<Setting Key="FPS_FP_Detect_RawUserAgent_Update" SpName="FPS_FP_Detect_RawUserAgent_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 	</Function>
 
+  <Function Name="Archive">
+    <Setting Key="FPS_FP_Archive_ModifiedDate_Update" SpName="FPS_FP_Archive_ModifiedDate_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+  </Function>
+
 	<Function Name="TransformTransaction">
 		<Setting Key="FP_DCS_DC_Transform_Device_GetPackage" SpName="FP_DCS_DC_Transform_Device_GetPackage" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
 		<Setting Key="FP_DCS_DC_Transform_Device_Insert" SpName="FP_DCS_DC_Transform_Device_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
