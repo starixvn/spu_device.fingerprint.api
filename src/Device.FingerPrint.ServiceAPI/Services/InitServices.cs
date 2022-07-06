@@ -1,5 +1,6 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
+    using Device.FingerPrint.Features.Archive.Services;
     using Device.FingerPrint.Features.FPDevices.Services;
     using Device.FingerPrint.Features.FPTransactions.Services;
     using Device.FingerPrint.Features.Monitor.Services;
@@ -21,6 +22,7 @@
             RegisterRawUserAgentService(services);
             RegisterFPDevicesService(services);
             RegisterFPTransformTransaction(services);
+            RegisterArchiveService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -71,6 +73,13 @@
             services.AddSingleton<IFPTransactionDataAccess, FPTransactionDataAccess>();
             services.AddSingleton<IFPTransactionServices, FPTransactionServices>();
             services.AddSingleton<IFPTransactionJobService, FPTransactionJobService>();
+        }
+
+        private static void RegisterArchiveService(this IServiceCollection services)
+        {
+            services.AddSingleton<IArchiveDataAccess, ArchiveDataAccess>();
+            services.AddSingleton<IArchiveService, ArchiveService>();
+            services.AddSingleton<IArchiveJobServices, ArchiveJobServices>();
         }
     }
 }

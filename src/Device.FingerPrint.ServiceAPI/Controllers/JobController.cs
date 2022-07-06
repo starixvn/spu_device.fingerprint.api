@@ -17,6 +17,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IRawUserAgentJobServices rawUserAgentJobServices;
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
+        private readonly IArchiveJobServices archiveJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -24,7 +25,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , ISummaryJobServices summaryJobServices
                             , IRawUserAgentJobServices rawUserAgentJobServices
                             , IFPDeviceJobService fpdeviceJobService
-                            , IFPTransactionJobService fPTransactionJobService)
+                            , IFPTransactionJobService fPTransactionJobService
+                            , IArchiveJobServices archiveJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -33,6 +35,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
+            this.archiveJobServices = archiveJobServices;
         }
 
         [HttpPost("deviceidentify")]
@@ -260,6 +263,23 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             try
             {
                 rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
+
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+
+                return Task.FromResult(false);
+            }
+        }
+
+        [HttpPost("updatemodifieddate")]
+        public Task<bool> UpdateModifiedDate([FromForm] int batchSize)
+        {
+            try
+            {
+                archiveJobServices.UpdateModifiedDate(batchSize);
 
                 return Task.FromResult(true);
             }

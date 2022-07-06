@@ -2,23 +2,23 @@
 
 <Functions>
 	<Function Name="Transaction">
-        <Setting Key="FPS_FP_Transform_DeviceIdentify_Get" SpName="FPS_FP_Transform_DeviceIdentify_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-        <Setting Key="FPS_FP_Transform_DeviceIdentify" SpName="FPS_FP_Transform_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-        <Setting Key="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" SpName="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_DeviceIdentify_Get" SpName="FPS_FP_Transform_DeviceIdentify_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_DeviceIdentify" SpName="FPS_FP_Transform_DeviceIdentify" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" SpName="FPS_FP_Transform_DeviceIdentify_NoFingerPrint" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 		
-	    <Setting Key="FPS_FP_Transform_MergeTransaction_Get" SpName="FPS_FP_Transform_MergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	    <Setting Key="FPS_FP_Transform_MergeTransaction_Update" SpName="FPS_FP_Transform_MergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	  <Setting Key="FPS_FP_Transform_MergeTransaction_Get" SpName="FPS_FP_Transform_MergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	  <Setting Key="FPS_FP_Transform_MergeTransaction_Update" SpName="FPS_FP_Transform_MergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 
 		<Setting Key="FPS_FP_Transform_ForceMergeTransaction_Get" SpName="FPS_FP_Transform_ForceMergeTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	    <Setting Key="FPS_FP_Transform_ForceMergeTransaction_Update" SpName="FPS_FP_Transform_ForceMergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	  <Setting Key="FPS_FP_Transform_ForceMergeTransaction_Update" SpName="FPS_FP_Transform_ForceMergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
   
   <Function Name="RawTransaction">
     <Setting Key="FPS_FP_Transform_ServerTransaction_Get" SpName="FPS_FP_Transform_ServerTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_ServerTransactionRetry_Get" SpName="FPS_FP_Transform_ServerTransactionRetry_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	  <Setting Key="FPS_FP_Transform_ServerTransactionRetry_Get" SpName="FPS_FP_Transform_ServerTransactionRetry_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Transform_ServerTransactionN_Get" SpName="FPS_FP_Transform_ServerTransactionN_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_ServerTransaction_Update" SpName="FPS_FP_Transform_ServerTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-	<Setting Key="FPS_FP_Transform_ServerTransactionN_Update" SpName="FPS_FP_Transform_ServerTransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	  <Setting Key="FPS_FP_Transform_ServerTransaction_Update" SpName="FPS_FP_Transform_ServerTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	  <Setting Key="FPS_FP_Transform_ServerTransactionN_Update" SpName="FPS_FP_Transform_ServerTransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
   
   <Function Name="Offset">
@@ -41,13 +41,17 @@
     <Setting Key="FPS_FP_Detect_RawUserAgent_Get" SpName="FPS_FP_Detect_RawUserAgent_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Detect_RawUserAgent_Update" SpName="FPS_FP_Detect_RawUserAgent_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
-  
+
+  <Function Name="Archive">
+    <Setting Key="FPS_FP_Archive_ModifiedDate_Update" SpName="FPS_FP_Archive_ModifiedDate_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
+
   <Function Name="TransformTransaction">
     <Setting Key="FP_DCS_DC_Transform_Device_GetPackage" SpName="FP_DCS_DC_Transform_Device_GetPackage" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
     <Setting Key="FP_DCS_DC_Transform_Device_Insert" SpName="FP_DCS_DC_Transform_Device_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
-	  <Setting Key="FP_DCS_DC_Transform_UserAgent_Insert" SpName="FP_DCS_DC_Transform_UserAgent_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin" Timeout="600" />
-	  <Setting Key="FP_DCS_DC_Transform_RawTrans_GetPackage" SpName="FP_DCS_DC_Transform_RawTrans_GetPackage" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
-	  <Setting Key="FP_DCS_DC_Transform_Transaction_Insert" SpName="FP_DCS_DC_Transform_Transaction_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin" />
-	  <Setting Key="FP_DCS_DC_Transform_UnhandleSubscriberAction" SpName="FP_DCS_DC_Transform_UnhandleSubscriberAction" DbName="MySQL.FPSTesting.fpsServiceAdmin" Timeout="600" />
+    <Setting Key="FP_DCS_DC_Transform_UserAgent_Insert" SpName="FP_DCS_DC_Transform_UserAgent_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin" Timeout="600" />
+    <Setting Key="FP_DCS_DC_Transform_RawTrans_GetPackage" SpName="FP_DCS_DC_Transform_RawTrans_GetPackage" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
+    <Setting Key="FP_DCS_DC_Transform_Transaction_Insert" SpName="FP_DCS_DC_Transform_Transaction_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin" />
+    <Setting Key="FP_DCS_DC_Transform_UnhandleSubscriberAction" SpName="FP_DCS_DC_Transform_UnhandleSubscriberAction" DbName="MySQL.FPSTesting.fpsServiceAdmin" Timeout="600" />
   </Function>
 </Functions>
