@@ -14,7 +14,7 @@ namespace Device.Fingerprint.WebAPI.Services
         public JWT(IAppSettings appSettings)
         {
             this.appSettings = appSettings;
-            keyJWT = Encoding.ASCII.GetBytes(appSettings.EncryptPassword);
+            keyJWT = Encoding.ASCII.GetBytes(appSettings.CryptoPassword);
         }
         public string GenerateJwtToken()
         {

@@ -33,11 +33,9 @@ namespace demoAPI.Controllers
                 var externalAPIUrl = ConfigurationManager.AppSettings["externalAPIUrl"].ToString();
                 var internalAPIUrl = ConfigurationManager.AppSettings["internalAPIUrl"].ToString();
 
-                var fpsService = new TransactionServices(subscriberName, externalAPIUrl, internalAPIUrl);
+                var fpsService = new TransactionServices(subscriberName, externalAPIUrl, internalAPIUrl);                                 
 
-                ViewBag.fpsScript = fpsService.GetScriptUrl();
-
-                fpsService.Insert("Login", loginName, DateTime.Now);
+                ViewBag.fpsScript = fpsService.Insert("Login", loginName, DateTime.Now);
 
                 Session["IsPushTrans"] = "Ok";
             }

@@ -25,7 +25,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , ISummaryJobServices summaryJobServices
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
-                            , IArchiveJobServices archiveJobServices)
+                            , IArchiveJobServices archiveJobServices
                             , IBrowserInfoJobServices browserInfoJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
@@ -258,7 +258,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("detectbots")]
-        public bool DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int detectionLevel)
+        public Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int detectionLevel)
         {
             try
             {
@@ -285,13 +285,13 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             {
                 archiveJobServices.UpdateModifiedDate(batchSize);
 
-                return true;
+                return Task.FromResult(true);
             }
             catch (Exception ex)
             {
                 LogService.Error(ex.Message, ex);
 
-                return false;
+                return Task.FromResult(false);
             }
         }
 
