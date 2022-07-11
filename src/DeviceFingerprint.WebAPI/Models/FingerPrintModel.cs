@@ -297,5 +297,11 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("attr")]
         public string Attributes { get; set; }
+
+        [JsonProperty("cv")]
+        public bool CheckCanvasDefender { get; set; }
+
+        [JsonProperty("gl")]
+        public bool CheckWebGLDefender { get; set; }
     }
 }

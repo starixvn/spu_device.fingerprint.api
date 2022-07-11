@@ -233,7 +233,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
                         FingerPrintCode = fpAttributes.FingerPrintCode,
-                        Attribute = fpAttributes.Attributes
+                        Attribute = fpAttributes.Attributes,
+                        CheckCanvasDefender = fpAttributes.CheckCanvasDefender,
+                        CheckWebGLDefender = fpAttributes.CheckWebGLDefender
                     };
 
                     easyNetQService.PushData(fpAttributesModel);

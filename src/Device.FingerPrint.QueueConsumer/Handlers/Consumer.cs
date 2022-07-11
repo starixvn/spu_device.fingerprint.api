@@ -88,7 +88,9 @@
             return new FingerprintAttributesEntity
             {
                 FingerPrintCode = model.FingerPrintCode,
-                Attribute = model.Attribute
+                Attribute = model.Attribute,
+                CheckCanvasDefender = model.CheckCanvasDefender,
+                CheckWebGLDefender = model.CheckWebGLDefender
             };
         }
 
