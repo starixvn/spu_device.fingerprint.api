@@ -67,8 +67,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                     userAgentInfoList.Add(userAgentInfo);
                 }
-
-                return (userAgentInfoList, browserInfosList);
+                
+                return (userAgentInfoList.Distinct().ToList(), browserInfosList);
             }
 
             return (new List<UserAgentInfoModel>(), new List<BrowserInfoDetectionModel>());

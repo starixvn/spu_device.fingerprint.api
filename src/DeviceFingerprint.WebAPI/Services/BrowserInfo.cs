@@ -32,7 +32,7 @@ namespace Device.Fingerprint.WebAPI.Services
 
         public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HttpContext httpContext, BrowserInfoJsonModel browserInfoJsonModel)
         {
-            var browsers = new List<string> { "CocCoc", "Opera", "Google Chrome", "Microsoft Edge", "Chrome", "Other" };
+            var browsers = new List<string> { "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
             var secChUa = httpContext.Request.Headers["sec-ch-ua"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua"].ToString() : "Other";
             var browserName = secChUa;
             var osName = httpContext.Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "");
@@ -43,7 +43,7 @@ namespace Device.Fingerprint.WebAPI.Services
                 {
                     try
                     {
-                        var objBrowserInfoJs = Newtonsoft.Json.JsonConvert.DeserializeObject<BrowserInfoJs>(browserInfoJsonModel.BrowserInfo);
+                        var objBrowserInfoJs = Newtonsoft.Json.JsonConvert.DeserializeObject<BrowserInfoJsModel>(browserInfoJsonModel.BrowserInfo);
                         browserName = objBrowserInfoJs.BrowserName;
                         osName = objBrowserInfoJs.OSName;
                     }
@@ -67,7 +67,7 @@ namespace Device.Fingerprint.WebAPI.Services
 
             var browserInfoModel = new BrowserInfoModel
             {
-                ClientIp = GetIP(),
+                ClientIPDNS = GetIP(),
                 BrowserName = browserName,
                 OSName = osName
             };
@@ -80,13 +80,6 @@ namespace Device.Fingerprint.WebAPI.Services
             };
 
             return (browserInfoModel, browserInfoAttributeModel);
-        }
-
-        private class BrowserInfoJs
-        {
-            public string ClientIp { get; set; }
-            public string BrowserName { get; set; }
-            public string OSName { get; set; }
         }
     }
 }

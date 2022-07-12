@@ -4,7 +4,7 @@ namespace Device.Fingerprint.WebAPI.Models
 {
     public class BrowserInfoModel
     {
-        public string ClientIp { get; set; }
+        public string ClientIPDNS { get; set; }
 
         public string OSName { get; set; }
 
@@ -13,6 +13,12 @@ namespace Device.Fingerprint.WebAPI.Models
         public string BrowserName { get; set; }
 
         public string BrowserVersion { get; set; }
+    }
+
+    public class BrowserInfoJsModel
+    {
+        public string BrowserName { get; set; }
+        public string OSName { get; set; }
     }
 
     public class BrowserInfoJsonModel
