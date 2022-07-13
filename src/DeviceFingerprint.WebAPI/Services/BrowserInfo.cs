@@ -32,7 +32,7 @@ namespace Device.Fingerprint.WebAPI.Services
 
         public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HttpContext httpContext, BrowserInfoJsonModel browserInfoJsonModel)
         {
-            var browsers = new List<string> { "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
+            var browsers = new List<string> { "Safari", "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
             var secChUa = httpContext.Request.Headers["sec-ch-ua"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua"].ToString() : "Other";
             var browserName = secChUa;
             var osName = httpContext.Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "");

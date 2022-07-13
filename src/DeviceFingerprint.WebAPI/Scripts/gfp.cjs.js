@@ -2950,7 +2950,7 @@ var cipherCore = {exports: {}};
 
 var CryptoJS = cryptoJs.exports;
 
-function Encrypting(data, key) {
+function encrypting(data, key) {
     var iv = CryptoJS.enc.Hex.parse(key.iv);
     var pass = CryptoJS.enc.Utf8.parse(key.pass);
     var salt = CryptoJS.enc.Utf8.parse(key.salt);
@@ -2959,9 +2959,9 @@ function Encrypting(data, key) {
     var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key128Bits1000Iterations, cfg);
     return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
 }
-function EncryptingAsync(data, key) {
+function encryptingAsync(data, key) {
     return __awaiter(this, void 0, void 0, function* () {
-        let result = Encrypting(data, key);
+        let result = encrypting(data, key);
         return Promise.resolve(result);
     });
 }
@@ -3038,7 +3038,6 @@ function getFP() {
                 value: getLanguages(),
                 duration: 0,
             } });
-        console.log('customComponents', customComponents);
         visitorId = FingerprintJS__default["default"].hashComponents(customComponents);
         properties = componentsToCanonicalString(customComponents);
         return Promise.resolve({ Id: visitorId, Properties: properties });
@@ -3324,11 +3323,7 @@ function getBrowserName() {
     if (isFirefox)
         return "Firefox";
     // SAFARI 3.0+
-    var isSafari = /constructor/i.test(window["HTMLElement"]) ||
-        (function (p) {
-            return p.toString() === "[object SafariRemoteNotification]";
-        })(!window["safari"] ||
-            (typeof safari !== "undefined" && safari.pushNotification));
+    var isSafari = /apple/i.test(navigator.vendor) || !!window["safari"];
     if (isSafari)
         return "Safari";
     // INTERNET EXPLORER 6-11
@@ -3416,17 +3411,18 @@ function index() {
     const browserInfo = getBrowserInfo();
     Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
         if (config != null && config != "") {
-            EncryptingAsync({
-                di: fp.Id,
-                attr: fp.Properties,
-            }, {
+            const cryptConfig = {
                 iv: config.iv,
                 pass: config.ek,
                 salt: config.sa,
-            }).then((res) => {
+            };
+            encryptingAsync({
+                di: fp.Id,
+                attr: fp.Properties,
+            }, cryptConfig).then((res) => {
                 return postData(apiUrl + "/fpa", res);
             });
-            EncryptingAsync({
+            encryptingAsync({
                 fk: sessionKey,
                 ua: navigator.userAgent,
                 uad: JSON.stringify(navigator.userAgentData),
@@ -3439,7 +3435,7 @@ function index() {
             }).then((res) => {
                 return postData(apiUrl + "/bi", res);
             });
-            EncryptingAsync({
+            encryptingAsync({
                 di: fp.Id,
                 fk: sessionKey,
                 subs: subscriberId,
@@ -3447,11 +3443,7 @@ function index() {
                 url: window.location && window.location.href
                     ? window.location.href
                     : "",
-            }, {
-                iv: config.iv,
-                pass: config.ek,
-                salt: config.sa,
-            }).then((res) => {
+            }, cryptConfig).then((res) => {
                 return postDataFp(apiUrl, res, config.tk);
             });
         }
