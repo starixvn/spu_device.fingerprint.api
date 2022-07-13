@@ -2,7 +2,7 @@
     loadJS: function loadJS(_url, resolve, reject) {
         var script = document.createElement('script');
         script.type = 'text/javascript';
-        script.src = _url + '/gfp.min.js';
+        script.src = _url;
         script.async = true;
         script.defer = true;
         script.addEventListener('load', function () {

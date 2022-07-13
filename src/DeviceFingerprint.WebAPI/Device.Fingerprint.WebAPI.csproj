@@ -9,6 +9,20 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Scripts\fp.js" />
+    <None Remove="Scripts\fp.min.js" />
+    <None Remove="Scripts\gfp.js" />
+    <None Remove="Scripts\gfp.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Scripts\fp.js" />
+    <Content Include="Scripts\fp.min.js" />
+    <Content Include="Scripts\gfp.js" />
+    <Content Include="Scripts\gfp.min.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="bundleconfig.json" />
   </ItemGroup>
 
