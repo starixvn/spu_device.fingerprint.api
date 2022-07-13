@@ -16,10 +16,18 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="Scripts\fp.js" />
-    <Content Include="Scripts\fp.min.js" />
-    <Content Include="Scripts\gfp.js" />
-    <Content Include="Scripts\gfp.min.js" />
+    <Content Include="Scripts\fp.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\fp.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\gfp.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Scripts\gfp.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
