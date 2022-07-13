@@ -8,6 +8,8 @@ namespace Device.Fingerprint.WebAPI
     {
         string ApiUrl { get; }
 
+        string CDNApiUrl { get; }
+
         string CryptoPassword { get; }
 
         string CryptoIV { get; }
@@ -26,6 +28,7 @@ namespace Device.Fingerprint.WebAPI
     {
         private readonly IConfiguration configuration;
 
+        private readonly string cdnApiUrl;
         private readonly string apiUrl;
         private readonly string spName;
         private readonly string cryptoPassword;
@@ -41,6 +44,8 @@ namespace Device.Fingerprint.WebAPI
 
             apiUrl = GetValue<string>("AppConfig:ApiUrl");
 
+            cdnApiUrl = GetValue<string>("AppConfig:CDNApiUrl");
+
             cryptoPassword = GetValue<string>("AppConfig:Crypto:Password");
 
             cryptoIV = GetValue<string>("AppConfig:Crypto:IV");
@@ -55,7 +60,7 @@ namespace Device.Fingerprint.WebAPI
 
         }
 
-        public string ApiUrl => apiUrl;
+        public string ApiUrl => apiUrl;        
 
         public string CryptoPassword => cryptoPassword;
 
@@ -68,6 +73,8 @@ namespace Device.Fingerprint.WebAPI
         public string CryptoIV => cryptoIV;
 
         public string CryptoSalt => cryptoSalt;
+
+        public string CDNApiUrl => cdnApiUrl;
 
         public T GetValue<T>(string key)
         {

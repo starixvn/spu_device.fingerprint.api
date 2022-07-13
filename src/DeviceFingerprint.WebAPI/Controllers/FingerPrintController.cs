@@ -46,11 +46,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 if (!string.IsNullOrWhiteSpace(sessionKey) && !string.IsNullOrWhiteSpace(subscriberName) && Validation.SessionKey(sessionKey))
                 {
-                    var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
+                    var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
                     if (appSettings.Environment != "DEV")
                     {
-                        scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
+                        scriptPath = $"{environment.ContentRootPath}/Scripts/fp.min.js";
                     }
 
                     var bundleFile = new BundleFile(scriptPath);
@@ -80,6 +80,27 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 return null;
             }
+        }
+        [HttpGet("scr/cdn/gfp.min.js")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult CDNScript()
+        {
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
+
+            if (appSettings.Environment != "DEV")
+            {
+                scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
+            }
+
+            var bundleFile = new BundleFile(scriptPath);
+
+            if (!string.IsNullOrWhiteSpace(bundleFile.Content))            {
+                
+                    return new JavascriptResult(bundleFile.Content);
+
+            }
+
+            return null;
         }
 
         [HttpGet("conf/{sessionKey}")]

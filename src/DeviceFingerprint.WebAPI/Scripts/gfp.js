@@ -5551,9 +5551,9 @@ var globalFP = (function (exports) {
 
     // The default export is a syntax sugar (`import * as FP from '...' → import FP from '...'`).
     // It should contain all the public exported values.
-    var index$1 = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
+    var index = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
 
-    var FingerprintJS = index$1;
+    var FingerprintJS = index;
 
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
@@ -5633,13 +5633,173 @@ var globalFP = (function (exports) {
         }));
     }
 
-    var apiUrl = "__apiUrl__";
-    var subscriberId = "__subscriberId__";
-    var sessionKey = "__sessionKey__";
-    function set(appAPIUrl, subscriber, sessionKey) {
-        this.apiUrl = appAPIUrl;
-        this.subscriberId = subscriber;
-        this.sessionKey = sessionKey;
+    let allTestFunctions = [
+        { name: "UserAgent", testFunction: testUserAgent, active: 1 },
+        { name: "ChromeWindow", testFunction: testChromeWindow, active: 1 },
+        { name: "Plugins", testFunction: testPlugins, active: 0 },
+        { name: "AppVersion", testFunction: testAppVersion, active: 1 },
+        { name: "ConnectionRtt", testFunction: testConnectionRtt, active: 1 },
+        { name: "Webdriver", testFunction: testWebdriver, active: 1 },
+    ];
+    //* All Tests *//
+    function testWebdriver() {
+        let webdriver = navigator.webdriver;
+        return webdriver ? 1 : 0;
+    }
+    // User Agent
+    function testUserAgent() {
+        if (/Headless/.test(window.navigator.userAgent)) {
+            // Headless
+            return 1;
+        }
+        else {
+            // Not Headless
+            return 0;
+        }
+    }
+    // Window.Chrome
+    function testChromeWindow() {
+        if (eval.toString().length == 33 && !window.chrome) {
+            // Headless
+            return 1;
+        }
+        else {
+            // Not Headless
+            return 0;
+        }
+    }
+    // Notification Permissions
+    function testNotificationPermissions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!navigator.permissions) {
+                return 0;
+            }
+            return yield navigator.permissions
+                .query({ name: "notifications" })
+                .then(function (permissionStatus) {
+                if (Notification.permission === "denied" &&
+                    permissionStatus.state === "prompt") {
+                    // Headless
+                    return 0.5;
+                }
+                else {
+                    // Not Headless
+                    return 0;
+                }
+            });
+        });
+    }
+    // No Plugins
+    function testPlugins() {
+        let length = navigator.plugins.length;
+        return length === 0 ? 1 : 0;
+    }
+    // App Version
+    function testAppVersion() {
+        let appVersion = navigator.appVersion;
+        return /headless/i.test(appVersion) ? 1 : 0;
+    }
+    // Connection Rtt
+    function testConnectionRtt() {
+        let connection = navigator.connection;
+        let connectionRtt = connection ? connection.rtt : undefined;
+        if (connectionRtt === undefined) {
+            return 0; // Flag doesn't even exists so just return NOT HEADLESS
+        }
+        else {
+            return connectionRtt === 0 ? 0.5 : 0;
+        }
+    }
+    //* Main Functions *//
+    function getHeadlessScore() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let score = 0;
+            let testsRun = 0;
+            let testRunDetail = "";
+            return yield testNotificationPermissions()
+                .then((x) => {
+                score = x;
+                testsRun++;
+                testRunDetail = "NotificationPermissions : " + x + ", ";
+            })
+                .then(() => {
+                allTestFunctions.forEach((test) => {
+                    if (test.active == 1) {
+                        let result = test.testFunction();
+                        score += result;
+                        testsRun++;
+                        testRunDetail += test.name + " : " + result + ", ";
+                    }
+                });
+                return {
+                    score: score,
+                    testsRun: testsRun,
+                    testsDetail: testRunDetail.substring(0, testRunDetail.length - 2),
+                };
+            });
+        });
+    }
+
+    function getBrowserName() {
+        // OPERA 8.0+
+        var isOpera = (!!window.opr && !!window.opr.addons) ||
+            !!window.opera ||
+            navigator.userAgent.indexOf(" OPR/") >= 0;
+        if (isOpera)
+            return "Opera";
+        // FIREFOX 1.0+
+        var isFirefox = typeof InstallTrigger !== "undefined";
+        if (isFirefox)
+            return "Firefox";
+        // SAFARI 3.0+
+        var isSafari = /constructor/i.test(window["HTMLElement"]) ||
+            (function (p) {
+                return p.toString() === "[object SafariRemoteNotification]";
+            })(!window["safari"] ||
+                (typeof safari !== "undefined" && safari.pushNotification));
+        if (isSafari)
+            return "Safari";
+        // INTERNET EXPLORER 6-11
+        var isIE = /*@cc_on!@*/ !!document["documentMode"];
+        if (isIE)
+            return "IE";
+        // EDGE 20+
+        var isEdge = !isIE && !!window["StyleMedia"];
+        if (isEdge)
+            return "Edge";
+        // CHROME 1+
+        var isChrome = !!window.chrome;
+        if (isChrome)
+            return "Chrome";
+        // // BLINK ENGINE DETECTION
+        // var isBlink = (isChrome || isOpera) && !!window.CSS;
+        // if(isBlink) return 'Blink';
+        return "Other";
+    }
+    function getOS() {
+        var userAgent = window.navigator.userAgent, platform = window.navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], iosPlatforms = ["iPhone", "iPad", "iPod"], os = null;
+        if (macosPlatforms.indexOf(platform) !== -1) {
+            os = "Mac OS";
+        }
+        else if (iosPlatforms.indexOf(platform) !== -1) {
+            os = "iOS";
+        }
+        else if (windowsPlatforms.indexOf(platform) !== -1) {
+            os = "Windows";
+        }
+        else if (/Android/.test(userAgent)) {
+            os = "Android";
+        }
+        else if (!os && /Linux/.test(platform)) {
+            os = "Linux";
+        }
+        return os;
+    }
+    function getBrowserInfo() {
+        return {
+            OSName: getOS(),
+            BrowserName: getBrowserName(),
+        };
     }
 
     var localforage = {exports: {}};
@@ -8613,171 +8773,7 @@ var globalFP = (function (exports) {
         });
     }
 
-    let allTestFunctions = [
-        { name: "UserAgent", testFunction: testUserAgent, active: 1 },
-        { name: "ChromeWindow", testFunction: testChromeWindow, active: 1 },
-        { name: "Plugins", testFunction: testPlugins, active: 0 },
-        { name: "AppVersion", testFunction: testAppVersion, active: 1 },
-        { name: "ConnectionRtt", testFunction: testConnectionRtt, active: 1 },
-        { name: "Webdriver", testFunction: testWebdriver, active: 1 },
-    ];
-    //* All Tests *//
-    function testWebdriver() {
-        let webdriver = navigator.webdriver;
-        return webdriver ? 1 : 0;
-    }
-    // User Agent
-    function testUserAgent() {
-        if (/Headless/.test(window.navigator.userAgent)) {
-            // Headless
-            return 1;
-        }
-        else {
-            // Not Headless
-            return 0;
-        }
-    }
-    // Window.Chrome
-    function testChromeWindow() {
-        if (eval.toString().length == 33 && !window.chrome) {
-            // Headless
-            return 1;
-        }
-        else {
-            // Not Headless
-            return 0;
-        }
-    }
-    // Notification Permissions
-    function testNotificationPermissions() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!navigator.permissions) {
-                return 0;
-            }
-            return yield navigator.permissions
-                .query({ name: "notifications" })
-                .then(function (permissionStatus) {
-                if (Notification.permission === "denied" &&
-                    permissionStatus.state === "prompt") {
-                    // Headless
-                    return 0.5;
-                }
-                else {
-                    // Not Headless
-                    return 0;
-                }
-            });
-        });
-    }
-    // No Plugins
-    function testPlugins() {
-        let length = navigator.plugins.length;
-        return length === 0 ? 1 : 0;
-    }
-    // App Version
-    function testAppVersion() {
-        let appVersion = navigator.appVersion;
-        return /headless/i.test(appVersion) ? 1 : 0;
-    }
-    // Connection Rtt
-    function testConnectionRtt() {
-        let connection = navigator.connection;
-        let connectionRtt = connection ? connection.rtt : undefined;
-        if (connectionRtt === undefined) {
-            return 0; // Flag doesn't even exists so just return NOT HEADLESS
-        }
-        else {
-            return connectionRtt === 0 ? 0.5 : 0;
-        }
-    }
-    //* Main Functions *//
-    function getHeadlessScore() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let score = 0;
-            let testsRun = 0;
-            let testRunDetail = "";
-            return yield testNotificationPermissions()
-                .then((x) => {
-                score = x;
-                testsRun++;
-                testRunDetail = "NotificationPermissions : " + x + ", ";
-            })
-                .then(() => {
-                allTestFunctions.forEach((test) => {
-                    if (test.active == 1) {
-                        let result = test.testFunction();
-                        score += result;
-                        testsRun++;
-                        testRunDetail += test.name + " : " + result + ", ";
-                    }
-                });
-                return {
-                    score: score,
-                    testsRun: testsRun,
-                    testsDetail: testRunDetail.substring(0, testRunDetail.length - 2),
-                };
-            });
-        });
-    }
-
-    function getBrowserName() {
-        // OPERA 8.0+
-        var isOpera = (!!window.opr && !!window.opr.addons) ||
-            !!window.opera ||
-            navigator.userAgent.indexOf(" OPR/") >= 0;
-        if (isOpera)
-            return "Opera";
-        // FIREFOX 1.0+
-        var isFirefox = typeof InstallTrigger !== "undefined";
-        if (isFirefox)
-            return "Firefox";
-        // SAFARI 3.0+
-        var isSafari = /apple/i.test(navigator.vendor) || !!window["safari"];
-        if (isSafari)
-            return "Safari";
-        // INTERNET EXPLORER 6-11
-        var isIE = /*@cc_on!@*/ !!document["documentMode"];
-        if (isIE)
-            return "IE";
-        // EDGE 20+
-        var isEdge = !isIE && !!window["StyleMedia"];
-        if (isEdge)
-            return "Edge";
-        // CHROME 1+
-        var isChrome = !!window.chrome;
-        if (isChrome)
-            return "Chrome";
-        // // BLINK ENGINE DETECTION
-        // var isBlink = (isChrome || isOpera) && !!window.CSS;
-        // if(isBlink) return 'Blink';
-        return "Other";
-    }
-    function getOS() {
-        var userAgent = window.navigator.userAgent, platform = window.navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], iosPlatforms = ["iPhone", "iPad", "iPod"], os = null;
-        if (macosPlatforms.indexOf(platform) !== -1) {
-            os = "Mac OS";
-        }
-        else if (iosPlatforms.indexOf(platform) !== -1) {
-            os = "iOS";
-        }
-        else if (windowsPlatforms.indexOf(platform) !== -1) {
-            os = "Windows";
-        }
-        else if (/Android/.test(userAgent)) {
-            os = "Android";
-        }
-        else if (!os && /Linux/.test(platform)) {
-            os = "Linux";
-        }
-        return os;
-    }
-    function getBrowserInfo() {
-        return {
-            OSName: getOS(),
-            BrowserName: getBrowserName(),
-        };
-    }
-
+    var _cookieName = "__fp";
     function postData(url, data) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url, {
@@ -8805,13 +8801,21 @@ var globalFP = (function (exports) {
             });
         });
     }
-
-    var _cookieName = "__fp";
-    function config(apiUrl, subscriberId, sessionKey) {
-        set(apiUrl, subscriberId, sessionKey);
+    function getCookie() {
+        return storageHandler(_cookieName);
     }
-    function index() {
-        const configs = getConfig(apiUrl, sessionKey).then((conf) => {
+    function getConfig(url, sessionKey) {
+        return fetch(url + "/conf/" + sessionKey, {
+            method: "GET",
+            redirect: "follow",
+        });
+    }
+
+    var apiUrl = "__apiUrl__";
+    var subscriberId = "__subscriberId__";
+    var sessionKey = "__sessionKey__";
+    function capture() {
+        const configs = getConfig(this.apiUrl, this.sessionKey).then((conf) => {
             return conf.json();
         });
         const cookies = getCookie();
@@ -8829,48 +8833,40 @@ var globalFP = (function (exports) {
                     di: fp.Id,
                     attr: fp.Properties,
                 }, cryptConfig).then((res) => {
-                    return postData(apiUrl + "/fpa", res);
+                    return postData(this.apiUrl + "/fpa", res);
                 });
                 encryptingAsync({
-                    fk: sessionKey,
+                    fk: this.sessionKey,
                     ua: navigator.userAgent,
                     uad: JSON.stringify(navigator.userAgentData),
                     hscore: JSON.stringify(hl),
-                    binfo: JSON.stringify(bi)
+                    binfo: JSON.stringify(bi),
                 }, {
                     iv: config.iv,
                     pass: config.ek,
                     salt: config.sa,
                 }).then((res) => {
-                    return postData(apiUrl + "/bi", res);
+                    return postData(this.apiUrl + "/bi", res);
                 });
                 encryptingAsync({
                     di: fp.Id,
-                    fk: sessionKey,
-                    subs: subscriberId,
+                    fk: this.sessionKey,
+                    subs: this.subscriberId,
                     cookieCode: cookie,
                     url: window.location && window.location.href
                         ? window.location.href
                         : "",
                 }, cryptConfig).then((res) => {
-                    return postDataFp(apiUrl, res, config.tk);
+                    return postDataFp(this.apiUrl, res, config.tk);
                 });
             }
         });
     }
-    function getCookie() {
-        return storageHandler(_cookieName);
-    }
-    function getConfig(url, sessionKey) {
-        return fetch(url + "/conf/" + sessionKey, {
-            method: "GET",
-            redirect: "follow",
-        });
-    }
-    index();
 
-    exports.config = config;
-    exports.index = index;
+    exports.apiUrl = apiUrl;
+    exports.capture = capture;
+    exports.sessionKey = sessionKey;
+    exports.subscriberId = subscriberId;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
