@@ -5742,7 +5742,9 @@ var globalFP = (function (exports) {
 
     function getBrowserName() {
         // OPERA 8.0+
-        var isOpera = (!!window.opr || !!window.opera);
+        var isOpera = (!!window.opr && !!window.opr.addons) ||
+            !!window.opera ||
+            navigator.userAgent.indexOf(" OPR/") >= 0;
         if (isOpera)
             return "Opera";
         // FIREFOX 1.0+
@@ -8805,11 +8807,8 @@ var globalFP = (function (exports) {
         });
     }
 
-    var apiUrl = "__apiUrl__";
-    var subscriberId = "__subscriberId__";
-    var sessionKey = "__sessionKey__";
-    function capture() {
-        const configs = getConfig(this.apiUrl, this.sessionKey).then((conf) => {
+    function capture(apiUrl, subId, sKey) {
+        const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
         });
         const cookies = getCookie();
@@ -8827,10 +8826,10 @@ var globalFP = (function (exports) {
                     di: fp.Id,
                     attr: fp.Properties,
                 }, cryptConfig).then((res) => {
-                    return postData(this.apiUrl + "/fpa", res);
+                    return postData(apiUrl + "/fpa", res);
                 });
                 encryptingAsync({
-                    fk: this.sessionKey,
+                    fk: sKey,
                     ua: navigator.userAgent,
                     uad: JSON.stringify(navigator.userAgentData),
                     hscore: JSON.stringify(hl),
@@ -8840,27 +8839,24 @@ var globalFP = (function (exports) {
                     pass: config.ek,
                     salt: config.sa,
                 }).then((res) => {
-                    return postData(this.apiUrl + "/bi", res);
+                    return postData(apiUrl + "/bi", res);
                 });
                 encryptingAsync({
                     di: fp.Id,
-                    fk: this.sessionKey,
-                    subs: this.subscriberId,
+                    fk: sKey,
+                    subs: subId,
                     cookieCode: cookie,
                     url: window.location && window.location.href
                         ? window.location.href
                         : "",
                 }, cryptConfig).then((res) => {
-                    return postDataFp(this.apiUrl, res, config.tk);
+                    return postDataFp(apiUrl, res, config.tk);
                 });
             }
         });
     }
 
-    exports.apiUrl = apiUrl;
     exports.capture = capture;
-    exports.sessionKey = sessionKey;
-    exports.subscriberId = subscriberId;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

@@ -21,11 +21,7 @@
     }
 }
 
-fp.url("__cdnAPIUrl__").then(() => {
-    globalFP.apiUrl = "__apiUrl__";
-    globalFP.subscriberId = "__subscriberId__";
-    globalFP.sessionKey = "__sessionKey__";
-
-    globalFP.capture();
+fp.url("__cdnAPIUrl__").then(() => {   
+    globalFP.capture("__apiUrl__", "__subscriberId__","__sessionKey__");
 });
 
