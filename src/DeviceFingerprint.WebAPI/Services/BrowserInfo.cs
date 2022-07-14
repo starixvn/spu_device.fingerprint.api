@@ -34,8 +34,12 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             var browsers = new List<string> { "Safari", "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
             var secChUa = httpContext.Request.Headers["sec-ch-ua"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua"].ToString() : "Other";
+            var secChUaPlatform = httpContext.Request.Headers["sec-ch-ua-platform"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "";
+            var secChUaMobile = httpContext.Request.Headers["sec-ch-ua-mobile"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua-mobile"].ToString() : "";
+
             var browserName = secChUa;
-            var osName = httpContext.Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "");
+            var osName = secChUaPlatform;
+            var isMobile = secChUaMobile;
 
             if (browserName == "Other" || String.IsNullOrEmpty(browserName))
             {
@@ -75,6 +79,8 @@ namespace Device.Fingerprint.WebAPI.Services
             var browserInfoAttributeModel = new BrowserInfoAttributeModel
             {
                 SecChUa = secChUa,
+                SecChUaPlatform = secChUaPlatform,
+                SecChUaMobile = secChUaMobile,
                 BrowserInfoJs = browserInfoJsonModel.BrowserInfo,
                 UserAgentData = browserInfoJsonModel.UserAgentData
             };

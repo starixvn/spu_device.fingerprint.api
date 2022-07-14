@@ -173,7 +173,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private IEnumerable<BrowserInfoDetectionModel> ExecuteRules(IEnumerable<BrowserInfoDetectionModel> browserInfos, int detectionLevel)
         {
-            if(browserInfos != null && browserInfos.Any())
+            if (browserInfos != null && browserInfos.Any())
             {
                 var browserInfosList = browserInfos.ToList();
 
@@ -187,15 +187,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     }
                     else
                     {
-                        if (detectionLevel > 1 && !CompareBrowserName(browserInfo))
-                        {
-                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                            browserInfo.Reason = BrowserInfoReason.BrowserName.ToString();
-                        }
-                        else if (detectionLevel > 1 && !CompareOSName(browserInfo))
+                        if (detectionLevel > 1 && !CompareOSName(browserInfo))
                         {
                             browserInfo.Flagged = FlaggedStatus.bot.ToString();
                             browserInfo.Reason = BrowserInfoReason.OSName.ToString();
+                        }
+                        else if (detectionLevel > 1 && !CompareBrowserName(browserInfo))
+                        {
+                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
+                            browserInfo.Reason = BrowserInfoReason.BrowserName.ToString();
                         }
                         else
                         {
@@ -215,21 +215,33 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return JsonConvert.DeserializeObject<RobotDetectionDetail>(robotDetectDetail);
         }
 
-        private bool CompareBrowserName(BrowserInfoDetectionModel browserInfo)
-        {
-            if (SpecialCaseBrowserName(browserInfo.BrowserName) == browserInfo.UABrowserName)
-            {
-                return true;
-            }
-            return false;
-        }
-
         private bool CompareOSName(BrowserInfoDetectionModel browserInfo)
         {
             if (browserInfo.OSName == browserInfo.UAOSName)
             {
                 return true;
             }
+            return false;
+        }
+
+        private bool CompareBrowserName(BrowserInfoDetectionModel browserInfo)
+        {
+            if (browserInfo.UAOSName == "iOS") return true;
+
+            string[] arrBrowserNames = { "Chrome", "Firefox", "Microsoft Edge", "Opera", "Safari" };
+            var browserName = SpecialCaseBrowserName(browserInfo.BrowserName);
+            var uaBrowserName = SpecialCaseUABrowserName(browserInfo.UABrowserName);
+
+            if (!arrBrowserNames.Contains(uaBrowserName) && !arrBrowserNames.Contains(browserName))
+            {
+                return true;
+            }
+
+            if (browserName == uaBrowserName)
+            {
+                return true;
+            }
+
             return false;
         }
 
@@ -241,6 +253,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
 
             return browserName;
+        }
+
+        private string SpecialCaseUABrowserName(string uaBrowserName)
+        {
+            return uaBrowserName.Replace(" Mobile", "");
         }
 
         private void UpdateFlagged(IEnumerable<BrowserInfoDetectionModel> browserInfos, int batchSize)

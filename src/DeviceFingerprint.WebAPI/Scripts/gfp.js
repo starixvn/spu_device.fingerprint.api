@@ -5584,9 +5584,10 @@ var globalFP = (function (exports) {
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
             const value = component.error ? "error" : JSON.stringify(component.value);
-            result += `${result ? "," : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
+            const duration = component.error ? "error" : JSON.stringify(component.duration);
+            result += `${result ? "},{" : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value == undefined ? `"undefined"` : `${value},"duration":${duration}`}`;
         }
-        return "{" + result + "}";
+        return `[${result}}]`;
     }
     function getFontPreference() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -5742,9 +5743,7 @@ var globalFP = (function (exports) {
 
     function getBrowserName() {
         // OPERA 8.0+
-        var isOpera = (!!window.opr && !!window.opr.addons) ||
-            !!window.opera ||
-            navigator.userAgent.indexOf(" OPR/") >= 0;
+        var isOpera = (!!window.opr || !!window.opera);
         if (isOpera)
             return "Opera";
         // FIREFOX 1.0+
@@ -5752,7 +5751,13 @@ var globalFP = (function (exports) {
         if (isFirefox)
             return "Firefox";
         // SAFARI 3.0+
-        var isSafari = /apple/i.test(navigator.vendor) || !!window["safari"];
+        var isSafari = /constructor/i.test(window["HTMLElement"])
+            || /apple/i.test(navigator.vendor) && !!window["safari"]
+            || (function (p) {
+                return p.toString() === "[object SafariRemoteNotification]";
+            })(!window["safari"] ||
+                (typeof safari !== "undefined" && safari.pushNotification));
+        // var isSafari = /apple/i.test(navigator.vendor) && !!window["safari"];
         if (isSafari)
             return "Safari";
         // INTERNET EXPLORER 6-11
@@ -5764,7 +5769,7 @@ var globalFP = (function (exports) {
         if (isEdge)
             return "Edge";
         // CHROME 1+
-        var isChrome = !!window.chrome;
+        var isChrome = !!window["chrome"];
         if (isChrome)
             return "Chrome";
         // // BLINK ENGINE DETECTION
@@ -5773,11 +5778,11 @@ var globalFP = (function (exports) {
         return "Other";
     }
     function getOS() {
-        var userAgent = window.navigator.userAgent, platform = window.navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], iosPlatforms = ["iPhone", "iPad", "iPod"], os = null;
+        var userAgent = navigator.userAgent, platform = navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], os = null;
         if (macosPlatforms.indexOf(platform) !== -1) {
-            os = "Mac OS";
+            os = "macOS";
         }
-        else if (iosPlatforms.indexOf(platform) !== -1) {
+        else if (isIOS()) {
             os = "iOS";
         }
         else if (windowsPlatforms.indexOf(platform) !== -1) {
@@ -5791,10 +5796,30 @@ var globalFP = (function (exports) {
         }
         return os;
     }
+    function isIOS() {
+        const arrDevice = [
+            'iPad Simulator',
+            'iPhone Simulator',
+            'iPod Simulator',
+            'iPad',
+            'iPhone',
+            'iPod'
+        ];
+        const platform = navigator.platform;
+        return (!!platform && !!arrDevice.find(v => platform.includes(v)))
+            // iPad on iOS 13 detection
+            || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+    }
+    function getMobileDevice() {
+        return window.matchMedia("only screen and (min-width: 320px) and (max-width: 600px)").matches;
+    }
     function getBrowserInfo() {
         return {
             OSName: getOS(),
             BrowserName: getBrowserName(),
+            Platform: navigator.platform,
+            Vendor: navigator.vendor,
+            IsMobileDevice: getMobileDevice() ? 1 : 0,
         };
     }
 
