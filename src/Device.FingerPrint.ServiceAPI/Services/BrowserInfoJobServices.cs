@@ -226,7 +226,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private bool CompareBrowserName(BrowserInfoDetectionModel browserInfo)
         {
-            if (browserInfo.UAOSName == "iOS") return true;
+            if (browserInfo.UAOSName == "iOS" && browserInfo.UAOSName == browserInfo.OSName) return true;
 
             string[] arrBrowserNames = { "Chrome", "Firefox", "Microsoft Edge", "Opera", "Safari" };
             var browserName = SpecialCaseBrowserName(browserInfo.BrowserName);

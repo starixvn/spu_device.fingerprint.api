@@ -48,7 +48,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
-                    if (appSettings.Environment != "DEV")
+                    if (appSettings.Environment == "PROD")
                     {
                         scriptPath = $"{environment.ContentRootPath}/Scripts/fp.min.js";
                     }
@@ -89,7 +89,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
 
-                if (appSettings.Environment != "DEV")
+                if (appSettings.Environment == "PROD")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
                 }

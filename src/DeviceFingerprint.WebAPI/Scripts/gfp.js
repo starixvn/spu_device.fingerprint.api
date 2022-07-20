@@ -8832,6 +8832,11 @@ var globalFP = (function (exports) {
         });
     }
 
+    function getFPID() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield getFP();
+        });
+    }
     function capture(apiUrl, subId, sKey) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
@@ -8882,6 +8887,7 @@ var globalFP = (function (exports) {
     }
 
     exports.capture = capture;
+    exports.getFPID = getFPID;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
