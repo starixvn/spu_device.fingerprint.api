@@ -22,7 +22,7 @@ namespace Device.Fingerprint.WebAPI.Ultilities
                 {
                     var userDate = DateTime.ParseExact(getDate + getTime, "yyyyMMddhhmmss", null);
 
-                    if (DateTime.UtcNow.Subtract(userDate).TotalMinutes < 1)
+                    if (DateTime.UtcNow.Subtract(userDate).TotalMinutes < 0)
                     {
                         return true;
                     }
