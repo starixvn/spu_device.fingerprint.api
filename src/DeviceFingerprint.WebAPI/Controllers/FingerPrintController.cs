@@ -70,16 +70,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             LogService.Info("Subscriber " + subscriberName + " does not exists");
                         }
                     }
-                }
-
-                return null;
+                }                
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
-
-                return null;
+                LogService.Error(ex.Message, ex);               
             }
+
+            return new EmptyResult();
         }
         [HttpGet("scr/cdn/gfp")]
         [ResponseCache(NoStore = true, Duration = 0)]
@@ -108,7 +106,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 LogService.Error(ex.Message, ex);
             }
 
-            return null;
+            return new EmptyResult();
         }
 
         [HttpGet("conf/{sessionKey}")]
@@ -132,15 +130,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     return Ok(jsonString);
                 }
 
-                return Ok(string.Empty);
+                
                 
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
-
-                return Ok(string.Empty);
+                LogService.Error(ex.Message, ex);               
             }
+
+            return Ok(string.Empty);
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]

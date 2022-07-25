@@ -11,7 +11,7 @@
         script.addEventListener('error', function () {
             return reject(script);
         }, false);
-
+        
         document.body.appendChild(script);
     },
     url: function urls(_url) {
@@ -21,7 +21,7 @@
     }
 }
 
-fp.url("__cdnAPIUrl__").then(() => {   
-    globalFP.capture("__apiUrl__", "__subscriberId__","__sessionKey__");
+fp.url("__cdnAPIUrl__").then(() => {
+    globalFP.capture("__apiUrl__", "__subscriberId__", "__sessionKey__");
 });
 
