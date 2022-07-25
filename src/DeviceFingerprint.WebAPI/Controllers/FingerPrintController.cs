@@ -272,7 +272,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         SessionKey = model.SessionKey,
                         UserAgent = model.UserAgent,
                         UserAgentCode = userAgentCode,
-                        UserAgentData = model.UserAgentData,
                         HeadlessScore = model.HeadlessScore,
                         BrowserInfo = browserInfoJson,
                         browserInfoAttribute = browserInfoAttributeJson,

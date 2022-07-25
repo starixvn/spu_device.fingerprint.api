@@ -82,7 +82,7 @@ namespace Device.Fingerprint.WebAPI.Services
                 SecChUaPlatform = secChUaPlatform,
                 SecChUaMobile = secChUaMobile.Replace("?", ""),
                 BrowserInfoJs = browserInfoJsonModel.BrowserInfo,
-                UserAgentData = browserInfoJsonModel.UserAgentData
+                UserAgentData = string.IsNullOrEmpty(browserInfoJsonModel.UserAgentData) ? "" : browserInfoJsonModel.UserAgentData
             };
 
             return (browserInfoModel, browserInfoAttributeModel);

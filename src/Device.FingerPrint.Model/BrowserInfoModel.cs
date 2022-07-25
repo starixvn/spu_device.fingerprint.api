@@ -9,8 +9,6 @@
 
         public string UserAgentCode { get; set; }
 
-        public string UserAgentData { get; set; }
-
         public string HeadlessScore { get; set; }
 
         public string BrowserInfo { get; set; }

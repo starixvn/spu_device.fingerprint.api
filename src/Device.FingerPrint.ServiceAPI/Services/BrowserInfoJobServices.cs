@@ -230,7 +230,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             string[] arrBrowserNames = { "Chrome", "Firefox", "Microsoft Edge", "Opera", "Safari" };
             var browserName = SpecialCaseBrowserName(browserInfo.BrowserName);
-            var uaBrowserName = SpecialCaseUABrowserName(browserInfo.UABrowserName);
+            var uaBrowserName = SpecialCaseBrowserName(browserInfo.UABrowserName);
 
             if (!arrBrowserNames.Contains(uaBrowserName) && !arrBrowserNames.Contains(browserName))
             {
@@ -252,12 +252,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 return "Chrome";
             }
 
-            return browserName;
-        }
-
-        private string SpecialCaseUABrowserName(string uaBrowserName)
-        {
-            return uaBrowserName.Replace(" Mobile", "");
+            return browserName.Replace(" Mobile", "");
         }
 
         private void UpdateFlagged(IEnumerable<BrowserInfoDetectionModel> browserInfos, int batchSize)

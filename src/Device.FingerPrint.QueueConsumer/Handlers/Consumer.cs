@@ -99,7 +99,6 @@
                 SessionKey = model.SessionKey,
                 UserAgent = model.UserAgent,
                 UserAgentCode = model.UserAgentCode,
-                UserAgentData = model.UserAgentData,
                 HeadlessScore = model.HeadlessScore,
                 BrowserInfo = model.BrowserInfo,
                 browserInfoAttribute = model.browserInfoAttribute,
