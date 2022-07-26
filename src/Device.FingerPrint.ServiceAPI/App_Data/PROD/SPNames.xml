@@ -38,14 +38,14 @@
 	</Function>
 
   <Function Name="RawUserAgent">
-    <Setting Key="FPS_FP_Detect_RawUserAgent_Get" SpName="FPS_FP_Detect_RawUserAgent_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Detect_RawUserAgent_Update" SpName="FPS_FP_Detect_RawUserAgent_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Detect_RawUserAgent_Get" SpName="FPS_FP_Detect_RawUserAgent_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+    <Setting Key="FPS_FP_Detect_RawUserAgent_Update" SpName="FPS_FP_Detect_RawUserAgent_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
   </Function>
 
 
   <Function Name="BrowserInfo">
-    <Setting Key="FPS_FP_Transform_BrowserInfo_Get" SpName="FPS_FP_Transform_BrowserInfo_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Transform_BrowserInfo_Update" SpName="FPS_FP_Transform_BrowserInfo_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Transform_BrowserInfo_Get" SpName="FPS_FP_Transform_BrowserInfo_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+    <Setting Key="FPS_FP_Transform_BrowserInfo_Update" SpName="FPS_FP_Transform_BrowserInfo_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
   </Function>
 
   <Function Name="Archive">
