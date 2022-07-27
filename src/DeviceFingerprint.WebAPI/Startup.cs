@@ -15,6 +15,11 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sentry;
+using StackExchange.Redis.Extensions.Core;
+using StackExchange.Redis.Extensions.Core.Abstractions;
+using StackExchange.Redis.Extensions.Core.Configuration;
+using StackExchange.Redis.Extensions.Core.Implementations;
+using StackExchange.Redis.Extensions.MsgPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -82,7 +87,7 @@ namespace Device.Fingerprint.WebAPI
                 });
             });
             #endregion
-                        
+
 
             #region Authentication
             services.AddAuthentication(option =>
@@ -103,6 +108,8 @@ namespace Device.Fingerprint.WebAPI
             });
             #endregion
 
+            RegisterRedis(services);
+
             services.RegisterService();
             FanexDataConfig(appSettings);
             RegisterLogging(appSettings);
@@ -114,7 +121,7 @@ namespace Device.Fingerprint.WebAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                
+
             }
 
             app.UseSwagger();
@@ -191,6 +198,18 @@ namespace Device.Fingerprint.WebAPI
                         Environment = appSettings.Environment
                      })
                 });
+        }
+
+        private void RegisterRedis(IServiceCollection services)
+        {
+            var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+
+            services.AddSingleton(redisConfiguration);
+
+            services.AddSingleton<IRedisClient, RedisClient>();
+            services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
+            services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
+            services.AddSingleton<IRedisService, RedisService>();
         }
     }
 }

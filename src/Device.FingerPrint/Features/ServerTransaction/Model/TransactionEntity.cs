@@ -14,10 +14,6 @@ namespace Device.FingerPrint.Features.ServerTransaction.Model
 
         public string ClientIp { get; set; }
 
-        public string UserAgent { get; set; }
-
-        public string UserAgentCode { get; set; }
-
         public string Url { get; set; }
 
         public string Action { get; set; }

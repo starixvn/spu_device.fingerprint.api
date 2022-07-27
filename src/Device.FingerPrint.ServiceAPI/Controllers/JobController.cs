@@ -14,27 +14,27 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly ITransactionJobServices transactionServices;
         private readonly IMonitorJobServices monitorJobServices;
         private readonly ISummaryJobServices summaryJobServices;
-        private readonly IRawUserAgentJobServices rawUserAgentJobServices;
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
         private readonly IArchiveJobServices archiveJobServices;
+        private readonly IBrowserInfoJobServices browserInfoJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
                             , IMonitorJobServices monitorJobServices
                             , ISummaryJobServices summaryJobServices
-                            , IRawUserAgentJobServices rawUserAgentJobServices
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
-                            , IArchiveJobServices archiveJobServices)
+                            , IArchiveJobServices archiveJobServices
+                            , IBrowserInfoJobServices browserInfoJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
             this.monitorJobServices = monitorJobServices;
             this.summaryJobServices = summaryJobServices;
-            this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
+            this.browserInfoJobServices = browserInfoJobServices;
             this.archiveJobServices = archiveJobServices;
         }
 
@@ -257,12 +257,16 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             }
         }
 
-        [HttpPost("updateuseragent")]
-        public Task<bool> DeviceDetector([FromForm] int batchSize)
+        [HttpPost("detectbots")]
+        public Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int detectionLevel)
         {
             try
             {
-                rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
+                /* detectionLevel: 
+                 * 0 || 1 => Check Headless score
+                 * 2 => Check BrowserName & OSName
+                 */
+                browserInfoJobServices.DetectBots(batchSize, numberOfBatch, detectionLevel);
 
                 return Task.FromResult(true);
             }
@@ -290,5 +294,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                 return Task.FromResult(false);
             }
         }
+
     }
 }

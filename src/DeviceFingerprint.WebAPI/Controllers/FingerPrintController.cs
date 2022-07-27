@@ -20,17 +20,22 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
         private readonly IEasyNetQService easyNetQService;
+        private readonly Crypto crypto;
+        private readonly IRedisService redisService;
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,
-            IEasyNetQService easyNetQService)
+            IEasyNetQService easyNetQService,
+            IRedisService redisService)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.easyNetQService = easyNetQService;
+            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
+            this.redisService = redisService;
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -38,9 +43,50 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
+                if (!string.IsNullOrWhiteSpace(sessionKey) && !string.IsNullOrWhiteSpace(subscriberName) && Validation.SessionKey(sessionKey))
+                {
+                    var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
+
+                    if (appSettings.Environment == "PROD")
+                    {
+                        scriptPath = $"{environment.ContentRootPath}/Scripts/fp.min.js";
+                    }
+
+                    var bundleFile = new BundleFile(scriptPath);
+
+                    if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                    {
+                        var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
+
+                        if (subscribers != null)
+                        {
+                            var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
+
+                            return new JavascriptResult(bundleContent.Content);
+                        }
+                        else
+                        {
+                            LogService.Info("Subscriber " + subscriberName + " does not exists");
+                        }
+                    }
+                }                
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);               
+            }
+
+            return new EmptyResult();
+        }
+        [HttpGet("scr/cdn/gfp")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult CDNScript()
+        {
+            try
+            {
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
 
-                if (appSettings.Environment != "DEV")
+                if (appSettings.Environment == "PROD")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
                 }
@@ -49,52 +95,49 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (!string.IsNullOrWhiteSpace(bundleFile.Content))
                 {
-                    var subscribers = subscriberServices.GetSubscriberByName(subscriberName);
 
-                    if (subscribers != null)
-                    {
-                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
+                    return new JavascriptResult(bundleFile.Content);
 
-                        return new JavascriptResult(bundleContent.Content);
-                    }
-                    else
-                    {
-                        LogService.Info("Subscriber " + subscriberName + " does not exists");
-                    }
                 }
-
-                return null;
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
                 LogService.Error(ex.Message, ex);
-
-                return null;
             }
+
+            return new EmptyResult();
         }
 
-        [HttpGet("conf")]
+        [HttpGet("conf/{sessionKey}")]
         [ResponseCache(NoStore = true, Duration = 0)]
-        public ActionResult<ScriptConfigModel> AppConfig()
+        public ActionResult<ScriptConfigModel> AppConfig(string sessionKey)
         {
             try
             {
-                var JWTService = new JWT(appSettings);
-
-                string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
+                if(Validation.SessionKey(sessionKey))
                 {
-                    EncryptedKey = appSettings.EncryptPassword,
-                    Token = JWTService.GenerateJwtToken()
-                });
+                    var JWTService = new JWT(appSettings);
 
-                return Ok(jsonString);
+                    string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
+                    {
+                        EncryptedKey = appSettings.CryptoPassword,
+                        Token = JWTService.GenerateJwtToken(),
+                        IV = appSettings.CryptoIV,
+                        Salt = appSettings.CryptoSalt
+                    });
+
+                    return Ok(jsonString);
+                }
+
+                
+                
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
-
-                return Ok("");
+                LogService.Error(ex.Message, ex);               
             }
+
+            return Ok(string.Empty);
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
@@ -103,24 +146,27 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                var scrypto = new Crypto(appSettings.EncryptPassword);
-                var decryptedData = scrypto.Decrypt(data);                                
+               
+
+                var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrintCode))
                 {
-                    var clientTransactionModel = new ClientTransactionModel
+                    if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
-                        FingerPrintCode = fingerPrint.FingerPrintCode,
-                        SessionKey = fingerPrint.SessionKey,
-                        SubscriberId = fingerPrint.SubscriberId,
-                        CookieCode = fingerPrint.CookieCode,
-                        Flagged = fingerPrint.Flagged,
-                        Url = fingerPrint.Url,
-                        TransTime = DateTime.Now
-                    };
+                        var clientTransactionModel = new ClientTransactionModel
+                        {
+                            FingerPrintCode = fingerPrint.FingerPrintCode,
+                            SessionKey = fingerPrint.SessionKey,
+                            SubscriberId = fingerPrint.SubscriberId,
+                            CookieCode = fingerPrint.CookieCode,
+                            Url = fingerPrint.Url,
+                            TransTime = DateTime.Now
+                        };
 
-                    easyNetQService.PushData(clientTransactionModel);
+                        easyNetQService.PushData(clientTransactionModel);
+                    }
                 }
                 else
                 {
@@ -139,14 +185,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             try
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
-                {                    
+                {
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
 
                     if (subscriber != null)
                     {
                         var urlAddress = new Uri(data.Url);
-                        var crypto = new Crypto(appSettings.EncryptPassword);
-                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                         var transaction = new TransactionModel
                         {
@@ -155,8 +199,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             LoginName = data.LoginName,
                             SessionKey = data.SessionKey,
                             TransTime = DateTime.Now,
-                            UserAgent = data.UserAgent,
-                            UserAgentCode = userAgentCode,
                             Url = urlAddress.GetLeftPart(UriPartial.Path),
                             Action = data.Action,
                             TransKey = data.TransKey,
@@ -183,8 +225,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                var scrypto = new Crypto(appSettings.EncryptPassword);
-                var decryptedData = scrypto.Decrypt(data);
+                var decryptedData = crypto.Decrypt(data);
 
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
@@ -208,6 +249,49 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [HttpPost("bi")]
+        public void Browserinfo([FromBody] string data)
+        {
+            try
+            {
+                var decryptedData = crypto.Decrypt(data);
+
+                var model = JsonConvert.DeserializeObject<Models.BrowserInfoJsonModel>(decryptedData);
+                if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
+                {
+                    
+                    var browserInfo = new BrowserInfo();
+                    var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model);
+
+                    var browserInfoJson = JsonConvert.SerializeObject(browserInfoModel);
+                    var browserInfoAttributeJson = JsonConvert.SerializeObject(browserInfoAttributeModel);
+                    var browserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeJson);
+
+                    var userAgentCode = crypto.GetMD5Hash(model.UserAgent);
+
+                    var rawBrowserInfoModel = new BrowserInfoModel
+                    {
+                        SessionKey = model.SessionKey,
+                        UserAgent = model.UserAgent,
+                        UserAgentCode = userAgentCode,
+                        HeadlessScore = model.HeadlessScore,
+                        BrowserInfo = browserInfoJson,
+                        browserInfoAttribute = browserInfoAttributeJson,
+                        browserInfoAttributeCode = browserInfoAttributeCode
+                    };
+
+                    easyNetQService.PushData(rawBrowserInfoModel);
+                }
+                else
+                {
+                    LogService.Info($"SessionKey does not exists. ({data})");
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+            }
+        }
 
         [HttpGet("getsubscriber/{subscriberName}")]
         public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)
@@ -229,6 +313,45 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public void HealthCheck()
         {
             // Method intentionally left empty.            
+        }
+
+        [HttpGet("sessionkey")]
+        public ActionResult<string> SessionKey()
+        {
+            var guid = Guid.NewGuid().ToString("N");
+            var expiredTime = DateTime.UtcNow.AddMinutes(1);
+
+            return string.Format("{0}{1}{2}{3}{4}"
+                , Hashing.GetRandomHexNumber(8).ToLower()
+                , expiredTime.ToString("yyyyMMdd")
+                , guid
+                , expiredTime.ToString("hhmmss")
+                , Hashing.GetRandomHexNumber(8).ToLower());
+        }
+
+        [HttpGet("ValidateSessionKey")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult<bool> ValidateSessionKey(string sessionKey)
+        {
+            return Validation.SessionKey(sessionKey);
+        }
+
+        [HttpPost("PostRedis")]
+        public void PostRedis(string key, string value)
+        {
+            redisService.RedisDatabase.AddAsync(key, value);
+        }
+
+        [HttpGet("GetRedis")]
+        public ActionResult<string> GetRedis(string key)
+        {
+
+            if (redisService.RedisDatabase.ExistsAsync(key).Result)
+            {
+                return redisService.RedisDatabase.GetAsync<string>(key).Result;
+            }
+
+            return "No values";
         }
     }
 }

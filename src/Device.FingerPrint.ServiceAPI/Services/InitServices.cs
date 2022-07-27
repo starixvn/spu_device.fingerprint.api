@@ -1,9 +1,11 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
     using Device.FingerPrint.Features.Archive.Services;
+    using Device.FingerPrint.Features.BrowserInfo.Services;
     using Device.FingerPrint.Features.FPDevices.Services;
     using Device.FingerPrint.Features.FPTransactions.Services;
     using Device.FingerPrint.Features.Monitor.Services;
+    using Device.FingerPrint.Features.Offset.Services;
     using Device.FingerPrint.Features.RawUserAgent.Services;
     using Device.FingerPrint.Features.ServerTransaction.Services;
     using Device.FingerPrint.Features.SummaryTransaction.Services;
@@ -22,7 +24,10 @@
             RegisterRawUserAgentService(services);
             RegisterFPDevicesService(services);
             RegisterFPTransformTransaction(services);
+            RegisterDetectBots(services);
             RegisterArchiveService(services);
+            RegisterOffset(services);
+
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -81,5 +86,19 @@
             services.AddSingleton<IArchiveService, ArchiveService>();
             services.AddSingleton<IArchiveJobServices, ArchiveJobServices>();
         }
+
+        private static void RegisterDetectBots(this IServiceCollection services)
+        {
+            services.AddSingleton<IBrowserInfoDataAccess, BrowserInfoDataAccess>();
+            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
+            services.AddSingleton<IBrowserInfoJobServices, BrowserInfoJobServices>();
+        }
+
+        private static void RegisterOffset(this IServiceCollection services)
+        {
+            services.AddSingleton<IOffsetDataAccess, OffsetDataAccess>();
+            services.AddSingleton<IOffsetService, OffsetService>();
+        }
+
     }
 }
