@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
-using StackExchange.Redis.Extensions.Core.Abstractions;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
@@ -147,6 +146,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
+               
+
                 var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
@@ -253,11 +254,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
+                LogService.Info("this is bi post method");
+
                 var decryptedData = crypto.Decrypt(data);
 
                 var model = JsonConvert.DeserializeObject<Models.BrowserInfoJsonModel>(decryptedData);
                 if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
                 {
+                    LogService.Info("this is bi post method => session key not null.");
+
                     var browserInfo = new BrowserInfo();
                     var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model);
 
