@@ -27,18 +27,6 @@ var globalFP = (function (exports) {
         return __assign.apply(this, arguments);
     };
 
-    function __rest(s, e) {
-        var t = {};
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-            t[p] = s[p];
-        if (s != null && typeof Object.getOwnPropertySymbols === "function")
-            for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-                if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                    t[p[i]] = s[p[i]];
-            }
-        return t;
-    }
-
     function __awaiter(thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
@@ -2989,20 +2977,23 @@ var globalFP = (function (exports) {
 
     var CryptoJS = cryptoJs.exports;
 
-    function Encrypting(data, key) {
-        var iv = CryptoJS.enc.Hex.parse("c3eef06037e837f4ee390bda69c05023");
-        var pass = CryptoJS.enc.Utf8.parse(key);
-        var salt = CryptoJS.enc.Utf8.parse("234292a9fce031f2");
+    function encrypting(data, key) {
+        var iv = CryptoJS.enc.Hex.parse(key.iv);
+        var pass = CryptoJS.enc.Utf8.parse(key.pass);
+        var salt = CryptoJS.enc.Utf8.parse(key.salt);
         var key128Bits1000Iterations = CryptoJS.PBKDF2(pass.toString(CryptoJS.enc.Utf8), salt, { keySize: 128 / 32, iterations: 1000 });
         var cfg = { mode: CryptoJS.mode.CBC, iv: iv, padding: CryptoJS.pad.Pkcs7 };
         var encrypted = CryptoJS.AES.encrypt(JSON.stringify(data), key128Bits1000Iterations, cfg);
         return CryptoJS.enc.Base64.stringify(encrypted.ciphertext);
     }
-    function EncryptingAsync(data, key) {
+    function encryptingAsync(data, key) {
         return __awaiter(this, void 0, void 0, function* () {
-            let result = Encrypting(data, key);
+            let result = encrypting(data, key);
             return Promise.resolve(result);
         });
+    }
+    function hashMD5(data) {
+        return CryptoJS.MD5(data).toString();
     }
 
     /**
@@ -5555,6 +5546,71 @@ var globalFP = (function (exports) {
 
     var FingerprintJS = index;
 
+    function checkFunctionCode(func, expectedName) {
+        const reg = new RegExp("^\\s*function " +
+            expectedName +
+            "\\s*\\(\\)\\s*\\{\\s*\\[native code\\]\\s*\\}\\s*$");
+        if (!func.toString().match(reg)) {
+            return true;
+        }
+        return false;
+    }
+    function isFnCanvasDefender() {
+        return checkFunctionCode(HTMLCanvasElement.prototype.toDataURL, "toDataURL");
+    }
+    function isFnWebGLDefender() {
+        return (checkFunctionCode(WebGLRenderingContext.prototype.bufferData, "bufferData") ||
+            checkFunctionCode(WebGL2RenderingContext.prototype.bufferData, "bufferData"));
+    }
+
+    function webglId() {
+        var canvas, ctx, width = 256, height = 128;
+        canvas = document.createElement("canvas");
+        (canvas.width = width),
+            (canvas.height = height),
+            (ctx =
+                canvas.getContext("webgl2") ||
+                    canvas.getContext("experimental-webgl2") ||
+                    canvas.getContext("webgl") ||
+                    canvas.getContext("experimental-webgl") ||
+                    canvas.getContext("moz-webgl"));
+        try {
+            var f = "attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}";
+            var g = "precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}";
+            var h = ctx.createBuffer();
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, h);
+            var i = new Float32Array([-0.2, -0.9, 0, 0.4, -0.26, 0, 0, 0.7321, 0]);
+            ctx.bufferData(ctx.ARRAY_BUFFER, i, ctx.STATIC_DRAW),
+                (h.itemSize = 3),
+                (h.numItems = 3);
+            var j = ctx.createProgram();
+            var k = ctx.createShader(ctx.VERTEX_SHADER);
+            ctx.shaderSource(k, f);
+            ctx.compileShader(k);
+            var l = ctx.createShader(ctx.FRAGMENT_SHADER);
+            ctx.shaderSource(l, g);
+            ctx.compileShader(l);
+            ctx.attachShader(j, k);
+            ctx.attachShader(j, l);
+            ctx.linkProgram(j);
+            ctx.useProgram(j);
+            j.vertexPosAttrib = ctx.getAttribLocation(j, "attrVertex");
+            j.offsetUniform = ctx.getUniformLocation(j, "uniformOffset");
+            ctx.enableVertexAttribArray(j.vertexPosArray);
+            ctx.vertexAttribPointer(j.vertexPosAttrib, h.itemSize, ctx.FLOAT, !1, 0, 0);
+            ctx.uniform2f(j.offsetUniform, 1, 1);
+            ctx.drawArrays(ctx.TRIANGLE_STRIP, 0, h.numItems);
+        }
+        catch (e) {
+            return null;
+        }
+        var m = "";
+        var n = new Uint8Array(width * height * 4);
+        ctx.readPixels(0, 0, width, height, ctx.RGBA, ctx.UNSIGNED_BYTE, n);
+        m = JSON.stringify(n).replace(/,?"[0-9]+":/g, "");
+        return hashMD5(m);
+    }
+
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
     }
@@ -5566,32 +5622,51 @@ var globalFP = (function (exports) {
         return screen.pixelDepth;
     }
     function getScreenPrint() {
-        return {
+        const start = Date.now();
+        const result = {
             currentResolution: getCurrentResolution(),
             pixelDepth: getPixelDepth(),
         };
+        return { value: result, duration: Date.now() - start };
     }
     function getCanvas() {
-        let canvas = sources.canvas();
-        return {
-            winding: canvas.winding,
-            geometry: canvas.geometry,
-            text: "",
-        };
+        const start = Date.now();
+        let result;
+        if (!isFnCanvasDefender()) {
+            let canvas = sources.canvas();
+            result = {
+                winding: canvas.winding,
+                geometry: canvas.geometry,
+                text: "",
+            };
+        }
+        return { value: result, duration: Date.now() - start };
+    }
+    function getWebGL() {
+        const start = Date.now();
+        let result = "undefined";
+        if (!isFnWebGLDefender()) {
+            result = webglId();
+        }
+        return { value: result, duration: Date.now() - start };
     }
     function componentsToCanonicalString(components) {
         let result = "";
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
             const value = component.error ? "error" : JSON.stringify(component.value);
-            result += `${result ? "|" : ""}${componentKey.replace(/([:|\\])/g, "\\$1")}:${value}`;
+            const duration = component.error
+                ? "error"
+                : JSON.stringify(component.duration);
+            result += `${result ? "},{" : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value == undefined ? `"undefined"` : `${value},"duration":${duration}`}`;
         }
-        return "{" + result + "}";
+        return `[${result}}]`;
     }
     function getFontPreference() {
         return __awaiter(this, void 0, void 0, function* () {
-            let font = yield sources.fontPreferences();
-            return {
+            const start = Date.now();
+            const font = yield sources.fontPreferences();
+            const result = {
                 default: font["default"],
                 apple: font["apple"],
                 serif: font["serif"],
@@ -5599,47 +5674,232 @@ var globalFP = (function (exports) {
                 min: font["min"],
                 system: font["system"],
             };
+            return { value: result, duration: Date.now() - start };
         });
     }
     function getLanguages() {
-        return {
+        const start = Date.now();
+        const result = {
             language: window.navigator.language,
             languages: window.navigator.languages.join(","),
             userLanguage: window.navigator["userLanguage"],
             browserLanguage: window.navigator["browserLanguage"],
             systemLanguage: window.navigator["systemLanguage"],
         };
+        return { value: result, duration: Date.now() - start };
     }
-    function getDI() {
+    function getFP() {
         let visitorId;
         let properties;
-        const fpPromise = FingerprintJS.load({
-            monitoring: false,
-        });
-        return fpPromise
-            .then((fp) => fp.get())
-            .then((result) => __awaiter(this, void 0, void 0, function* () {
-            const _a = result.components, components = __rest(_a, ["screenResolution", "screenFrame", "canvas", "fontPreferences", "languages"]);
-            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: { value: getScreenPrint(), duration: 0 }, canvasPrint: { value: getCanvas(), duration: 0 }, fontPreferencePrint: {
-                    value: yield getFontPreference(),
-                    duration: 0,
-                }, languagesPrint: {
-                    value: getLanguages(),
-                    duration: 0,
-                } });
+        const fpPromise = loadSources(sources, {}, [
+            "screenResolution",
+            "screenFrame",
+            "canvas",
+            "fontPreferences",
+            "languages",
+        ])();
+        return fpPromise.then((components) => __awaiter(this, void 0, void 0, function* () {
+            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: getCanvas(), webglPrint: isFnCanvasDefender()
+                    ? getWebGL()
+                    : { value: "undefined", duration: 0 } });
             visitorId = FingerprintJS.hashComponents(customComponents);
             properties = componentsToCanonicalString(customComponents);
-            return Promise.resolve({ Id: visitorId, Properties: properties });
+            return Promise.resolve({
+                Id: visitorId,
+                Properties: properties,
+                CheckCanvasDefender: isFnCanvasDefender(),
+                CheckWebGLDefender: isFnWebGLDefender(),
+            });
         }));
     }
 
-    var apiUrl = "__apiUrl__";
-    var subscriberId = "__subscriberId__";
-    var sessionKey = "__sessionKey__";
-    function set(appAPIUrl, subscriber, sessionKey) {
-        this.apiUrl = appAPIUrl;
-        this.subscriberId = subscriber;
-        this.sessionKey = sessionKey;
+    let allTestFunctions = [
+        { name: "UserAgent", testFunction: testUserAgent, active: 1 },
+        { name: "ChromeWindow", testFunction: testChromeWindow, active: 1 },
+        { name: "Plugins", testFunction: testPlugins, active: 0 },
+        { name: "AppVersion", testFunction: testAppVersion, active: 1 },
+        { name: "ConnectionRtt", testFunction: testConnectionRtt, active: 1 },
+        { name: "Webdriver", testFunction: testWebdriver, active: 1 },
+    ];
+    //* All Tests *//
+    function testWebdriver() {
+        let webdriver = navigator.webdriver;
+        return webdriver ? 1 : 0;
+    }
+    // User Agent
+    function testUserAgent() {
+        if (/Headless/.test(window.navigator.userAgent)) {
+            // Headless
+            return 1;
+        }
+        else {
+            // Not Headless
+            return 0;
+        }
+    }
+    // Window.Chrome
+    function testChromeWindow() {
+        if (eval.toString().length == 33 && !window.chrome) {
+            // Headless
+            return 1;
+        }
+        else {
+            // Not Headless
+            return 0;
+        }
+    }
+    // Notification Permissions
+    function testNotificationPermissions() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!navigator.permissions) {
+                return 0;
+            }
+            return yield navigator.permissions
+                .query({ name: "notifications" })
+                .then(function (permissionStatus) {
+                if (Notification.permission === "denied" &&
+                    permissionStatus.state === "prompt") {
+                    // Headless
+                    return 0.5;
+                }
+                else {
+                    // Not Headless
+                    return 0;
+                }
+            });
+        });
+    }
+    // No Plugins
+    function testPlugins() {
+        let length = navigator.plugins.length;
+        return length === 0 ? 1 : 0;
+    }
+    // App Version
+    function testAppVersion() {
+        let appVersion = navigator.appVersion;
+        return /headless/i.test(appVersion) ? 1 : 0;
+    }
+    // Connection Rtt
+    function testConnectionRtt() {
+        let connection = navigator.connection;
+        let connectionRtt = connection ? connection.rtt : undefined;
+        if (connectionRtt === undefined) {
+            return 0; // Flag doesn't even exists so just return NOT HEADLESS
+        }
+        else {
+            return connectionRtt === 0 ? 0.5 : 0;
+        }
+    }
+    //* Main Functions *//
+    function getHeadlessScore() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let score = 0;
+            let testsRun = 0;
+            let testRunDetail = "";
+            return yield testNotificationPermissions()
+                .then((x) => {
+                score = x;
+                testsRun++;
+                testRunDetail = "NotificationPermissions : " + x + ", ";
+            })
+                .then(() => {
+                allTestFunctions.forEach((test) => {
+                    if (test.active == 1) {
+                        let result = test.testFunction();
+                        score += result;
+                        testsRun++;
+                        testRunDetail += test.name + " : " + result + ", ";
+                    }
+                });
+                return {
+                    score: score,
+                    testsRun: testsRun,
+                    testsDetail: testRunDetail.substring(0, testRunDetail.length - 2),
+                };
+            });
+        });
+    }
+
+    function getBrowserName() {
+        // OPERA 8.0+
+        var isOpera = (!!window.opr || !!window.opera);
+        if (isOpera)
+            return "Opera";
+        // FIREFOX 1.0+
+        var isFirefox = typeof InstallTrigger !== "undefined";
+        if (isFirefox)
+            return "Firefox";
+        // SAFARI 3.0+
+        var isSafari = /constructor/i.test(window["HTMLElement"])
+            || /apple/i.test(navigator.vendor) && !!window["safari"]
+            || (function (p) {
+                return p.toString() === "[object SafariRemoteNotification]";
+            })(!window["safari"] ||
+                (typeof safari !== "undefined" && safari.pushNotification));
+        // var isSafari = /apple/i.test(navigator.vendor) && !!window["safari"];
+        if (isSafari)
+            return "Safari";
+        // INTERNET EXPLORER 6-11
+        var isIE = /*@cc_on!@*/ !!document["documentMode"];
+        if (isIE)
+            return "IE";
+        // EDGE 20+
+        var isEdge = !isIE && !!window["StyleMedia"];
+        if (isEdge)
+            return "Edge";
+        // CHROME 1+
+        var isChrome = !!window["chrome"];
+        if (isChrome)
+            return "Chrome";
+        // // BLINK ENGINE DETECTION
+        // var isBlink = (isChrome || isOpera) && !!window.CSS;
+        // if(isBlink) return 'Blink';
+        return "Other";
+    }
+    function getOS() {
+        var userAgent = navigator.userAgent, platform = navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], os = null;
+        if (macosPlatforms.indexOf(platform) !== -1) {
+            os = "Mac";
+        }
+        else if (isIOS()) {
+            os = "iOS";
+        }
+        else if (windowsPlatforms.indexOf(platform) !== -1) {
+            os = "Windows";
+        }
+        else if (/Android/.test(userAgent)) {
+            os = "Android";
+        }
+        else if (!os && /Linux/.test(platform)) {
+            os = "Linux";
+        }
+        return os;
+    }
+    function isIOS() {
+        const arrDevice = [
+            'iPad Simulator',
+            'iPhone Simulator',
+            'iPod Simulator',
+            'iPad',
+            'iPhone',
+            'iPod'
+        ];
+        const platform = navigator.platform;
+        return (!!platform && !!arrDevice.find(v => platform.includes(v)))
+            // iPad on iOS 13 detection
+            || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
+    }
+    function getMobileDevice() {
+        return window.matchMedia("only screen and (max-width: 760px)").matches;
+    }
+    function getBrowserInfo() {
+        return {
+            OSName: getOS(),
+            BrowserName: getBrowserName(),
+            Platform: navigator.platform,
+            Vendor: navigator.vendor,
+            IsMobileDevice: getMobileDevice() ? 1 : 0,
+        };
     }
 
     var localforage = {exports: {}};
@@ -8514,7 +8774,7 @@ var globalFP = (function (exports) {
         }
         document.cookie = name + "=" + (value || "") + expires + "; path=/";
     }
-    function getCookie(name) {
+    function getCookie$1(name) {
         var nameEQ = name + "=";
         var ca = document.cookie.split(";");
         for (var i = 0; i < ca.length; i++) {
@@ -8567,7 +8827,7 @@ var globalFP = (function (exports) {
                 });
                 storageDriver
                     .setItem(name, value, () => { })
-                    .then(console.log)
+                    //.then(console.log)
                     .catch((e) => {
                     console.log(e.message);
                 });
@@ -8593,7 +8853,7 @@ var globalFP = (function (exports) {
                     }
                 }
             }));
-            cookies.push(Promise.resolve(getCookie(name)));
+            cookies.push(Promise.resolve(getCookie$1(name)));
             return cookies;
         })
             .then((res) => {
@@ -8613,113 +8873,7 @@ var globalFP = (function (exports) {
         });
     }
 
-    let allTestFunctions = [
-        { name: "UserAgent", testFunction: testUserAgent, active: 1 },
-        { name: "ChromeWindow", testFunction: testChromeWindow, active: 1 },
-        { name: "Plugins", testFunction: testPlugins, active: 0 },
-        { name: "AppVersion", testFunction: testAppVersion, active: 1 },
-        { name: "ConnectionRtt", testFunction: testConnectionRtt, active: 1 },
-        { name: "Webdriver", testFunction: testWebdriver, active: 1 },
-    ];
-    //* All Tests *//
-    function testWebdriver() {
-        let webdriver = navigator.webdriver;
-        return webdriver ? 1 : 0;
-    }
-    // User Agent
-    function testUserAgent() {
-        if (/Headless/.test(window.navigator.userAgent)) {
-            // Headless
-            return 1;
-        }
-        else {
-            // Not Headless
-            return 0;
-        }
-    }
-    // Window.Chrome
-    function testChromeWindow() {
-        if (eval.toString().length == 33 && !window.chrome) {
-            // Headless
-            return 1;
-        }
-        else {
-            // Not Headless
-            return 0;
-        }
-    }
-    // Notification Permissions
-    function testNotificationPermissions() {
-        return __awaiter(this, void 0, void 0, function* () {
-            if (!navigator.permissions) {
-                return 0;
-            }
-            return yield navigator.permissions
-                .query({ name: "notifications" })
-                .then(function (permissionStatus) {
-                if (Notification.permission === "denied" &&
-                    permissionStatus.state === "prompt") {
-                    // Headless
-                    return 0.5;
-                }
-                else {
-                    // Not Headless
-                    return 0;
-                }
-            });
-        });
-    }
-    // No Plugins
-    function testPlugins() {
-        let length = navigator.plugins.length;
-        return length === 0 ? 1 : 0;
-    }
-    // App Version
-    function testAppVersion() {
-        let appVersion = navigator.appVersion;
-        return /headless/i.test(appVersion) ? 1 : 0;
-    }
-    // Connection Rtt
-    function testConnectionRtt() {
-        let connection = navigator.connection;
-        let connectionRtt = connection ? connection.rtt : undefined;
-        if (connectionRtt === undefined) {
-            return 0; // Flag doesn't even exists so just return NOT HEADLESS
-        }
-        else {
-            return connectionRtt === 0 ? 0.5 : 0;
-        }
-    }
-    //* Main Functions *//
-    function getHeadlessScore() {
-        return __awaiter(this, void 0, void 0, function* () {
-            let score = 0;
-            let testsRun = 0;
-            let testRunDetail = "";
-            return yield testNotificationPermissions()
-                .then((x) => {
-                score = x;
-                testsRun++;
-                testRunDetail = "NotificationPermissions : " + x + ", ";
-            })
-                .then(() => {
-                allTestFunctions.forEach((test) => {
-                    if (test.active == 1) {
-                        let result = test.testFunction();
-                        score += result;
-                        testsRun++;
-                        testRunDetail += test.name + " : " + result + ", ";
-                    }
-                });
-                return {
-                    score: score,
-                    testsRun: testsRun,
-                    testsDetail: testRunDetail.substring(0, testRunDetail.length - 2),
-                };
-            });
-        });
-    }
-
+    var _cookieName = "__fp";
     function postData(url, data) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url, {
@@ -8747,69 +8901,74 @@ var globalFP = (function (exports) {
             });
         });
     }
-
-    var _isDebug = false;
-    var _cookieName = "__fp";
-    function isDebug(isDebug) {
-        _isDebug = isDebug;
-        return this;
+    function getCookie() {
+        return storageHandler(_cookieName);
     }
-    function config(apiUrl, subscriberId, sessionKey) {
-        set(apiUrl, subscriberId, sessionKey);
-    }
-    function getFP() {
-        let start = Date.now();
-        storageHandler(_cookieName).then((cookieCode) => {
-            getDI()
-                .then((result) => {
-                if (_isDebug) {
-                    console.log(result.Id);
-                    console.log(result.Properties);
-                }
-                else {
-                    processData(result, sessionKey, cookieCode);
-                }
-            })
-                .then(() => {
-                let end = Date.now() - start;
-                console.log(`milliseconds elapsed of collect fp = ${end}ms`);
-            });
-        });
-    }
-    function processData(result, sessionKey, cookieCode) {
-        getConfig(apiUrl).then((conf) => __awaiter(this, void 0, void 0, function* () {
-            if (conf.ok) {
-                const response = yield conf.json();
-                const fingerPrintAttribute = EncryptingAsync({
-                    di: result.Id,
-                    attr: result.Properties,
-                }, response.a).then((res) => {
-                    return postData(apiUrl + "/fpa", res);
-                });
-                const transaction = EncryptingAsync({
-                    di: result.Id,
-                    fk: sessionKey,
-                    subs: subscriberId,
-                    cookieCode: cookieCode,
-                    flagged: JSON.stringify(yield getHeadlessScore()),
-                    url: window.location && window.location.href ? window.location.href : "",
-                }, response.a).then((res) => {
-                    return postDataFp(apiUrl, res, response.b);
-                });
-                Promise.all([fingerPrintAttribute, transaction]);
-            }
-        }));
-    }
-    function getConfig(url) {
-        return fetch(url + "/conf", {
+    function getConfig(url, sessionKey) {
+        return fetch(url + "/conf/" + sessionKey, {
             method: "GET",
             redirect: "follow",
         });
     }
-    getFP();
 
-    exports.config = config;
-    exports.isDebug = isDebug;
+    function getFPID() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield getFP();
+        });
+    }
+    function capture(apiUrl, subId, sKey) {
+        const configs = getConfig(apiUrl, sKey).then((conf) => {
+            return conf.json();
+        });
+        const cookies = getCookie();
+        const fps = getFP();
+        const headless = getHeadlessScore();
+        const browserInfo = getBrowserInfo();
+        Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
+            if (config != null && config != "") {
+                const cryptConfig = {
+                    iv: config.iv,
+                    pass: config.ek,
+                    salt: config.sa,
+                };
+                encryptingAsync({
+                    di: fp.Id,
+                    attr: fp.Properties,
+                    cv: fp.CheckCanvasDefender,
+                    gl: fp.CheckWebGLDefender,
+                }, cryptConfig).then((res) => {
+                    return postData(apiUrl + "/fpa", res);
+                });
+                encryptingAsync({
+                    fk: sKey,
+                    ua: navigator.userAgent,
+                    uad: JSON.stringify(navigator.userAgentData),
+                    hscore: JSON.stringify(hl),
+                    binfo: JSON.stringify(bi),
+                }, {
+                    iv: config.iv,
+                    pass: config.ek,
+                    salt: config.sa,
+                }).then((res) => {
+                    return postData(apiUrl + "/bi", res);
+                });
+                encryptingAsync({
+                    di: fp.Id,
+                    fk: sKey,
+                    subs: subId,
+                    cookieCode: cookie,
+                    url: window.location && window.location.href
+                        ? window.location.href
+                        : "",
+                }, cryptConfig).then((res) => {
+                    return postDataFp(apiUrl, res, config.tk);
+                });
+            }
+        });
+    }
+
+    exports.capture = capture;
+    exports.getFPID = getFPID;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
