@@ -254,15 +254,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                LogService.Info("this is bi post method");
-
                 var decryptedData = crypto.Decrypt(data);
 
                 var model = JsonConvert.DeserializeObject<Models.BrowserInfoJsonModel>(decryptedData);
                 if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
                 {
-                    LogService.Info("this is bi post method => session key not null.");
-
+                    
                     var browserInfo = new BrowserInfo();
                     var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model);
 
