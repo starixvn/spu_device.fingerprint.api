@@ -5780,7 +5780,7 @@ var globalFP = (function (exports) {
     function getOS() {
         var userAgent = navigator.userAgent, platform = navigator.platform, macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"], windowsPlatforms = ["Win32", "Win64", "Windows", "WinCE"], os = null;
         if (macosPlatforms.indexOf(platform) !== -1) {
-            os = "macOS";
+            os = "Mac";
         }
         else if (isIOS()) {
             os = "iOS";
@@ -5811,7 +5811,7 @@ var globalFP = (function (exports) {
             || (navigator.userAgent.includes("Mac") && "ontouchend" in document);
     }
     function getMobileDevice() {
-        return window.matchMedia("only screen and (min-width: 320px) and (max-width: 600px)").matches;
+        return window.matchMedia("only screen and (max-width: 760px)").matches;
     }
     function getBrowserInfo() {
         return {
@@ -8832,11 +8832,6 @@ var globalFP = (function (exports) {
         });
     }
 
-    function getFPID() {
-        return __awaiter(this, void 0, void 0, function* () {
-            return yield getFP();
-        });
-    }
     function capture(apiUrl, subId, sKey) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
@@ -8887,7 +8882,6 @@ var globalFP = (function (exports) {
     }
 
     exports.capture = capture;
-    exports.getFPID = getFPID;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
