@@ -9,7 +9,5 @@
         public string SecChUaMobile { get; set; }
 
         public string BrowserInfoJs { get; set; }
-
-        public string UserAgentData { get; set; }
     }
 }

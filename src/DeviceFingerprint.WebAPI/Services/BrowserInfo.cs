@@ -12,15 +12,6 @@ namespace Device.Fingerprint.WebAPI.Services
     public class BrowserInfo
     {
 
-        public string GetIP()
-        {
-            var hostName = Dns.GetHostName();
-            var nodeAddresses = Dns.GetHostAddresses(hostName);
-            var nodeAddressV4 = nodeAddresses.FirstOrDefault(_ => _.AddressFamily == AddressFamily.InterNetwork);
-
-            return nodeAddressV4 != null ? nodeAddressV4.ToString() : "";
-        }
-
         public (string, string) GetIPAsync()
         {
             var nodeAddresses = Dns.GetHostAddresses(Dns.GetHostName());
@@ -71,7 +62,6 @@ namespace Device.Fingerprint.WebAPI.Services
 
             var browserInfoModel = new BrowserInfoModel
             {
-                ClientIPDNS = GetIP(),
                 BrowserName = browserName,
                 OSName = osName
             };
@@ -81,8 +71,7 @@ namespace Device.Fingerprint.WebAPI.Services
                 SecChUa = secChUa,
                 SecChUaPlatform = secChUaPlatform,
                 SecChUaMobile = secChUaMobile.Replace("?", ""),
-                BrowserInfoJs = browserInfoJsonModel.BrowserInfo,
-                UserAgentData = string.IsNullOrEmpty(browserInfoJsonModel.UserAgentData) ? "" : browserInfoJsonModel.UserAgentData
+                BrowserInfoJs = browserInfoJsonModel.BrowserInfo
             };
 
             return (browserInfoModel, browserInfoAttributeModel);
