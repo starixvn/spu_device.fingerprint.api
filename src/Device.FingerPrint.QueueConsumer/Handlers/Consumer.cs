@@ -59,6 +59,8 @@
             {
                 LoginName = model.LoginName,
                 ClientIp = model.ClientIp,
+                UserAgent = model.UserAgent,
+                UserAgentCode = model.UserAgentCode,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 TransKey = model.TransKey,

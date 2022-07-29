@@ -192,12 +192,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     {
                         var urlAddress = new Uri(data.Url);
 
+                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+
                         var transaction = new TransactionModel
                         {
                             SubscriberId = subscriber.SubscriberId,
                             ClientIp = data.ClientIp,
                             LoginName = data.LoginName,
                             SessionKey = data.SessionKey,
+                            UserAgent = data.UserAgent,
+                            UserAgentCode = userAgentCode,
                             TransTime = DateTime.Now,
                             Url = urlAddress.GetLeftPart(UriPartial.Path),
                             Action = data.Action,

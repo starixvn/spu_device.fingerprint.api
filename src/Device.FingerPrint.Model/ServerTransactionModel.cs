@@ -20,6 +20,8 @@ namespace Device.FingerPrint.Model
 
         public string ClientIP { get; set; }
 
+        public long UserAgentId { get; set; }
+
         public string Url { get; set; }
 
         public string TransKey { get; set; }

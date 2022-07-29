@@ -8942,7 +8942,6 @@ var globalFP = (function (exports) {
                 encryptingAsync({
                     fk: sKey,
                     ua: navigator.userAgent,
-                    uad: JSON.stringify(navigator.userAgentData),
                     hscore: JSON.stringify(hl),
                     binfo: JSON.stringify(bi),
                 }, {
