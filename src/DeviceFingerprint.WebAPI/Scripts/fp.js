@@ -12,7 +12,7 @@
             return reject(script);
         }, false);
         
-        document.body.appendChild(script);
+        document.head.appendChild(script);
     },
     url: function urls(_url) {
         return new Promise(function (resolve, reject) {
