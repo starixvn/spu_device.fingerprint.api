@@ -8885,9 +8885,9 @@ var globalFP = (function (exports) {
             });
         });
     }
-    function postDataFp(url, data, token) {
+    function postDataSec(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url + "/fp", {
+            return fetch(url, {
                 method: "POST",
                 cache: "no-cache",
                 credentials: "include",
@@ -8960,7 +8960,7 @@ var globalFP = (function (exports) {
                         ? window.location.href
                         : "",
                 }, cryptConfig).then((res) => {
-                    return postDataFp(apiUrl, res, config.tk);
+                    return postDataSec(apiUrl + "/fp", res, config.tk);
                 });
             }
         });
