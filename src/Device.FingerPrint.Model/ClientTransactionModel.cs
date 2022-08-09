@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Device.FingerPrint.Model
 {
@@ -16,6 +15,8 @@ namespace Device.FingerPrint.Model
         public string Flagged { get; set; }
 
         public string Url { get; set; }
+
+        public string AddonCode { get; set; }
 
         public DateTime TransTime { get; set; }
     }

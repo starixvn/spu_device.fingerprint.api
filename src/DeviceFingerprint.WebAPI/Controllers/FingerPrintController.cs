@@ -146,8 +146,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-               
-
                 var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
@@ -155,6 +153,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
+                        var defenderAttributesService = new DefenderAttributesService();
+
                         var clientTransactionModel = new ClientTransactionModel
                         {
                             FingerPrintCode = fingerPrint.FingerPrintCode,
@@ -162,6 +162,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SubscriberId = fingerPrint.SubscriberId,
                             CookieCode = fingerPrint.CookieCode,
                             Url = fingerPrint.Url,
+                            AddonCode = defenderAttributesService.GenerateAddonCode(fingerPrint.DefenderAttributes),
                             TransTime = DateTime.Now
                         };
 
@@ -237,9 +238,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
                         FingerPrintCode = fpAttributes.FingerPrintCode,
-                        Attribute = fpAttributes.Attributes,
-                        CheckCanvasDefender = fpAttributes.CheckCanvasDefender,
-                        CheckWebGLDefender = fpAttributes.CheckWebGLDefender
+                        Attribute = fpAttributes.Attributes
                     };
 
                     easyNetQService.PushData(fpAttributesModel);

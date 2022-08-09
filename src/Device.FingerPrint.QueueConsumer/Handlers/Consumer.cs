@@ -81,6 +81,7 @@
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 Url = model.Url,
+                AddonCode = model.AddonCode,
                 TransTime = model.TransTime
             };
         }
@@ -90,9 +91,7 @@
             return new FingerprintAttributesEntity
             {
                 FingerPrintCode = model.FingerPrintCode,
-                Attribute = model.Attribute,
-                CheckCanvasDefender = model.CheckCanvasDefender,
-                CheckWebGLDefender = model.CheckWebGLDefender
+                Attribute = model.Attribute
             };
         }
 

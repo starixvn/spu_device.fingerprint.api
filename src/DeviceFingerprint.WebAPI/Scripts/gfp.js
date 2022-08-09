@@ -5562,6 +5562,13 @@ var globalFP = (function (exports) {
         return (checkFunctionCode(WebGLRenderingContext.prototype.bufferData, "bufferData") ||
             checkFunctionCode(WebGL2RenderingContext.prototype.bufferData, "bufferData"));
     }
+    function isFnFontDefender() {
+        return false;
+    }
+    function isFnAudioContextDefender() {
+        return checkFunctionCode(AudioBuffer.prototype.getChannelData, "getChannelData")
+            || checkFunctionCode(BaseAudioContext.prototype.createAnalyser, "createAnalyser");
+    }
 
     function webglId() {
         var canvas, ctx, width = 256, height = 128;
@@ -5709,6 +5716,8 @@ var globalFP = (function (exports) {
                 Properties: properties,
                 CheckCanvasDefender: isFnCanvasDefender(),
                 CheckWebGLDefender: isFnWebGLDefender(),
+                CheckFontDefender: isFnFontDefender(),
+                CheckAudioContextDefender: isFnAudioContextDefender()
             });
         }));
     }
@@ -8885,9 +8894,9 @@ var globalFP = (function (exports) {
             });
         });
     }
-    function postDataSec(url, data, token) {
+    function postDataFp(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url, {
+            return fetch(url + "/fp", {
                 method: "POST",
                 cache: "no-cache",
                 credentials: "include",
@@ -8934,8 +8943,6 @@ var globalFP = (function (exports) {
                 encryptingAsync({
                     di: fp.Id,
                     attr: fp.Properties,
-                    cv: fp.CheckCanvasDefender,
-                    gl: fp.CheckWebGLDefender,
                 }, cryptConfig).then((res) => {
                     return postData(apiUrl + "/fpa", res);
                 });
@@ -8959,8 +8966,14 @@ var globalFP = (function (exports) {
                     url: window.location && window.location.href
                         ? window.location.href
                         : "",
+                    da: {
+                        cv: fp.CheckCanvasDefender,
+                        gl: fp.CheckWebGLDefender,
+                        fd: fp.CheckFontDefender,
+                        ac: fp.CheckAudioContextDefender
+                    }
                 }, cryptConfig).then((res) => {
-                    return postDataSec(apiUrl + "/fp", res, config.tk);
+                    return postDataFp(apiUrl, res, config.tk);
                 });
             }
         });

@@ -1,5 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Device.FingerPrint.Model;
+using System;
 
 namespace Device.FingerPrint.Features.ClientTransaction.Model
 {
@@ -20,6 +20,8 @@ namespace Device.FingerPrint.Features.ClientTransaction.Model
         public string Flagged { get; set; }
 
         public string Url { get; set; }
+
+        public string AddonCode { get; set; }
 
         public DateTime TransTime { get; set; }
     }
