@@ -13,6 +13,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IRawUserAgentJobServices
     {
+        void UpdateRawUserAgent(int batchSize);
+
         IEnumerable<BrowserInfoDetectionModel> ParseUserAgentFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos);
     }
 
@@ -26,6 +28,46 @@ namespace Device.FingerPrint.ServiceAPI.Services
             this.rawUserAgentService = rawUserAgentService;
         }
 
+        public void UpdateRawUserAgent(int batchSize)
+        {
+            var rawUserAgents = rawUserAgentService.GetRawUserAgents(batchSize, offsetId);
+
+            if (rawUserAgents != null && rawUserAgents.Any())
+            {
+                var userAgentInfoList = DeviceDetection(rawUserAgents);
+
+                ProcessUpdateUserAgent(userAgentInfoList);
+            }
+        }
+
+        private IEnumerable<UserAgentInfoModel> DeviceDetection(IEnumerable<RawUserAgentModel> rawUserAgents)
+        {
+            var userAgentInfoList = new List<UserAgentInfoModel>();
+
+            DeviceDetector.SetVersionTruncation(VersionTruncation.VERSION_TRUNCATION_NONE);
+
+            foreach (var rawUserAgent in rawUserAgents)
+            {
+                var userAgentInfo = GetUserAgentInfo(rawUserAgent);
+
+                userAgentInfoList.Add(userAgentInfo);
+            }
+
+            return userAgentInfoList;
+        }
+
+        private void ProcessUpdateUserAgent(IEnumerable<UserAgentInfoModel> rawUserAgents)
+        {
+            if (rawUserAgents != null && rawUserAgents.Any())
+            {
+                var rawUserAgentJson = JsonConvert.SerializeObject(rawUserAgents);
+
+                var offsetValue = rawUserAgents.Min(x => x.Id);
+
+                rawUserAgentService.UpdateRawUserAgent(rawUserAgentJson, offsetId, offsetValue);
+            }
+        }
+
         public IEnumerable<BrowserInfoDetectionModel> ParseUserAgentFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos)
         {
             if (browserInfos != null && browserInfos.Any())
@@ -35,7 +77,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 if (userAgentInfoList != null && userAgentInfoList.Any())
                 {
-                    _ = ProcessUpdateUserAgent(userAgentInfoList);
+                    _ = ProcessUpdateUserAgentAsync(userAgentInfoList);
                 }
 
                 return browserInfoParsed;
@@ -74,7 +116,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return (new List<UserAgentInfoModel>(), new List<BrowserInfoDetectionModel>());
         }
 
-        private async Task ProcessUpdateUserAgent(IEnumerable<UserAgentInfoModel> rawUserAgents)
+        private async Task ProcessUpdateUserAgentAsync(IEnumerable<UserAgentInfoModel> rawUserAgents)
         {
             try
             {
@@ -144,5 +186,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             return userAgentInfo;
         }
+
     }
 }

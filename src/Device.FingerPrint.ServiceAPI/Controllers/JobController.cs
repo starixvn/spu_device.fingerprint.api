@@ -18,6 +18,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IFPTransactionJobService fPTransactionJobService;
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IBrowserInfoJobServices browserInfoJobServices;
+        private readonly IRawUserAgentJobServices rawUserAgentJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -26,7 +27,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
-                            , IBrowserInfoJobServices browserInfoJobServices)
+                            , IBrowserInfoJobServices browserInfoJobServices
+                            , IRawUserAgentJobServices rawUserAgentJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -34,8 +36,9 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.summaryJobServices = summaryJobServices;
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
-            this.browserInfoJobServices = browserInfoJobServices;
             this.archiveJobServices = archiveJobServices;
+            this.browserInfoJobServices = browserInfoJobServices;
+            this.rawUserAgentJobServices = rawUserAgentJobServices;
         }
 
         [HttpPost("deviceidentify")]
@@ -285,6 +288,22 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             {
                 archiveJobServices.UpdateModifiedDate(batchSize);
 
+                return Task.FromResult(true);
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
+
+                return Task.FromResult(false);
+            }
+        }
+
+        [HttpPost("parseuseragent")]
+        public Task<bool> ParseUserAgent([FromForm] int batchSize)
+        {
+            try
+            {
+                rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
                 return Task.FromResult(true);
             }
             catch (Exception ex)

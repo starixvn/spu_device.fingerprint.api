@@ -38,8 +38,7 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
                     UAOSName = x.UAOSName,
                     HeadlessScore = x.HeadlessScore,
                     BrowserName = x.BrowserName,
-                    OSName = x.OSName,
-                    IsParsed = x.IsParsed
+                    OSName = x.OSName
                 });
             }
 

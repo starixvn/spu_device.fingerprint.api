@@ -21,7 +21,5 @@
         public string Flagged { get; set; }
 
         public string Reason { get; set; }
-
-        public int IsParsed { get; set; }
     }
 }

@@ -37,9 +37,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             if (browserInfos != null && browserInfos.Any())
             {
-                var offsetValue = browserInfos.Max(x => x.Id);
+                var offsetValue = browserInfos.Min(x => x.Id);
                 var browserInfoModel = TransformBrowserInfo(browserInfos);
-                var (browserInfoParsed, browserInfoNotParsed) = BrowserInfoClassification(browserInfoModel);
 
                 var listTask = new List<Task>
                 {
@@ -47,33 +46,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     {
                         try
                         {
-                            if (browserInfoParsed != null && browserInfoParsed.Any())
+                            if (browserInfoModel != null && browserInfoModel.Any())
                             {
-                                var browserInfoExecuted = ExecuteRules(browserInfoParsed, detectionLevel);
+                                var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
 
                                 UpdateFlagged(browserInfoExecuted, batchSize);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            LogService.Error(ex.Message, ex);
-                        }
-                    }),
-
-                    Task.Run(() =>
-                    {
-                        try
-                        {
-                            if (browserInfoNotParsed != null && browserInfoNotParsed.Any())
-                            {
-                                var browserInfoMerged = rawUserAgentJobServices.ParseUserAgentFromBrowserInfo(browserInfoNotParsed);
-
-                                if (browserInfoMerged != null && browserInfoMerged.Any())
-                                {
-                                    var browserInfoExecuted = ExecuteRules(browserInfoMerged, detectionLevel);
-
-                                    UpdateFlagged(browserInfoExecuted, batchSize);
-                                }
                             }
                         }
                         catch (Exception ex)
@@ -110,8 +87,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 UAOSName = x.UAOSName,
                 HeadlessScore = x.HeadlessScore,
                 BrowserName = x.BrowserName,
-                OSName = x.OSName,
-                IsParsed = x.IsParsed
+                OSName = x.OSName
             });
         }
 
@@ -130,45 +106,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     BrowserName = browserInfo.BrowserName,
                     OSName = browserInfo.OSName,
                     UABrowserName = browserInfo.UABrowserName,
-                    UAOSName = browserInfo.UAOSName,
-                    IsParsed = browserInfo.IsParsed
+                    UAOSName = browserInfo.UAOSName
                 });
             }
 
             return listEntity;
-        }
-
-        private (IEnumerable<BrowserInfoDetectionModel>, IEnumerable<BrowserInfoDetectionModel>) BrowserInfoClassification(IEnumerable<BrowserInfoDetectionModel> browserInfos)
-        {
-            var browserInfoParsed = browserInfos.Where(x => x.IsParsed == 1)
-                                                .Select(x => new BrowserInfoDetectionModel
-                                                {
-                                                    Id = x.Id,
-                                                    UserAgentId = x.UserAgentId,
-                                                    UserAgent = x.UserAgent,
-                                                    UABrowserName = x.UABrowserName,
-                                                    UAOSName = x.UAOSName,
-                                                    HeadlessScore = x.HeadlessScore,
-                                                    BrowserName = x.BrowserName,
-                                                    OSName = x.OSName,
-                                                    IsParsed = x.IsParsed
-                                                });
-
-            var browserInfoNotParsed = browserInfos.Where(x => x.IsParsed == 0)
-                                                .Select(x => new BrowserInfoDetectionModel
-                                                {
-                                                    Id = x.Id,
-                                                    UserAgentId = x.UserAgentId,
-                                                    UserAgent = x.UserAgent,
-                                                    UABrowserName = x.UABrowserName,
-                                                    UAOSName = x.UAOSName,
-                                                    HeadlessScore = x.HeadlessScore,
-                                                    BrowserName = x.BrowserName,
-                                                    OSName = x.OSName,
-                                                    IsParsed = x.IsParsed
-                                                });
-
-            return (browserInfoParsed, browserInfoNotParsed);
         }
 
         private IEnumerable<BrowserInfoDetectionModel> ExecuteRules(IEnumerable<BrowserInfoDetectionModel> browserInfos, int detectionLevel)
