@@ -267,6 +267,21 @@ namespace Device.Fingerprint.WebAPI.Models
         public List<string> VendorFlavors { get; set; }
     }
 
+    public class DefenderAttributesModel
+    {
+        [JsonProperty("cv")]
+        public bool CheckCanvasDefender { get; set; }
+
+        [JsonProperty("gl")]
+        public bool CheckWebGLDefender { get; set; }
+
+        [JsonProperty("fd")]
+        public bool CheckFontDefender { get; set; }
+
+        [JsonProperty("ac")]
+        public bool CheckAudioContextDefender { get; set; }
+    }
+
 
     public class FingerPrintModel
     {
@@ -287,6 +302,9 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("url")]
         public string Url { get; set; }
+
+        [JsonProperty("da")]
+        public DefenderAttributesModel DefenderAttributes { get; set; }
     }
 
 

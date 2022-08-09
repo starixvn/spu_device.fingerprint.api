@@ -146,8 +146,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-               
-
                 var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
@@ -155,6 +153,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
+                        var defenderAttributesService = new DefenderAttributesService();
+
                         var clientTransactionModel = new ClientTransactionModel
                         {
                             FingerPrintCode = fingerPrint.FingerPrintCode,
@@ -162,6 +162,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                             SubscriberId = fingerPrint.SubscriberId,
                             CookieCode = fingerPrint.CookieCode,
                             Url = fingerPrint.Url,
+                            AddonCode = defenderAttributesService.GenerateAddonCode(fingerPrint.DefenderAttributes),
                             TransTime = DateTime.Now
                         };
 
@@ -192,12 +193,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     {
                         var urlAddress = new Uri(data.Url);
 
+                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+
                         var transaction = new TransactionModel
                         {
                             SubscriberId = subscriber.SubscriberId,
                             ClientIp = data.ClientIp,
                             LoginName = data.LoginName,
                             SessionKey = data.SessionKey,
+                            UserAgent = data.UserAgent,
+                            UserAgentCode = userAgentCode,
                             TransTime = DateTime.Now,
                             Url = urlAddress.GetLeftPart(UriPartial.Path),
                             Action = data.Action,

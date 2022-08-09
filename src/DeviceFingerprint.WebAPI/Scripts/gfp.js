@@ -27,18 +27,6 @@ var globalFP = (function (exports) {
         return __assign.apply(this, arguments);
     };
 
-    function __rest(s, e) {
-        var t = {};
-        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-            t[p] = s[p];
-        if (s != null && typeof Object.getOwnPropertySymbols === "function")
-            for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-                if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                    t[p[i]] = s[p[i]];
-            }
-        return t;
-    }
-
     function __awaiter(thisArg, _arguments, P, generator) {
         function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
         return new (P || (P = Promise))(function (resolve, reject) {
@@ -3004,6 +2992,9 @@ var globalFP = (function (exports) {
             return Promise.resolve(result);
         });
     }
+    function hashMD5(data) {
+        return CryptoJS.MD5(data).toString();
+    }
 
     /**
      * FingerprintJS v3.3.3 - Copyright (c) FingerprintJS, Inc, 2022 (https://fingerprintjs.com)
@@ -5555,6 +5546,78 @@ var globalFP = (function (exports) {
 
     var FingerprintJS = index;
 
+    function checkFunctionCode(func, expectedName) {
+        const reg = new RegExp("^\\s*function " +
+            expectedName +
+            "\\s*\\(\\)\\s*\\{\\s*\\[native code\\]\\s*\\}\\s*$");
+        if (!func.toString().match(reg)) {
+            return true;
+        }
+        return false;
+    }
+    function isFnCanvasDefender() {
+        return checkFunctionCode(HTMLCanvasElement.prototype.toDataURL, "toDataURL");
+    }
+    function isFnWebGLDefender() {
+        return (checkFunctionCode(WebGLRenderingContext.prototype.bufferData, "bufferData") ||
+            checkFunctionCode(WebGL2RenderingContext.prototype.bufferData, "bufferData"));
+    }
+    function isFnFontDefender() {
+        return false;
+    }
+    function isFnAudioContextDefender() {
+        return checkFunctionCode(AudioBuffer.prototype.getChannelData, "getChannelData")
+            || checkFunctionCode(BaseAudioContext.prototype.createAnalyser, "createAnalyser");
+    }
+
+    function webglId() {
+        var canvas, ctx, width = 256, height = 128;
+        canvas = document.createElement("canvas");
+        (canvas.width = width),
+            (canvas.height = height),
+            (ctx =
+                canvas.getContext("webgl2") ||
+                    canvas.getContext("experimental-webgl2") ||
+                    canvas.getContext("webgl") ||
+                    canvas.getContext("experimental-webgl") ||
+                    canvas.getContext("moz-webgl"));
+        try {
+            var f = "attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}";
+            var g = "precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}";
+            var h = ctx.createBuffer();
+            ctx.bindBuffer(ctx.ARRAY_BUFFER, h);
+            var i = new Float32Array([-0.2, -0.9, 0, 0.4, -0.26, 0, 0, 0.7321, 0]);
+            ctx.bufferData(ctx.ARRAY_BUFFER, i, ctx.STATIC_DRAW),
+                (h.itemSize = 3),
+                (h.numItems = 3);
+            var j = ctx.createProgram();
+            var k = ctx.createShader(ctx.VERTEX_SHADER);
+            ctx.shaderSource(k, f);
+            ctx.compileShader(k);
+            var l = ctx.createShader(ctx.FRAGMENT_SHADER);
+            ctx.shaderSource(l, g);
+            ctx.compileShader(l);
+            ctx.attachShader(j, k);
+            ctx.attachShader(j, l);
+            ctx.linkProgram(j);
+            ctx.useProgram(j);
+            j.vertexPosAttrib = ctx.getAttribLocation(j, "attrVertex");
+            j.offsetUniform = ctx.getUniformLocation(j, "uniformOffset");
+            ctx.enableVertexAttribArray(j.vertexPosArray);
+            ctx.vertexAttribPointer(j.vertexPosAttrib, h.itemSize, ctx.FLOAT, !1, 0, 0);
+            ctx.uniform2f(j.offsetUniform, 1, 1);
+            ctx.drawArrays(ctx.TRIANGLE_STRIP, 0, h.numItems);
+        }
+        catch (e) {
+            return null;
+        }
+        var m = "";
+        var n = new Uint8Array(width * height * 4);
+        ctx.readPixels(0, 0, width, height, ctx.RGBA, ctx.UNSIGNED_BYTE, n);
+        m = JSON.stringify(n).replace(/,?"[0-9]+":/g, "");
+        return hashMD5(m);
+    }
+
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
     }
@@ -5566,33 +5629,51 @@ var globalFP = (function (exports) {
         return screen.pixelDepth;
     }
     function getScreenPrint() {
-        return {
+        const start = Date.now();
+        const result = {
             currentResolution: getCurrentResolution(),
             pixelDepth: getPixelDepth(),
         };
+        return { value: result, duration: Date.now() - start };
     }
     function getCanvas() {
-        let canvas = sources.canvas();
-        return {
-            winding: canvas.winding,
-            geometry: canvas.geometry,
-            text: "",
-        };
+        const start = Date.now();
+        let result;
+        if (!isFnCanvasDefender()) {
+            let canvas = sources.canvas();
+            result = {
+                winding: canvas.winding,
+                geometry: canvas.geometry,
+                text: "",
+            };
+        }
+        return { value: result, duration: Date.now() - start };
+    }
+    function getWebGL() {
+        const start = Date.now();
+        let result = "undefined";
+        if (!isFnWebGLDefender()) {
+            result = webglId();
+        }
+        return { value: result, duration: Date.now() - start };
     }
     function componentsToCanonicalString(components) {
         let result = "";
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
             const value = component.error ? "error" : JSON.stringify(component.value);
-            const duration = component.error ? "error" : JSON.stringify(component.duration);
+            const duration = component.error
+                ? "error"
+                : JSON.stringify(component.duration);
             result += `${result ? "},{" : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value == undefined ? `"undefined"` : `${value},"duration":${duration}`}`;
         }
         return `[${result}}]`;
     }
     function getFontPreference() {
         return __awaiter(this, void 0, void 0, function* () {
-            let font = yield sources.fontPreferences();
-            return {
+            const start = Date.now();
+            const font = yield sources.fontPreferences();
+            const result = {
                 default: font["default"],
                 apple: font["apple"],
                 serif: font["serif"],
@@ -5600,37 +5681,44 @@ var globalFP = (function (exports) {
                 min: font["min"],
                 system: font["system"],
             };
+            return { value: result, duration: Date.now() - start };
         });
     }
     function getLanguages() {
-        return {
+        const start = Date.now();
+        const result = {
             language: window.navigator.language,
             languages: window.navigator.languages.join(","),
             userLanguage: window.navigator["userLanguage"],
             browserLanguage: window.navigator["browserLanguage"],
             systemLanguage: window.navigator["systemLanguage"],
         };
+        return { value: result, duration: Date.now() - start };
     }
     function getFP() {
         let visitorId;
         let properties;
-        const fpPromise = FingerprintJS.load({
-            monitoring: false,
-        });
-        return fpPromise
-            .then((fp) => fp.get())
-            .then((result) => __awaiter(this, void 0, void 0, function* () {
-            const _a = result.components, components = __rest(_a, ["screenResolution", "screenFrame", "canvas", "fontPreferences", "languages"]);
-            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: { value: getScreenPrint(), duration: 0 }, canvasPrint: { value: getCanvas(), duration: 0 }, fontPreferencePrint: {
-                    value: yield getFontPreference(),
-                    duration: 0,
-                }, languagesPrint: {
-                    value: getLanguages(),
-                    duration: 0,
-                } });
+        const fpPromise = loadSources(sources, {}, [
+            "screenResolution",
+            "screenFrame",
+            "canvas",
+            "fontPreferences",
+            "languages",
+        ])();
+        return fpPromise.then((components) => __awaiter(this, void 0, void 0, function* () {
+            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: getCanvas(), webglPrint: isFnCanvasDefender()
+                    ? getWebGL()
+                    : { value: "undefined", duration: 0 } });
             visitorId = FingerprintJS.hashComponents(customComponents);
             properties = componentsToCanonicalString(customComponents);
-            return Promise.resolve({ Id: visitorId, Properties: properties });
+            return Promise.resolve({
+                Id: visitorId,
+                Properties: properties,
+                CheckCanvasDefender: isFnCanvasDefender(),
+                CheckWebGLDefender: isFnWebGLDefender(),
+                CheckFontDefender: isFnFontDefender(),
+                CheckAudioContextDefender: isFnAudioContextDefender()
+            });
         }));
     }
 
@@ -8832,6 +8920,11 @@ var globalFP = (function (exports) {
         });
     }
 
+    function getFPID() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield getFP();
+        });
+    }
     function capture(apiUrl, subId, sKey) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
@@ -8856,7 +8949,6 @@ var globalFP = (function (exports) {
                 encryptingAsync({
                     fk: sKey,
                     ua: navigator.userAgent,
-                    uad: JSON.stringify(navigator.userAgentData),
                     hscore: JSON.stringify(hl),
                     binfo: JSON.stringify(bi),
                 }, {
@@ -8874,6 +8966,12 @@ var globalFP = (function (exports) {
                     url: window.location && window.location.href
                         ? window.location.href
                         : "",
+                    da: {
+                        cv: fp.CheckCanvasDefender,
+                        gl: fp.CheckWebGLDefender,
+                        fd: fp.CheckFontDefender,
+                        ac: fp.CheckAudioContextDefender
+                    }
                 }, cryptConfig).then((res) => {
                     return postDataFp(apiUrl, res, config.tk);
                 });
@@ -8882,6 +8980,7 @@ var globalFP = (function (exports) {
     }
 
     exports.capture = capture;
+    exports.getFPID = getFPID;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

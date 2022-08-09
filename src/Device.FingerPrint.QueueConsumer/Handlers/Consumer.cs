@@ -59,6 +59,8 @@
             {
                 LoginName = model.LoginName,
                 ClientIp = model.ClientIp,
+                UserAgent = model.UserAgent,
+                UserAgentCode = model.UserAgentCode,
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 TransKey = model.TransKey,
@@ -79,6 +81,7 @@
                 SessionKey = model.SessionKey,
                 SubscriberId = model.SubscriberId,
                 Url = model.Url,
+                AddonCode = model.AddonCode,
                 TransTime = model.TransTime
             };
         }
