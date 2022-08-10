@@ -1,6 +1,5 @@
 ﻿using Device.FingerPrint.Features.BrowserInfo.Model;
 using Device.FingerPrint.Features.BrowserInfo.Services;
-using Device.FingerPrint.Features.Offset.Services;
 using Device.FingerPrint.Model;
 using Fanex.Logging;
 using Newtonsoft.Json;
@@ -14,65 +13,32 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
     public interface IBrowserInfoJobServices
     {
-        public void DetectBots(int batchSize, int numberOfBatch, int detectionLevel);
+        public void DetectBots(int batchSize, int detectionLevel);
     }
 
     public class BrowserInfoJobServices : IBrowserInfoJobServices
     {
         private readonly IBrowserInfoService browserInfoService;
-        private readonly IRawUserAgentJobServices rawUserAgentJobServices;
-        private readonly IOffsetService offsetService;
 
-        public BrowserInfoJobServices(IBrowserInfoService browserInfoService, IRawUserAgentJobServices rawUserAgentJobServices, IOffsetService offsetService)
+        public BrowserInfoJobServices(IBrowserInfoService browserInfoService)
         {
             this.browserInfoService = browserInfoService;
-            this.rawUserAgentJobServices = rawUserAgentJobServices;
-            this.offsetService = offsetService;
         }
 
-        public void DetectBots(int batchSize, int numberOfBatch, int detectionLevel)
+        public void DetectBots(int batchSize, int detectionLevel)
         {
-            int offsetId = (int)Offset.UpdateBrowserInfo;
-            var browserInfos = browserInfoService.GetBrowserInfo(batchSize * numberOfBatch, offsetId);
+            var browserInfos = browserInfoService.GetBrowserInfo(batchSize);
 
             if (browserInfos != null && browserInfos.Any())
             {
-                var offsetValue = browserInfos.Min(x => x.Id);
                 var browserInfoModel = TransformBrowserInfo(browserInfos);
 
-                var listTask = new List<Task>
+                if (browserInfoModel != null && browserInfoModel.Any())
                 {
-                    Task.Run(() =>
-                    {
-                        try
-                        {
-                            if (browserInfoModel != null && browserInfoModel.Any())
-                            {
-                                var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
+                    var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
 
-                                UpdateFlagged(browserInfoExecuted, batchSize);
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            LogService.Error(ex.Message, ex);
-                        }
-                    }),
-
-                    Task.Run(() =>
-                    {
-                        try
-                        {
-                            offsetService.UpdateOffset(offsetId, offsetValue);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogService.Error(ex.Message, ex);
-                        }
-                    })
-                };
-
-                Task.WaitAll(listTask.ToArray());
+                    UpdateFlagged(browserInfoExecuted, batchSize);
+                }
             }
         }
 

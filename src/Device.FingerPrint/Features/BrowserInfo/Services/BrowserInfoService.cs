@@ -7,7 +7,7 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
 {
     public interface IBrowserInfoService
     {
-        IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize, int offsetId);
+        IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize);
 
         void InsertBrowserInfo(IEnumerable<BrowserInfoEntity> listClientTransaction);
 
@@ -23,9 +23,9 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
             this.browserInfoDataAccess = browserInfoDataAccess;
         }
 
-        public IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize, int offsetId)
+        public IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize)
         {
-            var userAgent = browserInfoDataAccess.GetBrowserInfo(batchSize, offsetId);
+            var userAgent = browserInfoDataAccess.GetBrowserInfo(batchSize);
 
             if (userAgent != null && userAgent.Any())
             {

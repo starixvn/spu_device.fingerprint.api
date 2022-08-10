@@ -10,8 +10,8 @@ namespace Device.Fingerprint.WebAPI.Services
             {
                 return (model.CheckCanvasDefender ? "1" : "0")
                     + (model.CheckWebGLDefender ? "1" : "0")
-                    + (model.CheckFontDefender ? "1" : "0")
-                    + (model.CheckAudioContextDefender ? "1" : "0");
+                    + (model.CheckAudioContextDefender ? "1" : "0")
+                    + (model.CheckFontDefender ? "1" : "0");
             }
             return "";
         }

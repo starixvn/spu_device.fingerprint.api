@@ -261,7 +261,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("detectbots")]
-        public Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int detectionLevel)
+        public Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int detectionLevel)
         {
             try
             {
@@ -269,7 +269,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                  * 0 || 1 => Check Headless score
                  * 2 => Check BrowserName & OSName
                  */
-                browserInfoJobServices.DetectBots(batchSize, numberOfBatch, detectionLevel);
+                browserInfoJobServices.DetectBots(batchSize, detectionLevel);
 
                 return Task.FromResult(true);
             }

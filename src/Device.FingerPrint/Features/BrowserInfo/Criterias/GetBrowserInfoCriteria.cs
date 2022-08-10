@@ -8,9 +8,6 @@ namespace Device.FingerPrint.Features.BrowserInfo.Criterias
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
 
-        [SpParam(SqlParamName = "ip_OffsetId")]
-        public long OffsetId { get; set; }
-
         public override string GetSettingKey()
         {
             return "FPS_FP_Transform_BrowserInfo_Get";
