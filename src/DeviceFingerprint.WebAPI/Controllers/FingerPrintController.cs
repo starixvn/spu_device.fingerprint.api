@@ -78,8 +78,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return new EmptyResult();
         }
-        [HttpGet("scr/cdn/gfp")]
-        [ResponseCache(NoStore = true, Duration = 0)]
+
+        [HttpGet("scr/cdn/gfp")]        
         public ActionResult CDNScript()
         {
             try
