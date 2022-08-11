@@ -13,7 +13,7 @@
 
     public class JobService : IJobService
     { 
-        public async Task<bool> Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data)
+        public Task<bool> Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data)
         {
             var httpClient = new HttpClient
             {
@@ -23,7 +23,7 @@
 
             var jobServiceAPI = RestService.For<IJobServiceApi>(httpClient);            
 
-            return await jobServiceAPI.Execute(jobName, methodName, controller, data);
+            return jobServiceAPI.Execute(jobName, methodName, controller, data);
         }
     }
 }
