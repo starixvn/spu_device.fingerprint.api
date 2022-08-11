@@ -25,9 +25,6 @@ namespace Device.Fingerprint.WebAPI.Models
         [JsonProperty("fk")]
         public string SessionKey { get; set; }
 
-        [JsonProperty("ua")]
-        public string UserAgent { get; set; }
-
         [JsonProperty("binfo")]
         public string BrowserInfo { get; set; }
 

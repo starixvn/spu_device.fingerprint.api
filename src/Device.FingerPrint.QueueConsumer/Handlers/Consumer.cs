@@ -100,12 +100,10 @@
             return new BrowserInfoEntity
             {
                 SessionKey = model.SessionKey,
-                UserAgent = model.UserAgent,
-                UserAgentCode = model.UserAgentCode,
                 HeadlessScore = model.HeadlessScore,
                 BrowserInfo = model.BrowserInfo,
-                browserInfoAttribute = model.browserInfoAttribute,
-                browserInfoAttributeCode = model.browserInfoAttributeCode
+                BrowserInfoAttribute = model.BrowserInfoAttribute,
+                BrowserInfoAttributeCode = model.BrowserInfoAttributeCode
             };
         }
 
