@@ -8,9 +8,6 @@ namespace Device.FingerPrint.Features.RawUserAgent.Criterias
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
 
-        [SpParam(SqlParamName = "ip_OffsetId")]
-        public long OffsetId { get; set; }
-
         public override string GetSettingKey()
         {
             return "FPS_FP_Detect_RawUserAgent_Get";

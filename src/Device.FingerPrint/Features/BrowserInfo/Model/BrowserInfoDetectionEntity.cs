@@ -18,7 +18,5 @@
         public string BrowserName { get; set; }
 
         public string OSName { get; set; }
-
-        public int IsParsed { get; set; }
     }
 }

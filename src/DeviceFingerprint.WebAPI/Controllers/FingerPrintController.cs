@@ -78,8 +78,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return new EmptyResult();
         }
-        [HttpGet("scr/cdn/gfp")]
-        [ResponseCache(NoStore = true, Duration = 0)]
+
+        [HttpGet("scr/cdn/gfp")]        
         public ActionResult CDNScript()
         {
             try
@@ -272,17 +272,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     var browserInfoAttributeJson = JsonConvert.SerializeObject(browserInfoAttributeModel);
                     var browserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeJson);
 
-                    var userAgentCode = crypto.GetMD5Hash(model.UserAgent);
-
                     var rawBrowserInfoModel = new BrowserInfoModel
                     {
                         SessionKey = model.SessionKey,
-                        UserAgent = model.UserAgent,
-                        UserAgentCode = userAgentCode,
                         HeadlessScore = model.HeadlessScore,
                         BrowserInfo = browserInfoJson,
-                        browserInfoAttribute = browserInfoAttributeJson,
-                        browserInfoAttributeCode = browserInfoAttributeCode
+                        BrowserInfoAttribute = browserInfoAttributeJson,
+                        BrowserInfoAttributeCode = browserInfoAttributeCode
                     };
 
                     easyNetQService.PushData(rawBrowserInfoModel);

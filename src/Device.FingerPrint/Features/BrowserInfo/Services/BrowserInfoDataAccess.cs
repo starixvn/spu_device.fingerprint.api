@@ -7,7 +7,7 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
 {
     public interface IBrowserInfoDataAccess
     {
-        IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize, int offsetId);
+        IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize);
 
         void InsertBrowserInfo(string jsonBrowserInfo);
 
@@ -23,12 +23,11 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize, int offsetId)
+        public IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize)
         {
             var criteria = new GetBrowserInfoCriteria
             {
-                Size = batchSize,
-                OffsetId = offsetId
+                Size = batchSize
             };
 
             return repository.Fetch<BrowserInfoDetectionEntity>(criteria);

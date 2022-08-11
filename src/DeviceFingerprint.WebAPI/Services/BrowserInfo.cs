@@ -30,7 +30,6 @@ namespace Device.Fingerprint.WebAPI.Services
 
             var browserName = secChUa;
             var osName = secChUaPlatform;
-            var isMobile = secChUaMobile;
 
             if (browserName == "Other" || String.IsNullOrEmpty(browserName))
             {

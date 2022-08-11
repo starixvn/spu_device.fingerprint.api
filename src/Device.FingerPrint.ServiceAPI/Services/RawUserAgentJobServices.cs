@@ -2,94 +2,61 @@
 using Device.FingerPrint.Model;
 using DeviceDetectorNET;
 using DeviceDetectorNET.Parser;
-using Fanex.Logging;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IRawUserAgentJobServices
     {
-        IEnumerable<BrowserInfoDetectionModel> ParseUserAgentFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos);
+        void UpdateRawUserAgent(int batchSize);
     }
 
     public class RawUserAgentJobServices : IRawUserAgentJobServices
     {
         private readonly IRawUserAgentService rawUserAgentService;
-        private readonly int offsetId = (int)Offset.DetectRawUserAgent;
 
         public RawUserAgentJobServices(IRawUserAgentService rawUserAgentService)
         {
             this.rawUserAgentService = rawUserAgentService;
         }
 
-        public IEnumerable<BrowserInfoDetectionModel> ParseUserAgentFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos)
+        public void UpdateRawUserAgent(int batchSize)
         {
-            if (browserInfos != null && browserInfos.Any())
+            var rawUserAgents = rawUserAgentService.GetRawUserAgents(batchSize);
+
+            if (rawUserAgents != null && rawUserAgents.Any())
             {
-                // Get userAgentInfoList & Update browserInfos
-                var (userAgentInfoList, browserInfoParsed) = DeviceDetectionFromBrowserInfo(browserInfos);
+                var userAgentInfoList = DeviceDetection(rawUserAgents);
 
-                if (userAgentInfoList != null && userAgentInfoList.Any())
-                {
-                    _ = ProcessUpdateUserAgent(userAgentInfoList);
-                }
-
-                return browserInfoParsed;
+                ProcessUpdateUserAgent(userAgentInfoList);
             }
-
-            return new List<BrowserInfoDetectionModel>();
         }
 
-        private (IEnumerable<UserAgentInfoModel>, IEnumerable<BrowserInfoDetectionModel>) DeviceDetectionFromBrowserInfo(IEnumerable<BrowserInfoDetectionModel> browserInfos)
+        private IEnumerable<UserAgentInfoModel> DeviceDetection(IEnumerable<RawUserAgentModel> rawUserAgents)
         {
-            if (browserInfos != null && browserInfos.Any())
+            var userAgentInfoList = new List<UserAgentInfoModel>();
+
+            DeviceDetector.SetVersionTruncation(VersionTruncation.VERSION_TRUNCATION_NONE);
+
+            foreach (var rawUserAgent in rawUserAgents)
             {
-                var userAgentInfoList = new List<UserAgentInfoModel>();
-                var browserInfosList = browserInfos.ToList();
+                var userAgentInfo = GetUserAgentInfo(rawUserAgent);
 
-                DeviceDetector.SetVersionTruncation(VersionTruncation.VERSION_TRUNCATION_NONE);
-
-                foreach (var browserInfo in browserInfosList)
-                {
-                    var rawUserAgent = new RawUserAgentModel
-                    {
-                        Id = browserInfo.UserAgentId,
-                        UserAgent = browserInfo.UserAgent
-                    };
-                    var userAgentInfo = GetUserAgentInfo(rawUserAgent);
-
-                    browserInfo.UABrowserName = userAgentInfo.ClientName;
-                    browserInfo.UAOSName = userAgentInfo.OSName;
-
-                    userAgentInfoList.Add(userAgentInfo);
-                }
-                
-                return (userAgentInfoList.Distinct().ToList(), browserInfosList);
+                userAgentInfoList.Add(userAgentInfo);
             }
 
-            return (new List<UserAgentInfoModel>(), new List<BrowserInfoDetectionModel>());
+            return userAgentInfoList;
         }
 
-        private async Task ProcessUpdateUserAgent(IEnumerable<UserAgentInfoModel> rawUserAgents)
+        private void ProcessUpdateUserAgent(IEnumerable<UserAgentInfoModel> rawUserAgents)
         {
-            try
+            if (rawUserAgents != null && rawUserAgents.Any())
             {
-                if (rawUserAgents != null && rawUserAgents.Any())
-                {
-                    var rawUserAgentJson = JsonConvert.SerializeObject(rawUserAgents);
+                var rawUserAgentJson = JsonConvert.SerializeObject(rawUserAgents);
 
-                    var offsetValue = rawUserAgents.Max(x => x.Id);
-
-                    rawUserAgentService.UpdateRawUserAgent(rawUserAgentJson, offsetId, offsetValue);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
+                rawUserAgentService.UpdateRawUserAgent(rawUserAgentJson);
             }
         }
 
@@ -144,5 +111,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             return userAgentInfo;
         }
+
     }
 }

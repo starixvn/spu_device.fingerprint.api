@@ -5860,9 +5860,6 @@ var globalFP = (function (exports) {
         var isChrome = !!window["chrome"];
         if (isChrome)
             return "Chrome";
-        // // BLINK ENGINE DETECTION
-        // var isBlink = (isChrome || isOpera) && !!window.CSS;
-        // if(isBlink) return 'Blink';
         return "Other";
     }
     function getOS() {
@@ -8948,7 +8945,6 @@ var globalFP = (function (exports) {
                 });
                 encryptingAsync({
                     fk: sKey,
-                    ua: navigator.userAgent,
                     hscore: JSON.stringify(hl),
                     binfo: JSON.stringify(bi),
                 }, {

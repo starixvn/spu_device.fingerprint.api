@@ -7,9 +7,9 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
 {
     public interface IRawUserAgentDataAccess
     {
-        IEnumerable<RawUserAgentEntity> GetRawUserAgents(int batchSize, int offsetId);
+        IEnumerable<RawUserAgentEntity> GetRawUserAgents(int batchSize);
 
-        void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue);
+        void UpdateRawUserAgent(string rawUserAgentJson);
     }
 
     public class RawUserAgentDataAccess : IRawUserAgentDataAccess
@@ -21,24 +21,21 @@ namespace Device.FingerPrint.Features.RawUserAgent.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<RawUserAgentEntity> GetRawUserAgents(int batchSize, int offsetId)
+        public IEnumerable<RawUserAgentEntity> GetRawUserAgents(int batchSize)
         {
             var criteria = new GetRawUserAgentCriteria
             {
-                Size = batchSize,
-                OffsetId = offsetId
+                Size = batchSize
             };
 
             return repository.Fetch<RawUserAgentEntity>(criteria);
         }
 
-        public void UpdateRawUserAgent(string rawUserAgentJson, int offsetId, long offsetValue)
+        public void UpdateRawUserAgent(string rawUserAgentJson)
         {
             var criteria = new UpdateRawUserAgentCriteria
             {
-                RawUserAgentJson = rawUserAgentJson,
-                OffsetId = offsetId,
-                OffsetValue = offsetValue
+                RawUserAgentJson = rawUserAgentJson
             };
 
             repository.Execute(criteria);
