@@ -145,7 +145,7 @@
                     {
                         try
                         {
-                            var clientTrans = TranformClientTransactionEntity(message.Body);                            
+                            var clientTrans = TranformClientTransactionEntity(message.Body);
 
                             if (!listClientTrans.Exists(x => x.SessionKey == clientTrans.SessionKey))
                             {

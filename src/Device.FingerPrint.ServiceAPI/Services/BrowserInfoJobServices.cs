@@ -15,6 +15,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public interface IBrowserInfoJobServices
     {
         Task<bool> DetectBots(int batchSize, int detectionLevel);
+
+        public void UpdateFlaggedDCS(int batchSize);
     }
 
     public class BrowserInfoJobServices : IBrowserInfoJobServices
@@ -203,5 +205,14 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
+        public void UpdateFlaggedDCS(int batchSize)
+        {
+            var browserInfoFlagged = browserInfoService.GetBrowserInfoFlaggedDCS(batchSize);
+
+            if (browserInfoFlagged != null && browserInfoFlagged.Any())
+            {
+                browserInfoService.UpdateBrowserInfoFlaggedDCS(browserInfoFlagged);
+            }
+        }
     }
 }

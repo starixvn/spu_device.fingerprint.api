@@ -9,9 +9,13 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
     {
         IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize);
 
+        IEnumerable<BrowserInfoIdEntity> GetBrowserInfoFlaggedDCS(int batchSize);
+
         void InsertBrowserInfo(IEnumerable<BrowserInfoEntity> listClientTransaction);
 
         void UpdateBrowserInfo(IEnumerable<BrowserInfoFlaggedEntity> jsonBrowserInfo);
+
+        void UpdateBrowserInfoFlaggedDCS(IEnumerable<BrowserInfoIdEntity> jsonBrowserInfo);
     }
 
     public class BrowserInfoService : IBrowserInfoService
@@ -62,6 +66,31 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
                 string jsonBrowserInfo = JsonConvert.SerializeObject(browserInfoFlaggedList);
 
                 browserInfoDataAccess.UpdateBrowserInfo(jsonBrowserInfo);
+            }
+        }
+
+        public IEnumerable<BrowserInfoIdEntity> GetBrowserInfoFlaggedDCS(int batchSize)
+        {
+            var browserInfoFlagged = browserInfoDataAccess.GetBrowserInfoFlaggedDCS(batchSize);
+
+            if (browserInfoFlagged != null && browserInfoFlagged.Any())
+            {
+                return browserInfoFlagged.Select(x => new BrowserInfoIdEntity
+                {
+                    Id = x.Id
+                });
+            }
+
+            return new List<BrowserInfoIdEntity>();
+        }
+
+        public void UpdateBrowserInfoFlaggedDCS(IEnumerable<BrowserInfoIdEntity> browserInfoFlagged)
+        {
+            if (browserInfoFlagged != null && browserInfoFlagged.Any())
+            {
+                string jsonBrowserInfoFlagged = JsonConvert.SerializeObject(browserInfoFlagged);
+
+                browserInfoDataAccess.UpdateBrowserInfoFlaggedDCS(jsonBrowserInfoFlagged);
             }
         }
     }

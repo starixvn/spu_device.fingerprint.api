@@ -9,9 +9,13 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
     {
         IEnumerable<BrowserInfoDetectionEntity> GetBrowserInfo(int batchSize);
 
+        IEnumerable<BrowserInfoIdEntity> GetBrowserInfoFlaggedDCS(int batchSize);
+
         void InsertBrowserInfo(string jsonBrowserInfo);
 
         void UpdateBrowserInfo(string jsonBrowserInfo);
+
+        void UpdateBrowserInfoFlaggedDCS(string jsonBrowserInfoFlagged);
     }
 
     public class BrowserInfoDataAccess : IBrowserInfoDataAccess
@@ -33,6 +37,16 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
             return repository.Fetch<BrowserInfoDetectionEntity>(criteria);
         }
 
+        public IEnumerable<BrowserInfoIdEntity> GetBrowserInfoFlaggedDCS(int batchSize)
+        {
+            var criteria = new GetBrowserInfoFlaggedDCSCriteria
+            {
+                Size = batchSize
+            };
+
+            return repository.Fetch<BrowserInfoIdEntity>(criteria);
+        }
+
         public void InsertBrowserInfo(string jsonBrowserInfo)
         {
             var criteria = new InsertBrowserInfoCriteria
@@ -48,6 +62,16 @@ namespace Device.FingerPrint.Features.BrowserInfo.Services
             var criteria = new UpdateBrowserInfoCriteria
             {
                 BrowserInfo = jsonBrowserInfo
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void UpdateBrowserInfoFlaggedDCS(string jsonBrowserInfoFlagged)
+        {
+            var criteria = new UpdateBrowserInfoFlaggedDCSCriteria
+            {
+                BrowserInfoIdJson = jsonBrowserInfoFlagged
             };
 
             repository.Execute(criteria);

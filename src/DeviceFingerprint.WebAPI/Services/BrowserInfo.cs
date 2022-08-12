@@ -1,6 +1,7 @@
 ﻿using Device.Fingerprint.WebAPI.Models;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Http;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -65,12 +66,15 @@ namespace Device.Fingerprint.WebAPI.Services
                 OSName = osName
             };
 
+            var browserInfoJsModel = JsonConvert.DeserializeObject<BrowserInfoJsModel>(browserInfoJsonModel.BrowserInfo);
+
             var browserInfoAttributeModel = new BrowserInfoAttributeModel
             {
                 SecChUa = secChUa,
                 SecChUaPlatform = secChUaPlatform,
                 SecChUaMobile = secChUaMobile.Replace("?", ""),
-                BrowserInfoJs = browserInfoJsonModel.BrowserInfo
+                JsBrowserName = browserInfoJsModel.BrowserName,
+                JsOSName = browserInfoJsModel.OSName,
             };
 
             return (browserInfoModel, browserInfoAttributeModel);
