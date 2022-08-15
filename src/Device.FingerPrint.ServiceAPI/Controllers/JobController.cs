@@ -93,20 +93,9 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatetransaction")]
-        public Task<bool> UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
+        public async Task<bool> UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
-            try
-            {
-                transactionServices.UpdateTransaction(batchSize, numberOfBatch, retry);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+           return await transactionServices.UpdateTransaction(batchSize, numberOfBatch, retry);
         }
 
         [HttpPost("updatetransactionretry")]
@@ -282,20 +271,9 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updatemodifieddate")]
-        public Task<bool> UpdateModifiedDate([FromForm] int batchSize)
+        public async Task<bool> UpdateModifiedDate([FromForm] int batchSize)
         {
-            try
-            {
-                archiveJobServices.UpdateModifiedDate(batchSize);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+          return await archiveJobServices.Execute(batchSize);
         }
 
         [HttpPost("parseuseragent")]

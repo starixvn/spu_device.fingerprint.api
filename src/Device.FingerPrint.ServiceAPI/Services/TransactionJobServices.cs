@@ -3,6 +3,7 @@ using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
 using Fanex.Logging;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,7 +13,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface ITransactionJobServices
     {
-        public void UpdateTransaction(int batchSize, int numberOfBatch, int retry);
+        Task<bool> UpdateTransaction(int batchSize, int numberOfBatch, int retry);
 
         public void UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry);
 
@@ -27,21 +28,35 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         private readonly ITransactionService transactionService;
         private readonly IRawTransactionService rawTransactionServices;
+        private readonly ISentryClient sentryClient;
 
-        public TransactionJobServices(ITransactionService transactionService, IRawTransactionService rawTransactionServices)
+        public TransactionJobServices(ITransactionService transactionService, IRawTransactionService rawTransactionServices, ISentryClient sentryClient)
         {
             this.transactionService = transactionService;
             this.rawTransactionServices = rawTransactionServices;
+            this.sentryClient = sentryClient;
         }
 
-        public void UpdateTransaction(int batchSize, int numberOfBatch, int retry)
+        public Task<bool> UpdateTransaction(int batchSize, int numberOfBatch, int retry)
         {
-            var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransaction);
-
-            if (rawTrans != null && rawTrans.Any())
+            try
             {
-                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransaction);
+                var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransaction);
+
+                if (rawTrans != null && rawTrans.Any())
+                {
+                    ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransaction);
+                }                
             }
+            catch(Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
+
         }
 
         private void ProcessUpdateTransaction(IEnumerable<ServerTransactionModel> rawTrans, int batchSize, int retry, int offsetId)
