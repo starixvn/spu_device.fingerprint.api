@@ -91,24 +91,21 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     var headlessScore = TransformRobotDetectionDetail(browserInfo.HeadlessScore);
                     if (headlessScore.Score > 0.5)
                     {
-                        browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                        browserInfo.Reason = BrowserInfoReason.HeadlessScore.ToString();
+                        browserInfo.Flagged = (int)FlaggedStatus.bot_headless;
                     }
                     else
                     {
                         if (detectionLevel > 1 && !CompareOSName(browserInfo))
                         {
-                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                            browserInfo.Reason = BrowserInfoReason.OSName.ToString();
+                            browserInfo.Flagged = (int)FlaggedStatus.bot_fake_os;
                         }
                         else if (detectionLevel > 1 && !CompareBrowserName(browserInfo))
                         {
-                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                            browserInfo.Reason = BrowserInfoReason.BrowserName.ToString();
+                            browserInfo.Flagged = (int)FlaggedStatus.bot_fake_browser;
                         }
                         else
                         {
-                            browserInfo.Flagged = FlaggedStatus.human.ToString();
+                            browserInfo.Flagged = (int)FlaggedStatus.human;
                         }
                     }
                 }
@@ -174,8 +171,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     var model = new BrowserInfoFlaggedEntity
                     {
                         Id = browserInfo.Id,
-                        Flagged = browserInfo.Flagged,
-                        Reason = browserInfo.Reason
+                        Flagged = browserInfo.Flagged
                     };
                     browserInfoFlaggedList.Add(model);
                 }

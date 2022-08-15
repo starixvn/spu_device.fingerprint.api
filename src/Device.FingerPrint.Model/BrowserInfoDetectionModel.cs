@@ -18,8 +18,6 @@
 
         public string OSName { get; set; }
 
-        public string Flagged { get; set; }
-
-        public string Reason { get; set; }
+        public int Flagged { get; set; }
     }
 }

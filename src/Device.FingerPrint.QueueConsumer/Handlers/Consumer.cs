@@ -138,7 +138,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message, ex);
+                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
                         }
                     })
                     .Add<ClientTransactionModel>((message, info) =>
@@ -167,7 +167,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message, ex);
+                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
                         }
                     })
                     .Add<FingerprintAttributesModel>((message, info) =>
@@ -185,7 +185,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message, ex);
+                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
                         }
                     })
                     .Add<BrowserInfoModel>((message, info) =>
@@ -203,7 +203,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message, ex);
+                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
                         }
                     });
                 });
