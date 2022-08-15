@@ -8,12 +8,12 @@
 
     public interface IJobService
     {
-        Task<bool> Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data);
+        Task Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data);
     }
 
     public class JobService : IJobService
     { 
-        public Task<bool> Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data)
+        public Task Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data)
         {
             var httpClient = new HttpClient
             {

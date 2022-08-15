@@ -76,19 +76,19 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("forcemergetransaction")]
-        public Task<bool> ForceMergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
+        public async Task<IActionResult> ForceMergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
             try
             {
                 transactionServices.ForceMergeTrans(batchSize, numberOfBatch, retry);
 
-                return Task.FromResult(true);
+                return Ok(true);
             }
             catch (Exception ex)
             {
                 LogService.Error(ex.Message, ex);
 
-                return Task.FromResult(false);
+                return Ok(false);
             }
         }
 
