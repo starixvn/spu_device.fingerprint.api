@@ -1,5 +1,6 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Sentry;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
@@ -139,5 +140,16 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
         }
 
+        [HttpPost("testSentryCaptureMessage")]
+        public void TestSentryCaptureMessage([FromForm] string message)
+        {
+            monitorJobServices.TestSentryCaptureMessage(message);
+        }
+
+        [HttpPost("testSentryCaptureException")]
+        public void TestSentryCaptureException()
+        {
+            monitorJobServices.TestSentryCaptureException();
+        }
     }
 }

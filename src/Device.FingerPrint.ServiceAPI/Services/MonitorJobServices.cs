@@ -16,6 +16,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
         Task<bool> DailyReport();
 
         Task<bool> MonthlyReport();
+
+        void TestSentryCaptureMessage(string message);
+
+        void TestSentryCaptureException();
     }
 
     public class MonitorJobServices : IMonitorJobServices
@@ -157,6 +161,28 @@ namespace Device.FingerPrint.ServiceAPI.Services
                       .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken")
                       .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), appSettings.Environment, message, moreInfo.ToString()))
                       .SendWithDelay(1, true);
+        }
+
+        public void TestSentryCaptureMessage(string message)
+        {
+            sentryClient.CaptureMessage(message);
+        }
+
+        public void TestSentryCaptureException()
+        {
+            try
+            {
+                ThrowExeption();
+            } catch(Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+            ThrowExeption();
+        }
+
+        private void ThrowExeption()
+        {
+            throw new NotImplementedException();
         }
     }
 }
