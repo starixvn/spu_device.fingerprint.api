@@ -8,12 +8,12 @@
 
     public interface IJobService
     {
-        Task Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data);
+        Task<bool> Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data);
     }
 
     public class JobService : IJobService
     { 
-        public Task Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data)
+        public async Task<bool> Execute(string jobName, string apiUrl, string methodName, string controller, Dictionary<string, object> data)
         {
             var httpClient = new HttpClient
             {
@@ -23,7 +23,7 @@
 
             var jobServiceAPI = RestService.For<IJobServiceApi>(httpClient);            
 
-            return jobServiceAPI.Execute(jobName, methodName, controller, data);
+            return await jobServiceAPI.Execute(jobName, methodName, controller, data);
         }
     }
 }

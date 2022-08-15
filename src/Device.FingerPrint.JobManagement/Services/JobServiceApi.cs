@@ -7,6 +7,6 @@
     public interface IJobServiceApi
     {
         [Post("/{controller}/{methodName}")]
-        Task Execute(string jobName, string methodName, string controller, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
+        Task<bool> Execute(string jobName, string methodName, string controller, [Body(BodySerializationMethod.UrlEncoded)] Dictionary<string, object> data);
     }
 }
