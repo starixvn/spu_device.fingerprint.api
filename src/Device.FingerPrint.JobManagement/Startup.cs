@@ -86,7 +86,7 @@ namespace Device.FingerPrint.JobManagement
             services.AddSingleton<JobExecute>();
             services.AddSingleton<JobMonitoring>();
         
-            RegisterLogging(appSettings);
+            //RegisterLogging(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -120,17 +120,17 @@ namespace Device.FingerPrint.JobManagement
             });
         }
 
-        private void RegisterLogging(IAppSettings appSettings)
-        {
-            LogManager
-                .SetDefaultLogCategory("DeviceFingerPrintJobManagement")
-                .Use(new List<ILogEngine>
-                {
-                     new SentryLogging(new SentryEngineOptions {
-                        Dsn = new Dsn(appSettings.SentryDsn),
-                        Environment = appSettings.Environment
-                     })
-                });
-        }
+        //private void RegisterLogging(IAppSettings appSettings)
+        //{
+        //    LogManager
+        //        .SetDefaultLogCategory("DeviceFingerPrintJobManagement")
+        //        .Use(new List<ILogEngine>
+        //        {
+        //             new SentryLogging(new SentryEngineOptions {
+        //                Dsn = new Dsn(appSettings.SentryDsn),
+        //                Environment = appSettings.Environment
+        //             })
+        //        });
+        //}
     }
 }

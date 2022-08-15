@@ -3,34 +3,49 @@
     using Device.FingerPrint.Features.FPTransactions.Services;
     using Fanex.Logging;
     using Newtonsoft.Json;
+    using Sentry;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
 
     public interface IFPTransactionJobService
     {
-        void Execute(int numberOfTrans, int numberOfBatch);
+        Task<bool> Execute(int numberOfTrans, int numberOfBatch);
     }
 
     public class FPTransactionJobService : IFPTransactionJobService
     {
         private readonly IFPTransactionServices transactionService;
         private readonly IList<string> ignoreMessages;
+        private readonly ISentryClient sentryClient;
 
-        public FPTransactionJobService(IFPTransactionServices transactionService)
+        public FPTransactionJobService(IFPTransactionServices transactionService, ISentryClient sentryClient)
         {
             this.transactionService = transactionService;
+            this.sentryClient = sentryClient;
+
             ignoreMessages = new List<string> {
                 "Deadlock found when trying to get lock; try restarting transaction"
             };
         }
 
-        public void Execute(int numberOfTrans, int numberOfBatch)
+        public Task<bool> Execute(int numberOfTrans, int numberOfBatch)
         {
             if (numberOfTrans > 0 && numberOfBatch > 0)
             {
-                JobRun(numberOfTrans, numberOfBatch);
+                try
+                {
+                    JobRun(numberOfTrans, numberOfBatch);
+                }
+                catch (Exception ex)
+                {
+                    sentryClient.CaptureException(ex);
+
+                    return Task.FromResult(false);
+                }
             }
+
+            return Task.FromResult(true);
         }
 
         private void JobRun(int numberOfTrans, int numberOfBatch)

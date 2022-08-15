@@ -3,35 +3,51 @@ using Device.FingerPrint.Model;
 using DeviceDetectorNET;
 using DeviceDetectorNET.Parser;
 using Newtonsoft.Json;
+using Sentry;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IRawUserAgentJobServices
     {
-        void UpdateRawUserAgent(int batchSize);
+        Task<bool> UpdateRawUserAgent(int batchSize);
     }
 
     public class RawUserAgentJobServices : IRawUserAgentJobServices
     {
         private readonly IRawUserAgentService rawUserAgentService;
+        private readonly ISentryClient sentryClient;
 
-        public RawUserAgentJobServices(IRawUserAgentService rawUserAgentService)
+        public RawUserAgentJobServices(IRawUserAgentService rawUserAgentService, ISentryClient sentryClient)
         {
             this.rawUserAgentService = rawUserAgentService;
+            this.sentryClient = sentryClient;
         }
 
-        public void UpdateRawUserAgent(int batchSize)
+        public Task<bool> UpdateRawUserAgent(int batchSize)
         {
-            var rawUserAgents = rawUserAgentService.GetRawUserAgents(batchSize);
-
-            if (rawUserAgents != null && rawUserAgents.Any())
+            try
             {
-                var userAgentInfoList = DeviceDetection(rawUserAgents);
+                var rawUserAgents = rawUserAgentService.GetRawUserAgents(batchSize);
 
-                ProcessUpdateUserAgent(userAgentInfoList);
+                if (rawUserAgents != null && rawUserAgents.Any())
+                {
+                    var userAgentInfoList = DeviceDetection(rawUserAgents);
+
+                    ProcessUpdateUserAgent(userAgentInfoList);
+                }
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
         private IEnumerable<UserAgentInfoModel> DeviceDetection(IEnumerable<RawUserAgentModel> rawUserAgents)

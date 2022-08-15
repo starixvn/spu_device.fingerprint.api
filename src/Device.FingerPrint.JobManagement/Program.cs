@@ -28,6 +28,7 @@ namespace Device.FingerPrint.JobManagement
                     webBuilder.UseUrls("http://*:5000");
 
                     webBuilder
+                    .UseSentry()
                     .UseStartup<Startup>();
                 })
                     .ConfigureSilkierQuartzHost();

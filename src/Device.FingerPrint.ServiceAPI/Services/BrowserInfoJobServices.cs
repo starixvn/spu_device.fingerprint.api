@@ -3,6 +3,7 @@ using Device.FingerPrint.Features.BrowserInfo.Services;
 using Device.FingerPrint.Model;
 using Fanex.Logging;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,48 +14,46 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
     public interface IBrowserInfoJobServices
     {
-        public void DetectBots(int batchSize, int detectionLevel);
+        Task<bool> DetectBots(int batchSize, int detectionLevel);
     }
 
     public class BrowserInfoJobServices : IBrowserInfoJobServices
     {
         private readonly IBrowserInfoService browserInfoService;
+        private readonly ISentryClient sentryClient;
 
-        public BrowserInfoJobServices(IBrowserInfoService browserInfoService)
+        public BrowserInfoJobServices(IBrowserInfoService browserInfoService, ISentryClient sentryClient)
         {
             this.browserInfoService = browserInfoService;
+            this.sentryClient = sentryClient;
         }
 
-        public void DetectBots(int batchSize, int detectionLevel)
+        public Task<bool> DetectBots(int batchSize, int detectionLevel)
         {
-            var browserInfos = browserInfoService.GetBrowserInfo(batchSize);
-
-            if (browserInfos != null && browserInfos.Any())
+            try
             {
-                var browserInfoModel = TransformBrowserInfo(browserInfos);
+                var browserInfos = browserInfoService.GetBrowserInfo(batchSize);
 
-                if (browserInfoModel != null && browserInfoModel.Any())
+                if (browserInfos != null && browserInfos.Any())
                 {
-                    var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
+                    var browserInfoModel = TransformBrowserInfo(browserInfos);
 
-                    UpdateFlagged(browserInfoExecuted, batchSize);
+                    if (browserInfoModel != null && browserInfoModel.Any())
+                    {
+                        var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
+
+                        UpdateFlagged(browserInfoExecuted, batchSize);
+                    }
                 }
             }
-        }
-
-        private IEnumerable<BrowserInfoDetectionModel> TransformData(IEnumerable<BrowserInfoDetectionModel> browserInfoObject)
-        {
-            return browserInfoObject.Select(x => new BrowserInfoDetectionModel
+            catch (Exception ex)
             {
-                Id = x.Id,
-                UserAgentId = x.UserAgentId,
-                UserAgent = x.UserAgent,
-                UABrowserName = x.UABrowserName,
-                UAOSName = x.UAOSName,
-                HeadlessScore = x.HeadlessScore,
-                BrowserName = x.BrowserName,
-                OSName = x.OSName
-            });
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
         private IEnumerable<BrowserInfoDetectionModel> TransformBrowserInfo(IEnumerable<BrowserInfoDetectionEntity> browserInfos)

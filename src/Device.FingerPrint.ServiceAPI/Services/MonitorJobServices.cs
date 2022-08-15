@@ -2,46 +2,77 @@
 using Device.FingerPrint.Features.Monitor.Services;
 using Device.FingerPrint.Model;
 using Fanex.NAP.SPU.Notification.Services;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IMonitorJobServices
     {
-        public void DailyReport();
+        Task<bool> DailyReport();
 
-        public void MonthlyReport();
+        Task<bool> MonthlyReport();
+
+        void TestSentryCaptureMessage(string message);
+
+        void TestSentryCaptureException();
     }
 
     public class MonitorJobServices : IMonitorJobServices
     {
         private readonly IAppSettings appSettings;
         private readonly ITransactionReportServices transactionReportServices;
+        private readonly ISentryClient sentryClient;
 
         public MonitorJobServices(IAppSettings appSettings
-                                , ITransactionReportServices transactionReportServices)
+                                , ITransactionReportServices transactionReportServices
+                                , ISentryClient sentryClient)
         {
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
+            this.sentryClient = sentryClient;
         }
 
-        public void DailyReport()
+        public Task<bool> DailyReport()
         {
-            var mdyDate = DateTime.UtcNow.AddHours(7).ToString("MM/dd/yyyy");
-            var moreInfo = new StringBuilder("");
-            moreInfo = GetInfoDailyReport(mdyDate, moreInfo);
-            Notification("Daily Report", "Daily Report " + mdyDate, moreInfo);
+            try
+            {
+                var mdyDate = DateTime.UtcNow.AddHours(7).ToString("MM/dd/yyyy");
+                var moreInfo = new StringBuilder("");
+                moreInfo = GetInfoDailyReport(mdyDate, moreInfo);
+                Notification("Daily Report", "Daily Report " + mdyDate, moreInfo);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
-        public void MonthlyReport()
+        public Task<bool> MonthlyReport()
         {
-            var currentMonth = DateTime.UtcNow.AddHours(7).ToString("MM/yyyy");
-            var moreInfo = new StringBuilder("");
-            moreInfo = GetInfoMonthlyReport(currentMonth, moreInfo);
-            Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
+            try
+            {
+                var currentMonth = DateTime.UtcNow.AddHours(7).ToString("MM/yyyy");
+                var moreInfo = new StringBuilder("");
+                moreInfo = GetInfoMonthlyReport(currentMonth, moreInfo);
+                Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
         private StringBuilder GetInfoDailyReport(string mdyDate, StringBuilder moreInfo)
@@ -130,6 +161,28 @@ namespace Device.FingerPrint.ServiceAPI.Services
                       .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken")
                       .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), appSettings.Environment, message, moreInfo.ToString()))
                       .SendWithDelay(1, true);
+        }
+
+        public void TestSentryCaptureMessage(string message)
+        {
+            sentryClient.CaptureMessage(message);
+        }
+
+        public void TestSentryCaptureException()
+        {
+            try
+            {
+                ThrowExeption();
+            } catch(Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+            ThrowExeption();
+        }
+
+        private void ThrowExeption()
+        {
+            throw new NotImplementedException();
         }
     }
 }

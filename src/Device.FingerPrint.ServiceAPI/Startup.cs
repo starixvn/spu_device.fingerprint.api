@@ -43,7 +43,7 @@ namespace Device.FingerPrint.ServiceAPI
             services.RegisterService(Configuration);
 
             FanexDataConfig(appSettings);
-            RegisterLogging(appSettings);
+           // RegisterLogging(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -91,17 +91,17 @@ namespace Device.FingerPrint.ServiceAPI
               .Run();
         }
 
-        private void RegisterLogging(IAppSettings appSettings)
-        {
-            LogManager
-                .SetDefaultLogCategory("DeviceFingerPrintServiceAPI")
-                .Use(new List<ILogEngine>
-                {
-                     new SentryLogging(new SentryEngineOptions {
-                        Dsn = new Dsn(appSettings.SentryDsn),
-                        Environment = appSettings.Environment
-                     })
-                });
-        }
+        //private void RegisterLogging(IAppSettings appSettings)
+        //{
+        //    LogManager
+        //        .SetDefaultLogCategory("DeviceFingerPrintServiceAPI")
+        //        .Use(new List<ILogEngine>
+        //        {
+        //             new SentryLogging(new SentryEngineOptions {
+        //                Dsn = new Dsn(appSettings.SentryDsn),
+        //                Environment = appSettings.Environment
+        //             })
+        //        });
+        //}
     }
 }

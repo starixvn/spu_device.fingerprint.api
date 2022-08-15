@@ -57,7 +57,7 @@
 
                     var url = JobHelper.GetUrl(apiUrl);
 
-                    var result = jobService.Execute(jobName, url, methodName, controller, queryString).Result;
+                    var result = await jobService.Execute(jobName, url, methodName, controller, queryString);
 
                     if (!result)
                     {

@@ -1,38 +1,76 @@
 ﻿using Device.FingerPrint.Features.SummaryTransaction.Services;
+using Sentry;
+using System;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface ISummaryJobServices
     {
-        void SummaryServerTransactionDaily(int batchSize);
+        Task<bool> SummaryServerTransactionDaily(int batchSize);
 
-        void SummaryClientTransactionDaily(int batchSize);
+        Task<bool> SummaryClientTransactionDaily(int batchSize);
 
-        void SummaryTransactionDaily(int batchSize);
+        Task<bool> SummaryTransactionDaily(int batchSize);
     }
 
     public class SummaryJobServices : ISummaryJobServices
     {
         private readonly ISummaryTransactionService summaryTransactionService;
+        private readonly ISentryClient sentryClient;
 
-        public SummaryJobServices(ISummaryTransactionService summaryTransactionService)
+        public SummaryJobServices(ISummaryTransactionService summaryTransactionService, ISentryClient sentryClient)
         {
             this.summaryTransactionService = summaryTransactionService;
+            this.sentryClient = sentryClient;
         }
 
-        public void SummaryServerTransactionDaily(int batchSize)
+        public Task<bool> SummaryServerTransactionDaily(int batchSize)
         {
-            summaryTransactionService.SummaryServerTransactionDaily(batchSize);
+            try
+            {
+                summaryTransactionService.SummaryServerTransactionDaily(batchSize);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
-        public void SummaryClientTransactionDaily(int batchSize)
+        public Task<bool> SummaryClientTransactionDaily(int batchSize)
         {
-            summaryTransactionService.SummaryClientTransactionDaily(batchSize);
+            try
+            {
+                summaryTransactionService.SummaryClientTransactionDaily(batchSize);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
-        public void SummaryTransactionDaily(int batchSize)
+        public Task<bool> SummaryTransactionDaily(int batchSize)
         {
-            summaryTransactionService.SummaryTransactionDaily(batchSize);
+            try
+            {
+                summaryTransactionService.SummaryTransactionDaily(batchSize);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
     }
 }
