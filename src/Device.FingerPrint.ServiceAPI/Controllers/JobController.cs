@@ -1,7 +1,5 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
-using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
@@ -42,254 +40,103 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("deviceidentify")]
-        public Task<bool> DeviceIdentify([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        public async Task<bool> DeviceIdentify([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
-            try
-            {
-                deviceIdentifyServices.DeviceIdentify(batchSize, numberOfBatch);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await deviceIdentifyServices.DeviceIdentify(batchSize, numberOfBatch);
         }
 
         [HttpPost("mergetransaction")]
-        public Task<bool> MergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
+        public async Task<bool> MergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
-            try
-            {
-                transactionServices.MergeTrans(batchSize, numberOfBatch, retry);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await transactionServices.MergeTrans(batchSize, numberOfBatch, retry);
         }
 
         [HttpPost("forcemergetransaction")]
-        public async Task<IActionResult> ForceMergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
+        public async Task<bool> ForceMergeTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
-            try
-            {
-                transactionServices.ForceMergeTrans(batchSize, numberOfBatch, retry);
-
-                return Ok(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Ok(false);
-            }
+            return await transactionServices.ForceMergeTrans(batchSize, numberOfBatch, retry);
         }
 
         [HttpPost("updatetransaction")]
         public async Task<bool> UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
-           return await transactionServices.UpdateTransaction(batchSize, numberOfBatch, retry);
+            return await transactionServices.UpdateTransaction(batchSize, numberOfBatch, retry);
         }
 
         [HttpPost("updatetransactionretry")]
-        public Task<bool> UpdateTransactionRetry([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
+        public async Task<bool> UpdateTransactionRetry([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
-            try
-            {
-                transactionServices.UpdateTransactionRetry(batchSize, numberOfBatch, retry);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await transactionServices.UpdateTransactionRetry(batchSize, numberOfBatch, retry);
         }
 
         [HttpPost("updatetransactionN")]
-        public Task<bool> UpdateTransactionN([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
+        public async Task<bool> UpdateTransactionN([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
         {
-            try
-            {
-                transactionServices.UpdateTransactionN(batchSize, numberOfBatch, retry);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await transactionServices.UpdateTransactionN(batchSize, numberOfBatch, retry);
         }
 
         [HttpPost("transformfpdevice")]
-        public Task<bool> TransformFPDevice([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        public async Task<bool> TransformFPDevice([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
-            try
-            {
-                fpdeviceJobService.Execute(batchSize, numberOfBatch);
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await fpdeviceJobService.Execute(batchSize, numberOfBatch);
         }
 
         [HttpPost("transformfptransaction")]
-        public Task<bool> TransformFPTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        public async Task<bool> TransformFPTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
-            try
-            {
-                fPTransactionJobService.Execute(batchSize, numberOfBatch);
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await fPTransactionJobService.Execute(batchSize, numberOfBatch);
         }
 
         [HttpPost("summaryservertransactiondaily")]
-        public Task<bool> SummaryServerTransactionDaily([FromForm] int batchSize)
+        public async Task<bool> SummaryServerTransactionDaily([FromForm] int batchSize)
         {
-            try
-            {
-                summaryJobServices.SummaryServerTransactionDaily(batchSize);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await summaryJobServices.SummaryServerTransactionDaily(batchSize);
         }
 
         [HttpPost("summaryclienttransactiondaily")]
-        public Task<bool> SummaryClientTransactionDaily([FromForm] int batchSize)
+        public async Task<bool> SummaryClientTransactionDaily([FromForm] int batchSize)
         {
-            try
-            {
-                summaryJobServices.SummaryClientTransactionDaily(batchSize);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await summaryJobServices.SummaryClientTransactionDaily(batchSize);
         }
 
         [HttpPost("summarytransactiondaily")]
-        public Task<bool> SummaryTransactionDaily([FromForm] int batchSize)
+        public async Task<bool> SummaryTransactionDaily([FromForm] int batchSize)
         {
-            try
-            {
-                summaryJobServices.SummaryTransactionDaily(batchSize);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await summaryJobServices.SummaryTransactionDaily(batchSize);
         }
 
         [HttpPost("monitordailyreport")]
-        public Task<bool> MonitorDailyReport()
+        public async Task<bool> MonitorDailyReport()
         {
-            try
-            {
-                monitorJobServices.DailyReport();
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await monitorJobServices.DailyReport();
         }
 
         [HttpPost("monitormonthlyreport")]
-        public Task<bool> MonitorMonthlyReport()
+        public async Task<bool> MonitorMonthlyReport()
         {
-            try
-            {
-                monitorJobServices.MonthlyReport();
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await monitorJobServices.MonthlyReport();
         }
 
         [HttpPost("detectbots")]
-        public Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int detectionLevel)
+        public async Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int detectionLevel)
         {
-            try
-            {
-                /* detectionLevel: 
-                 * 0 || 1 => Check Headless score
-                 * 2 => Check BrowserName & OSName
-                 */
-                browserInfoJobServices.DetectBots(batchSize, detectionLevel);
-
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            /* detectionLevel: 
+             * 0 || 1 => Check Headless score
+             * 2 => Check BrowserName & OSName
+             */
+            return await browserInfoJobServices.DetectBots(batchSize, detectionLevel);
         }
 
         [HttpPost("updatemodifieddate")]
         public async Task<bool> UpdateModifiedDate([FromForm] int batchSize)
         {
-          return await archiveJobServices.Execute(batchSize);
+            return await archiveJobServices.Execute(batchSize);
         }
 
         [HttpPost("parseuseragent")]
-        public Task<bool> ParseUserAgent([FromForm] int batchSize)
+        public async Task<bool> ParseUserAgent([FromForm] int batchSize)
         {
-            try
-            {
-                rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
         }
 
     }

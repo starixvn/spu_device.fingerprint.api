@@ -2,6 +2,7 @@
 using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Logging;
 using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,68 +12,80 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface IDeviceIdentifyJobServices
     {
-        public void DeviceIdentify(int batchSize, int numberOfBatch);
+        Task<bool> DeviceIdentify(int batchSize, int numberOfBatch);
     }
 
     public class DeviceIdentifyJobServices : IDeviceIdentifyJobServices
     {
         private readonly ITransactionService transactionService;
+        private readonly ISentryClient sentryClient;
 
-        public DeviceIdentifyJobServices(ITransactionService transactionService)
+        public DeviceIdentifyJobServices(ITransactionService transactionService, ISentryClient sentryClient)
         {
             this.transactionService = transactionService;
+            this.sentryClient = sentryClient;
         }
 
-        public void DeviceIdentify(int batchSize, int numberOfBatch)
+        public Task<bool> DeviceIdentify(int batchSize, int numberOfBatch)
         {
-            var listRawTrans = new List<Task>();
-
-            var rawTrans = transactionService.GetDeviceIdentify(batchSize, numberOfBatch);
-
-            listRawTrans.Add(Task.Run(() =>
+            try
             {
-                try
-                {
-                    SetDeviceIdentify(rawTrans.Item1, 1);
-                }
-                catch (Exception ex)
-                {
-                    var rawTransIds = string.Join(",", rawTrans.Item1);
-                    LogService.Error(ex.Message + "\n" + rawTransIds, ex);
-                }
-            }));
+                var listRawTrans = new List<Task>();
 
-            listRawTrans.Add(Task.Run(() =>
-            {
-                try
-                {
-                    SetDeviceIdentify(rawTrans.Item2, 0);
-                }
-                catch (Exception ex)
-                {
-                    var rawTransIds = string.Join(",", rawTrans.Item2);
-                    LogService.Error(ex.Message + "\n" + rawTransIds, ex);
-                }
-            }));
+                var rawTrans = transactionService.GetDeviceIdentify(batchSize, numberOfBatch);
 
-            listRawTrans.Add(Task.Run(() =>
-            {
-                if (rawTrans.Item3 != null && rawTrans.Item3.Any())
+                listRawTrans.Add(Task.Run(() =>
                 {
-                    var rawTransIds = string.Join(",", rawTrans.Item3);
                     try
                     {
-                        transactionService.DeviceIdentifyNoFingerprint(rawTransIds);
+                        SetDeviceIdentify(rawTrans.Item1, 1);
                     }
                     catch (Exception ex)
                     {
+                        var rawTransIds = string.Join(",", rawTrans.Item1);
                         LogService.Error(ex.Message + "\n" + rawTransIds, ex);
                     }
-                }
-            }));
+                }));
 
-            Task.WaitAll(listRawTrans.ToArray());
+                listRawTrans.Add(Task.Run(() =>
+                {
+                    try
+                    {
+                        SetDeviceIdentify(rawTrans.Item2, 0);
+                    }
+                    catch (Exception ex)
+                    {
+                        var rawTransIds = string.Join(",", rawTrans.Item2);
+                        LogService.Error(ex.Message + "\n" + rawTransIds, ex);
+                    }
+                }));
 
+                listRawTrans.Add(Task.Run(() =>
+                {
+                    if (rawTrans.Item3 != null && rawTrans.Item3.Any())
+                    {
+                        var rawTransIds = string.Join(",", rawTrans.Item3);
+                        try
+                        {
+                            transactionService.DeviceIdentifyNoFingerprint(rawTransIds);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogService.Error(ex.Message + "\n" + rawTransIds, ex);
+                        }
+                    }
+                }));
+
+                Task.WaitAll(listRawTrans.ToArray());
+            }
+            catch(Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
         private void SetDeviceIdentify(IEnumerable<DeviceIdentifyEntity> trans, int groupType)

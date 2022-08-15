@@ -15,13 +15,13 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         Task<bool> UpdateTransaction(int batchSize, int numberOfBatch, int retry);
 
-        public void UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry);
+        Task<bool> UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry);
 
-        public void UpdateTransactionN(int batchSize, int numberOfBatch, int retry);
+        Task<bool> UpdateTransactionN(int batchSize, int numberOfBatch, int retry);
 
-        public void MergeTrans(int batchSize, int numberOfBatch, int retry);
+        Task<bool> MergeTrans(int batchSize, int numberOfBatch, int retry);
 
-        public void ForceMergeTrans(int batchSize, int numberOfBatch, int retry);
+        Task<bool> ForceMergeTrans(int batchSize, int numberOfBatch, int retry);
     }
 
     public class TransactionJobServices : ITransactionJobServices
@@ -90,14 +90,25 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        public void UpdateTransactionN(int batchSize, int numberOfBatch, int retry)
+        public Task<bool> UpdateTransactionN(int batchSize, int numberOfBatch, int retry)
         {
-            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionN);
-
-            if (rawTrans != null && rawTrans.Any())
+            try
             {
-                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
+                var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionN);
+
+                if (rawTrans != null && rawTrans.Any())
+                {
+                    ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
+                }
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
         private void ProcessUpdateTransactionN(IEnumerable<ServerTransactionModel> rawTrans, int batchSize, int offsetId)
@@ -130,73 +141,105 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-
-        public void MergeTrans(int batchSize, int numberOfBatch, int retry)
+        public Task<bool> MergeTrans(int batchSize, int numberOfBatch, int retry)
         {
-            var mergeTrans = transactionService.GetMergeTransaction(batchSize * numberOfBatch, retry);
-
-            if (mergeTrans != null && mergeTrans.Any())
+            try
             {
-                var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
-                var tasks = new List<Task>();
+                var mergeTrans = transactionService.GetMergeTransaction(batchSize * numberOfBatch, retry);
 
-                foreach (var trans in mergeTransGroup)
+                if (mergeTrans != null && mergeTrans.Any())
                 {
-                    tasks.Add(Task.Run(() =>
-                    {
-                        var mergeTransJson = JsonConvert.SerializeObject(trans);
-                        try
-                        {
-                            transactionService.MergeTransaction(mergeTransJson);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogService.Error(ex.Message + "\n" + mergeTransJson, ex);
-                        }
-                    }));
-                }
+                    var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
+                    var tasks = new List<Task>();
 
-                Task.WaitAll(tasks.ToArray());
+                    foreach (var trans in mergeTransGroup)
+                    {
+                        tasks.Add(Task.Run(() =>
+                        {
+                            var mergeTransJson = JsonConvert.SerializeObject(trans);
+                            try
+                            {
+                                transactionService.MergeTransaction(mergeTransJson);
+                            }
+                            catch (Exception ex)
+                            {
+                                LogService.Error(ex.Message + "\n" + mergeTransJson, ex);
+                            }
+                        }));
+                    }
+
+                    Task.WaitAll(tasks.ToArray());
+                }
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
-        public void ForceMergeTrans(int batchSize, int numberOfBatch, int retry)
+        public Task<bool> ForceMergeTrans(int batchSize, int numberOfBatch, int retry)
         {
-            var mergeTrans = transactionService.GetForceMergeTransaction(batchSize * numberOfBatch, retry);
-
-            if (mergeTrans != null && mergeTrans.Any())
+            try
             {
-                var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
-                var tasks = new List<Task>();
+                var mergeTrans = transactionService.GetForceMergeTransaction(batchSize * numberOfBatch, retry);
 
-                foreach (var trans in mergeTransGroup)
+                if (mergeTrans != null && mergeTrans.Any())
                 {
-                    tasks.Add(Task.Run(() =>
-                    {
-                        var mergeTransJson = JsonConvert.SerializeObject(trans);
-                        try
-                        {
-                            transactionService.ForceMergeTransaction(mergeTransJson);
-                        }
-                        catch (Exception ex)
-                        {
-                            LogService.Error(ex.Message + "\n" + mergeTransJson, ex);
-                        }
-                    }));
-                }
+                    var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
+                    var tasks = new List<Task>();
 
-                Task.WaitAll(tasks.ToArray());
+                    foreach (var trans in mergeTransGroup)
+                    {
+                        tasks.Add(Task.Run(() =>
+                        {
+                            var mergeTransJson = JsonConvert.SerializeObject(trans);
+                            try
+                            {
+                                transactionService.ForceMergeTransaction(mergeTransJson);
+                            }
+                            catch (Exception ex)
+                            {
+                                LogService.Error(ex.Message + "\n" + mergeTransJson, ex);
+                            }
+                        }));
+                    }
+
+                    Task.WaitAll(tasks.ToArray());
+                }
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
-        public void UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry)
+        public Task<bool> UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry)
         {
-            var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
-
-            if (rawTrans != null && rawTrans.Any())
+            try
             {
-                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
+                var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
+
+                if (rawTrans != null && rawTrans.Any())
+                {
+                    ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
+                }
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
     }
 }
