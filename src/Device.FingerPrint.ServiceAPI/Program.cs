@@ -30,7 +30,7 @@ namespace Device.FingerPrint.ServiceAPI
                     webBuilder.UseUrls("http://*:5000");
 #endif
 
-                    webBuilder     
+                    webBuilder
                     .UseSentry()
                     .UseStartup<Startup>();
                 });
