@@ -51,7 +51,7 @@ namespace Device.FingerPrint.JobManagement
                 options.VirtualPathRoot = "/jobs";
                 options.UseLocalTime = true;
                 options.DefaultDateFormat = "yyyy-MM-dd";
-                options.DefaultTimeFormat = "HH:mm:ss";
+                options.DefaultTimeFormat = "HH:mm:ss.fff";
                 options.CronExpressionOptions = new CronExpressionDescriptor.Options()
                 {
                     DayOfWeekStartIndexZero = false //Quartz uses 1-7 as the range
