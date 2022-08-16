@@ -25,6 +25,7 @@ namespace Device.FingerPrint.QueueConsumer
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder
+                    .UseSentry()
                     .UseStartup<Startup>();
                 });
     }

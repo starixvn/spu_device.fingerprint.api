@@ -16,6 +16,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -50,8 +51,6 @@ namespace Device.FingerPrint.QueueConsumer
 
             FanexDataConfig(appSettings);
 
-            RegisterLogging(appSettings);
-
             services.AddHostedService<Consumer>();
         }
         private void FanexDataConfig(IAppSettings appSettings)
@@ -72,21 +71,6 @@ namespace Device.FingerPrint.QueueConsumer
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
         }
-
-        private void RegisterLogging(IAppSettings appSettings)
-        {
-            LogManager
-                .SetDefaultLogCategory("Device.Fingerprint.InsertRawTransaction")
-                .Use(new List<ILogEngine>
-                {
-                     new SentryLogging(new SentryEngineOptions {
-                        Dsn = new Dsn(appSettings.SentryDsn),
-                        Environment = appSettings.Environment
-                     })
-                });
-        }
-
-
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

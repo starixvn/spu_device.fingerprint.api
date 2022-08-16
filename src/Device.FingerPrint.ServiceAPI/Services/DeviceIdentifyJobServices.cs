@@ -1,8 +1,8 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
-using Fanex.Logging;
 using Newtonsoft.Json;
 using Sentry;
+using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,7 +43,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     catch (Exception ex)
                     {
                         var rawTransIds = string.Join(",", rawTrans.Item1);
-                        LogService.Error(ex.Message + "\n" + rawTransIds, ex);
+                        sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
                     }
                 }));
 
@@ -56,7 +56,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     catch (Exception ex)
                     {
                         var rawTransIds = string.Join(",", rawTrans.Item2);
-                        LogService.Error(ex.Message + "\n" + rawTransIds, ex);
+                        sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
                     }
                 }));
 
@@ -71,14 +71,14 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + rawTransIds, ex);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + rawTransIds, SentryLevel.Error);
                         }
                     }
                 }));
 
                 Task.WaitAll(listRawTrans.ToArray());
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 sentryClient.CaptureException(ex);
 
@@ -120,7 +120,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
                 catch (Exception ex)
                 {
-                    LogService.Error(ex.Message + "\n" + rawTransJson, ex);
+                    sentryClient.CaptureMessage(ex.Message + "\n" + rawTransJson, SentryLevel.Error);
                 }
             });
         }

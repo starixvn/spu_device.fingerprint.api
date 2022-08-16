@@ -1,7 +1,8 @@
 ﻿using Device.Fingerprint.WebAPI.Models;
-using Fanex.Logging;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using Sentry;
+using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace Device.Fingerprint.WebAPI.Services
             return (nodeAddressV4 != null ? nodeAddressV4.ToString() : "", nodeAddressV6 != null ? nodeAddressV6.ToString() : "");
         }
 
-        public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HttpContext httpContext, BrowserInfoJsonModel browserInfoJsonModel)
+        public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HttpContext httpContext, BrowserInfoJsonModel browserInfoJsonModel, ISentryClient sentryClient)
         {
             var browsers = new List<string> { "Safari", "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
             var secChUa = httpContext.Request.Headers["sec-ch-ua"].Count > 0 ? httpContext.Request.Headers["sec-ch-ua"].ToString() : "Other";
@@ -44,7 +45,7 @@ namespace Device.Fingerprint.WebAPI.Services
                     }
                     catch (Exception ex)
                     {
-                        LogService.Error($"GetBrowserInfo error. ({ex.Message})", ex);
+                        sentryClient.CaptureMessage($"GetBrowserInfo error. ({ex.Message})", SentryLevel.Error);
                     }
                 }
             }

@@ -129,19 +129,9 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("updateflaggeddcs")]
-        public Task<bool> UpdateFlaggedDCS([FromForm] int batchSize)
+        public async Task<bool> UpdateFlaggedDCS([FromForm] int batchSize)
         {
-            try
-            {
-                browserInfoJobServices.UpdateFlaggedDCS(batchSize);
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message, ex);
-
-                return Task.FromResult(false);
-            }
+            return await browserInfoJobServices.UpdateFlaggedDCS(batchSize);
         }
 
         [HttpPost("updatemodifieddate")]

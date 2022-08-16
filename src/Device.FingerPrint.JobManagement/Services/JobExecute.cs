@@ -1,8 +1,9 @@
 ﻿namespace Device.FingerPrint.JobManagement.Services
 {
-    using Fanex.Logging;
     using ONEbook.UM.Services;
     using Quartz;
+    using Sentry;
+    using Sentry.Protocol;
     using System;
     using System.Threading.Tasks;
 
@@ -10,16 +11,19 @@
     public class JobExecute : IJob
     {
         private readonly IJobService jobService;
+        private readonly ISentryClient sentryClient;
         private readonly IScheduler scheduler;
         private readonly IMaintenanceService _maintenanceService;
         private readonly IAppSettings _appSettings;
 
         public JobExecute(IJobService jobService
+            , ISentryClient sentryClient
             , ISchedulerFactory schedulerFactory
             , IMaintenanceService maintenanceService
             , IAppSettings appSettings)
         {
             this.jobService = jobService;
+            this.sentryClient = sentryClient;
             scheduler = schedulerFactory.GetScheduler().Result;
             _maintenanceService = maintenanceService;
             _appSettings = appSettings;
@@ -46,7 +50,7 @@
 
                     dataMap.PutAsString("count", 0);
 
-                    LogService.Error($"{jobName} is STOPPED. Cause of RETRIED EXECEEDED.");
+                    sentryClient.CaptureMessage($"{jobName} is STOPPED. Cause of RETRIED EXECEEDED.", SentryLevel.Error);
 
                     throw e;
                 }
@@ -66,7 +70,7 @@
                         dataMap.PutAsString("count", count);
                         var errorMessage = $"{jobName} is failed at {DateTime.Now}.";
 
-                        throw JobHelper.JobExecuteFailed(errorMessage);
+                        throw JobHelper.JobExecuteFailed(errorMessage, sentryClient);
                     }
                     else
                     {
@@ -79,7 +83,7 @@
 
                     dataMap.PutAsString("count", count);
 
-                    throw JobHelper.JobExecuteFailed(ex.Message);
+                    throw JobHelper.JobExecuteFailed(ex.Message, sentryClient);
                 }
             }
         }

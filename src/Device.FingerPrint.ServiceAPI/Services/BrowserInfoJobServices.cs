@@ -1,9 +1,9 @@
 ﻿using Device.FingerPrint.Features.BrowserInfo.Model;
 using Device.FingerPrint.Features.BrowserInfo.Services;
 using Device.FingerPrint.Model;
-using Fanex.Logging;
 using Newtonsoft.Json;
 using Sentry;
+using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         Task<bool> DetectBots(int batchSize, int detectionLevel);
 
-        public void UpdateFlaggedDCS(int batchSize);
+        Task<bool> UpdateFlaggedDCS(int batchSize);
     }
 
     public class BrowserInfoJobServices : IBrowserInfoJobServices
@@ -189,8 +189,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(item), ex);
-                            throw;
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(item), SentryLevel.Error);
                         }
                     });
 
@@ -201,14 +200,25 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        public void UpdateFlaggedDCS(int batchSize)
+        public Task<bool> UpdateFlaggedDCS(int batchSize)
         {
-            var browserInfoFlagged = browserInfoService.GetBrowserInfoFlaggedDCS(batchSize);
-
-            if (browserInfoFlagged != null && browserInfoFlagged.Any())
+            try
             {
-                browserInfoService.UpdateBrowserInfoFlaggedDCS(browserInfoFlagged);
+                var browserInfoFlagged = browserInfoService.GetBrowserInfoFlaggedDCS(batchSize);
+
+                if (browserInfoFlagged != null && browserInfoFlagged.Any())
+                {
+                    browserInfoService.UpdateBrowserInfoFlaggedDCS(browserInfoFlagged);
+                }
             }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
     }
 }

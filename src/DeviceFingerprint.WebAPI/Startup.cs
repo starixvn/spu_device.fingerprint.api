@@ -112,7 +112,6 @@ namespace Device.Fingerprint.WebAPI
 
             services.RegisterService();
             FanexDataConfig(appSettings);
-            RegisterLogging(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -185,19 +184,6 @@ namespace Device.Fingerprint.WebAPI
               .WithMySql()
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
-        }
-
-        private void RegisterLogging(IAppSettings appSettings)
-        {
-            LogManager
-                .SetDefaultLogCategory("DeviceFingerPrintWebAPI")
-                .Use(new List<ILogEngine>
-                {
-                     new SentryLogging(new SentryEngineOptions {
-                        Dsn = new Dsn(appSettings.SentryDsn),
-                        Environment = appSettings.Environment
-                     })
-                });
         }
 
         private void RegisterRedis(IServiceCollection services)

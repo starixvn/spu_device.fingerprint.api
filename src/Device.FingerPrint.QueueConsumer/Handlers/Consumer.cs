@@ -12,10 +12,11 @@
     using Device.FingerPrint.Queue;
     using EasyNetQ;
     using EasyNetQ.Consumer;
-    using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
+    using Sentry;
+    using Sentry.Protocol;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -28,6 +29,7 @@
         private readonly IClientTransactionService fingerPrintService;
         private readonly ITransactionReportServices transactionReportServices;
         private readonly IBrowserInfoService browserInfoService;
+        private readonly ISentryClient sentryClient;
 
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
@@ -39,13 +41,15 @@
                         , IRawTransactionService rawTransactionService
                         , IClientTransactionService fingerPrintService
                         , ITransactionReportServices transactionReportServices
-                        , IBrowserInfoService browserInfoService)
+                        , IBrowserInfoService browserInfoService
+                        , ISentryClient sentryClient)
         {
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
             this.browserInfoService = browserInfoService;
+            this.sentryClient = sentryClient;
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
@@ -138,7 +142,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
                         }
                     })
                     .Add<ClientTransactionModel>((message, info) =>
@@ -167,7 +171,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
                         }
                     })
                     .Add<FingerprintAttributesModel>((message, info) =>
@@ -185,7 +189,7 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
                         }
                     })
                     .Add<BrowserInfoModel>((message, info) =>
@@ -203,14 +207,14 @@
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), ex);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
                         }
                     });
                 });
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -244,7 +248,7 @@
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -260,7 +264,7 @@
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
