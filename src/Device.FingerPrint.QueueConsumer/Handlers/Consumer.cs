@@ -200,7 +200,7 @@
 
                             if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
                             {
-                                sentryClient.CaptureMessage(JsonConvert.SerializeObject(listBrowserInfo));
+                               // sentryClient.CaptureMessage(JsonConvert.SerializeObject(listBrowserInfo));
 
                                 try
                                 {
