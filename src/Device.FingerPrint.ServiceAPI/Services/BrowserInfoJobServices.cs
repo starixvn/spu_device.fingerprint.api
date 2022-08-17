@@ -123,11 +123,28 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private bool CompareOSName(BrowserInfoDetectionModel browserInfo)
         {
-            if (browserInfo.OSName == browserInfo.UAOSName)
+            string[] arrOSName = { "Mac", "Windows", "iOS", "Android" };
+
+            var osName = SpecialCaseOSName(browserInfo.OSName);
+            var uaosName = SpecialCaseOSName(browserInfo.UAOSName);
+
+            if (!arrOSName.Contains(uaosName)
+                || (osName == uaosName))
             {
                 return true;
             }
+
             return false;
+        }
+
+        private string SpecialCaseOSName(string osName)
+        {
+            if (osName == "GNU/Linux")
+            {
+                return "Linux";
+            }
+
+            return osName;
         }
 
         private bool CompareBrowserName(BrowserInfoDetectionModel browserInfo)
@@ -135,15 +152,14 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if (browserInfo.UAOSName == "iOS" && browserInfo.UAOSName == browserInfo.OSName) return true;
 
             string[] arrBrowserNames = { "Chrome", "Firefox", "Microsoft Edge", "Opera", "Safari" };
+
+            var maxLengthBrowserName = 14;
             var browserName = SpecialCaseBrowserName(browserInfo.BrowserName);
             var uaBrowserName = SpecialCaseBrowserName(browserInfo.UABrowserName);
 
-            if (!arrBrowserNames.Contains(uaBrowserName) && !arrBrowserNames.Contains(browserName))
-            {
-                return true;
-            }
-
-            if (browserName == uaBrowserName)
+            if ((browserName.Length > maxLengthBrowserName)
+                || (!arrBrowserNames.Contains(uaBrowserName))
+                || (browserName == uaBrowserName))
             {
                 return true;
             }

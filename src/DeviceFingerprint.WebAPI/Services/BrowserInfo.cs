@@ -64,7 +64,7 @@ namespace Device.Fingerprint.WebAPI.Services
             var browserInfoModel = new BrowserInfoModel
             {
                 BrowserName = browserName,
-                OSName = osName
+                OSName = ReplaceOSName(osName)
             };
 
             var browserInfoJsModel = JsonConvert.DeserializeObject<BrowserInfoJsModel>(browserInfoJsonModel.BrowserInfo);
@@ -79,6 +79,11 @@ namespace Device.Fingerprint.WebAPI.Services
             };
 
             return (browserInfoModel, browserInfoAttributeModel);
+        }
+
+        private string ReplaceOSName(string osName)
+        {
+            return osName.Replace("macOS", "Mac");
         }
     }
 }

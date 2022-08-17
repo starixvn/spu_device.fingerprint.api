@@ -200,13 +200,22 @@
 
                             if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
                             {
-                                browserInfoService.InsertBrowserInfo(listBrowserInfo);
+                                try
+                                {
+                                    browserInfoService.InsertBrowserInfo(listBrowserInfo);
+                                }
+                                catch (Exception ex)
+                                {
+                                    sentryClient.CaptureException(ex);
+                                    sentryClient.CaptureMessage("Error InsertBrowserInfo" + "\n" + ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
+                                }
 
                                 listBrowserInfo.Clear();
                             }
                         }
                         catch (Exception ex)
                         {
+                            sentryClient.CaptureException(ex);
                             sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
                         }
                     });
