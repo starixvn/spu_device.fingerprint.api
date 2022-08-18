@@ -139,6 +139,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private string SpecialCaseOSName(string osName)
         {
+            if (string.IsNullOrEmpty(osName))
+                return string.Empty;
+
             if (osName == "GNU/Linux")
             {
                 return "Linux";
@@ -169,6 +172,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private string SpecialCaseBrowserName(string browserName)
         {
+            if (string.IsNullOrEmpty(browserName))
+                return string.Empty;
+
             if (browserName == "CocCoc")
             {
                 return "Chrome";
