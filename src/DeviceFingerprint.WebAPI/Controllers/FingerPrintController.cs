@@ -2,11 +2,12 @@
 using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
-using Fanex.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Sentry;
+using Sentry.Protocol;
 using System;
 
 namespace Device.Fingerprint.WebAPI.Controllers
@@ -22,13 +23,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IEasyNetQService easyNetQService;
         private readonly Crypto crypto;
         private readonly IRedisService redisService;
+        private readonly ISentryClient sentryClient;
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,
             IEasyNetQService easyNetQService,
-            IRedisService redisService)
+            IRedisService redisService,
+            ISentryClient sentryClient)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
@@ -36,6 +39,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.easyNetQService = easyNetQService;
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.redisService = redisService;
+            this.sentryClient = sentryClient;
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -66,20 +70,20 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         }
                         else
                         {
-                            LogService.Info("Subscriber " + subscriberName + " does not exists");
+                            sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists", SentryLevel.Info);
                         }
                     }
-                }                
+                }
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);               
+                sentryClient.CaptureException(ex);
             }
 
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/gfp")]        
+        [HttpGet("scr/cdn/gfp")]
         public ActionResult CDNScript()
         {
             try
@@ -100,9 +104,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
 
             return new EmptyResult();
@@ -114,7 +118,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                if(Validation.SessionKey(sessionKey))
+                if (Validation.SessionKey(sessionKey))
                 {
                     var JWTService = new JWT(appSettings);
 
@@ -129,12 +133,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     return Ok(jsonString);
                 }
 
-                
-                
+
+
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);               
+                sentryClient.CaptureException(ex);
             }
 
             return Ok(string.Empty);
@@ -171,12 +175,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 }
                 else
                 {
-                    LogService.Info($"FingerPrint does not exists. ({data})");
+                    sentryClient.CaptureMessage($"FingerPrint does not exists. ({data})", SentryLevel.Info);
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -215,13 +219,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     }
                     else
                     {
-                        LogService.Info($"{data.SubscriberName} does not exists.");
+                        sentryClient.CaptureMessage($"{data.SubscriberName} does not exists.", SentryLevel.Info);
                     }
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -245,12 +249,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 }
                 else
                 {
-                    LogService.Info($"FingerPrintCode cannot null. ({data})");
+                    sentryClient.CaptureMessage($"FingerPrintCode cannot null. ({data})", SentryLevel.Info);
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -264,9 +268,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var model = JsonConvert.DeserializeObject<Models.BrowserInfoJsonModel>(decryptedData);
                 if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
                 {
-                    
+
                     var browserInfo = new BrowserInfo();
-                    var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model);
+                    var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model, sentryClient);
 
                     var browserInfoJson = JsonConvert.SerializeObject(browserInfoModel);
                     var browserInfoAttributeJson = JsonConvert.SerializeObject(browserInfoAttributeModel);
@@ -285,12 +289,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 }
                 else
                 {
-                    LogService.Info($"SessionKey does not exists. ({data})");
+                    sentryClient.CaptureMessage($"SessionKey does not exists. ({data})", SentryLevel.Info);
                 }
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -304,7 +308,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             else
             {
-                LogService.Info("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
+                sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name", SentryLevel.Info);
 
                 return Ok(null);
             }

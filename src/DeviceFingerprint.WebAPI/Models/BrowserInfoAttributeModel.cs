@@ -8,6 +8,8 @@
 
         public string SecChUaMobile { get; set; }
 
-        public string BrowserInfoJs { get; set; }
+        public string JsBrowserName { get; set; }
+
+        public string JsOSName { get; set; }
     }
 }

@@ -1,9 +1,9 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
     using Device.FingerPrint.Features.FPTransactions.Services;
-    using Fanex.Logging;
     using Newtonsoft.Json;
     using Sentry;
+    using Sentry.Protocol;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -70,7 +70,7 @@
                         if (!ignoreMessages.Contains(ex.Message))
                         {
                             var transIdJson = JsonConvert.SerializeObject(trans);
-                            LogService.Error(ex.Message + "\n" + transIdJson, ex);
+                            sentryClient.CaptureMessage(ex.Message + "\n" + transIdJson, SentryLevel.Error);
                         }
                     }
                 });

@@ -1,9 +1,9 @@
 ﻿using Device.FingerPrint.Features.BrowserInfo.Model;
 using Device.FingerPrint.Features.BrowserInfo.Services;
 using Device.FingerPrint.Model;
-using Fanex.Logging;
 using Newtonsoft.Json;
 using Sentry;
+using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +15,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public interface IBrowserInfoJobServices
     {
         Task<bool> DetectBots(int batchSize, int detectionLevel);
+
+        Task<bool> UpdateFlaggedDCS(int batchSize);
     }
 
     public class BrowserInfoJobServices : IBrowserInfoJobServices
@@ -89,24 +91,21 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     var headlessScore = TransformRobotDetectionDetail(browserInfo.HeadlessScore);
                     if (headlessScore.Score > 0.5)
                     {
-                        browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                        browserInfo.Reason = BrowserInfoReason.HeadlessScore.ToString();
+                        browserInfo.Flagged = (int)FlaggedStatus.bot_headless;
                     }
                     else
                     {
                         if (detectionLevel > 1 && !CompareOSName(browserInfo))
                         {
-                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                            browserInfo.Reason = BrowserInfoReason.OSName.ToString();
+                            browserInfo.Flagged = (int)FlaggedStatus.bot_fake_os;
                         }
                         else if (detectionLevel > 1 && !CompareBrowserName(browserInfo))
                         {
-                            browserInfo.Flagged = FlaggedStatus.bot.ToString();
-                            browserInfo.Reason = BrowserInfoReason.BrowserName.ToString();
+                            browserInfo.Flagged = (int)FlaggedStatus.bot_fake_browser;
                         }
                         else
                         {
-                            browserInfo.Flagged = FlaggedStatus.human.ToString();
+                            browserInfo.Flagged = (int)FlaggedStatus.human;
                         }
                     }
                 }
@@ -124,11 +123,28 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private bool CompareOSName(BrowserInfoDetectionModel browserInfo)
         {
-            if (browserInfo.OSName == browserInfo.UAOSName)
+            string[] arrOSName = { "Mac", "Windows", "iOS", "Android" };
+
+            var osName = SpecialCaseOSName(browserInfo.OSName);
+            var uaosName = SpecialCaseOSName(browserInfo.UAOSName);
+
+            if (!arrOSName.Contains(uaosName)
+                || (osName == uaosName))
             {
                 return true;
             }
+
             return false;
+        }
+
+        private string SpecialCaseOSName(string osName)
+        {
+            if (osName == "GNU/Linux")
+            {
+                return "Linux";
+            }
+
+            return osName;
         }
 
         private bool CompareBrowserName(BrowserInfoDetectionModel browserInfo)
@@ -136,15 +152,14 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if (browserInfo.UAOSName == "iOS" && browserInfo.UAOSName == browserInfo.OSName) return true;
 
             string[] arrBrowserNames = { "Chrome", "Firefox", "Microsoft Edge", "Opera", "Safari" };
+
+            var maxLengthBrowserName = 14;
             var browserName = SpecialCaseBrowserName(browserInfo.BrowserName);
             var uaBrowserName = SpecialCaseBrowserName(browserInfo.UABrowserName);
 
-            if (!arrBrowserNames.Contains(uaBrowserName) && !arrBrowserNames.Contains(browserName))
-            {
-                return true;
-            }
-
-            if (browserName == uaBrowserName)
+            if ((browserName.Length > maxLengthBrowserName)
+                || (!arrBrowserNames.Contains(uaBrowserName))
+                || (browserName == uaBrowserName))
             {
                 return true;
             }
@@ -172,8 +187,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     var model = new BrowserInfoFlaggedEntity
                     {
                         Id = browserInfo.Id,
-                        Flagged = browserInfo.Flagged,
-                        Reason = browserInfo.Reason
+                        Flagged = browserInfo.Flagged
                     };
                     browserInfoFlaggedList.Add(model);
                 }
@@ -191,8 +205,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            LogService.Error(ex.Message + "\n" + JsonConvert.SerializeObject(item), ex);
-                            throw;
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(item), SentryLevel.Error);
                         }
                     });
 
@@ -203,5 +216,25 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
+        public Task<bool> UpdateFlaggedDCS(int batchSize)
+        {
+            try
+            {
+                var browserInfoFlagged = browserInfoService.GetBrowserInfoFlaggedDCS(batchSize);
+
+                if (browserInfoFlagged != null && browserInfoFlagged.Any())
+                {
+                    browserInfoService.UpdateBrowserInfoFlaggedDCS(browserInfoFlagged);
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
+        }
     }
 }
