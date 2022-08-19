@@ -41,7 +41,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             try
             {
-                var mdyDate = DateTime.UtcNow.AddHours(7).ToString("MM/dd/yyyy");
+                var mdyDate = DateTime.Now.ToString("MM/dd/yyyy");
                 var moreInfo = new StringBuilder("");
                 moreInfo = GetInfoDailyReport(mdyDate, moreInfo);
                 Notification("Daily Report", "Daily Report " + mdyDate, moreInfo);
@@ -60,7 +60,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             try
             {
-                var currentMonth = DateTime.UtcNow.AddHours(7).ToString("MM/yyyy");
+                var currentMonth = DateTime.Now.ToString("MM/yyyy");
                 var moreInfo = new StringBuilder("");
                 moreInfo = GetInfoMonthlyReport(currentMonth, moreInfo);
                 Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
@@ -159,7 +159,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             notification
                       .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken")
-                      .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), appSettings.Environment, message, moreInfo.ToString()))
+                      .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, moreInfo.ToString()))
                       .SendWithDelay(1, true);
         }
 
