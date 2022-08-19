@@ -41,10 +41,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             try
             {
-                var mdyDate = DateTime.Now.ToString("MM/dd/yyyy");
-                var moreInfo = new StringBuilder("");
-                moreInfo = GetInfoDailyReport(mdyDate, moreInfo);
-                Notification("Daily Report", "Daily Report " + mdyDate, moreInfo);
+                var currentDate = DateTime.Now;
+                var strDate = currentDate.ToString("MM/dd/yyyy");
+                var moreInfo = GetInfoReport(currentDate, currentDate);
+
+                Notification("Daily Report", "Daily Report " + strDate, moreInfo);
             }
             catch (Exception ex)
             {
@@ -60,9 +61,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             try
             {
-                var currentMonth = DateTime.Now.ToString("MM/yyyy");
-                var moreInfo = new StringBuilder("");
-                moreInfo = GetInfoMonthlyReport(currentMonth, moreInfo);
+                var currentDate = DateTime.Now;
+                var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+
+                var currentMonth = currentDate.ToString("MM/yyyy");
+                var moreInfo = GetInfoReport(firstDayOfMonth, lastDayOfMonth);
+
+                sentryClient.CaptureMessage(moreInfo.ToString());
+
                 Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
             }
             catch (Exception ex)
@@ -75,14 +82,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return Task.FromResult(true);
         }
 
-        private StringBuilder GetInfoDailyReport(string mdyDate, StringBuilder moreInfo)
+        private StringBuilder GetInfoReport(DateTime fromDate, DateTime toDate)
         {
-            var listDailySum = transactionReportServices.GetTransactionDailySumList(mdyDate);
+            var moreInfo = new StringBuilder("");
+            var transactionSumList = transactionReportServices.GetTransactionSumList(fromDate, toDate);
 
             // Server Daily report
             moreInfo.Append("\n\r");
-            moreInfo.Append("The List data ServerTransactionDailySum:");
-            var serverTransDaily = TranformData(listDailySum.Item1);
+            moreInfo.Append("The List data ServerTransaction:");
+            var serverTransDaily = TranformData(transactionSumList.Item1);
             foreach (var item in serverTransDaily)
             {
                 moreInfo.Append("\n\r");
@@ -93,39 +101,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             // Client Daily report
             moreInfo.Append("\n\r");
-            moreInfo.Append("The List data ClientTransactionDailySum:");
-            var clientTransDaily = TranformData(listDailySum.Item2);
-            foreach (var item in clientTransDaily)
-            {
-                moreInfo.Append("\n\r");
-                moreInfo.Append(" - Subscriber: " + item.SubscriberName);
-                moreInfo.Append(", TotalTrans: " + item.TotalTrans.ToString());
-                moreInfo.Append(", TotalValidTrans: " + item.TotalValidTrans.ToString());
-            }
-
-            return moreInfo;
-        }
-
-        private StringBuilder GetInfoMonthlyReport(string currentMonth, StringBuilder moreInfo)
-        {
-            var listMonthlySum = transactionReportServices.GetTransactionMonthlySumList(currentMonth);
-
-            // Server Daily report
-            moreInfo.Append("\n\r");
-            moreInfo.Append("The List data ServerTransactionMonthlySum:");
-            var serverTransDaily = TranformData(listMonthlySum.Item1);
-            foreach (var item in serverTransDaily)
-            {
-                moreInfo.Append("\n\r");
-                moreInfo.Append(" - Subscriber: " + item.SubscriberName);
-                moreInfo.Append(", TotalTrans: " + item.TotalTrans.ToString());
-                moreInfo.Append(", TotalValidTrans: " + item.TotalValidTrans.ToString());
-            }
-
-            // Client Daily report
-            moreInfo.Append("\n\r");
-            moreInfo.Append("The List data ClientTransactionMonthlySum:");
-            var clientTransDaily = TranformData(listMonthlySum.Item2);
+            moreInfo.Append("The List data ClientTransaction:");
+            var clientTransDaily = TranformData(transactionSumList.Item2);
             foreach (var item in clientTransDaily)
             {
                 moreInfo.Append("\n\r");
@@ -157,10 +134,13 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             var notification = new NotificationService();
 
+            var newInfo = new StringBuilder("SUCCESSED!" + jobName + message);
+            sentryClient.CaptureMessage(newInfo.ToString());
+
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken")
-                      .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, moreInfo.ToString()))
-                      .SendWithDelay(1, true);
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "http://10.2.252.100:8801/api/messages/forwardwithtoken")
+                      .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, newInfo.ToString()))
+                      .SendWithoutDelay(true);
         }
 
         public void TestSentryCaptureMessage(string message)

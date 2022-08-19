@@ -1,5 +1,6 @@
 ﻿using Device.FingerPrint.Features.Monitor.Model;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +12,8 @@ namespace Device.FingerPrint.Features.Monitor.Services
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionDailySumList(string mdyDate);
 
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
+
+        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate);
 
         void InsertClientTransactionDailySum(string json);
 
@@ -35,6 +38,11 @@ namespace Device.FingerPrint.Features.Monitor.Services
         public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month)
         {
             return dataAccess.GetTransactionMonthlySumList(Month);
+        }
+
+        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate)
+        {
+            return dataAccess.GetTransactionSumList(fromDate, toDate);
         }
 
         public void InsertClientTransactionDailySum(string json)

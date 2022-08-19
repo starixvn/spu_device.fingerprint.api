@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Features.Monitor.Criterias;
 using Device.FingerPrint.Features.Monitor.Model;
 using Fanex.Data.Repository;
+using System;
 using System.Collections.Generic;
 
 namespace Device.FingerPrint.Features.Monitor.Services
@@ -11,6 +12,8 @@ namespace Device.FingerPrint.Features.Monitor.Services
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionDailySumList(string mdyDate);
 
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
+
+        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate);
 
         void InsertClientTransactionDailySum(string json);
 
@@ -41,6 +44,17 @@ namespace Device.FingerPrint.Features.Monitor.Services
             var criteria = new GetTransactionMonthlySumCriteria
             {
                 Month = Month
+            };
+
+            return repository.FetchMultiple<TransactionReportEntity, TransactionReportEntity>(criteria);
+        }
+
+        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate)
+        {
+            var criteria = new GetTransactionSumCriteria
+            {
+                FromDate = fromDate,
+                ToDate = toDate
             };
 
             return repository.FetchMultiple<TransactionReportEntity, TransactionReportEntity>(criteria);
