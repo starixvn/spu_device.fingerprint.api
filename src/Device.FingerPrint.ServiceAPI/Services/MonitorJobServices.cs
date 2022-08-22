@@ -20,6 +20,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
         void TestSentryCaptureMessage(string message);
 
         void TestSentryCaptureException();
+
+        void TestNotificationTelegram(string message);
     }
 
     public class MonitorJobServices : IMonitorJobServices
@@ -27,6 +29,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private readonly IAppSettings appSettings;
         private readonly ITransactionReportServices transactionReportServices;
         private readonly ISentryClient sentryClient;
+        private readonly string telegramProxy;
 
         public MonitorJobServices(IAppSettings appSettings
                                 , ITransactionReportServices transactionReportServices
@@ -134,12 +137,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             var notification = new NotificationService();
 
-            var newInfo = new StringBuilder("SUCCESSED!" + jobName + message);
-            sentryClient.CaptureMessage(newInfo.ToString());
-
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "http://bot.nexdev.net/skynex/api/messages/forwardwithtoken", "10.2.252.100:8801")
-                      .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, newInfo.ToString()))
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", appSettings.TelegramProxy)
+                      .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, moreInfo.ToString()))
                       .SendWithDelay(1, true);
         }
 
@@ -163,6 +163,19 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private void ThrowExeption()
         {
             throw new NotImplementedException();
+        }
+
+        public void TestNotificationTelegram(string message)
+        {
+            var notification = new NotificationService();
+            var moreInfo = new StringBuilder("TestNotificationTelegram! \nMessage: " + message);
+            sentryClient.CaptureMessage(moreInfo.ToString());
+
+            notification
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", appSettings.TelegramProxy)
+                      .Message(new MessageModel("TestNotificationTelegram", DateTime.Now, appSettings.Environment, message, moreInfo.ToString()))
+                      .SendWithDelay(1, true);
+
         }
     }
 }

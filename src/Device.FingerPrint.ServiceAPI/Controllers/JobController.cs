@@ -157,5 +157,11 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         {
             monitorJobServices.TestSentryCaptureException();
         }
+
+        [HttpPost("testNotificationTelegram")]
+        public void TestNotificationTelegram([FromForm] string message)
+        {
+            monitorJobServices.TestNotificationTelegram(message);
+        }
     }
 }
