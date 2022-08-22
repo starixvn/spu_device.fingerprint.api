@@ -13,7 +13,7 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
         (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionMonthlySumList(string Month);
 
-        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate);
+        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate);
 
         void InsertClientTransactionDailySum(string json);
 
@@ -40,7 +40,7 @@ namespace Device.FingerPrint.Features.Monitor.Services
             return dataAccess.GetTransactionMonthlySumList(Month);
         }
 
-        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate)
+        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate)
         {
             return dataAccess.GetTransactionSumList(fromDate, toDate);
         }

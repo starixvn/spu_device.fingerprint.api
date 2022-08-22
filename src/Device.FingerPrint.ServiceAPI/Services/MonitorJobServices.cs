@@ -47,7 +47,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 var strDate = currentDate.ToString("MM/dd/yyyy");
                 var moreInfo = GetInfoReport(currentDate, currentDate);
 
-                Notification("Daily Report", "Daily Report " + strDate, moreInfo);
+                Notification("Daily Summary Report", "Daily Summary Report " + strDate, moreInfo);
             }
             catch (Exception ex)
             {
@@ -70,9 +70,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 var currentMonth = currentDate.ToString("MM/yyyy");
                 var moreInfo = GetInfoReport(firstDayOfMonth, lastDayOfMonth);
 
-                sentryClient.CaptureMessage(moreInfo.ToString());
-
-                Notification("Monthly Report", "Monthly Report " + currentMonth, moreInfo);
+                Notification("Monthly Summary Report", "Monthly Summary Report " + currentMonth, moreInfo);
             }
             catch (Exception ex)
             {
@@ -89,28 +87,39 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var moreInfo = new StringBuilder("");
             var transactionSumList = transactionReportServices.GetTransactionSumList(fromDate, toDate);
 
-            // Server Daily report
+            // Server summary
             moreInfo.Append("\n\r");
-            moreInfo.Append("The List data ServerTransaction:");
+            moreInfo.Append("ServerTransaction:");
             var serverTransDaily = TranformData(transactionSumList.Item1);
             foreach (var item in serverTransDaily)
             {
                 moreInfo.Append("\n\r");
-                moreInfo.Append(" - Subscriber: " + item.SubscriberName);
-                moreInfo.Append(", TotalTrans: " + item.TotalTrans.ToString());
-                moreInfo.Append(", TotalValidTrans: " + item.TotalValidTrans.ToString());
+                moreInfo.Append(" - " + item.SubscriberName);
+                moreInfo.Append(": " + item.TotalTrans.ToString());
+                moreInfo.Append(" (" + item.TotalValidTrans.ToString() + ")");
             }
 
-            // Client Daily report
+            // Client summary
             moreInfo.Append("\n\r");
-            moreInfo.Append("The List data ClientTransaction:");
+            moreInfo.Append("ClientTransaction:");
             var clientTransDaily = TranformData(transactionSumList.Item2);
             foreach (var item in clientTransDaily)
             {
                 moreInfo.Append("\n\r");
-                moreInfo.Append(" - Subscriber: " + item.SubscriberName);
-                moreInfo.Append(", TotalTrans: " + item.TotalTrans.ToString());
-                moreInfo.Append(", TotalValidTrans: " + item.TotalValidTrans.ToString());
+                moreInfo.Append(" - " + item.SubscriberName);
+                moreInfo.Append(": " + item.TotalTrans.ToString());
+                moreInfo.Append(" (" + item.TotalValidTrans.ToString() + ")");
+            }
+
+            // Transaction summary
+            moreInfo.Append("\n\r");
+            moreInfo.Append("Transaction:");
+            var transaction = TranformData(transactionSumList.Item3);
+            foreach (var item in transaction)
+            {
+                moreInfo.Append("\n\r");
+                moreInfo.Append(" - " + item.SubscriberName);
+                moreInfo.Append(": " + item.TotalTrans.ToString());
             }
 
             return moreInfo;
