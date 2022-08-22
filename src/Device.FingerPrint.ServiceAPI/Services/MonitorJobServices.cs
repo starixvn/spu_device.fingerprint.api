@@ -138,9 +138,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
             sentryClient.CaptureMessage(newInfo.ToString());
 
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "http://10.2.252.100:8801/api/messages/forwardwithtoken")
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "http://bot.nexdev.net/skynex/api/messages/forwardwithtoken", "10.2.252.100:8801")
                       .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, newInfo.ToString()))
-                      .SendWithoutDelay(true);
+                      .SendWithDelay(1, true);
         }
 
         public void TestSentryCaptureMessage(string message)
