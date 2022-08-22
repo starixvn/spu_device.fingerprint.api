@@ -29,7 +29,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private readonly IAppSettings appSettings;
         private readonly ITransactionReportServices transactionReportServices;
         private readonly ISentryClient sentryClient;
-        private readonly string telegramProxy;
 
         public MonitorJobServices(IAppSettings appSettings
                                 , ITransactionReportServices transactionReportServices

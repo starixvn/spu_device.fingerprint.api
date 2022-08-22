@@ -67,7 +67,7 @@
             var notification = new NotificationService();
 
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", "10.2.252.100:8801")
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", _appSettings.TelegramProxy)
                       .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), _appSettings.Environment, message, moreInfo))
                       .SendWithDelay(300);
         }
