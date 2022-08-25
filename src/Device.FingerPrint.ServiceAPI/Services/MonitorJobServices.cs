@@ -44,8 +44,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
             try
             {
                 var currentDate = DateTime.Now;
-                var strDate = currentDate.ToString("MM/dd/yyyy");
-                var moreInfo = GetInfoReport(currentDate, currentDate);
+
+                // Get data of last day
+                var lastDay = currentDate.AddDays(-1);
+                var strDate = lastDay.ToString("MM/dd/yyyy");
+                var moreInfo = GetInfoReport(lastDay, lastDay);
 
                 Notification("Daily Summary Report", "Daily Summary Report " + strDate, moreInfo);
             }
@@ -64,10 +67,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
             try
             {
                 var currentDate = DateTime.Now;
-                var firstDayOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
-                var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
 
-                var currentMonth = currentDate.ToString("MM/yyyy");
+                // Get data of last month
+                var lastDayOfMonth = currentDate.AddDays(-1);
+                var firstDayOfMonth = new DateTime(lastDayOfMonth.Year, lastDayOfMonth.Month, 1);
+
+                var currentMonth = lastDayOfMonth.ToString("MM/yyyy");
                 var moreInfo = GetInfoReport(firstDayOfMonth, lastDayOfMonth);
 
                 Notification("Monthly Summary Report", "Monthly Summary Report " + currentMonth, moreInfo);
