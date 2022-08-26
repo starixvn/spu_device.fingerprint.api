@@ -48,6 +48,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 // Get data of last day
                 var lastDay = currentDate.AddDays(-1);
                 var strDate = lastDay.ToString("MM/dd/yyyy");
+
+                sentryClient.CaptureMessage("Daily Summary Report " + lastDay.ToString());
                 var moreInfo = GetInfoReport(lastDay, lastDay);
 
                 Notification("Daily Summary Report", "Daily Summary Report " + strDate, moreInfo);
