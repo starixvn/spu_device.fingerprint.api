@@ -1,4 +1,5 @@
-﻿using Device.Fingerprint.WebAPI.Services;
+﻿using Device.Fingerprint.WebAPI.Models;
+using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
@@ -162,10 +163,21 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
                         var defenderAttributesService = new DefenderAttributesService();
+                        var fpAttributeModel = new FingerPrintAttributeModel
+                        {
+                            DoNotTrack = string.IsNullOrEmpty(fingerPrint.DoNotTrack) ? "undefined" : fingerPrint.DoNotTrack,
+                            GLRenderer = string.IsNullOrEmpty(fingerPrint.GLRenderer) ? "undefined" : fingerPrint.GLRenderer,
+                            HeaderAccept = Request.Headers["HeaderAccept"],
+                            HeaderAcceptEncoding = Request.Headers["HeaderAcceptEncoding"],
+                            Headers = String.Join(" ", Request.Headers.Keys)
+                        };
+
+                        var transactionAttributeService = new TransactionAttributeService();
+                        var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fingerPrint.FingerPrintCode, fpAttributeModel, crypto);
 
                         var clientTransactionModel = new ClientTransactionModel
                         {
-                            FingerPrintCode = fingerPrint.FingerPrintCode,
+                            FingerPrintCode = fpAttributesCode,
                             SessionKey = fingerPrint.SessionKey,
                             SubscriberId = fingerPrint.SubscriberId,
                             CookieCode = fingerPrint.CookieCode,
@@ -234,7 +246,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
-
                     if (subscriber != null)
                     {
                         var urlAddress = new Uri(data.Url);
@@ -278,13 +289,37 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var decryptedData = crypto.Decrypt(data);
 
+                //Request.Headers
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
                 {
+                    //var requestHeaders = (Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders)Request.Headers;
+                    foreach(var item in Request.Headers.Values)
+                    {
+                        var i = 1;
+                    }
+                    // Request.Headers.Values[2].TryGetValue("HeaderAccept", out var requestHeaders);
+                    var fpAttributeModel = new FingerPrintAttributeModel
+                    {
+                        DoNotTrack = string.IsNullOrEmpty(fpAttributes.DoNotTrack) ? "undefined" : fpAttributes.DoNotTrack,
+                        GLRenderer = string.IsNullOrEmpty(fpAttributes.GLRenderer) ? "undefined" : fpAttributes.GLRenderer,
+                        HeaderAccept = "",
+                        HeaderAcceptEncoding = Request.Headers["HeaderAcceptEncoding"],
+                        Headers = String.Join(" ", Request.Headers.Keys)
+                    };
+
+                    var transactionAttributeService = new TransactionAttributeService();
+                    var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fpAttributes.FingerPrintCode, fpAttributeModel, crypto);
+
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
-                        FingerPrintCode = fpAttributes.FingerPrintCode,
-                        Attribute = fpAttributes.Attributes
+                        FingerPrintCode = fpAttributesCode,
+                        Attribute = fpAttributes.Attributes,
+                        DoNotTrack = fpAttributeModel.DoNotTrack,
+                        GLRenderer = fpAttributeModel.GLRenderer,
+                        Accept = fpAttributeModel.HeaderAccept,
+                        Encoding = fpAttributeModel.HeaderAcceptEncoding,
+                        Headers = fpAttributeModel.Headers
                     };
 
                     easyNetQService.PushData(fpAttributesModel);
@@ -318,7 +353,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     var browserInfoAttributeJson = JsonConvert.SerializeObject(browserInfoAttributeModel);
                     var browserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeJson);
 
-                    var rawBrowserInfoModel = new BrowserInfoModel
+                    var rawBrowserInfoModel = new FingerPrint.Model.BrowserInfoModel
                     {
                         SessionKey = model.SessionKey,
                         HeadlessScore = model.HeadlessScore,
@@ -350,7 +385,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             else
             {
-               /// sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name", SentryLevel.Info);
+                /// sentryClient.CaptureMessage("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name", SentryLevel.Info);
 
                 return Ok(null);
             }

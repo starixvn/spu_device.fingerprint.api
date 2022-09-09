@@ -305,6 +305,12 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("da")]
         public DefenderAttributesModel DefenderAttributes { get; set; }
+
+        [JsonProperty("dnt")]
+        public string DoNotTrack { get; set; }
+
+        [JsonProperty("rdr")]
+        public string GLRenderer { get; set; }
     }
 
 
@@ -315,5 +321,11 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("attr")]
         public string Attributes { get; set; }
+
+        [JsonProperty("dnt")]
+        public string DoNotTrack { get; set; }
+
+        [JsonProperty("rdr")]
+        public string GLRenderer { get; set; }
     }
 }
