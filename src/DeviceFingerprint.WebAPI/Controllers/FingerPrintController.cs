@@ -167,8 +167,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         {
                             DoNotTrack = string.IsNullOrEmpty(fingerPrint.DoNotTrack) ? "undefined" : fingerPrint.DoNotTrack,
                             GLRenderer = string.IsNullOrEmpty(fingerPrint.GLRenderer) ? "undefined" : fingerPrint.GLRenderer,
-                            HeaderAccept = Request.Headers["HeaderAccept"],
-                            HeaderAcceptEncoding = Request.Headers["HeaderAcceptEncoding"],
+                            HeaderAccept = Request.Headers["Accept"],
+                            HeaderAcceptEncoding = Request.Headers["Accept-Encoding"],
                             Headers = String.Join(" ", Request.Headers.Keys)
                         };
 
@@ -282,6 +282,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
                 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fpa")]        
         public void FpAttributes([FromBody] string data)
         {
@@ -289,27 +290,22 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var decryptedData = crypto.Decrypt(data);
 
-                //Request.Headers
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
                 {
-                    //var requestHeaders = (Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.HttpRequestHeaders)Request.Headers;
-                    foreach(var item in Request.Headers.Values)
-                    {
-                        var i = 1;
-                    }
-                    // Request.Headers.Values[2].TryGetValue("HeaderAccept", out var requestHeaders);
                     var fpAttributeModel = new FingerPrintAttributeModel
                     {
                         DoNotTrack = string.IsNullOrEmpty(fpAttributes.DoNotTrack) ? "undefined" : fpAttributes.DoNotTrack,
                         GLRenderer = string.IsNullOrEmpty(fpAttributes.GLRenderer) ? "undefined" : fpAttributes.GLRenderer,
-                        HeaderAccept = "",
-                        HeaderAcceptEncoding = Request.Headers["HeaderAcceptEncoding"],
+                        HeaderAccept = Request.Headers["Accept"],
+                        HeaderAcceptEncoding = Request.Headers["Accept-Encoding"],
                         Headers = String.Join(" ", Request.Headers.Keys)
                     };
 
                     var transactionAttributeService = new TransactionAttributeService();
                     var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fpAttributes.FingerPrintCode, fpAttributeModel, crypto);
+
+                    var userAgentInfo = transactionAttributeService.GetUserAgentInfo(Request.Headers["User-Agent"]);
 
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
@@ -317,9 +313,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Attribute = fpAttributes.Attributes,
                         DoNotTrack = fpAttributeModel.DoNotTrack,
                         GLRenderer = fpAttributeModel.GLRenderer,
-                        Accept = fpAttributeModel.HeaderAccept,
-                        Encoding = fpAttributeModel.HeaderAcceptEncoding,
-                        Headers = fpAttributeModel.Headers
+                        HeaderAccept = fpAttributeModel.HeaderAccept,
+                        HeaderAcceptEncoding = fpAttributeModel.HeaderAcceptEncoding,
+                        Headers = fpAttributeModel.Headers,
+                        OSName = userAgentInfo.OSName,
+                        BrowserName = userAgentInfo.BrowserName,
+                        BrowserVersion = userAgentInfo.BrowserVersion,
                     };
 
                     easyNetQService.PushData(fpAttributesModel);
@@ -441,5 +440,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             return crypto.Decrypt(key);
         }
+
     }
 }

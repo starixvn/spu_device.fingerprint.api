@@ -146,6 +146,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
         }
 
+        [HttpPost("evolution")]
+        public void Evolution([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        {
+            transactionServices.Evolution(batchSize, numberOfBatch);
+        }
+
         [HttpPost("testSentryCaptureMessage")]
         public void TestSentryCaptureMessage([FromForm] string message)
         {

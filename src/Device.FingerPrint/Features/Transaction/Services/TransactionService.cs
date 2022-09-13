@@ -19,6 +19,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
         IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry);
 
         void ForceMergeTransaction(string transJson);
+
+        IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize);
+
+        void UpdateFingerPrintEvolution(string transJson, int type);
     }
 
     public class TransactionService : ITransactionService
@@ -50,6 +54,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
         }
 
+        public IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize)
+        {
+            return transactionDataAccess.GetFingerPrintEvolution(batchSize);
+        }
+
         public IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry)
         {
             return transactionDataAccess.GetForceMergeTransaction(batchSize, retry);
@@ -63,6 +72,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void MergeTransaction(string transJson)
         {
             transactionDataAccess.UpdateMergeTransaction(transJson);
+        }
+
+        public void UpdateFingerPrintEvolution(string transJson, int type)
+        {
+            transactionDataAccess.UpdateFingerPrintEvolution(transJson, type);
         }
     }
 }

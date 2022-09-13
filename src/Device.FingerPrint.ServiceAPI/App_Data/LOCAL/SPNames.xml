@@ -54,6 +54,11 @@
     <Setting Key="FPS_FP_Transform_BrowserInfoFlaggedDCS_Update" SpName="FPS_FP_Transform_BrowserInfoFlaggedDCS_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 
+  <Function Name="Evolution">
+    <Setting Key="FPS_FP_Recover_FingerPrintEvolution_Get" SpName="FPS_FP_Recover_FingerPrintEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Recover_FingerPrintEvolution_Update" SpName="FPS_FP_Recover_FingerPrintEvolution_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+  </Function>
+
   <Function Name="TransformTransaction">
     <Setting Key="FP_DCS_DC_Transform_Device_GetPackage" SpName="FP_DCS_DC_Transform_Device_GetPackage" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
     <Setting Key="FP_DCS_DC_Transform_Device_Insert" SpName="FP_DCS_DC_Transform_Device_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
