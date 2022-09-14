@@ -12,6 +12,12 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public ulong CookieId { get; set; }
 
+        public ulong SubscriberId { get; set; }
+
+        public string LoginName { get; set; }
+
+        public ulong UserAgentId { get; set; }
+
         public long GroupId { get; set; }
 
         public int BatchNumber { get; set; }

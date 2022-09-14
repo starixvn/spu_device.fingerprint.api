@@ -285,7 +285,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
             {
                 var tasks = new List<Task>();
                 var chunkRawTrans = trans.Chunk2(batchSize);
-                var offsetValue = trans.Min();
 
                 foreach (var item in chunkRawTrans)
                 {
@@ -293,9 +292,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     {
                         try
                         {
-                            var newDeviceTransIds = ClassifyRecoverTrans(item);
-                            var transJson = JsonConvert.SerializeObject(newDeviceTransIds);
-                            transactionService.UpdateFingerPrintEvolution(transJson, (int)FingerPrintEvolutionType.NewDevice);
+                            var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
+                            var transIds = string.Join(",", newDeviceTransIds);
+                            transactionService.UpdateFingerPrintEvolution(transIds, (int)FingerPrintEvolutionType.NewDevice);
                         }
                         catch (Exception ex)
                         {

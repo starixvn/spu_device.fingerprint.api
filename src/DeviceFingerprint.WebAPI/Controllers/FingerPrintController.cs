@@ -163,17 +163,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
                         var defenderAttributesService = new DefenderAttributesService();
-                        var fpAttributeModel = new FingerPrintAttributeModel
+                        var headerModel = new HeaderModel()
                         {
-                            DoNotTrack = string.IsNullOrEmpty(fingerPrint.DoNotTrack) ? "undefined" : fingerPrint.DoNotTrack,
-                            GLRenderer = string.IsNullOrEmpty(fingerPrint.GLRenderer) ? "undefined" : fingerPrint.GLRenderer,
-                            HeaderAccept = Request.Headers["Accept"],
-                            HeaderAcceptEncoding = Request.Headers["Accept-Encoding"],
-                            Headers = String.Join(" ", Request.Headers.Keys)
+                            Accept = Request.Headers["Accept"],
+                            Encoding = Request.Headers["Accept-Encoding"],
+                            Keys = String.Join(" ", Request.Headers.Keys)
                         };
 
                         var transactionAttributeService = new TransactionAttributeService();
-                        var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fingerPrint.FingerPrintCode, fpAttributeModel, crypto);
+                        var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fingerPrint, headerModel, crypto);
 
                         var clientTransactionModel = new ClientTransactionModel
                         {
@@ -293,17 +291,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
                 {
-                    var fpAttributeModel = new FingerPrintAttributeModel
+                    var headerModel = new HeaderModel()
                     {
-                        DoNotTrack = string.IsNullOrEmpty(fpAttributes.DoNotTrack) ? "undefined" : fpAttributes.DoNotTrack,
-                        GLRenderer = string.IsNullOrEmpty(fpAttributes.GLRenderer) ? "undefined" : fpAttributes.GLRenderer,
-                        HeaderAccept = Request.Headers["Accept"],
-                        HeaderAcceptEncoding = Request.Headers["Accept-Encoding"],
-                        Headers = String.Join(" ", Request.Headers.Keys)
+                        Accept = Request.Headers["Accept"],
+                        Encoding = Request.Headers["Accept-Encoding"],
+                        Keys = String.Join(" ", Request.Headers.Keys)
                     };
 
                     var transactionAttributeService = new TransactionAttributeService();
-                    var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fpAttributes.FingerPrintCode, fpAttributeModel, crypto);
+                    var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fpAttributes, headerModel, crypto);
 
                     var userAgentInfo = transactionAttributeService.GetUserAgentInfo(Request.Headers["User-Agent"]);
 
@@ -311,11 +307,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     {
                         FingerPrintCode = fpAttributesCode,
                         Attribute = fpAttributes.Attributes,
-                        DoNotTrack = fpAttributeModel.DoNotTrack,
-                        GLRenderer = fpAttributeModel.GLRenderer,
-                        HeaderAccept = fpAttributeModel.HeaderAccept,
-                        HeaderAcceptEncoding = fpAttributeModel.HeaderAcceptEncoding,
-                        Headers = fpAttributeModel.Headers,
+                        DoNotTrack = fpAttributes.DoNotTrack,
+                        GLRenderer = fpAttributes.GLRenderer,
+                        HeaderAccept = headerModel.Accept,
+                        HeaderAcceptEncoding = headerModel.Encoding,
+                        Headers = headerModel.Keys,
                         OSName = userAgentInfo.OSName,
                         BrowserName = userAgentInfo.BrowserName,
                         BrowserVersion = userAgentInfo.BrowserVersion,

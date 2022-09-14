@@ -6,11 +6,15 @@ namespace Device.Fingerprint.WebAPI.Services
 {
     public class TransactionAttributeService
     {
-
-        public string GenerateFPAttributesCode(string fingerPrintCode, FingerPrintAttributeModel model, Crypto crypto)
+        public string GenerateFPAttributesCode(FingerPrintMoreAttributeModel fpModel, HeaderModel headerModel, Crypto crypto)
         {
-            var concatString = fingerPrintCode + "_doNotTrack=" + model.DoNotTrack + "_glRenderer=" + model.GLRenderer + "_accept=" + model.HeaderAccept + "_encoding=" + model.HeaderAcceptEncoding + "_headers=" + model.Headers;
+            var doNotTrack = string.IsNullOrEmpty(fpModel.DoNotTrack) ? "undefined" : fpModel.DoNotTrack;
+            var glRenderer = string.IsNullOrEmpty(fpModel.GLRenderer) ? "undefined" : fpModel.GLRenderer;
+
+            //var concatString = fpModel.FingerPrintCode + "_#_doNotTrack=" + doNotTrack + "_#_glRenderer=" + glRenderer + "_#_accept=" + headerModel.Accept + "_#_encoding=" + headerModel.Encoding + "_#_headers=" + headerModel.Keys;
+            var concatString = fpModel.FingerPrintCode + "_#_doNotTrack=" + doNotTrack + "_#_glRenderer=" + glRenderer;
             var fpAttributeCode = crypto.GetMD5Hash(concatString);
+
             return fpAttributeCode;
         }
 
