@@ -22,6 +22,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize);
 
+        IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds);
+
         void UpdateFingerPrintEvolution(string transJson, int type);
     }
 
@@ -52,6 +54,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity> ,IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch)
         {
             return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
+        }
+
+        public IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds)
+        {
+            return transactionDataAccess.GetFingerPrintAttributesEvolution(fingerPrintIds);
         }
 
         public IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize)

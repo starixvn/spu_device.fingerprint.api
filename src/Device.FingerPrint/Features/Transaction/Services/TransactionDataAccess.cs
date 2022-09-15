@@ -23,6 +23,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize);
 
+        IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds);
+
         void UpdateFingerPrintEvolution(string transJson, int type);
 
     }
@@ -66,6 +68,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
             };
 
             return repository.FetchMultiple<DeviceIdentifyEntity, DeviceIdentifyEntity, ulong>(criteria);
+        }
+
+        public IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds)
+        {
+            var criteria = new GetFingerPrintAttributesEvolutionCriteria
+            {
+                FingerPrintIds = fingerPrintIds
+            };
+
+            return repository.Fetch<FingerPrintAttributesEvolutionEntity>(criteria);
         }
 
         public IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize)

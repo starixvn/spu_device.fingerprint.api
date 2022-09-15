@@ -293,8 +293,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         try
                         {
                             var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
+
+                            // NewDevice
                             var transIds = string.Join(",", newDeviceTransIds);
                             transactionService.UpdateFingerPrintEvolution(transIds, (int)FingerPrintEvolutionType.NewDevice);
+
+                            // FPS Evolution
                         }
                         catch (Exception ex)
                         {
@@ -313,7 +317,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             var newDeviceTransIds = new List<ulong>();
             var transRecover = new List<FingerPrintEvolutionModel>();
-            foreach(var item in trans)
+            foreach (var item in trans)
             {
                 var deviceId = GetDeviceIdByEvolution(item);
                 if (deviceId > 0)
@@ -338,7 +342,50 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private ulong GetDeviceIdByEvolution(FingerPrintEvolutionEntity entity)
         {
-            return 0;
+            ulong result = 0;
+            if (entity != null && !string.IsNullOrEmpty(entity.FPIds))
+            {
+                var fpAttributes = transactionService.GetFingerPrintAttributesEvolution(entity.FPIds);
+                foreach (var item in fpAttributes)
+                {
+                    if(CompareRules(entity, item))
+                    {
+                        result = item.Id;
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+        private bool CompareRules(FingerPrintEvolutionEntity newEntity, FingerPrintAttributesEvolutionEntity oldEntity)
+        {
+            // Rule 1
+            if (newEntity.OSName + newEntity.Platform + newEntity.BrowserName != oldEntity.OSName + oldEntity.Platform + oldEntity.BrowserName)
+            {
+                return false;
+            }
+
+            // Rule 2
+            if (newEntity.BrowserVersion != oldEntity.BrowserVersion)
+            {
+                return false;
+            }
+
+            // Rule 3
+            if (newEntity.LocalStorage + newEntity.DoNotTrack + newEntity.CookiesEnabled + newEntity.CanvasPrint 
+                != oldEntity.LocalStorage + oldEntity.DoNotTrack + oldEntity.CookiesEnabled + oldEntity.CanvasPrint)
+            {
+                return false;
+            }
+
+            // Rule 4
+            var arr1 = newEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
+            var arr2 = oldEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
+            if (newEntity.Fonts != oldEntity.Fonts)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

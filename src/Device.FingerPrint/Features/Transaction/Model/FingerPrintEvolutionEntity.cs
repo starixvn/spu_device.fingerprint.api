@@ -45,5 +45,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
         public string HeaderAcceptEncoding { get; set; }
 
         public string Headers { get; set; }
+
+        public string FPIds { get; set; }
     }
 }
