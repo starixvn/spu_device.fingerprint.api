@@ -309,12 +309,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Attribute = fpAttributes.Attributes,
                         DoNotTrack = fpAttributes.DoNotTrack,
                         GLRenderer = fpAttributes.GLRenderer,
-                        HeaderAccept = headerModel.Accept,
-                        HeaderAcceptEncoding = headerModel.Encoding,
+                        Accept = headerModel.Accept,
+                        Encoding = headerModel.Encoding,
                         Headers = headerModel.Keys,
                         OSName = userAgentInfo.OSName,
                         BrowserName = userAgentInfo.BrowserName,
                         BrowserVersion = userAgentInfo.BrowserVersion,
+                        UserAgent = Request.Headers["User-Agent"]
                     };
 
                     easyNetQService.PushData(fpAttributesModel);

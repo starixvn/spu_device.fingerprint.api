@@ -22,13 +22,13 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Platform { get; set; }
 
-        public int LocalStorage { get; set; }
+        public bool LocalStorage { get; set; }
 
         public string DoNotTrack { get; set; }
 
-        public int CookiesEnabled { get; set; }
+        public bool Cookies { get; set; }
 
-        public string CanvasPrint { get; set; }
+        public string Canvas { get; set; }
 
         public string Fonts { get; set; }
 
@@ -38,13 +38,17 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Plugins { get; set; }
 
-        public string LanguagesPrint { get; set; }
+        public string Languages { get; set; }
 
-        public string HeaderAccept { get; set; }
+        public string Accept { get; set; }
 
-        public string HeaderAcceptEncoding { get; set; }
+        public string Encoding { get; set; }
 
         public string Headers { get; set; }
+
+        public string Resolution { get; set; }
+
+        public string Timezone { get; set; }
 
         public string FPIds { get; set; }
     }

@@ -12,6 +12,6 @@ namespace Device.FingerPrint.Model
 
         public DateTime TransTime { get; set; }
 
-        public ulong DeviceId { get; set; }
+        public ulong RecoverFingerPrintId { get; set; }
     }
 }

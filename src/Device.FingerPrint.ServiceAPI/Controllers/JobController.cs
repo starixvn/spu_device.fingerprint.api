@@ -1,6 +1,8 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Sentry;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
@@ -150,6 +152,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         public void Evolution([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             transactionServices.Evolution(batchSize, numberOfBatch);
+        }
+
+        [HttpPost("compareString")]
+        public void Evolution([FromForm] string strA, [FromForm] string strB)
+        {
+            var something = String.Compare(strA, strB);
         }
 
         [HttpPost("testSentryCaptureMessage")]

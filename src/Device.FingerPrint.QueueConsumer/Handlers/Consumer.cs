@@ -113,12 +113,13 @@
                 FingerPrintAttributeCode = model.FingerPrintAttributeCode,
                 DoNotTrack = model.DoNotTrack,
                 GLRenderer = model.GLRenderer,
-                HeaderAccept = model.HeaderAccept,
-                HeaderAcceptEncoding = model.HeaderAcceptEncoding,
+                Accept = model.Accept,
+                Encoding = model.Encoding,
                 Headers = model.Headers,
                 OSName = model.OSName,
                 BrowserName = model.BrowserName,
-                BrowserVersion = model.BrowserVersion
+                BrowserVersion = model.BrowserVersion,
+                UserAgent = model.UserAgent
             };
         }
 

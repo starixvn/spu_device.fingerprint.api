@@ -12,9 +12,9 @@
 
         public string GLRenderer { get; set; }
 
-        public string HeaderAccept { get; set; }
+        public string Accept { get; set; }
 
-        public string HeaderAcceptEncoding { get; set; }
+        public string Encoding { get; set; }
 
         public string Headers { get; set; }
 
@@ -23,5 +23,7 @@
         public string BrowserName { get; set; }
 
         public string BrowserVersion { get; set; }
+
+        public string UserAgent { get; set; }
     }
 }

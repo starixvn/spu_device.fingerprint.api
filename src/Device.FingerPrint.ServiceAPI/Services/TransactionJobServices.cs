@@ -295,10 +295,18 @@ namespace Device.FingerPrint.ServiceAPI.Services
                             var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
 
                             // NewDevice
-                            var transIds = string.Join(",", newDeviceTransIds);
-                            transactionService.UpdateFingerPrintEvolution(transIds, (int)FingerPrintEvolutionType.NewDevice);
+                            if (newDeviceTransIds != null && newDeviceTransIds.Any())
+                            {
+                                var transIds = string.Join(",", newDeviceTransIds);
+                                transactionService.UpdateFingerPrintEvolution(transIds, (int)FingerPrintEvolutionType.NewDevice);
+                            }
 
                             // FPS Evolution
+                            if (evolutionModel != null && evolutionModel.Any())
+                            {
+                                var transJson = JsonConvert.SerializeObject(evolutionModel);
+                                transactionService.UpdateFingerPrintEvolution(transJson, (int)FingerPrintEvolutionType.Recover);
+                            }
                         }
                         catch (Exception ex)
                         {
@@ -319,8 +327,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var transRecover = new List<FingerPrintEvolutionModel>();
             foreach (var item in trans)
             {
-                var deviceId = GetDeviceIdByEvolution(item);
-                if (deviceId > 0)
+                var RecoverFingerPrintId = GetRecoverFingerPrintIdByEvolution(item);
+                if (RecoverFingerPrintId > 0)
                 {
                     var model = new FingerPrintEvolutionModel()
                     {
@@ -328,7 +336,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         RawFingerPrintId = item.RawFingerPrintId,
                         CookieId = item.CookieId,
                         TransTime = item.TransTime,
-                        DeviceId = deviceId
+                        RecoverFingerPrintId = RecoverFingerPrintId
                     };
                     transRecover.Add(model);
                 }
@@ -340,7 +348,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return (newDeviceTransIds, transRecover);
         }
 
-        private ulong GetDeviceIdByEvolution(FingerPrintEvolutionEntity entity)
+        private ulong GetRecoverFingerPrintIdByEvolution(FingerPrintEvolutionEntity entity)
         {
             ulong result = 0;
             if (entity != null && !string.IsNullOrEmpty(entity.FPIds))
@@ -357,34 +365,68 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
             return result;
         }
+
         private bool CompareRules(FingerPrintEvolutionEntity newEntity, FingerPrintAttributesEvolutionEntity oldEntity)
         {
             // Rule 1
             if (newEntity.OSName + newEntity.Platform + newEntity.BrowserName != oldEntity.OSName + oldEntity.Platform + oldEntity.BrowserName)
-            {
                 return false;
-            }
 
             // Rule 2
-            if (newEntity.BrowserVersion != oldEntity.BrowserVersion)
-            {
+            if (String.Compare(newEntity.BrowserVersion, oldEntity.BrowserVersion) < 0)
                 return false;
-            }
 
             // Rule 3
-            if (newEntity.LocalStorage + newEntity.DoNotTrack + newEntity.CookiesEnabled + newEntity.CanvasPrint 
-                != oldEntity.LocalStorage + oldEntity.DoNotTrack + oldEntity.CookiesEnabled + oldEntity.CanvasPrint)
-            {
+            if (newEntity.LocalStorage + newEntity.DoNotTrack + newEntity.Cookies + newEntity.Canvas
+                != oldEntity.LocalStorage + oldEntity.DoNotTrack + oldEntity.Cookies + oldEntity.Canvas)
                 return false;
-            }
 
             // Rule 4
             var arr1 = newEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
             var arr2 = oldEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
-            if (newEntity.Fonts != oldEntity.Fonts)
-            {
+            if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
                 return false;
-            }
+
+            // Rule 5
+            int countRule56Changed = 0;
+            int isVendor = 0, isGLRenderer = 0, isPlugins = 0, isLanguagesPrint = 0;
+
+            if (newEntity.Vendor != oldEntity.Vendor) isVendor = 1;
+            if (newEntity.GLRenderer != oldEntity.GLRenderer) isGLRenderer = 1;
+            if (newEntity.Plugins != oldEntity.Plugins) isPlugins = 1;
+            if (newEntity.Languages != oldEntity.Languages) isLanguagesPrint = 1;
+            //if (newEntity.HeaderAccept != oldEntity.HeaderAccept) countRule5++;
+            //if (newEntity.Headers != oldEntity.Headers) countRule5++;
+
+            if (isVendor + isGLRenderer + isPlugins + isLanguagesPrint > 2) return false;
+            if (isVendor + isGLRenderer + isPlugins + isLanguagesPrint > 0) countRule56Changed++;
+
+            if(isVendor == 1 && !CheckRatio(newEntity.Vendor, oldEntity.Vendor))
+                return false;
+            if(isGLRenderer == 1 && !CheckRatio(newEntity.GLRenderer, oldEntity.GLRenderer))
+                return false;
+            if(isPlugins == 1 && !CheckRatio(newEntity.Plugins, oldEntity.Plugins))
+                return false;
+            if(isLanguagesPrint == 1 && !CheckRatio(newEntity.Languages, oldEntity.Languages))
+                return false;
+
+            // Rule 6
+            int isScreenPrint = 0, isTimezone = 0;
+            if (newEntity.Resolution != oldEntity.Resolution) isScreenPrint = 1;
+            if (newEntity.Timezone != oldEntity.Timezone) isTimezone = 1;
+
+            if (isScreenPrint + isTimezone > 1) return false;
+            if (isScreenPrint + isTimezone > 0) countRule56Changed++;
+
+            // Rule 7
+            if (countRule56Changed > 1) return false;
+
+            return true;
+        }
+
+        private bool CheckRatio(string a, string b)
+        {
+            // Check ratio
             return true;
         }
     }
