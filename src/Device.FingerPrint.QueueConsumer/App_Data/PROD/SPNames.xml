@@ -4,6 +4,7 @@
 	<Function Name="Transaction">
 		<Setting Key="FPS_FP_Transform_ServerTransaction_Insert" SpName="FPS_FP_Transform_ServerTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_ClientTransaction_Insert" SpName="FPS_FP_Transform_ClientTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+		<Setting Key="FPS_FP_Transform_ClientTransaction_Logs_Insert" SpName="FPS_FP_Transform_ClientTransaction_Logs_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 		<Setting Key="FPS_FP_Transform_FingerprintAttributes_Insert" SpName="FPS_FP_Transform_FingerprintAttributes_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Transform_BrowserInfo_Insert" SpName="FPS_FP_Transform_BrowserInfo_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 	</Function>
