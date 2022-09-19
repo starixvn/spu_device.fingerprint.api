@@ -3,7 +3,7 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class UpdateFingerPrintEvolutionCriteria : NonQueryCommand
+    public class UpdateTransactionEvolutionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_TransJson")]
         public string Transaction { get; set; }
@@ -14,7 +14,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Recover_FingerPrintEvolution_Update";
+            return "FPS_FP_Recover_TransactionEvolution_Update";
         }
 
         public override bool IsValid()

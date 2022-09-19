@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.Model
 {
-    public enum FingerPrintEvolutionType
+    public enum TransactionEvolutionType
     {
         NewDevice,
         Recover

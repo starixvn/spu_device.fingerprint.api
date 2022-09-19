@@ -21,11 +21,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void UpdateForceMergeTransaction(string transJson);
 
-        IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize);
+        IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
 
-        IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds);
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
 
-        void UpdateFingerPrintEvolution(string transJson, int type);
+        void UpdateTransactionEvolution(string transJson, int type);
 
     }
 
@@ -70,24 +70,25 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return repository.FetchMultiple<DeviceIdentifyEntity, DeviceIdentifyEntity, ulong>(criteria);
         }
 
-        public IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds)
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
         {
-            var criteria = new GetFingerPrintAttributesEvolutionCriteria
+            var criteria = new GetTransactionAttributesEvolutionCriteria
             {
-                FingerPrintIds = fingerPrintIds
+                FingerPrintIds = fingerPrintIds,
+                BrowserInstanceCode = BrowserInstanceCode
             };
 
-            return repository.Fetch<FingerPrintAttributesEvolutionEntity>(criteria);
+            return repository.Fetch<TransactionEvolutionAttributesEntity>(criteria);
         }
 
-        public IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize)
+        public IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize)
         {
-            var criteria = new GetFingerPrintEvolutionCriteria
+            var criteria = new GetTransactionEvolutionCriteria
             {
                 Size = batchSize
             };
 
-            return repository.Fetch<FingerPrintEvolutionEntity>(criteria);
+            return repository.Fetch<TransactionEvolutionEntity>(criteria);
         }
 
         public IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry)
@@ -112,9 +113,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return repository.Fetch<MergeTransEntity>(criteria);
         }
 
-        public void UpdateFingerPrintEvolution(string transJson, int type)
+        public void UpdateTransactionEvolution(string transJson, int type)
         {
-            var criteria = new UpdateFingerPrintEvolutionCriteria
+            var criteria = new UpdateTransactionEvolutionCriteria
             {
                 Transaction = transJson,
                 Type = type

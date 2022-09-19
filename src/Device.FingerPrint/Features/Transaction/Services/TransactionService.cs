@@ -20,11 +20,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void ForceMergeTransaction(string transJson);
 
-        IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize);
+        IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
 
-        IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds);
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
 
-        void UpdateFingerPrintEvolution(string transJson, int type);
+        void UpdateTransactionEvolution(string transJson, int type);
     }
 
     public class TransactionService : ITransactionService
@@ -56,14 +56,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
         }
 
-        public IEnumerable<FingerPrintAttributesEvolutionEntity> GetFingerPrintAttributesEvolution(string fingerPrintIds)
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
         {
-            return transactionDataAccess.GetFingerPrintAttributesEvolution(fingerPrintIds);
+            return transactionDataAccess.GetTransactionEvolutionAttributes(fingerPrintIds, BrowserInstanceCode);
         }
 
-        public IEnumerable<FingerPrintEvolutionEntity> GetFingerPrintEvolution(int batchSize)
+        public IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize)
         {
-            return transactionDataAccess.GetFingerPrintEvolution(batchSize);
+            return transactionDataAccess.GetTransactionEvolution(batchSize);
         }
 
         public IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry)
@@ -81,9 +81,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.UpdateMergeTransaction(transJson);
         }
 
-        public void UpdateFingerPrintEvolution(string transJson, int type)
+        public void UpdateTransactionEvolution(string transJson, int type)
         {
-            transactionDataAccess.UpdateFingerPrintEvolution(transJson, type);
+            transactionDataAccess.UpdateTransactionEvolution(transJson, type);
         }
     }
 }

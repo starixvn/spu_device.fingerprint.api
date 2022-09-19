@@ -55,9 +55,9 @@
   </Function>
 
   <Function Name="Evolution">
-    <Setting Key="FPS_FP_Recover_FingerPrintEvolution_Get" SpName="FPS_FP_Recover_FingerPrintEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Recover_FingerPrintAttributesEvolution_Get" SpName="FPS_FP_Recover_FingerPrintAttributesEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Recover_FingerPrintEvolution_Update" SpName="FPS_FP_Recover_FingerPrintEvolution_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Recover_TransactionEvolution_Get" SpName="FPS_FP_Recover_TransactionEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Recover_TransactionEvolutionAttributes_Get" SpName="FPS_FP_Recover_TransactionEvolutionAttributes_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="FPS_FP_Recover_TransactionEvolution_Update" SpName="FPS_FP_Recover_TransactionEvolution_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 
   <Function Name="TransformTransaction">

@@ -2,7 +2,7 @@
 
 namespace Device.FingerPrint.Model
 {
-    public class FingerPrintEvolutionModel
+    public class TransactionEvolutionModel
     {
         public ulong Id { get; set; }
 

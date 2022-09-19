@@ -262,7 +262,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             try
             {
-                var rawTrans = transactionService.GetFingerPrintEvolution(batchSize * numberOfBatch);
+                var rawTrans = transactionService.GetTransactionEvolution(batchSize * numberOfBatch);
 
                 if (rawTrans != null && rawTrans.Any())
                 {
@@ -279,7 +279,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return Task.FromResult(true);
         }
 
-        private void ProcessEvolution(IEnumerable<FingerPrintEvolutionEntity> trans, int batchSize)
+        private void ProcessEvolution(IEnumerable<TransactionEvolutionEntity> trans, int batchSize)
         {
             if (trans != null && trans.Any())
             {
@@ -298,14 +298,14 @@ namespace Device.FingerPrint.ServiceAPI.Services
                             if (newDeviceTransIds != null && newDeviceTransIds.Any())
                             {
                                 var transIds = string.Join(",", newDeviceTransIds);
-                                transactionService.UpdateFingerPrintEvolution(transIds, (int)FingerPrintEvolutionType.NewDevice);
+                                transactionService.UpdateTransactionEvolution(transIds, (int)TransactionEvolutionType.NewDevice);
                             }
 
                             // FPS Evolution
                             if (evolutionModel != null && evolutionModel.Any())
                             {
                                 var transJson = JsonConvert.SerializeObject(evolutionModel);
-                                transactionService.UpdateFingerPrintEvolution(transJson, (int)FingerPrintEvolutionType.Recover);
+                                transactionService.UpdateTransactionEvolution(transJson, (int)TransactionEvolutionType.Recover);
                             }
                         }
                         catch (Exception ex)
@@ -321,16 +321,16 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        private (IEnumerable<ulong>, IEnumerable<FingerPrintEvolutionModel>) ClassifyRecoverTrans(IEnumerable<FingerPrintEvolutionEntity> trans)
+        private (IEnumerable<ulong>, IEnumerable<TransactionEvolutionModel>) ClassifyRecoverTrans(IEnumerable<TransactionEvolutionEntity> trans)
         {
             var newDeviceTransIds = new List<ulong>();
-            var transRecover = new List<FingerPrintEvolutionModel>();
+            var transRecover = new List<TransactionEvolutionModel>();
             foreach (var item in trans)
             {
                 var RecoverFingerPrintId = GetRecoverFingerPrintIdByEvolution(item);
                 if (RecoverFingerPrintId > 0)
                 {
-                    var model = new FingerPrintEvolutionModel()
+                    var model = new TransactionEvolutionModel()
                     {
                         Id = item.Id,
                         RawFingerPrintId = item.RawFingerPrintId,
@@ -348,12 +348,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return (newDeviceTransIds, transRecover);
         }
 
-        private ulong GetRecoverFingerPrintIdByEvolution(FingerPrintEvolutionEntity entity)
+        private ulong GetRecoverFingerPrintIdByEvolution(TransactionEvolutionEntity entity)
         {
             ulong result = 0;
             if (entity != null && !string.IsNullOrEmpty(entity.FPIds))
             {
-                var fpAttributes = transactionService.GetFingerPrintAttributesEvolution(entity.FPIds);
+                var fpAttributes = transactionService.GetTransactionEvolutionAttributes(entity.FPIds, entity.BrowserInstanceCode);
                 foreach (var item in fpAttributes)
                 {
                     if(CompareRules(entity, item))
@@ -366,10 +366,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return result;
         }
 
-        private bool CompareRules(FingerPrintEvolutionEntity newEntity, FingerPrintAttributesEvolutionEntity oldEntity)
+        private bool CompareRules(TransactionEvolutionEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
         {
             // Rule 1
-            if (newEntity.OSName + newEntity.Platform + newEntity.BrowserName != oldEntity.OSName + oldEntity.Platform + oldEntity.BrowserName)
+            if (newEntity.BrowserInstanceCode != oldEntity.BrowserInstanceCode)
                 return false;
 
             // Rule 2
@@ -384,13 +384,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
             // Rule 4
             var arr1 = newEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
             var arr2 = oldEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
+
             if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
                 return false;
 
             // Rule 5
             int countRule56Changed = 0;
-            int isVendor = 0, isGLRenderer = 0, isPlugins = 0, isLanguagesPrint = 0;
+            int isUserAgent = 0, isVendor = 0, isGLRenderer = 0, isPlugins = 0, isLanguagesPrint = 0;
 
+            if (newEntity.UserAgent != oldEntity.UserAgent) isUserAgent = 1;
             if (newEntity.Vendor != oldEntity.Vendor) isVendor = 1;
             if (newEntity.GLRenderer != oldEntity.GLRenderer) isGLRenderer = 1;
             if (newEntity.Plugins != oldEntity.Plugins) isPlugins = 1;
@@ -398,9 +400,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
             //if (newEntity.HeaderAccept != oldEntity.HeaderAccept) countRule5++;
             //if (newEntity.Headers != oldEntity.Headers) countRule5++;
 
-            if (isVendor + isGLRenderer + isPlugins + isLanguagesPrint > 2) return false;
-            if (isVendor + isGLRenderer + isPlugins + isLanguagesPrint > 0) countRule56Changed++;
+            if (isUserAgent + isVendor + isGLRenderer + isPlugins + isLanguagesPrint > 2) return false;
+            if (isUserAgent + isVendor + isGLRenderer + isPlugins + isLanguagesPrint > 0) countRule56Changed++;
 
+            if(isUserAgent == 1 && !CheckRatio(newEntity.UserAgent, oldEntity.UserAgent))
+                return false;
             if(isVendor == 1 && !CheckRatio(newEntity.Vendor, oldEntity.Vendor))
                 return false;
             if(isGLRenderer == 1 && !CheckRatio(newEntity.GLRenderer, oldEntity.GLRenderer))
@@ -427,6 +431,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private bool CheckRatio(string a, string b)
         {
             // Check ratio
+            // /api/ratio
             return true;
         }
     }

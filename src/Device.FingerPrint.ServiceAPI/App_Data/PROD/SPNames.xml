@@ -52,9 +52,9 @@
   </Function>
 
   <Function Name="BrowserInfo">
-    <Setting Key="FPS_FP_Recover_FingerPrintEvolution_Get" SpName="FPS_FP_Recover_FingerPrintEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-    <Setting Key="FPS_FP_Recover_FingerPrintAttributesEvolution_Get" SpName="FPS_FP_Recover_FingerPrintAttributesEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-    <Setting Key="FPS_FP_Recover_FingerPrintEvolution_Update" SpName="FPS_FP_Recover_FingerPrintEvolution_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+    <Setting Key="FPS_FP_Recover_TransactionEvolution_Get" SpName="FPS_FP_Recover_TransactionEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+    <Setting Key="FPS_FP_Recover_TransactionEvolutionAttributes_Get" SpName="FPS_FP_Recover_TransactionEvolutionAttributes_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
+    <Setting Key="FPS_FP_Recover_TransactionEvolution_Update" SpName="FPS_FP_Recover_TransactionEvolution_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
   </Function>
 
   <Function Name="Archive">

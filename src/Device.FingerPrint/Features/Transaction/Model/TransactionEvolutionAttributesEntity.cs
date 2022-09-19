@@ -1,8 +1,12 @@
 ﻿namespace Device.FingerPrint.Features.Transaction.Model
 {
-    public class FingerPrintAttributesEvolutionEntity
+    public class TransactionEvolutionAttributesEntity
     {
         public ulong Id { get; set; }
+
+        public string UserAgent { get; set; }
+
+        public string BrowserInstanceCode { get; set; }
 
         public string OSName { get; set; }
 
