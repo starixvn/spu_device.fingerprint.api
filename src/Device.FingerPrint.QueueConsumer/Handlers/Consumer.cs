@@ -56,6 +56,7 @@
             listClientTrans = new List<ClientTransactionEntity>();
             listFpAttributes = new List<FingerprintAttributesEntity>();
             listBrowserInfo = new List<BrowserInfoEntity>();
+            listClientTransLogs = new List<ClientTransactionLogsEntity>();
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -241,7 +242,7 @@
                                 listClientTransLogs.Add(clientTrans);
                             }
 
-                            if (listClientTransLogs.Count >= appSettings.ClientTransBatchSize)
+                            if (listClientTransLogs.Count >= 5)
                             {
                                 fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
 

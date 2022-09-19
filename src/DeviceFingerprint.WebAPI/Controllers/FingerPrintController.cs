@@ -184,6 +184,21 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [HttpPost("ctl")]
+        public void ClientTransLog([FromBody] ClientTransactionLogsModel data)
+        {
+            try
+            {
+                data.TransTime = DateTime.Now;
+
+                easyNetQService.PushData(data);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
         [HttpPost("transaction")]
         public void Transaction([FromBody] TransactionDTO data)
         {
