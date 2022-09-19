@@ -242,7 +242,7 @@
                                 listClientTransLogs.Add(clientTrans);
                             }
 
-                            if (listClientTransLogs.Count >= 5)
+                            if (listClientTransLogs.Count >= appSettings.ClientTransLogsBatchSize)
                             {
                                 fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
 
