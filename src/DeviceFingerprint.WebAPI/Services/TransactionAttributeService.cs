@@ -5,19 +5,7 @@ using DeviceDetectorNET;
 namespace Device.Fingerprint.WebAPI.Services
 {
     public class TransactionAttributeService
-    {
-        public string GenerateFPAttributesCode(FingerPrintMoreAttributeModel fpModel, HeaderModel headerModel, Crypto crypto)
-        {
-            var doNotTrack = string.IsNullOrEmpty(fpModel.DoNotTrack) ? "undefined" : fpModel.DoNotTrack;
-            var glRenderer = string.IsNullOrEmpty(fpModel.GLRenderer) ? "undefined" : fpModel.GLRenderer;
-
-            //var concatString = fpModel.FingerPrintCode + "_#_doNotTrack=" + doNotTrack + "_#_glRenderer=" + glRenderer + "_#_accept=" + headerModel.Accept + "_#_encoding=" + headerModel.Encoding + "_#_headers=" + headerModel.Keys;
-            var concatString = fpModel.FingerPrintCode + "_#_doNotTrack=" + doNotTrack + "_#_glRenderer=" + glRenderer;
-            var fpAttributeCode = crypto.GetMD5Hash(concatString);
-
-            return fpAttributeCode;
-        }
-
+    {        
         public UserAgentInfoModel GetUserAgentInfo(string userAgent)
         {
             var deviceDetector = new DeviceDetector(userAgent);

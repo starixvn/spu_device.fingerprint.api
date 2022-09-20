@@ -132,14 +132,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         EncryptedKey = appSettings.CryptoPassword,
                         Token = JWTService.GenerateJwtToken(),
                         IV = appSettings.CryptoIV,
-                        Salt = appSettings.CryptoSalt
+                        Salt = appSettings.CryptoSalt,
+                        Accept = HttpContext.Request.Headers["Accept"],
+                        Encoding = HttpContext.Request.Headers["Accept-Encoding"],
+                        HeaderKeys = String.Join(" ", HttpContext.Request.Headers.Keys)
                     });
 
                     return Ok(jsonString);
                 }
-
-
-
             }
             catch (Exception ex)
             {
@@ -162,20 +162,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
-                        var defenderAttributesService = new DefenderAttributesService();
-                        var headerModel = new HeaderModel()
-                        {
-                            Accept = Request.Headers["Accept"],
-                            Encoding = Request.Headers["Accept-Encoding"],
-                            Keys = String.Join(" ", Request.Headers.Keys)
-                        };
-
-                        var transactionAttributeService = new TransactionAttributeService();
-                        var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fingerPrint, headerModel, crypto);
+                        var defenderAttributesService = new DefenderAttributesService();                   
 
                         var clientTransactionModel = new ClientTransactionModel
                         {
-                            FingerPrintCode = fpAttributesCode,
+                            FingerPrintCode = fingerPrint.FingerPrintCode,
                             SessionKey = fingerPrint.SessionKey,
                             SubscriberId = fingerPrint.SubscriberId,
                             CookieCode = fingerPrint.CookieCode,
@@ -290,32 +281,19 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
-                {
-                    var headerModel = new HeaderModel()
-                    {
-                        Accept = Request.Headers["Accept"],
-                        Encoding = Request.Headers["Accept-Encoding"],
-                        Keys = String.Join(" ", Request.Headers.Keys)
-                    };
+                {                    
 
-                    var transactionAttributeService = new TransactionAttributeService();
-                    var fpAttributesCode = transactionAttributeService.GenerateFPAttributesCode(fpAttributes, headerModel, crypto);
+                    var transactionAttributeService = new TransactionAttributeService();                    
 
                     var userAgentInfo = transactionAttributeService.GetUserAgentInfo(Request.Headers["User-Agent"]);
 
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
-                        FingerPrintCode = fpAttributesCode,
-                        Attribute = fpAttributes.Attributes,
-                        DoNotTrack = fpAttributes.DoNotTrack,
-                        GLRenderer = fpAttributes.GLRenderer,
-                        Accept = headerModel.Accept,
-                        Encoding = headerModel.Encoding,
-                        Headers = headerModel.Keys,
+                        FingerPrintCode = fpAttributes.FingerPrintCode,
+                        Attribute = fpAttributes.Attributes,                                            
                         OSName = userAgentInfo.OSName,
                         BrowserName = userAgentInfo.BrowserName,
-                        BrowserVersion = userAgentInfo.BrowserVersion,
-                        UserAgent = Request.Headers["User-Agent"]
+                        BrowserVersion = userAgentInfo.BrowserVersion                        
                     };
 
                     easyNetQService.PushData(fpAttributesModel);

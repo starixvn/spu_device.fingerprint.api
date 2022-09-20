@@ -284,13 +284,7 @@ namespace Device.Fingerprint.WebAPI.Models
     public class FingerPrintMoreAttributeModel
     {
         [JsonProperty("di")]
-        public string FingerPrintCode { get; set; }
-
-        [JsonProperty("dnt")]
-        public string DoNotTrack { get; set; }
-
-        [JsonProperty("rdr")]
-        public string GLRenderer { get; set; }
+        public string FingerPrintCode { get; set; }        
     }
 
     public class FingerPrintModel : FingerPrintMoreAttributeModel
@@ -319,5 +313,15 @@ namespace Device.Fingerprint.WebAPI.Models
     {
         [JsonProperty("attr")]
         public string Attributes { get; set; }
+
+        [JsonProperty("acpt")]
+        public string Accept { get; set; }
+
+        [JsonProperty("enc")]
+        public string Encoding { get; set; }
+
+        [JsonProperty("hk")]
+        public string HeaderKeys { get; set; }
+
     }
 }
