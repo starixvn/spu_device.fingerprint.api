@@ -12,6 +12,8 @@ namespace Device.FingerPrint.Features.ServerTransaction.Model
 
         public long SubAccId { get; set; }
 
+        public ulong AccountId { get; set; }
+
         public string LoginName { get; set; }
 
         public int SubscriberId { get; set; }
@@ -20,7 +22,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Model
 
         public string ClientIP { get; set; }
 
-        public long UserAgentId { get; set; }
+        public ulong UserAgentId { get; set; }
 
         public string Url { get; set; }
 

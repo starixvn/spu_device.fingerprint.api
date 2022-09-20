@@ -373,7 +373,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 return false;
 
             // Rule 2
-            if (String.Compare(newEntity.BrowserVersion, oldEntity.BrowserVersion) < 0)
+            var version1 = new Version(newEntity.BrowserVersion);
+            var version2 = new Version(oldEntity.BrowserVersion);
+            var resultVersion = version1.CompareTo(version2);
+            if (resultVersion >= 0) // new >= old
                 return false;
 
             // Rule 3
@@ -382,8 +385,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 return false;
 
             // Rule 4
-            var arr1 = newEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
-            var arr2 = oldEntity.Fonts.Replace("[", "").Replace("]", "").Replace("\"", "").Split(", ");
+            var arr1 = newEntity.Fonts.TrimStart('[').TrimEnd(']').Split(new[] { '"', ',' }, StringSplitOptions.RemoveEmptyEntries);
+            var arr2 = oldEntity.Fonts.TrimStart('[').TrimEnd(']').Split(new[] { '"', ',' }, StringSplitOptions.RemoveEmptyEntries);
 
             if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
                 return false;

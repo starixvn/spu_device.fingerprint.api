@@ -1,7 +1,9 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using Sentry;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -149,15 +151,19 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("evolution")]
-        public void Evolution([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        public async Task<bool> Evolution([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
-            transactionServices.Evolution(batchSize, numberOfBatch);
+            return await transactionServices.Evolution(batchSize, numberOfBatch);
         }
 
         [HttpPost("compareString")]
         public void Evolution([FromForm] string strA, [FromForm] string strB)
         {
-            var something = String.Compare(strA, strB);
+            string text = "[1, 2, 3, 4]";
+            List<int> numbers = JsonConvert.DeserializeObject<List<int>>(text);
+
+            string fixedText = strA.Trim('[', ']');
+            var arr1 = strA.TrimStart('[').TrimEnd(']').Split(", ", StringSplitOptions.RemoveEmptyEntries);
         }
 
         [HttpPost("testSentryCaptureMessage")]

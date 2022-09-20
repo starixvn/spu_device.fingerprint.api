@@ -4,6 +4,8 @@ namespace Device.FingerPrint.Features.ServerTransaction.Model
 {
    public class TransactionEntity
     {
+        public ulong AccountId { get; set; }
+
         public string LoginName { get; set; }
 
         public int SubscriberId { get; set; }

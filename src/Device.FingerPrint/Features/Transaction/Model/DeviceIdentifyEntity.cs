@@ -14,6 +14,8 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public ulong SubscriberId { get; set; }
 
+        public ulong AccountId { get; set; }
+
         public string LoginName { get; set; }
 
         public ulong UserAgentId { get; set; }
