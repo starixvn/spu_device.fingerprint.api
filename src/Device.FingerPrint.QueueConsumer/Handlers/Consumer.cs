@@ -33,6 +33,7 @@
 
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
+        private readonly List<ClientTransactionLogsEntity> listClientTransLogs;
         private readonly List<FingerprintAttributesEntity> listFpAttributes;
         private readonly List<BrowserInfoEntity> listBrowserInfo;
         private readonly IAppSettings appSettings;
@@ -55,6 +56,7 @@
             listClientTrans = new List<ClientTransactionEntity>();
             listFpAttributes = new List<FingerprintAttributesEntity>();
             listBrowserInfo = new List<BrowserInfoEntity>();
+            listClientTransLogs = new List<ClientTransactionLogsEntity>();
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -86,6 +88,18 @@
                 SubscriberId = model.SubscriberId,
                 Url = model.Url,
                 AddonCode = model.AddonCode,
+                TransTime = model.TransTime
+            };
+        }
+
+        private static ClientTransactionLogsEntity TranformClientTransactionLogsEntity(ClientTransactionLogsModel model)
+        {
+            return new ClientTransactionLogsEntity
+            {
+                SessionKey = model.SessionKey,
+                SubscriberId = model.SubscriberId,
+                Url = model.Url,
+                UserAgent = model.UserAgent,
                 TransTime = model.TransTime
             };
         }
@@ -199,9 +213,7 @@
                             listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
 
                             if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
-                            {
-                               // sentryClient.CaptureMessage(JsonConvert.SerializeObject(listBrowserInfo));
-
+                            {                               
                                 try
                                 {
                                     browserInfoService.InsertBrowserInfo(listBrowserInfo);
@@ -217,6 +229,29 @@
                         catch (Exception ex)
                         {
                             sentryClient.CaptureException(ex);                            
+                        }
+                    })
+                    .Add<ClientTransactionLogsModel>((message, info) =>
+                    {
+                        try
+                        {
+                            var clientTrans = TranformClientTransactionLogsEntity(message.Body);
+
+                            if (!listClientTransLogs.Exists(x => x.SessionKey == clientTrans.SessionKey))
+                            {
+                                listClientTransLogs.Add(clientTrans);
+                            }
+
+                            if (listClientTransLogs.Count >= appSettings.ClientTransLogsBatchSize)
+                            {
+                                fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
+
+                                listClientTransLogs.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
                         }
                     });
                 });

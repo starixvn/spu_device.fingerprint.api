@@ -7,6 +7,8 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
     {
         void InsertClientTransaction(string jsonFingerPrint);
 
+        void InsertClientTransactionLogs(string jsonFingerPrint);
+
         void InsertFingerprintAttributes(string jsonFpAttributes);
     }
 
@@ -22,6 +24,16 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
         public void InsertClientTransaction(string jsonFingerPrint)
         {
             var criteria = new InsertClientTransactionCriteria
+            {
+                FingerPrint = jsonFingerPrint
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void InsertClientTransactionLogs(string jsonFingerPrint)
+        {
+            var criteria = new InsertClientTransactionLogsCriteria
             {
                 FingerPrint = jsonFingerPrint
             };

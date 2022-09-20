@@ -8,6 +8,8 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
     {
         void InsertClientTransaction(IEnumerable<ClientTransactionEntity> listClientTransaction);
 
+        void InsertClientTransactionLogs(IEnumerable<ClientTransactionLogsEntity> listClientTransactionLogs);
+
         void InsertFingerprintAttributes(IEnumerable<FingerprintAttributesEntity> listFpAttributes);
     }
 
@@ -25,6 +27,13 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
             string JsonClientTransaction = JsonConvert.SerializeObject(listClientTransaction);
 
             clientTransactionDataAccess.InsertClientTransaction(JsonClientTransaction);
+        }
+
+        public void InsertClientTransactionLogs(IEnumerable<ClientTransactionLogsEntity> listClientTransactionLogs)
+        {
+            string JsonClientTransaction = JsonConvert.SerializeObject(listClientTransactionLogs);
+
+            clientTransactionDataAccess.InsertClientTransactionLogs(JsonClientTransaction);
         }
 
         public void InsertFingerprintAttributes(IEnumerable<FingerprintAttributesEntity> listFpAttributes)
