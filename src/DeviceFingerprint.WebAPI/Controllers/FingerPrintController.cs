@@ -281,11 +281,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
-                {                    
-
-                    var transactionAttributeService = new TransactionAttributeService();                    
-
-                    var userAgentInfo = transactionAttributeService.GetUserAgentInfo(Request.Headers["User-Agent"]);
+                {   
+                    var transactionAttributeService = new TransactionAttributeService();
+                    var userAgent = Request.Headers["User-Agent"];
+                    var userAgentInfo = transactionAttributeService.GetUserAgentInfo(userAgent);
 
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
@@ -293,7 +292,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Attribute = fpAttributes.Attributes,                                            
                         OSName = userAgentInfo.OSName,
                         BrowserName = userAgentInfo.BrowserName,
-                        BrowserVersion = userAgentInfo.BrowserVersion                        
+                        BrowserVersion = userAgentInfo.BrowserVersion,
+                        Accept = fpAttributes.Accept,
+                        Encoding = fpAttributes.Encoding,
+                        Headers = fpAttributes.HeaderKeys,
+                        UserAgent = userAgent
                     };
 
                     easyNetQService.PushData(fpAttributesModel);
