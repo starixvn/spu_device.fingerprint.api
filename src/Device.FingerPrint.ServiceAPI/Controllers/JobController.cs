@@ -157,13 +157,9 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("compareString")]
-        public void Evolution([FromForm] string strA, [FromForm] string strB)
+        public void Evolution([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
         {
-            string text = "[1, 2, 3, 4]";
-            List<int> numbers = JsonConvert.DeserializeObject<List<int>>(text);
-
-            string fixedText = strA.Trim('[', ']');
-            var arr1 = strA.TrimStart('[').TrimEnd(']').Split(", ", StringSplitOptions.RemoveEmptyEntries);
+            transactionServices.RatioAsync(url, strA, strB);
         }
 
         [HttpPost("testSentryCaptureMessage")]

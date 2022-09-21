@@ -8,6 +8,9 @@ using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
@@ -25,6 +28,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         Task<bool> ForceMergeTrans(int batchSize, int numberOfBatch, int retry);
 
         Task<bool> Evolution(int batchSize, int numberOfBatch);
+        Task RatioAsync(string url, string a, string b);
     }
 
     public class TransactionJobServices : ITransactionJobServices
@@ -385,9 +389,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 return false;
 
             // Rule 4
-            var arr1 = newEntity.Fonts.TrimStart('[').TrimEnd(']').Split(new[] { '"', ',' }, StringSplitOptions.RemoveEmptyEntries);
-            var arr2 = oldEntity.Fonts.TrimStart('[').TrimEnd(']').Split(new[] { '"', ',' }, StringSplitOptions.RemoveEmptyEntries);
-
+            var arr1 = JsonConvert.DeserializeObject<string[]>(newEntity.Fonts);
+            var arr2 = JsonConvert.DeserializeObject<string[]>(oldEntity.Fonts);
             if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
                 return false;
 
@@ -436,6 +439,18 @@ namespace Device.FingerPrint.ServiceAPI.Services
             // Check ratio
             // /api/ratio
             return true;
+        }
+
+        public async Task RatioAsync(string url, string a, string b)
+        {
+            var client = new HttpClient();
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            using (var response = await client
+                .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
+                .ConfigureAwait(false))
+            {
+                response.EnsureSuccessStatusCode();
+            }
         }
     }
 }
