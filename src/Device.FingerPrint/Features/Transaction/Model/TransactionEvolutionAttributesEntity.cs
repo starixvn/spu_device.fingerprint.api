@@ -8,13 +8,7 @@
 
         public string BrowserInstanceCode { get; set; }
 
-        public string OSName { get; set; }
-
-        public string BrowserName { get; set; }
-
         public string BrowserVersion { get; set; }
-
-        public string Platform { get; set; }
 
         public bool LocalStorage { get; set; }
 

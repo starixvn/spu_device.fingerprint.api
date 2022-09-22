@@ -27,6 +27,7 @@
             RegisterDetectBots(services);
             RegisterArchiveService(services);
             RegisterOffset(services);
+            RegisterEvolution(services);
 
         }
 
@@ -98,6 +99,11 @@
         {
             services.AddSingleton<IOffsetDataAccess, OffsetDataAccess>();
             services.AddSingleton<IOffsetService, OffsetService>();
+        }
+
+        private static void RegisterEvolution(this IServiceCollection services)
+        {
+            services.AddSingleton<IEvolutionJobServices, EvolutionJobServices>();
         }
 
     }

@@ -1,4 +1,6 @@
-﻿using Device.FingerPrint.ServiceAPI.Services;
+﻿using Device.FingerPrint.ServiceAPI.Models;
+using Device.FingerPrint.ServiceAPI.Services;
+using Device.FingerPrint.ServiceAPI.Ultilities;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
@@ -22,6 +24,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IBrowserInfoJobServices browserInfoJobServices;
         private readonly IRawUserAgentJobServices rawUserAgentJobServices;
+        private readonly IEvolutionJobServices evolutionJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -31,7 +34,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
                             , IBrowserInfoJobServices browserInfoJobServices
-                            , IRawUserAgentJobServices rawUserAgentJobServices)
+                            , IRawUserAgentJobServices rawUserAgentJobServices
+                            , IEvolutionJobServices evolutionJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -42,6 +46,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.archiveJobServices = archiveJobServices;
             this.browserInfoJobServices = browserInfoJobServices;
             this.rawUserAgentJobServices = rawUserAgentJobServices;
+            this.evolutionJobServices = evolutionJobServices;
         }
 
         [HttpPost("deviceidentify")]
@@ -153,13 +158,17 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         [HttpPost("evolution")]
         public async Task<bool> Evolution([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
-            return await transactionServices.Evolution(batchSize, numberOfBatch);
+            return await evolutionJobServices.Evolution(batchSize, numberOfBatch);
         }
 
         [HttpPost("compareString")]
-        public void Evolution([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
+        public void compareString([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
         {
-            transactionServices.RatioAsync(url, strA, strB);
+            var list = Enum.GetValues(typeof(ForbiddenChanges)).Cast<ForbiddenChanges>();
+            foreach (var item in list)
+            {
+                var a = item;
+            }
         }
 
         [HttpPost("testSentryCaptureMessage")]

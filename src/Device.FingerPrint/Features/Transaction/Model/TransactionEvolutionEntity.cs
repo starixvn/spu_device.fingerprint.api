@@ -2,55 +2,13 @@
 
 namespace Device.FingerPrint.Features.Transaction.Model
 {
-    public class TransactionEvolutionEntity
+    public class TransactionEvolutionEntity : TransactionEvolutionAttributesEntity
     {
-        public ulong Id { get; set; }
-
         public ulong RawFingerPrintId { get; set; }
 
         public ulong CookieId { get; set; }
 
         public DateTime TransTime { get; set; }
-
-        public string UserAgent { get; set; }
-
-        public string BrowserInstanceCode { get; set; }
-
-        public string OSName { get; set; }
-
-        public string BrowserName { get; set; }
-
-        public string BrowserVersion { get; set; }
-
-        public string Platform { get; set; }
-
-        public bool LocalStorage { get; set; }
-
-        public string DoNotTrack { get; set; }
-
-        public bool Cookies { get; set; }
-
-        public string Canvas { get; set; }
-
-        public string Fonts { get; set; }
-
-        public string Vendor { get; set; }
-
-        public string GLRenderer { get; set; }
-
-        public string Plugins { get; set; }
-
-        public string Languages { get; set; }
-
-        public string Accept { get; set; }
-
-        public string Encoding { get; set; }
-
-        public string Headers { get; set; }
-
-        public string Resolution { get; set; }
-
-        public string Timezone { get; set; }
 
         public string FPIds { get; set; }
     }
