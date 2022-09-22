@@ -130,9 +130,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if (entity != null && !string.IsNullOrEmpty(entity.FPIds))
             {
                 var fpAttributes = transactionService.GetTransactionEvolutionAttributes(entity.FPIds, entity.BrowserInstanceCode);
-                foreach (var item in fpAttributes)
+                foreach (TransactionEvolutionAttributesEntity item in fpAttributes)
                 {
-                    if (await CompareRules(entity, item))
+                    var joinModel = new TransactionEvolutionAttributesModel { _new = entity, _old = item };
+                    var dict = TransportToDictionary(entity, item);
+                    if (await CompareRules(joinModel))
                     {
                         result = item.Id;
                         break;
@@ -142,104 +144,155 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return result;
         }
 
-        private async Task<bool> CompareRules(TransactionEvolutionEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
+        private Dictionary<string, (string, string)> TransportToDictionary(TransactionEvolutionAttributesEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
+        {
+            var dict = new Dictionary<string, (string, string)>();
+            var arrProperties = newEntity.GetType().GetProperties();
+            foreach(var propertyInfo in arrProperties)
+            {
+                var newValue = propertyInfo.GetValue(newEntity, null) == null ? String.Empty : propertyInfo.GetValue(newEntity, null).ToString();
+                var oldValue = propertyInfo.GetValue(oldEntity, null) == null ? String.Empty : propertyInfo.GetValue(oldEntity, null).ToString();
+
+                dict.Add(propertyInfo.Name, (newValue, oldValue));
+            }
+
+            return dict;
+        }
+
+        private async Task<bool> CompareRules(TransactionEvolutionAttributesModel model)
         {
             // Rule 1
-            if (newEntity.BrowserInstanceCode != oldEntity.BrowserInstanceCode)
+            if (model._new.BrowserInstanceCode != model._old.BrowserInstanceCode)
                 return false;
 
             // Rule 2
-            var version1 = new Version(newEntity.BrowserVersion);
-            var version2 = new Version(oldEntity.BrowserVersion);
+            var version1 = new Version(model._new.BrowserVersion);
+            var version2 = new Version(model._old.BrowserVersion);
             var resultVersion = version1.CompareTo(version2);
             if (resultVersion < 0) // new < old
                 return false;
 
             // Rule 3
-            var newHashForbiddenChanges = HashForbiddenChanges(newEntity);
-            var oldHashForbiddenChanges = HashForbiddenChanges(oldEntity);
-            if (newHashForbiddenChanges != oldHashForbiddenChanges)
-                return false;
+            if (!CheckRule3(model)) return false;
 
             // Rule 4
-            var arr1 = JsonConvert.DeserializeObject<string[]>(newEntity.Fonts);
-            var arr2 = JsonConvert.DeserializeObject<string[]>(oldEntity.Fonts);
-            if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
-                return false;
+            if (!CheckRule4(model)) return false;
 
             // Rule 5
-            int countRule56Changed = 0;
-
-            var listChangesWithSim = GetListAllowChangesWithSim(newEntity, oldEntity);
-            if (listChangesWithSim.Count() > maxChangesRule5) return false;
-
-            if (listChangesWithSim.Count() > 0) countRule56Changed++;
-            if (!await CheckRatioAllowChangesWithSim(newEntity, oldEntity, listChangesWithSim)) return false;
+            var resultRule5 = await CheckRule5(model);
+            if (!resultRule5.Item1) return false;
 
             // Rule 6
-            var listChanges = GetListAllowChanges(newEntity, oldEntity);
-            if (listChanges.Count() > maxChangesRule6) return false;
-            if (listChanges.Count() > 0) countRule56Changed++;
+            var resultRule6 = CheckRule6(model);
+            if (!resultRule6.Item1) return false;
 
             // Rule 7
-            if (countRule56Changed > 1) return false;
+            if ((resultRule5.Item2 ? 1 : 0) + (resultRule6.Item2 ? 1 : 0) > 1) return false;
 
             return true;
         }
 
         #region "Evolution"
-        private string HashForbiddenChanges(TransactionEvolutionAttributesEntity entity)
+        private bool CheckRule3(TransactionEvolutionAttributesModel model)
         {
-            var arrForbiddenChanges = Enum.GetValues(typeof(ForbiddenChanges)).Cast<ForbiddenChanges>();
-            var hashStr = String.Empty;
-            foreach (var item in arrForbiddenChanges)
+            var forbiddenChanges = new List<(object, object)>
             {
-                var propertyInfo = entity.GetType().GetProperty(item.ToString());
-                var value = propertyInfo.GetValue(entity, null);
-                hashStr += value.ToString();
-            }
+                (model._new.LocalStorage, model._old.LocalStorage),
+                (model._new.DoNotTrack, model._old.DoNotTrack),
+                (model._new.Cookies, model._old.Cookies),
+                (model._new.Canvas, model._old.Canvas)
+            };
+
+            var item1 = string.Join(",", forbiddenChanges.Select(x => x.Item1));
+            var item2 = string.Join(",", forbiddenChanges.Select(x => x.Item2));
+
             var crypto = new Crypto();
-            return crypto.GetMD5Hash(hashStr);
-        }
+            var hashItem1 = crypto.GetMD5Hash(item1);
+            var hashItem2 = crypto.GetMD5Hash(item2);
 
-        private IEnumerable<string> GetListAllowChangesWithSim(TransactionEvolutionAttributesEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
-        {
-            var result = new List<string>();
-            var arrAllowChangesWithSim = Enum.GetValues(typeof(AllowChangesWithSim)).Cast<AllowChangesWithSim>();
-            foreach (var item in arrAllowChangesWithSim)
-            {
-                var key = item.ToString();
-                var newValue = GetValueObject(newEntity, key);
-                var oldValue = GetValueObject(oldEntity, key);
-
-                if (newValue.ToString() != oldValue.ToString())
-                {
-                    result.Add(key);
-                }
-
-                if (result.Count > maxChangesRule5)
-                {
-                    break;
-                }
-            }
-            return result;
-        }
-
-        private async Task<bool> CheckRatioAllowChangesWithSim(TransactionEvolutionAttributesEntity newEntity, TransactionEvolutionAttributesEntity oldEntity, IEnumerable<string> listKey)
-        {
-            foreach (var item in listKey)
-            {
-                var newValue = GetValueObject(newEntity, item);
-                var oldValue = GetValueObject(oldEntity, item);
-
-                if (!await CheckRatio(urlRatio, newValue.ToString(), oldValue.ToString()))
-                {
-                    return false;
-                }
-            }
+            if (hashItem1 != hashItem2)
+                return false;
             return true;
         }
 
+        private bool CheckRule4(TransactionEvolutionAttributesModel model)
+        {
+            var arr1 = JsonConvert.DeserializeObject<string[]>(model._new.Fonts);
+            var arr2 = JsonConvert.DeserializeObject<string[]>(model._old.Fonts);
+
+            if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
+                return false;
+            return true;
+        }
+
+        private async Task<(bool, bool)> CheckRule5(TransactionEvolutionAttributesModel model)
+        {
+            var allowChangesWithSim = new List<(object, object)>();
+            var listChanged = new List<(object, object)>();
+            var flagChanged = false;
+
+            allowChangesWithSim.Add((model._new.UserAgent, model._old.UserAgent));
+            allowChangesWithSim.Add((model._new.Vendor, model._old.Vendor));
+            allowChangesWithSim.Add((model._new.GLRenderer, model._old.GLRenderer));
+            allowChangesWithSim.Add((model._new.Plugins, model._old.Plugins));
+            allowChangesWithSim.Add((model._new.Languages, model._old.Languages));
+
+            foreach (var item in allowChangesWithSim)
+            {
+                if (item.Item1 != item.Item2)
+                {
+                    listChanged.Add(item);
+                    flagChanged = true;
+                }
+                if (listChanged.Count > maxChangesRule5)
+                {
+                    return (false, flagChanged);
+                }
+            }
+
+            if (listChanged.Count > maxChangesRule5)
+            {
+                return (false, flagChanged);
+            }
+
+            // Check ratio
+            foreach (var item in listChanged)
+            {
+                if (!await CheckRatio(urlRatio, item.Item1.ToString(), item.Item2.ToString()))
+                {
+                    return (false, flagChanged);
+                }
+            }
+            return (true, flagChanged);
+        }
+
+        private (bool, bool) CheckRule6(TransactionEvolutionAttributesModel model)
+        {
+            var flagChanged = false;
+            var listChanged = new List<(object, object)>();
+
+            var allowChanges = new List<(object, object)>
+            {
+                (model._new.Resolution, model._old.Resolution),
+                (model._new.Timezone, model._old.Timezone),
+                (model._new.GLRenderer, model._old.GLRenderer)
+            };
+
+            foreach (var item in allowChanges)
+            {
+                if (item.Item1 != item.Item2)
+                {
+                    listChanged.Add(item);
+                    flagChanged = true;
+                }
+                if (listChanged.Count > maxChangesRule6)
+                {
+                    return (false, flagChanged);
+                }
+            }
+
+            return (true, flagChanged);
+        }
         private IEnumerable<string> GetListAllowChanges(TransactionEvolutionAttributesEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
         {
             var result = new List<string>();

@@ -110,9 +110,6 @@
             {
                 FingerPrintCode = model.FingerPrintCode,
                 Attribute = model.Attribute,
-                FingerPrintAttributeCode = model.FingerPrintAttributeCode,
-                DoNotTrack = model.DoNotTrack,
-                GLRenderer = model.GLRenderer,
                 Accept = model.Accept,
                 Encoding = model.Encoding,
                 Headers = model.Headers,
