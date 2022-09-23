@@ -11,6 +11,10 @@ app = Flask(__name__)
 def ratio(source, destination):   
    return jsonify(ratio=SequenceMatcher(None, source, destination).ratio() * 100)
 
+@app.route('/api/healthz')
+def healthCheck(): 
+    return 'Ok'
+
 if __name__ == '__main__':
     import os
     HOST = os.environ.get('SERVER_HOST', 'localhost')
