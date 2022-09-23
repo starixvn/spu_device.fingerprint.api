@@ -24,7 +24,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
 
-        void UpdateTransactionEvolution(string transJson, int type);
+        void EvolutionNewDevice(string transJson);
+
+        void EvolutionRecoverDevice(string transJson);
     }
 
     public class TransactionService : ITransactionService
@@ -81,9 +83,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.UpdateMergeTransaction(transJson);
         }
 
-        public void UpdateTransactionEvolution(string transJson, int type)
+        public void EvolutionNewDevice(string transJson)
         {
-            transactionDataAccess.UpdateTransactionEvolution(transJson, type);
+            transactionDataAccess.EvolutionNewDevice(transJson);
+        }
+
+        public void EvolutionRecoverDevice(string transJson)
+        {
+            transactionDataAccess.EvolutionRecoverDevice(transJson);
         }
     }
 }

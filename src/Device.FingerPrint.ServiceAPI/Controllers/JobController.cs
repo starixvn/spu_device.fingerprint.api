@@ -1,8 +1,7 @@
-﻿using Device.FingerPrint.ServiceAPI.Models;
-using Device.FingerPrint.ServiceAPI.Services;
+﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -158,21 +157,16 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await evolutionJobServices.Evolution(batchSize, numberOfBatch);
         }
 
-        private class test
-        {
-            public string oldValue { get; set; }
-            public string newValue { get; set; }
-        }
-
         [HttpPost("compareString")]
         public void compareString([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
         {
-            dynamic MyDynamic = new System.Dynamic.ExpandoObject();
-            MyDynamic.LocalStorage = new test { oldValue = "1", newValue = "2" };
-            MyDynamic.DoNotTrack = new test { oldValue = "3", newValue = "3" };
-            MyDynamic.Cookies = new test { oldValue = "4", newValue = "10" };
+            var arr1 = JsonConvert.DeserializeObject<string[]>(strA);
+            var arr2 = JsonConvert.DeserializeObject<string[]>(strB);
+            bool isSubset1 = !arr1.Except(arr2).Any();
+            bool isSubset2 = !arr2.Except(arr1).Any();
 
-            var result = MyDynamic.Cookies;
+            var a1 = arr1.All(arr2.Contains);
+            var a2 = arr2.All(arr1.Contains);
         }
 
         [HttpPost("testSentryCaptureMessage")]

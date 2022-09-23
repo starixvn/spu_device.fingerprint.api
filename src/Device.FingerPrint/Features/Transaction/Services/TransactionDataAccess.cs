@@ -25,7 +25,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
 
-        void UpdateTransactionEvolution(string transJson, int type);
+        void EvolutionNewDevice(string transJson);
+
+        void EvolutionRecoverDevice(string transJson);
 
     }
 
@@ -113,17 +115,6 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return repository.Fetch<MergeTransEntity>(criteria);
         }
 
-        public void UpdateTransactionEvolution(string transJson, int type)
-        {
-            var criteria = new UpdateTransactionEvolutionCriteria
-            {
-                Transaction = transJson,
-                Type = type
-            };
-
-            repository.Execute(criteria);
-        }
-
         public void UpdateForceMergeTransaction(string transJson)
         {
             var criteria = new UpdateForceMergeTransactionCriteria
@@ -137,6 +128,26 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void UpdateMergeTransaction(string transJson)
         {
             var criteria = new UpdateMergeTransactionCriteria
+            {
+                Transaction = transJson
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void EvolutionNewDevice(string transJson)
+        {
+            var criteria = new EvolutionNewDeviceCriteria
+            {
+                Transaction = transJson
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void EvolutionRecoverDevice(string transJson)
+        {
+            var criteria = new EvolutionRecoverDeviceCriteria
             {
                 Transaction = transJson
             };

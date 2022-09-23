@@ -1,8 +1,6 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
-using Device.FingerPrint.ServiceAPI.Models;
-using Device.FingerPrint.ServiceAPI.Ultilities;
 using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
@@ -11,9 +9,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
+    struct ValuePair
+    {
+        public object Source;
+        public object Destination;
+    }
+
     public interface IEvolutionJobServices
     {
         Task<bool> Evolution(int batchSize, int numberOfBatch);
@@ -64,24 +69,24 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 foreach (var item in chunkRawTrans)
                 {
-                    var task = Task.Run(async () =>
+                    var task = Task.Run(() =>
                     {
                         try
                         {
-                            var (newDeviceTransIds, evolutionModel) = await ClassifyRecoverTrans(item);
+                            var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
 
                             // NewDevice
                             if (newDeviceTransIds != null && newDeviceTransIds.Any())
                             {
                                 var transIds = string.Join(",", newDeviceTransIds);
-                                transactionService.UpdateTransactionEvolution(transIds, (int)TransactionEvolutionType.NewDevice);
+                                transactionService.EvolutionNewDevice(transIds);
                             }
 
                             // FPS Evolution
                             if (evolutionModel != null && evolutionModel.Any())
                             {
                                 var transJson = JsonConvert.SerializeObject(evolutionModel);
-                                transactionService.UpdateTransactionEvolution(transJson, (int)TransactionEvolutionType.Recover);
+                                transactionService.EvolutionRecoverDevice(transJson);
                             }
                         }
                         catch (Exception ex)
@@ -97,21 +102,18 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
         }
 
-        private async Task<(IEnumerable<ulong>, IEnumerable<TransactionEvolutionModel>)> ClassifyRecoverTrans(IEnumerable<TransactionEvolutionEntity> trans)
+        private (IEnumerable<ulong>, IEnumerable<TransactionEvolutionModel>) ClassifyRecoverTrans(IEnumerable<TransactionEvolutionEntity> trans)
         {
             var newDeviceTransIds = new List<ulong>();
             var transRecover = new List<TransactionEvolutionModel>();
             foreach (var item in trans)
             {
-                var RecoverFingerPrintId = await GetRecoverFingerPrintIdByEvolution(item);
+                var RecoverFingerPrintId = GetRecoverFingerPrintIdByEvolution(item);
                 if (RecoverFingerPrintId > 0)
                 {
                     var model = new TransactionEvolutionModel()
                     {
                         Id = item.Id,
-                        RawFingerPrintId = item.RawFingerPrintId,
-                        CookieId = item.CookieId,
-                        TransTime = item.TransTime,
                         RecoverFingerPrintId = RecoverFingerPrintId
                     };
                     transRecover.Add(model);
@@ -124,19 +126,17 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return (newDeviceTransIds, transRecover);
         }
 
-        private async Task<ulong> GetRecoverFingerPrintIdByEvolution(TransactionEvolutionEntity entity)
+        private ulong GetRecoverFingerPrintIdByEvolution(TransactionEvolutionEntity source)
         {
             ulong result = 0;
-            if (entity != null && !string.IsNullOrEmpty(entity.FPIds))
+            if (source != null && !string.IsNullOrEmpty(source.FPIds))
             {
-                var fpAttributes = transactionService.GetTransactionEvolutionAttributes(entity.FPIds, entity.BrowserInstanceCode);
-                foreach (TransactionEvolutionAttributesEntity item in fpAttributes)
+                var fpAttributes = transactionService.GetTransactionEvolutionAttributes(source.FPIds, source.BrowserInstanceCode);
+                foreach (TransactionEvolutionAttributesEntity destination in fpAttributes)
                 {
-                    var joinModel = new TransactionEvolutionAttributesModel { _new = entity, _old = item };
-                    var dict = TransportToDictionary(entity, item);
-                    if (await CompareRules(joinModel))
+                    if (CompareRules(source, destination))
                     {
-                        result = item.Id;
+                        result = destination.Id;
                         break;
                     }
                 }
@@ -144,196 +144,142 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return result;
         }
 
-        private Dictionary<string, (string, string)> TransportToDictionary(TransactionEvolutionAttributesEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
+        private bool CompareRules(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            var dict = new Dictionary<string, (string, string)>();
-            var arrProperties = newEntity.GetType().GetProperties();
-            foreach(var propertyInfo in arrProperties)
-            {
-                var newValue = propertyInfo.GetValue(newEntity, null) == null ? String.Empty : propertyInfo.GetValue(newEntity, null).ToString();
-                var oldValue = propertyInfo.GetValue(oldEntity, null) == null ? String.Empty : propertyInfo.GetValue(oldEntity, null).ToString();
-
-                dict.Add(propertyInfo.Name, (newValue, oldValue));
-            }
-
-            return dict;
-        }
-
-        private async Task<bool> CompareRules(TransactionEvolutionAttributesModel model)
-        {
-            // Rule 1
-            if (model._new.BrowserInstanceCode != model._old.BrowserInstanceCode)
-                return false;
-
             // Rule 2
-            var version1 = new Version(model._new.BrowserVersion);
-            var version2 = new Version(model._old.BrowserVersion);
-            var resultVersion = version1.CompareTo(version2);
-            if (resultVersion < 0) // new < old
-                return false;
+            if (!CheckVersion(source, destination)) return false;
 
             // Rule 3
-            if (!CheckRule3(model)) return false;
+            if (!CheckForbiddenChanges(source, destination)) return false;
 
             // Rule 4
-            if (!CheckRule4(model)) return false;
+            if (!CheckFonts(source, destination)) return false;
 
             // Rule 5
-            var resultRule5 = await CheckRule5(model);
-            if (!resultRule5.Item1) return false;
+            int allowChangeWithSimCounter = 0;
+            if (!CheckAllowChangesWithSimilar(source, destination, ref allowChangeWithSimCounter)) return false;
 
             // Rule 6
-            var resultRule6 = CheckRule6(model);
-            if (!resultRule6.Item1) return false;
+            int allowChangeCounter = 0;
+            if (!CheckAllowChanges(source, destination, ref allowChangeCounter)) return false;
 
             // Rule 7
-            if ((resultRule5.Item2 ? 1 : 0) + (resultRule6.Item2 ? 1 : 0) > 1) return false;
+            if (allowChangeWithSimCounter != 0 && allowChangeCounter != 0) return false;
 
             return true;
         }
 
         #region "Evolution"
-        private bool CheckRule3(TransactionEvolutionAttributesModel model)
+        private bool CheckVersion(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            var forbiddenChanges = new List<(object, object)>
-            {
-                (model._new.LocalStorage, model._old.LocalStorage),
-                (model._new.DoNotTrack, model._old.DoNotTrack),
-                (model._new.Cookies, model._old.Cookies),
-                (model._new.Canvas, model._old.Canvas)
-            };
+            var version1 = new Version(source.BrowserVersion);
+            var version2 = new Version(destination.BrowserVersion);
+            var resultVersion = version1.CompareTo(version2);
 
-            var item1 = string.Join(",", forbiddenChanges.Select(x => x.Item1));
-            var item2 = string.Join(",", forbiddenChanges.Select(x => x.Item2));
-
-            var crypto = new Crypto();
-            var hashItem1 = crypto.GetMD5Hash(item1);
-            var hashItem2 = crypto.GetMD5Hash(item2);
-
-            if (hashItem1 != hashItem2)
+            if (resultVersion < 0) // new < old
                 return false;
             return true;
         }
 
-        private bool CheckRule4(TransactionEvolutionAttributesModel model)
+        private bool CheckFonts(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            var arr1 = JsonConvert.DeserializeObject<string[]>(model._new.Fonts);
-            var arr2 = JsonConvert.DeserializeObject<string[]>(model._old.Fonts);
+            var arr1 = JsonConvert.DeserializeObject<string[]>(source.Fonts);
+            var arr2 = JsonConvert.DeserializeObject<string[]>(destination.Fonts);
 
             if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
                 return false;
             return true;
         }
 
-        private async Task<(bool, bool)> CheckRule5(TransactionEvolutionAttributesModel model)
+        private bool CheckForbiddenChanges(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            var allowChangesWithSim = new List<(object, object)>();
-            var listChanged = new List<(object, object)>();
-            var flagChanged = false;
-
-            allowChangesWithSim.Add((model._new.UserAgent, model._old.UserAgent));
-            allowChangesWithSim.Add((model._new.Vendor, model._old.Vendor));
-            allowChangesWithSim.Add((model._new.GLRenderer, model._old.GLRenderer));
-            allowChangesWithSim.Add((model._new.Plugins, model._old.Plugins));
-            allowChangesWithSim.Add((model._new.Languages, model._old.Languages));
-
-            foreach (var item in allowChangesWithSim)
+            var values = new List<ValuePair>
             {
-                if (item.Item1 != item.Item2)
-                {
-                    listChanged.Add(item);
-                    flagChanged = true;
-                }
-                if (listChanged.Count > maxChangesRule5)
-                {
-                    return (false, flagChanged);
-                }
-            }
-
-            if (listChanged.Count > maxChangesRule5)
-            {
-                return (false, flagChanged);
-            }
-
-            // Check ratio
-            foreach (var item in listChanged)
-            {
-                if (!await CheckRatio(urlRatio, item.Item1.ToString(), item.Item2.ToString()))
-                {
-                    return (false, flagChanged);
-                }
-            }
-            return (true, flagChanged);
-        }
-
-        private (bool, bool) CheckRule6(TransactionEvolutionAttributesModel model)
-        {
-            var flagChanged = false;
-            var listChanged = new List<(object, object)>();
-
-            var allowChanges = new List<(object, object)>
-            {
-                (model._new.Resolution, model._old.Resolution),
-                (model._new.Timezone, model._old.Timezone),
-                (model._new.GLRenderer, model._old.GLRenderer)
+                new ValuePair { Source = source.LocalStorage, Destination = destination.LocalStorage },
+                new ValuePair { Source = source.DoNotTrack, Destination = destination.DoNotTrack },
+                new ValuePair { Source = source.Cookies, Destination = destination.Cookies },
+                new ValuePair { Source = source.Canvas, Destination = destination.Canvas }
             };
 
-            foreach (var item in allowChanges)
+            foreach (var value in values)
             {
-                if (item.Item1 != item.Item2)
+                if (!value.Source.Equals(value.Destination))
                 {
-                    listChanged.Add(item);
-                    flagChanged = true;
-                }
-                if (listChanged.Count > maxChangesRule6)
-                {
-                    return (false, flagChanged);
+                    return false;
                 }
             }
 
-            return (true, flagChanged);
+            return true;
         }
-        private IEnumerable<string> GetListAllowChanges(TransactionEvolutionAttributesEntity newEntity, TransactionEvolutionAttributesEntity oldEntity)
+
+        private bool CheckAllowChangesWithSimilar(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination, ref int counter)
         {
-            var result = new List<string>();
-            var arrAllowChanges = Enum.GetValues(typeof(AllowChanges)).Cast<AllowChanges>();
-            foreach (var item in arrAllowChanges)
+            var values = new List<ValuePair>
             {
-                var key = item.ToString();
-                var newValue = GetValueObject(newEntity, key);
-                var oldValue = GetValueObject(oldEntity, key);
+                new ValuePair { Source = source.UserAgent, Destination = destination.UserAgent },
+                new ValuePair { Source = source.Vendor, Destination = destination.Vendor },
+                new ValuePair { Source = source.GLRenderer, Destination = destination.GLRenderer },
+                new ValuePair { Source = source.Plugins, Destination = destination.Plugins },
+                new ValuePair { Source = source.Languages, Destination = destination.Languages }
+            };
 
-                if (newValue.ToString() != oldValue.ToString())
+            counter = 0;
+            foreach (var value in values)
+            {
+                if (!value.Source.Equals(value.Destination))
                 {
-                    result.Add(key);
+                    var ratioResult = CheckRatio(value.Source.ToString(), value.Destination.ToString()).Result;
+
+                    if (!ratioResult) return false;
+
+                    counter++;
                 }
 
-                if (result.Count > maxChangesRule6)
-                {
-                    break;
-                }
+                if (counter > maxChangesRule5)
+                    return false;
             }
-            return result;
+
+            return true;
+
         }
 
-        private string GetValueObject<T>(T obj, string key)
+        private bool CheckAllowChanges(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination, ref int counter)
         {
-            var newProperty = obj.GetType().GetProperty(key);
-            var newValue = newProperty.GetValue(obj, null);
-            return newValue.ToString();
+            var values = new List<ValuePair>
+            {
+                new ValuePair { Source = source.Resolution, Destination = destination.Resolution },
+                new ValuePair { Source = source.Timezone, Destination = destination.Timezone },
+                new ValuePair { Source = source.GLRenderer, Destination = destination.GLRenderer }
+            };
+
+            counter = 0;
+            foreach (var value in values)
+            {
+                if (!value.Source.Equals(value.Destination))
+                {
+                    counter++;
+                }
+
+                if (counter > maxChangesRule6) return false;
+            }
+
+            return true;
         }
 
-        private async Task<bool> CheckRatio(string url, string source, string destination)
+        private async Task<bool> CheckRatio(string source, string destination)
         {
             var client = new HttpClient();
-            var request = new HttpRequestMessage(HttpMethod.Get, url + "/" + source + "/" + destination);
+            var url = this.urlRatio + "?source=" + HttpUtility.UrlEncode(source) + "&destination=" + HttpUtility.UrlEncode(destination);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
             var response = await client.SendAsync(request).ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             var ratio = Decimal.Parse(responseBody.TrimEnd('\n'));
-            if (ratio >= 75) return true;
-            return false;
+
+            if (ratio < 75) return false;
+            return true;
         }
         #endregion
     }
