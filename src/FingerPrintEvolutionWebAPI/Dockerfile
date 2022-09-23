@@ -8,4 +8,4 @@ RUN pip3 install -r requirements.txt
 
 ENV TZ="America/La_Paz"
 
-ENTRYPOINT ["python"]
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
