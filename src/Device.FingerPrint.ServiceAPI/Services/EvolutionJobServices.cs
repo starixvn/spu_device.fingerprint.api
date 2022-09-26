@@ -28,15 +28,16 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         private readonly ITransactionService transactionService;
         private readonly ISentryClient sentryClient;
-
-        private readonly string urlRatio = "http://localhost:5555/api/ratio";
+        private readonly IAppSettings appSetting;
+                
         private readonly int maxChangesRule5 = 2;
         private readonly int maxChangesRule6 = 1;
 
-        public EvolutionJobServices(ITransactionService transactionService, ISentryClient sentryClient)
+        public EvolutionJobServices(ITransactionService transactionService, ISentryClient sentryClient, IAppSettings appSetting)
         {
             this.transactionService = transactionService;
             this.sentryClient = sentryClient;
+            this.appSetting = appSetting;
         }
 
         public Task<bool> Evolution(int batchSize, int numberOfBatch)
@@ -269,7 +270,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private async Task<bool> CheckRatio(string source, string destination)
         {
             var client = new HttpClient();
-            var url = this.urlRatio + "?source=" + HttpUtility.UrlEncode(source) + "&destination=" + HttpUtility.UrlEncode(destination);
+            var url = this.appSetting.ApiUrl + "?source=" + HttpUtility.UrlEncode(source) + "&destination=" + HttpUtility.UrlEncode(destination);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             var response = await client.SendAsync(request).ConfigureAwait(false);
