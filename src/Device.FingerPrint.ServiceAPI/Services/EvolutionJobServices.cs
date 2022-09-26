@@ -270,7 +270,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private async Task<bool> CheckRatio(string source, string destination)
         {
             var client = new HttpClient();
-            var url = this.appSetting.ApiUrl + "?source=" + HttpUtility.UrlEncode(source) + "&destination=" + HttpUtility.UrlEncode(destination);
+            var url = this.appSetting.ApiUrl + "//" + HttpUtility.UrlEncode(source) + "//" + HttpUtility.UrlEncode(destination);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             var response = await client.SendAsync(request).ConfigureAwait(false);
