@@ -75,6 +75,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     {
                         try
                         {
+                            
                             var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
 
                             // NewDevice
@@ -108,15 +109,17 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             var newDeviceTransIds = new List<ulong>();
             var transRecover = new List<TransactionEvolutionModel>();
+
             foreach (var item in trans)
             {
-                var RecoverFingerPrintId = GetRecoverFingerPrintIdByEvolution(item);
-                if (RecoverFingerPrintId > 0)
+                var recoverFingerPrintId = GetRecoverFingerPrintIdByEvolution(item);
+
+                if (recoverFingerPrintId > 0)
                 {
                     var model = new TransactionEvolutionModel()
                     {
                         Id = item.Id,
-                        RecoverFingerPrintId = RecoverFingerPrintId
+                        RecoverFingerPrintId = recoverFingerPrintId
                     };
                     transRecover.Add(model);
                 }
@@ -125,15 +128,19 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     newDeviceTransIds.Add(item.Id);
                 }
             }
+
             return (newDeviceTransIds, transRecover);
         }
 
         private ulong GetRecoverFingerPrintIdByEvolution(TransactionEvolutionEntity source)
         {
+           
             ulong result = 0;
+
             if (source != null && !string.IsNullOrEmpty(source.FPIds))
             {
                 var fpAttributes = transactionService.GetTransactionEvolutionAttributes(source.FPIds, source.BrowserInstanceCode);
+
                 foreach (TransactionEvolutionAttributesEntity destination in fpAttributes)
                 {
                     if (CompareRules(source, destination))
