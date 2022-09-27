@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 @app.route('/api/ratio/<source>/<destination>')
 def ratio(source, destination):   
-   return jsonify(ratio=SequenceMatcher(None, source, destination).ratio() * 100)
+   return jsonify(SequenceMatcher(None, source, destination).ratio() * 100)
 
 @app.route('/healthz')
 def healthCheck(): 

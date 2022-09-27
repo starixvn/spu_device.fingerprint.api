@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
+using Device.FingerPrint.ServiceAPI.Ultilities;
 using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
@@ -270,7 +271,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private async Task<bool> CheckRatio(string source, string destination)
         {
             var client = new HttpClient();
-            var url = this.appSetting.ApiUrl + "//" + HttpUtility.UrlEncode(source) + "//" + HttpUtility.UrlEncode(destination);
+            var url = this.appSetting.RatioUrl + "/" + Hashing.ConvertStringToHex(source, System.Text.Encoding.UTF8) + "/" + Hashing.ConvertStringToHex(destination, System.Text.Encoding.UTF8);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             var response = await client.SendAsync(request).ConfigureAwait(false);
