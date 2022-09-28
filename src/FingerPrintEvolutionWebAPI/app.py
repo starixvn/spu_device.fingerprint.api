@@ -4,22 +4,19 @@ It contains the definition of routes and views for the application.
 """
 from difflib import SequenceMatcher
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 app = Flask(__name__)
 
-@app.route('/api/ratio/<source>/<destination>')
-def ratio(source, destination):   
-   return jsonify(SequenceMatcher(None, source, destination).ratio() * 100)
+@app.route('/api/ratio', methods=['POST'])
+def ratio():   
+    requestData = request.get_json()
+    source = requestData['source']
+    destination = requestData['destination']
+    return jsonify(SequenceMatcher(None, source, destination).ratio() * 100)
 
 @app.route('/healthz')
 def healthCheck(): 
     return 'Healthy'
 
 if __name__ == '__main__':
-    import os
-    HOST = os.environ.get('SERVER_HOST', 'localhost')
-    try:
-        PORT = int(os.environ.get('SERVER_PORT', '5000'))
-    except ValueError:
-        PORT = 5000
-    app.run(HOST, PORT)
+    app.run(host="localhost", port=8000, debug=True)

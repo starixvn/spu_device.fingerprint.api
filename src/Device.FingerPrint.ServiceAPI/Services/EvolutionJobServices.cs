@@ -30,7 +30,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         private readonly ITransactionService transactionService;
         private readonly ISentryClient sentryClient;
         private readonly IAppSettings appSetting;
-                
+
         private readonly int maxChangesRule5 = 2;
         private readonly int maxChangesRule6 = 1;
 
@@ -75,7 +75,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     {
                         try
                         {
-                            
+
                             var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
 
                             // NewDevice
@@ -134,7 +134,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private ulong GetRecoverFingerPrintIdByEvolution(TransactionEvolutionEntity source)
         {
-           
+
             ulong result = 0;
 
             if (source != null && !string.IsNullOrEmpty(source.FPIds))
@@ -276,18 +276,21 @@ namespace Device.FingerPrint.ServiceAPI.Services
         }
 
         private async Task<bool> CheckRatio(string source, string destination)
-        {
+        {            
+            var param = new { source, destination };
+            var content = new StringContent(JsonConvert.SerializeObject(param), System.Text.Encoding.UTF8, "application/json");
             var client = new HttpClient();
-            var url = this.appSetting.RatioUrl + "/" + Hashing.ConvertStringToHex(source, System.Text.Encoding.UTF8) + "/" + Hashing.ConvertStringToHex(destination, System.Text.Encoding.UTF8);
+            var response = await client.PostAsync(this.appSetting.RatioUrl, content);
 
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            var response = await client.SendAsync(request).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
+            if(response.Content != null)
+            {
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-            var responseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
-            var ratio = Decimal.Parse(responseBody.TrimEnd('\n'));
+                var ratio = Decimal.Parse(responseContent);
 
-            if (ratio < 75) return false;
+                if (ratio < 75) return false;
+            }
+
             return true;
         }
         #endregion

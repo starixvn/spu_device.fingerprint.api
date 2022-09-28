@@ -10,13 +10,24 @@ namespace TestingSomething
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(CalculateSimilarity("diet", "tide"));
+            Console.WriteLine(ConvertStringToHex("diet", Encoding.UTF8));
 
-            Console.WriteLine(CalculateSimilarity("tide", "diet"));
+            Console.WriteLine(ConvertStringToHex("tide", Encoding.UTF8));
 
             Console.ReadLine();
         }
-         static double CalculateSimilarity(string source, string target)
+        public static string ConvertStringToHex(String input, System.Text.Encoding encoding)
+        {
+            Byte[] stringBytes = encoding.GetBytes(input);
+            var sbBytes = new StringBuilder(stringBytes.Length * 2);
+            foreach (byte b in stringBytes)
+            {
+                sbBytes.AppendFormat("{0:X2}", b);
+            }
+
+            return sbBytes.ToString();
+        }
+        static double CalculateSimilarity(string source, string target)
         {
             if ((source == null) || (target == null)) return 0.0;
             if ((source.Length == 0) || (target.Length == 0)) return 0.0;
