@@ -4,4 +4,7 @@
 	<Function Name="Subscriber">
 		<Setting Key="FPS_FP_Core_SubscriberInfoByName_Get" SpName="FPS_FP_Core_SubscriberInfoByName_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
+	<Function Name="Logs">
+		<Setting Key="FPS_FP_ClientTransaction_LogsException_Insert" SpName="FPS_FP_ClientTransaction_LogsException_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+	</Function>
 </Functions>

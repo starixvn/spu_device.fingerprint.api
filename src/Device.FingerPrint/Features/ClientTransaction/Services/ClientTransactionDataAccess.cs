@@ -10,6 +10,8 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
         void InsertClientTransactionLogs(string jsonFingerPrint);
 
         void InsertFingerprintAttributes(string jsonFpAttributes);
+
+        void InsertClientTransactionException(string function, string exception);
     }
 
     public class ClientTransactionDataAccess : IClientTransactionDataAccess
@@ -26,6 +28,17 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
             var criteria = new InsertClientTransactionCriteria
             {
                 FingerPrint = jsonFingerPrint
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void InsertClientTransactionException(string function, string exception)
+        {
+            var criteria = new InsertClientTransactionExceptionCriteria
+            {
+                Function = function,
+                Exception = exception
             };
 
             repository.Execute(criteria);

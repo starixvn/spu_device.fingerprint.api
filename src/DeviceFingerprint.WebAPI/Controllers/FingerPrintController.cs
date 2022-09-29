@@ -1,5 +1,6 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
+using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
+        private readonly IClientTransactionService clientTransactionService;
         private readonly IEasyNetQService easyNetQService;
         private readonly Crypto crypto;
         private readonly IRedisService redisService;
@@ -31,7 +33,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             ISubscriberServices subscriberServices,
             IEasyNetQService easyNetQService,
             IRedisService redisService,
-            ISentryClient sentryClient)
+            ISentryClient sentryClient,
+            IClientTransactionService clientTransactionService)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
@@ -40,6 +43,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.redisService = redisService;
             this.sentryClient = sentryClient;
+            this.clientTransactionService = clientTransactionService;
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -192,6 +196,19 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 data.TransTime = DateTime.Now;
 
                 easyNetQService.PushData(data);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
+        [HttpPost("cle")]
+        public void ClientTransException([FromBody] ClientTransactionExceptionModel data)
+        {
+            try
+            {
+                clientTransactionService.InsertClientTransactionException(data.Function, data.Exception);
             }
             catch (Exception ex)
             {
