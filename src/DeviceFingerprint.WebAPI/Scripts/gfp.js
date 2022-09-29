@@ -5860,6 +5860,9 @@ var globalFP = (function (exports) {
         var isChrome = !!window["chrome"];
         if (isChrome)
             return "Chrome";
+        // // BLINK ENGINE DETECTION
+        // var isBlink = (isChrome || isOpera) && !!window.CSS;
+        // if(isBlink) return 'Blink';
         return "Other";
     }
     function getOS() {
@@ -8940,8 +8943,16 @@ var globalFP = (function (exports) {
                 encryptingAsync({
                     di: fp.Id,
                     attr: fp.Properties,
-                }, cryptConfig).then((res) => {
+                }, cryptConfig)
+                    .then((res) => {
                     return postData(apiUrl + "/fpa", res);
+                })
+                    .catch((error) => {
+                    var data = {
+                        function: "FingerPrint Attribute",
+                        exception: error,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     fk: sKey,
@@ -8951,8 +8962,16 @@ var globalFP = (function (exports) {
                     iv: config.iv,
                     pass: config.ek,
                     salt: config.sa,
-                }).then((res) => {
+                })
+                    .then((res) => {
                     return postData(apiUrl + "/bi", res);
+                })
+                    .catch((error) => {
+                    var data = {
+                        function: "Browser Info",
+                        exception: error,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     di: fp.Id,
@@ -8966,10 +8985,18 @@ var globalFP = (function (exports) {
                         cv: fp.CheckCanvasDefender,
                         gl: fp.CheckWebGLDefender,
                         fd: fp.CheckFontDefender,
-                        ac: fp.CheckAudioContextDefender
-                    }
-                }, cryptConfig).then((res) => {
+                        ac: fp.CheckAudioContextDefender,
+                    },
+                }, cryptConfig)
+                    .then((res) => {
                     return postDataFp(apiUrl, res, config.tk);
+                })
+                    .catch((error) => {
+                    var data = {
+                        function: "FingerPrint",
+                        exception: error,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
             }
         });

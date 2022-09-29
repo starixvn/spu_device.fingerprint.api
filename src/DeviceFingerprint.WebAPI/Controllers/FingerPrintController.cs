@@ -153,7 +153,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public void FingerPrint([FromBody] string data)
         {
             try
-            {
+            {                
                 var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
@@ -204,11 +204,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpPost("cle")]
-        public void ClientTransException([FromBody] ClientTransactionExceptionModel data)
+        public void ClientTransException([FromBody] string data)
         {
             try
             {
-                clientTransactionService.InsertClientTransactionException(data.Function, data.Exception);
+                if(!string.IsNullOrWhiteSpace(data))
+                {
+                    var logsData = JsonConvert.DeserializeObject<ClientTransactionExceptionModel>(data);
+
+
+                    clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception);
+                }
+                
             }
             catch (Exception ex)
             {
