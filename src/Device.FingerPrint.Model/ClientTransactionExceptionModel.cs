@@ -8,5 +8,7 @@ namespace Device.FingerPrint.Model
 
         public string Exception { get; set; }
 
+        public string UserAgent { get; set; }
+
     }
 }

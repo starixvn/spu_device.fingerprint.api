@@ -12,7 +12,7 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
 
         void InsertFingerprintAttributes(IEnumerable<FingerprintAttributesEntity> listFpAttributes);
 
-        void InsertClientTransactionException(string function, string exception);
+        void InsertClientTransactionException(string function, string exception, string userAgent);
     }
 
     public class ClientTransactionService : IClientTransactionService
@@ -31,9 +31,9 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
             clientTransactionDataAccess.InsertClientTransaction(JsonClientTransaction);
         }
 
-        public void InsertClientTransactionException(string function, string exception)
+        public void InsertClientTransactionException(string function, string exception, string userAgent)
         {
-            clientTransactionDataAccess.InsertClientTransactionException(function, exception);
+            clientTransactionDataAccess.InsertClientTransactionException(function, exception, userAgent);
         }
 
         public void InsertClientTransactionLogs(IEnumerable<ClientTransactionLogsEntity> listClientTransactionLogs)

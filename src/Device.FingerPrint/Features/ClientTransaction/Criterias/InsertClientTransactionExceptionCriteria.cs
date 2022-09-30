@@ -11,6 +11,9 @@ namespace Device.FingerPrint.Features.ClientTransaction.Criterias
         [SpParam(SqlParamName = "ip_Exception")]
         public string Exception { get; set; }
 
+        [SpParam(SqlParamName = "ip_UserAgent")]
+        public string UserAgent { get; set; }
+
         public override string GetSettingKey()
         {
             return "FPS_FP_ClientTransaction_LogsException_Insert";

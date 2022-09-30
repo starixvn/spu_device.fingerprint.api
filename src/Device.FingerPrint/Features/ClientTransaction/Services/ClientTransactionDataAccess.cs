@@ -11,7 +11,7 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
 
         void InsertFingerprintAttributes(string jsonFpAttributes);
 
-        void InsertClientTransactionException(string function, string exception);
+        void InsertClientTransactionException(string function, string exception, string userAgent);
     }
 
     public class ClientTransactionDataAccess : IClientTransactionDataAccess
@@ -33,12 +33,13 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
             repository.Execute(criteria);
         }
 
-        public void InsertClientTransactionException(string function, string exception)
+        public void InsertClientTransactionException(string function, string exception, string userAgent)
         {
             var criteria = new InsertClientTransactionExceptionCriteria
             {
                 Function = function,
-                Exception = exception
+                Exception = exception,
+                UserAgent = userAgent
             };
 
             repository.Execute(criteria);

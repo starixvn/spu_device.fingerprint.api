@@ -213,7 +213,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     var logsData = JsonConvert.DeserializeObject<ClientTransactionExceptionModel>(data);
 
 
-                    clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception);
+                    clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
                 }
                 
             }
