@@ -5717,7 +5717,7 @@ var globalFP = (function (exports) {
                 CheckCanvasDefender: isFnCanvasDefender(),
                 CheckWebGLDefender: isFnWebGLDefender(),
                 CheckFontDefender: isFnFontDefender(),
-                CheckAudioContextDefender: isFnAudioContextDefender()
+                CheckAudioContextDefender: isFnAudioContextDefender(),
             });
         }));
     }
@@ -8930,7 +8930,9 @@ var globalFP = (function (exports) {
             return conf.json();
         });
         const cookies = getCookie();
-        const fps = getFP();
+        const fps = getFP().catch((error) => {
+            console.log(error);
+        });
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
         Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
@@ -8941,8 +8943,8 @@ var globalFP = (function (exports) {
                     salt: config.sa,
                 };
                 encryptingAsync({
-                    di: fp.Id,
-                    attr: fp.Properties,
+                    di: fp && fp.Id,
+                    attr: fp && fp.Properties,
                 }, cryptConfig)
                     .then((res) => {
                     return postData(apiUrl + "/fpa", res);
@@ -8974,7 +8976,7 @@ var globalFP = (function (exports) {
                     postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
-                    di: fp.Id,
+                    di: fp && fp.Id,
                     fk: sKey,
                     subs: subId,
                     cookieCode: cookie,
@@ -8982,10 +8984,10 @@ var globalFP = (function (exports) {
                         ? window.location.href
                         : "",
                     da: {
-                        cv: fp.CheckCanvasDefender,
-                        gl: fp.CheckWebGLDefender,
-                        fd: fp.CheckFontDefender,
-                        ac: fp.CheckAudioContextDefender,
+                        cv: fp && fp.CheckCanvasDefender,
+                        gl: fp && fp.CheckWebGLDefender,
+                        fd: fp && fp.CheckFontDefender,
+                        ac: fp && fp.CheckAudioContextDefender,
                     },
                 }, cryptConfig)
                     .then((res) => {
