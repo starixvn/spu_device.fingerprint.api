@@ -5559,15 +5559,13 @@ var globalFP = (function (exports) {
         return checkFunctionCode(HTMLCanvasElement.prototype.toDataURL, "toDataURL");
     }
     function isFnWebGLDefender() {
-        return (checkFunctionCode(WebGLRenderingContext.prototype.bufferData, "bufferData") ||
-            checkFunctionCode(WebGL2RenderingContext.prototype.bufferData, "bufferData"));
+        return false;
     }
     function isFnFontDefender() {
         return false;
     }
     function isFnAudioContextDefender() {
-        return checkFunctionCode(AudioBuffer.prototype.getChannelData, "getChannelData")
-            || checkFunctionCode(BaseAudioContext.prototype.createAnalyser, "createAnalyser");
+        return false;
     }
 
     function webglId() {
