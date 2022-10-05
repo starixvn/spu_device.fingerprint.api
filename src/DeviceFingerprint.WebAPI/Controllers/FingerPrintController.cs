@@ -397,5 +397,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return "No values";
         }
+
+        [HttpGet("DecryptData")]
+        public ActionResult<string> DecryptData(string key)
+        {
+            return crypto.Decrypt(key);
+        }
     }
 }

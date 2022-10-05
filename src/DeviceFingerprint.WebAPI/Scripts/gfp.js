@@ -8931,7 +8931,11 @@ var globalFP = (function (exports) {
         });
         const cookies = getCookie();
         const fps = getFP().catch((error) => {
-            console.log(error);
+            var data = {
+                function: "FingerPrint",
+                exception: error.message,
+            };
+            postData(apiUrl + "/cle", JSON.stringify(data));
         });
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
@@ -8952,7 +8956,7 @@ var globalFP = (function (exports) {
                     .catch((error) => {
                     var data = {
                         function: "FingerPrint Attribute",
-                        exception: error,
+                        exception: error.message,
                     };
                     postData(apiUrl + "/cle", JSON.stringify(data));
                 });
@@ -8971,7 +8975,7 @@ var globalFP = (function (exports) {
                     .catch((error) => {
                     var data = {
                         function: "Browser Info",
-                        exception: error,
+                        exception: error.message,
                     };
                     postData(apiUrl + "/cle", JSON.stringify(data));
                 });
@@ -8996,7 +9000,7 @@ var globalFP = (function (exports) {
                     .catch((error) => {
                     var data = {
                         function: "FingerPrint",
-                        exception: error,
+                        exception: error.message,
                     };
                     postData(apiUrl + "/cle", JSON.stringify(data));
                 });
