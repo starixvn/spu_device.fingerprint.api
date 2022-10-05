@@ -194,9 +194,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                data.TransTime = DateTime.Now;
+                if(!appSettings.IgnoreClientTransLogs)
+                {
+                    data.TransTime = DateTime.Now;
 
-                easyNetQService.PushData(data);
+                    easyNetQService.PushData(data);
+                }                
             }
             catch (Exception ex)
             {
