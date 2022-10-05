@@ -149,6 +149,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] string data)
         {
@@ -268,7 +269,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
-        [HttpPost("fpa")]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        [HttpPost("fpa")]        
         public void FpAttributes([FromBody] string data)
         {
             try
@@ -297,6 +299,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [HttpPost("bi")]
         public void Browserinfo([FromBody] string data)
         {
