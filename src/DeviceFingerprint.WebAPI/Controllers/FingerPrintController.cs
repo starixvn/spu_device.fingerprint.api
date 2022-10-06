@@ -94,7 +94,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
 
-                if (appSettings.Environment == "PROD")
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
                 }
