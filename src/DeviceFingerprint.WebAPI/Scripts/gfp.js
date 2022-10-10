@@ -8896,14 +8896,10 @@ var globalFP = (function (exports) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url + "/fp", {
                 method: "POST",
-                cache: "no-cache",
-                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + token,
                 },
-                redirect: "follow",
-                referrerPolicy: "no-referrer",
                 body: JSON.stringify(data),
             });
         });
