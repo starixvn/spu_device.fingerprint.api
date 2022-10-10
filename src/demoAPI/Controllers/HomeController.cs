@@ -29,15 +29,22 @@ namespace demoAPI.Controllers
         {
             if (Session["IsPushTrans"] == null)
             {
-                var subscriberName = ConfigurationManager.AppSettings["subscriberName"].ToString();
-                var externalAPIUrl = ConfigurationManager.AppSettings["externalAPIUrl"].ToString();
-                var internalAPIUrl = ConfigurationManager.AppSettings["internalAPIUrl"].ToString();
+                try
+                {
+                    var subscriberName = ConfigurationManager.AppSettings["subscriberName"].ToString();
+                    var externalAPIUrl = ConfigurationManager.AppSettings["externalAPIUrl"].ToString();
+                    var internalAPIUrl = ConfigurationManager.AppSettings["internalAPIUrl"].ToString();
 
-                var fpsService = new TransactionServices(subscriberName, externalAPIUrl, internalAPIUrl);                                 
+                    var fpsService = new TransactionServices(subscriberName, externalAPIUrl, internalAPIUrl);
 
-                ViewBag.fpsScript = fpsService.Insert("Login", loginName, DateTime.Now);
+                    ViewBag.fpsScript = fpsService.Insert("Login", loginName, DateTime.Now);
 
-                Session["IsPushTrans"] = "Ok";
+                    Session["IsPushTrans"] = "Ok";
+                }
+                catch( Exception ex)
+                {
+                    ViewBag.fpsScript = ex.Message;
+                }                
             }
         }
     }

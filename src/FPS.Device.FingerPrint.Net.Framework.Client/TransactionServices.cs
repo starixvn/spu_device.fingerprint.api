@@ -238,21 +238,15 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 
         private string GetResponseString(string baseUrl)
         {
-            try
+            using (var client = new HttpClient())
             {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(3);
-                    var handle = client.GetStringAsync(baseUrl);
+                client.Timeout = TimeSpan.FromMilliseconds(10);
 
-                    handle.Wait();
+                var handle = client.GetStringAsync(baseUrl);
 
-                    return handle.Result;
-                }
-            }
-            catch
-            {
-                return string.Empty;
+                handle.Wait();
+
+                return handle.Result;
             }
         }
 
