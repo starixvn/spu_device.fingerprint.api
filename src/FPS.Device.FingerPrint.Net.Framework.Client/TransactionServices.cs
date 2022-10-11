@@ -240,13 +240,9 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
         {
             using (var client = new HttpClient())
             {
-                client.Timeout = TimeSpan.FromMilliseconds(500);
+                client.Timeout = TimeSpan.FromSeconds(1);
 
-                var handle = client.GetStringAsync(baseUrl);
-
-                handle.Wait();
-
-                return handle.Result;
+                return client.GetStringAsync(baseUrl).Result;
             }
         }
 
