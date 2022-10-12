@@ -271,7 +271,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
                 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fpa")]        
         public void FpAttributes([FromBody] string data)
         {
