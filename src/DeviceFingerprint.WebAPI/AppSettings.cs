@@ -20,7 +20,9 @@ namespace Device.Fingerprint.WebAPI
 
         string SentryDsn { get; }
 
-        string Environment { get; }               
+        string Environment { get; }       
+        
+        bool IgnoreClientTransLogs { get; }
 
     }
 
@@ -37,6 +39,8 @@ namespace Device.Fingerprint.WebAPI
 
         private readonly string cryptoIV;
         private readonly string cryptoSalt;
+
+        private readonly bool ignoreClientTransLogs;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -56,7 +60,9 @@ namespace Device.Fingerprint.WebAPI
 
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
-            environment = GetValue<string>("AppConfig:Environment");                      
+            environment = GetValue<string>("AppConfig:Environment");
+
+            ignoreClientTransLogs = GetValue<bool>("IgnoreClientTransLog");
 
         }
 
@@ -75,6 +81,8 @@ namespace Device.Fingerprint.WebAPI
         public string CryptoSalt => cryptoSalt;
 
         public string CDNApiUrl => cdnApiUrl;
+
+        public bool IgnoreClientTransLogs => ignoreClientTransLogs;
 
         public T GetValue<T>(string key)
         {

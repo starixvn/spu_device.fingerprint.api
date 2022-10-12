@@ -5559,15 +5559,13 @@ var globalFP = (function (exports) {
         return checkFunctionCode(HTMLCanvasElement.prototype.toDataURL, "toDataURL");
     }
     function isFnWebGLDefender() {
-        return (checkFunctionCode(WebGLRenderingContext.prototype.bufferData, "bufferData") ||
-            checkFunctionCode(WebGL2RenderingContext.prototype.bufferData, "bufferData"));
+        return false;
     }
     function isFnFontDefender() {
         return false;
     }
     function isFnAudioContextDefender() {
-        return checkFunctionCode(AudioBuffer.prototype.getChannelData, "getChannelData")
-            || checkFunctionCode(BaseAudioContext.prototype.createAnalyser, "createAnalyser");
+        return false;
     }
 
     function webglId() {
@@ -5717,7 +5715,7 @@ var globalFP = (function (exports) {
                 CheckCanvasDefender: isFnCanvasDefender(),
                 CheckWebGLDefender: isFnWebGLDefender(),
                 CheckFontDefender: isFnFontDefender(),
-                CheckAudioContextDefender: isFnAudioContextDefender()
+                CheckAudioContextDefender: isFnAudioContextDefender(),
             });
         }));
     }
@@ -5860,6 +5858,9 @@ var globalFP = (function (exports) {
         var isChrome = !!window["chrome"];
         if (isChrome)
             return "Chrome";
+        // // BLINK ENGINE DETECTION
+        // var isBlink = (isChrome || isOpera) && !!window.CSS;
+        // if(isBlink) return 'Blink';
         return "Other";
     }
     function getOS() {
@@ -8895,14 +8896,10 @@ var globalFP = (function (exports) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url + "/fp", {
                 method: "POST",
-                cache: "no-cache",
-                credentials: "include",
                 headers: {
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + token,
                 },
-                redirect: "follow",
-                referrerPolicy: "no-referrer",
                 body: JSON.stringify(data),
             });
         });
@@ -8927,7 +8924,13 @@ var globalFP = (function (exports) {
             return conf.json();
         });
         const cookies = getCookie();
-        const fps = getFP();
+        const fps = getFP().catch((error) => {
+            var data = {
+                function: "FingerPrint",
+                exception: error.message,
+            };
+            postData(apiUrl + "/cle", JSON.stringify(data));
+        });
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
         Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
@@ -8938,10 +8941,18 @@ var globalFP = (function (exports) {
                     salt: config.sa,
                 };
                 encryptingAsync({
-                    di: fp.Id,
-                    attr: fp.Properties,
-                }, cryptConfig).then((res) => {
+                    di: fp && fp.Id,
+                    attr: fp && fp.Properties,
+                }, cryptConfig)
+                    .then((res) => {
                     return postData(apiUrl + "/fpa", res);
+                })
+                    .catch((error) => {
+                    var data = {
+                        function: "FingerPrint Attribute",
+                        exception: error.message,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     fk: sKey,
@@ -8951,11 +8962,19 @@ var globalFP = (function (exports) {
                     iv: config.iv,
                     pass: config.ek,
                     salt: config.sa,
-                }).then((res) => {
+                })
+                    .then((res) => {
                     return postData(apiUrl + "/bi", res);
+                })
+                    .catch((error) => {
+                    var data = {
+                        function: "Browser Info",
+                        exception: error.message,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
-                    di: fp.Id,
+                    di: fp && fp.Id,
                     fk: sKey,
                     subs: subId,
                     cookieCode: cookie,
@@ -8963,13 +8982,21 @@ var globalFP = (function (exports) {
                         ? window.location.href
                         : "",
                     da: {
-                        cv: fp.CheckCanvasDefender,
-                        gl: fp.CheckWebGLDefender,
-                        fd: fp.CheckFontDefender,
-                        ac: fp.CheckAudioContextDefender
-                    }
-                }, cryptConfig).then((res) => {
+                        cv: fp && fp.CheckCanvasDefender,
+                        gl: fp && fp.CheckWebGLDefender,
+                        fd: fp && fp.CheckFontDefender,
+                        ac: fp && fp.CheckAudioContextDefender,
+                    },
+                }, cryptConfig)
+                    .then((res) => {
                     return postDataFp(apiUrl, res, config.tk);
+                })
+                    .catch((error) => {
+                    var data = {
+                        function: "FingerPrint",
+                        exception: error.message,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
             }
         });

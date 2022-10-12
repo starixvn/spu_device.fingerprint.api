@@ -1,5 +1,6 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
+using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Authorization;
@@ -20,6 +21,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
+        private readonly IClientTransactionService clientTransactionService;
         private readonly IEasyNetQService easyNetQService;
         private readonly Crypto crypto;
         private readonly IRedisService redisService;
@@ -31,7 +33,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             ISubscriberServices subscriberServices,
             IEasyNetQService easyNetQService,
             IRedisService redisService,
-            ISentryClient sentryClient)
+            ISentryClient sentryClient,
+            IClientTransactionService clientTransactionService)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
@@ -40,6 +43,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.redisService = redisService;
             this.sentryClient = sentryClient;
+            this.clientTransactionService = clientTransactionService;
         }
 
         [HttpGet("scr/{sessionKey}/{subscriberName}")]
@@ -90,7 +94,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
 
-                if (appSettings.Environment == "PROD")
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
                 }
@@ -145,11 +149,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] string data)
         {
             try
-            {
+            {                
                 var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
@@ -189,9 +194,32 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                data.TransTime = DateTime.Now;
+                if(!appSettings.IgnoreClientTransLogs)
+                {
+                    data.TransTime = DateTime.Now;
 
-                easyNetQService.PushData(data);
+                    easyNetQService.PushData(data);
+                }                
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
+        [HttpPost("cle")]
+        public void ClientTransException([FromBody] string data)
+        {
+            try
+            {
+                if(!string.IsNullOrWhiteSpace(data))
+                {
+                    var logsData = JsonConvert.DeserializeObject<ClientTransactionExceptionModel>(data);
+
+                    logsData.UserAgent = Request.Headers["User-Agent"];
+                    clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
+                }
+                
             }
             catch (Exception ex)
             {
@@ -244,7 +272,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
-        [HttpPost("fpa")]
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        [HttpPost("fpa")]        
         public void FpAttributes([FromBody] string data)
         {
             try
@@ -273,6 +302,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
         [HttpPost("bi")]
         public void Browserinfo([FromBody] string data)
         {
@@ -372,6 +402,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return "No values";
+        }
+
+        [HttpGet("DecryptData")]
+        public ActionResult<string> DecryptData(string key)
+        {
+            return crypto.Decrypt(key);
         }
     }
 }
