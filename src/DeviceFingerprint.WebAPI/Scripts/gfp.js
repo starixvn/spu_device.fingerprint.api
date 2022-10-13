@@ -8779,7 +8779,8 @@ var globalFP = (function (exports) {
             date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
             expires = "; expires=" + date.toUTCString();
         }
-        document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        document.cookie =
+            name + "=" + (value || "") + expires + "; SameSite=None; Secure; path=/";
     }
     function getCookie$1(name) {
         var nameEQ = name + "=";
@@ -8886,9 +8887,10 @@ var globalFP = (function (exports) {
             return fetch(url, {
                 method: "POST",
                 headers: {
+                    Accept: "application/json",
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(data),
+                body: data,
             });
         });
     }
@@ -8897,10 +8899,11 @@ var globalFP = (function (exports) {
             return fetch(url + "/fp", {
                 method: "POST",
                 headers: {
+                    Accept: "application/json",
                     "Content-Type": "application/json",
                     Authorization: "Bearer " + token,
                 },
-                body: JSON.stringify(data),
+                body: data,
             });
         });
     }
@@ -8945,7 +8948,7 @@ var globalFP = (function (exports) {
                     attr: fp && fp.Properties,
                 }, cryptConfig)
                     .then((res) => {
-                    return postData(apiUrl + "/fpa", res);
+                    postData(apiUrl + "/fpa", JSON.stringify(res));
                 })
                     .catch((error) => {
                     var data = {
@@ -8964,7 +8967,7 @@ var globalFP = (function (exports) {
                     salt: config.sa,
                 })
                     .then((res) => {
-                    return postData(apiUrl + "/bi", res);
+                    postData(apiUrl + "/bi", JSON.stringify(res));
                 })
                     .catch((error) => {
                     var data = {
@@ -8989,7 +8992,7 @@ var globalFP = (function (exports) {
                     },
                 }, cryptConfig)
                     .then((res) => {
-                    return postDataFp(apiUrl, res, config.tk);
+                    postDataFp(apiUrl, JSON.stringify(res), config.tk);
                 })
                     .catch((error) => {
                     var data = {

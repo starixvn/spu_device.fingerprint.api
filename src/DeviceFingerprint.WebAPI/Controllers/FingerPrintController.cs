@@ -148,8 +148,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return Ok(string.Empty);
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]        
         [HttpPost("fp")]
         public void FingerPrint([FromBody] string data)
         {
@@ -271,8 +270,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 sentryClient.CaptureException(ex);
             }
         }
-
-        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+                
         [HttpPost("fpa")]        
         public void FpAttributes([FromBody] string data)
         {
@@ -301,8 +299,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 sentryClient.CaptureException(ex);
             }
         }
-
-        [RequestFormLimits(ValueLengthLimit = int.MaxValue, MultipartBodyLengthLimit = int.MaxValue)]
+                
         [HttpPost("bi")]
         public void Browserinfo([FromBody] string data)
         {
