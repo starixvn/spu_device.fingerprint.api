@@ -42,8 +42,16 @@ fp.post(apiUrl + '/ctl', {
         : "",
     'UserAgent': navigator.userAgent
 }).then(() => {
-    fp.url(cdnAPIUrl).then(() => {
+    fp.url(cdnAPIUrl)
+    .then(() => {
         globalFP.capture(apiUrl, subscriberId, sessionKey);
+    })
+    .catch((error) => {
+        var data = {
+            function: "Load API",
+            exception: error.message,
+        };
+        fp.post(apiUrl + "/cle", data);        
     });
 });
 

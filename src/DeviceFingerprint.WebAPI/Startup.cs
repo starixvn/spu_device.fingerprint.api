@@ -43,7 +43,13 @@ namespace Device.Fingerprint.WebAPI
 
             services.AddSingleton<IAppSettings>(appSettings);
 
-            services.AddCors();
+            services.AddCors(opt =>
+            {
+                opt.AddDefaultPolicy(x =>
+                    x.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod());
+            });
 
             services.AddResponseCaching();
 
@@ -124,14 +130,8 @@ namespace Device.Fingerprint.WebAPI
             }
 
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
 
-            app.UseCors(options => options
-             .AllowAnyOrigin()
-             .AllowAnyMethod()
-             .AllowAnyHeader());
-
-            app.UseMiddleware<JWTMiddleware>();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));            
 
             app.UseStaticFiles();
 
@@ -141,6 +141,8 @@ namespace Device.Fingerprint.WebAPI
             });
 
             app.UseRouting();
+
+            app.UseCors();
 
             app.UseResponseCaching();
 
@@ -159,6 +161,8 @@ namespace Device.Fingerprint.WebAPI
             });
 
             app.UseAuthorization();
+
+            app.UseMiddleware<JWTMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
