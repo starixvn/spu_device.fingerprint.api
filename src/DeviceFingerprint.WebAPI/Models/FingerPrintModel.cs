@@ -295,11 +295,8 @@ namespace Device.Fingerprint.WebAPI.Models
         [JsonProperty("fk")]
         public string SessionKey { get; set; }
 
-        [JsonProperty("cookieCode")]
+        [JsonProperty("ckc")]
         public string CookieCode { get; set; }
-
-        [JsonProperty("flagged")]
-        public string Flagged { get; set; }
 
         [JsonProperty("url")]
         public string Url { get; set; }
