@@ -208,18 +208,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpPost("cle")]
-        public void ClientTransException([FromBody] string data)
+        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             try
             {
-                if(!string.IsNullOrWhiteSpace(data))
-                {
-                    var logsData = JsonConvert.DeserializeObject<ClientTransactionExceptionModel>(data);
+                logsData.UserAgent = Request.Headers["User-Agent"];
 
-                    logsData.UserAgent = Request.Headers["User-Agent"];
-                    clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
-                }
-                
+                clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
+
             }
             catch (Exception ex)
             {

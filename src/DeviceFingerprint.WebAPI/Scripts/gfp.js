@@ -65,6 +65,7 @@ var globalFP = (function (exports) {
         }
     }
 
+    /** @deprecated */
     function __spreadArrays() {
         for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
         for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -9187,7 +9188,7 @@ var globalFP = (function (exports) {
                 function: "FingerPrint Capturing",
                 exception: error.message,
             };
-            postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
+            postData(apiUrl + "/cle", JSON.stringify(data));
         });
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
@@ -9213,7 +9214,7 @@ var globalFP = (function (exports) {
                         function: "FingerPrint Attribute",
                         exception: error.message,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     fk: sKey,
@@ -9232,7 +9233,7 @@ var globalFP = (function (exports) {
                         function: "Browser Info",
                         exception: error.message,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     di: fp && fp.Id,
@@ -9257,14 +9258,14 @@ var globalFP = (function (exports) {
                         function: "FingerPrint",
                         exception: error.message,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 if (fp && fp.ErrorValue != "") {
                     var data = {
                         function: "FingerPrint Attributes Merge",
                         exception: fp.ErrorValue,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
+                    postData(apiUrl + "/cle", JSON.stringify(data));
                 }
             }
         });

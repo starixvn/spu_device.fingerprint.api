@@ -27,6 +27,13 @@
             },
             body: JSON.stringify(data),
         });
+    },
+    log: function LogData(url, functionName, exception) {
+        var data = {
+            function: functionName,
+            exception: exception,
+        };
+        fp.post(url + "/cle", data);
     }
 }
 var apiUrl = '__apiUrl__';
@@ -43,15 +50,12 @@ fp.post(apiUrl + '/ctl', {
     'UserAgent': navigator.userAgent
 }).then(() => {
     fp.url(cdnAPIUrl)
-    .then(() => {
+        .then(() => {
+            //fp.log(apiUrl, "Load API", "Successful");
         globalFP.capture(apiUrl, subscriberId, sessionKey);
     })
-    .catch((error) => {
-        var data = {
-            function: "Load API",
-            exception: error.message,
-        };
-        fp.post(apiUrl + "/cle", data);        
+    .catch((error) => {        
+        fp.log(apiUrl, "Load API", error.message);
     });
 });
 
