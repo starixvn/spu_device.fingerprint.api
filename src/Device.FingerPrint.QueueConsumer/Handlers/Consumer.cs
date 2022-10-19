@@ -109,7 +109,14 @@
             return new FingerprintAttributesEntity
             {
                 FingerPrintCode = model.FingerPrintCode,
-                Attribute = model.Attribute
+                Attribute = model.Attribute,
+                Accept = model.Accept,
+                Encoding = model.Encoding,
+                Headers = model.Headers,
+                OSName = model.OSName,
+                BrowserName = model.BrowserName,
+                BrowserVersion = model.BrowserVersion,
+                UserAgent = model.UserAgent
             };
         }
 

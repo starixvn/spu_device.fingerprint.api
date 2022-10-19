@@ -56,7 +56,27 @@ namespace Device.FingerPrint.ServiceAPI.Services
             }
 
             return Task.FromResult(true);
+        }
 
+        public Task<bool> UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry)
+        {
+            try
+            {
+                var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
+
+                if (rawTrans != null && rawTrans.Any())
+                {
+                    ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
         }
 
         private void ProcessUpdateTransaction(IEnumerable<ServerTransactionModel> rawTrans, int batchSize, int retry, int offsetId)
@@ -65,6 +85,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             {
                 var tasks = new List<Task>();
                 var chunkRawTrans = rawTrans.Chunk2(batchSize);
+                var offsetValue = rawTrans.Min(x => x.Id);
 
                 foreach (var item in chunkRawTrans)
                 {
@@ -73,8 +94,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         var rawTransJson = JsonConvert.SerializeObject(item);
                         try
                         {
-                            var offsetValue = rawTrans.Min(x => x.Id);
-
                             rawTransactionServices.UpdateRawTransaction(rawTransJson, retry, offsetId, offsetValue);
                         }
                         catch (Exception ex)
@@ -221,25 +240,5 @@ namespace Device.FingerPrint.ServiceAPI.Services
             return Task.FromResult(true);
         }
 
-        public Task<bool> UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry)
-        {
-            try
-            {
-                var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
-
-                if (rawTrans != null && rawTrans.Any())
-                {
-                    ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
-            }
-
-            return Task.FromResult(true);
-        }
     }
 }

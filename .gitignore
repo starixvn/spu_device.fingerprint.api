@@ -11,3 +11,6 @@ publish/*
 src/Device.Fingerprint.InsertRawFingerprint/publish/*
 src/Device.Fingerprint.InsertRawTransaction/publish/*
 src/Device.FingerPrint.Kafka/DockerCompose/*
+
+/src/FingerPrintEvolutionWebAPI/env/*
+/src/FingerPrintEvolutionWebAPI/__pycache__/*

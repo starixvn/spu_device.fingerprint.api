@@ -281,24 +281,22 @@ namespace Device.Fingerprint.WebAPI.Models
         [JsonProperty("ac")]
         public bool CheckAudioContextDefender { get; set; }
     }
+    public class FingerPrintMoreAttributeModel
+    {
+        [JsonProperty("di")]
+        public string FingerPrintCode { get; set; }        
+    }
 
-
-    public class FingerPrintModel
+    public class FingerPrintModel : FingerPrintMoreAttributeModel
     {
         [JsonProperty("subs")]
         public int SubscriberId { get; set; }
 
-        [JsonProperty("di")]
-        public string FingerPrintCode { get; set; }
-
         [JsonProperty("fk")]
         public string SessionKey { get; set; }
 
-        [JsonProperty("cookieCode")]
+        [JsonProperty("ckc")]
         public string CookieCode { get; set; }
-
-        [JsonProperty("flagged")]
-        public string Flagged { get; set; }
 
         [JsonProperty("url")]
         public string Url { get; set; }
@@ -308,12 +306,18 @@ namespace Device.Fingerprint.WebAPI.Models
     }
 
 
-    public class FingerPrintAttributesModel
+    public class FingerPrintAttributesModel : FingerPrintMoreAttributeModel
     {
-        [JsonProperty("di")]
-        public string FingerPrintCode { get; set; }
-
         [JsonProperty("attr")]
         public string Attributes { get; set; }
+
+        [JsonProperty("acpt")]
+        public string Accept { get; set; }
+
+        [JsonProperty("enc")]
+        public string Encoding { get; set; }
+
+        [JsonProperty("hk")]
+        public string HeaderKeys { get; set; }
     }
 }

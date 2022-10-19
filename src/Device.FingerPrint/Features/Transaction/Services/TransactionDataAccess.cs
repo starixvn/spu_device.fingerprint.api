@@ -20,6 +20,15 @@ namespace Device.FingerPrint.Features.Transaction.Services
         IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry);
 
         void UpdateForceMergeTransaction(string transJson);
+
+        IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
+
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
+
+        void EvolutionNewDevice(string transJson);
+
+        void EvolutionRecoverDevice(string transJson);
+
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -63,6 +72,27 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return repository.FetchMultiple<DeviceIdentifyEntity, DeviceIdentifyEntity, ulong>(criteria);
         }
 
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
+        {
+            var criteria = new GetTransactionAttributesEvolutionCriteria
+            {
+                FingerPrintIds = fingerPrintIds,
+                BrowserInstanceCode = BrowserInstanceCode
+            };
+
+            return repository.Fetch<TransactionEvolutionAttributesEntity>(criteria);
+        }
+
+        public IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize)
+        {
+            var criteria = new GetTransactionEvolutionCriteria
+            {
+                Size = batchSize
+            };
+
+            return repository.Fetch<TransactionEvolutionEntity>(criteria);
+        }
+
         public IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry)
         {
             var criteria = new GetForceMergeTransactionCriteria
@@ -98,6 +128,26 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void UpdateMergeTransaction(string transJson)
         {
             var criteria = new UpdateMergeTransactionCriteria
+            {
+                Transaction = transJson
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void EvolutionNewDevice(string transJson)
+        {
+            var criteria = new EvolutionNewDeviceCriteria
+            {
+                Transaction = transJson
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void EvolutionRecoverDevice(string transJson)
+        {
+            var criteria = new EvolutionRecoverDeviceCriteria
             {
                 Transaction = transJson
             };

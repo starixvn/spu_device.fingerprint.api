@@ -19,6 +19,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
         IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry);
 
         void ForceMergeTransaction(string transJson);
+
+        IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
+
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
+
+        void EvolutionNewDevice(string transJson);
+
+        void EvolutionRecoverDevice(string transJson);
     }
 
     public class TransactionService : ITransactionService
@@ -50,6 +58,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
         }
 
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
+        {
+            return transactionDataAccess.GetTransactionEvolutionAttributes(fingerPrintIds, BrowserInstanceCode);
+        }
+
+        public IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize)
+        {
+            return transactionDataAccess.GetTransactionEvolution(batchSize);
+        }
+
         public IEnumerable<MergeTransEntity> GetForceMergeTransaction(int batchSize, int retry)
         {
             return transactionDataAccess.GetForceMergeTransaction(batchSize, retry);
@@ -63,6 +81,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void MergeTransaction(string transJson)
         {
             transactionDataAccess.UpdateMergeTransaction(transJson);
+        }
+
+        public void EvolutionNewDevice(string transJson)
+        {
+            transactionDataAccess.EvolutionNewDevice(transJson);
+        }
+
+        public void EvolutionRecoverDevice(string transJson)
+        {
+            transactionDataAccess.EvolutionRecoverDevice(transJson);
         }
     }
 }

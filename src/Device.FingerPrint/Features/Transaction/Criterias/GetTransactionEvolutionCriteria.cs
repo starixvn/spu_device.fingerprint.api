@@ -1,16 +1,16 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
 
-namespace Device.FingerPrint.Features.BrowserInfo.Criterias
+namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class GetBrowserInfoFlaggedDCSCriteria : NonQueryCommand
+    class GetTransactionEvolutionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int Size { get; set; }
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Transform_BrowserInfoFlaggedDCS_Get";
+            return "FPS_FP_Recover_TransactionEvolution_Get";
         }
 
         public override bool IsValid()

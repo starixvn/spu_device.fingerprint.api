@@ -41,6 +41,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Queue", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.QueueConsumer", "src\Device.FingerPrint.QueueConsumer\Device.FingerPrint.QueueConsumer.csproj", "{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingSomething", "TestingSomething\TestingSomething.csproj", "{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}"
+EndProject
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FingerPrintEvolutionWebAPI", "src\FingerPrintEvolutionWebAPI\FingerPrintEvolutionWebAPI.pyproj", "{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -107,6 +111,14 @@ Global
 		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -127,6 +139,8 @@ Global
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{01740610-56C4-4052-8B53-10B4CED06BCB} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}

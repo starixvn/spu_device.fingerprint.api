@@ -15,5 +15,15 @@ namespace Device.FingerPrint.Model
 
         [JsonProperty("sa")]
         public string Salt { get; set; }
+
+        [JsonProperty("acpt")]
+        public string Accept { get; set; }
+
+        [JsonProperty("enc")]
+        public string Encoding { get; set; }
+
+        [JsonProperty("hk")]
+        public string HeaderKeys { get; set; }
+
     }
 }

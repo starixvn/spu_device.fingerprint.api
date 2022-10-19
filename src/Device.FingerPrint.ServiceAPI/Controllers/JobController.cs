@@ -1,6 +1,8 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Sentry;
+using Newtonsoft.Json;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
@@ -18,6 +20,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IBrowserInfoJobServices browserInfoJobServices;
         private readonly IRawUserAgentJobServices rawUserAgentJobServices;
+        private readonly IEvolutionJobServices evolutionJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -27,7 +30,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
                             , IBrowserInfoJobServices browserInfoJobServices
-                            , IRawUserAgentJobServices rawUserAgentJobServices)
+                            , IRawUserAgentJobServices rawUserAgentJobServices
+                            , IEvolutionJobServices evolutionJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -38,6 +42,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.archiveJobServices = archiveJobServices;
             this.browserInfoJobServices = browserInfoJobServices;
             this.rawUserAgentJobServices = rawUserAgentJobServices;
+            this.evolutionJobServices = evolutionJobServices;
         }
 
         [HttpPost("deviceidentify")]
@@ -128,12 +133,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await browserInfoJobServices.DetectBots(batchSize, detectionLevel);
         }
 
-        [HttpPost("updateflaggeddcs")]
-        public async Task<bool> UpdateFlaggedDCS([FromForm] int batchSize)
-        {
-            return await browserInfoJobServices.UpdateFlaggedDCS(batchSize);
-        }
-
         [HttpPost("updatemodifieddate")]
         public async Task<bool> UpdateModifiedDate([FromForm] int batchSize)
         {
@@ -144,6 +143,24 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         public async Task<bool> ParseUserAgent([FromForm] int batchSize)
         {
             return await rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
+        }
+
+        [HttpPost("evolution")]
+        public async Task<bool> Evolution([FromForm] int batchSize, [FromForm] int numberOfBatch)
+        {
+            return await evolutionJobServices.Evolution(batchSize, numberOfBatch);
+        }
+
+        [HttpPost("compareString")]
+        public void compareString([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
+        {
+            var arr1 = JsonConvert.DeserializeObject<string[]>(strA);
+            var arr2 = JsonConvert.DeserializeObject<string[]>(strB);
+            bool isSubset1 = !arr1.Except(arr2).Any();
+            bool isSubset2 = !arr2.Except(arr1).Any();
+
+            var a1 = arr1.All(arr2.Contains);
+            var a2 = arr2.All(arr1.Contains);
         }
 
         [HttpPost("testSentryCaptureMessage")]

@@ -65,7 +65,6 @@ var globalFP = (function (exports) {
         }
     }
 
-    /** @deprecated */
     function __spreadArrays() {
         for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
         for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -4183,13 +4182,13 @@ var globalFP = (function (exports) {
     }
 
     // https://www.browserleaks.com/canvas#how-does-it-work
-    function getCanvasFingerprint() {
-        var _a = makeCanvasContext(), canvas = _a[0], context = _a[1];
-        if (!isSupported(canvas, context)) {
+    function getCanvasFingerprint$1() {
+        var _a = makeCanvasContext$1(), canvas = _a[0], context = _a[1];
+        if (!isSupported$1(canvas, context)) {
             return { winding: false, geometry: '', text: '' };
         }
         return {
-            winding: doesSupportWinding(context),
+            winding: doesSupportWinding$1(context),
             geometry: makeGeometryImage(canvas, context),
             // Text is unstable:
             // https://github.com/fingerprintjs/fingerprintjs/issues/583
@@ -4198,17 +4197,17 @@ var globalFP = (function (exports) {
             text: makeTextImage(canvas, context),
         };
     }
-    function makeCanvasContext() {
+    function makeCanvasContext$1() {
         var canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
         return [canvas, canvas.getContext('2d')];
     }
-    function isSupported(canvas, context) {
+    function isSupported$1(canvas, context) {
         // TODO: look into: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
         return !!(context && canvas.toDataURL);
     }
-    function doesSupportWinding(context) {
+    function doesSupportWinding$1(context) {
         // https://web.archive.org/web/20170825024655/http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
         // https://github.com/Modernizr/Modernizr/blob/master/feature-detects/canvas/winding.js
         context.rect(0, 0, 10, 10);
@@ -5346,7 +5345,7 @@ var globalFP = (function (exports) {
         cpuClass: getCpuClass,
         platform: getPlatform,
         plugins: getPlugins,
-        canvas: getCanvasFingerprint,
+        canvas: getCanvasFingerprint$1,
         touchSupport: getTouchSupport,
         vendor: getVendor,
         vendorFlavors: getVendorFlavors,
@@ -5409,7 +5408,7 @@ var globalFP = (function (exports) {
         return round(0.99 + 0.01 * openConfidenceScore, 0.0001);
     }
 
-    function componentsToCanonicalString$1(components) {
+    function componentsToCanonicalString(components) {
         var result = '';
         for (var _i = 0, _a = Object.keys(components).sort(); _i < _a.length; _i++) {
             var componentKey = _a[_i];
@@ -5428,7 +5427,7 @@ var globalFP = (function (exports) {
         }, 2);
     }
     function hashComponents(components) {
-        return x64hash128(componentsToCanonicalString$1(components));
+        return x64hash128(componentsToCanonicalString(components));
     }
     /**
      * Makes a GetResult implementation that calculates the visitor id hash on demand.
@@ -5568,52 +5567,305 @@ var globalFP = (function (exports) {
         return false;
     }
 
-    function webglId() {
-        var canvas, ctx, width = 256, height = 128;
-        canvas = document.createElement("canvas");
-        (canvas.width = width),
-            (canvas.height = height),
-            (ctx =
-                canvas.getContext("webgl2") ||
-                    canvas.getContext("experimental-webgl2") ||
-                    canvas.getContext("webgl") ||
-                    canvas.getContext("experimental-webgl") ||
-                    canvas.getContext("moz-webgl"));
+    function getWebglCanvas() {
+        var canvas = document.createElement("canvas");
+        var gl = null;
         try {
-            var f = "attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}";
-            var g = "precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}";
-            var h = ctx.createBuffer();
-            ctx.bindBuffer(ctx.ARRAY_BUFFER, h);
-            var i = new Float32Array([-0.2, -0.9, 0, 0.4, -0.26, 0, 0, 0.7321, 0]);
-            ctx.bufferData(ctx.ARRAY_BUFFER, i, ctx.STATIC_DRAW),
-                (h.itemSize = 3),
-                (h.numItems = 3);
-            var j = ctx.createProgram();
-            var k = ctx.createShader(ctx.VERTEX_SHADER);
-            ctx.shaderSource(k, f);
-            ctx.compileShader(k);
-            var l = ctx.createShader(ctx.FRAGMENT_SHADER);
-            ctx.shaderSource(l, g);
-            ctx.compileShader(l);
-            ctx.attachShader(j, k);
-            ctx.attachShader(j, l);
-            ctx.linkProgram(j);
-            ctx.useProgram(j);
-            j.vertexPosAttrib = ctx.getAttribLocation(j, "attrVertex");
-            j.offsetUniform = ctx.getUniformLocation(j, "uniformOffset");
-            ctx.enableVertexAttribArray(j.vertexPosArray);
-            ctx.vertexAttribPointer(j.vertexPosAttrib, h.itemSize, ctx.FLOAT, !1, 0, 0);
-            ctx.uniform2f(j.offsetUniform, 1, 1);
-            ctx.drawArrays(ctx.TRIANGLE_STRIP, 0, h.numItems);
+            gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
         }
         catch (e) {
+            /* squelch */
+        }
+        if (!gl) {
+            gl = null;
+        }
+        return gl;
+    }
+    function getWebglFp() {
+        var gl;
+        var fa2s = function (fa) {
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.enable(gl.DEPTH_TEST);
+            gl.depthFunc(gl.LEQUAL);
+            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+            return "[" + fa[0] + ", " + fa[1] + "]";
+        };
+        var maxAnisotropy = function (gl) {
+            var anisotropy, ext = gl.getExtension("EXT_texture_filter_anisotropic") ||
+                gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
+                gl.getExtension("MOZ_EXT_texture_filter_anisotropic");
+            return ext
+                ? ((anisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT)),
+                    0 === anisotropy && (anisotropy = 2),
+                    anisotropy)
+                : null;
+        };
+        gl = getWebglCanvas();
+        if (!gl) {
             return null;
         }
-        var m = "";
-        var n = new Uint8Array(width * height * 4);
-        ctx.readPixels(0, 0, width, height, ctx.RGBA, ctx.UNSIGNED_BYTE, n);
-        m = JSON.stringify(n).replace(/,?"[0-9]+":/g, "");
-        return hashMD5(m);
+        // WebGL fingerprinting is a combination of techniques, found in MaxMind antifraud script & Augur fingerprinting.
+        // First it draws a gradient object with shaders and convers the image to the Base64 string.
+        // Then it enumerates all WebGL extensions & capabilities and appends them to the Base64 string, resulting in a huge WebGL string, potentially very unique on each device
+        // Since iOS supports webgl starting from version 8.1 and 8.1 runs on several graphics chips, the results may be different across ios devices, but we need to verify it.
+        var result = [];
+        var vShaderTemplate = "attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}";
+        var fShaderTemplate = "precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}";
+        var vertexPosBuffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
+        var vertices = new Float32Array([
+            -0.2, -0.9, 0, 0.4, -0.26, 0, 0, 0.732134444, 0,
+        ]);
+        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+        vertexPosBuffer.itemSize = 3;
+        vertexPosBuffer.numItems = 3;
+        var program = gl.createProgram(), vshader = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vshader, vShaderTemplate);
+        gl.compileShader(vshader);
+        var fshader = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fshader, fShaderTemplate);
+        gl.compileShader(fshader);
+        gl.attachShader(program, vshader);
+        gl.attachShader(program, fshader);
+        gl.linkProgram(program);
+        gl.useProgram(program);
+        program.vertexPosAttrib = gl.getAttribLocation(program, "attrVertex");
+        program.offsetUniform = gl.getUniformLocation(program, "uniformOffset");
+        gl.enableVertexAttribArray(program.vertexPosArray);
+        gl.vertexAttribPointer(program.vertexPosAttrib, vertexPosBuffer.itemSize, gl.FLOAT, !1, 0, 0);
+        gl.uniform2f(program.offsetUniform, 1, 1);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems);
+        //   if (gl.canvas != null) {
+        //     result.push(gl.canvas.toDataURL());
+        //   }
+        result.push("extensions:" + gl.getSupportedExtensions().join(";"));
+        result.push("webgl aliased line width range:" +
+            fa2s(gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE)));
+        result.push("webgl aliased point size range:" +
+            fa2s(gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)));
+        result.push("webgl alpha bits:" + gl.getParameter(gl.ALPHA_BITS));
+        result.push("webgl antialiasing:" + (gl.getContextAttributes().antialias ? "yes" : "no"));
+        result.push("webgl blue bits:" + gl.getParameter(gl.BLUE_BITS));
+        result.push("webgl depth bits:" + gl.getParameter(gl.DEPTH_BITS));
+        result.push("webgl green bits:" + gl.getParameter(gl.GREEN_BITS));
+        result.push("webgl max anisotropy:" + maxAnisotropy(gl));
+        result.push("webgl max combined texture image units:" +
+            gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS));
+        result.push("webgl max cube map texture size:" +
+            gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE));
+        result.push("webgl max fragment uniform vectors:" +
+            gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS));
+        result.push("webgl max render buffer size:" + gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
+        result.push("webgl max texture image units:" +
+            gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
+        result.push("webgl max texture size:" + gl.getParameter(gl.MAX_TEXTURE_SIZE));
+        result.push("webgl max varying vectors:" + gl.getParameter(gl.MAX_VARYING_VECTORS));
+        result.push("webgl max vertex attribs:" + gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
+        result.push("webgl max vertex texture image units:" +
+            gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS));
+        result.push("webgl max vertex uniform vectors:" +
+            gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS));
+        result.push("webgl max viewport dims:" + fa2s(gl.getParameter(gl.MAX_VIEWPORT_DIMS)));
+        result.push("webgl red bits:" + gl.getParameter(gl.RED_BITS));
+        result.push("webgl renderer:" + gl.getParameter(gl.RENDERER));
+        result.push("webgl shading language version:" +
+            gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
+        result.push("webgl stencil bits:" + gl.getParameter(gl.STENCIL_BITS));
+        result.push("webgl vendor:" + gl.getParameter(gl.VENDOR));
+        result.push("webgl version:" + gl.getParameter(gl.VERSION));
+        if (!gl.getShaderPrecisionFormat) {
+            return result.join("~");
+        }
+        result.push("webgl vertex shader high float precision:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision);
+        result.push("webgl vertex shader high float precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).rangeMin);
+        result.push("webgl vertex shader high float precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).rangeMax);
+        result.push("webgl vertex shader medium float precision:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision);
+        result.push("webgl vertex shader medium float precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).rangeMin);
+        result.push("webgl vertex shader medium float precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).rangeMax);
+        result.push("webgl vertex shader low float precision:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).precision);
+        result.push("webgl vertex shader low float precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).rangeMin);
+        result.push("webgl vertex shader low float precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).rangeMax);
+        result.push("webgl fragment shader high float precision:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision);
+        result.push("webgl fragment shader high float precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).rangeMin);
+        result.push("webgl fragment shader high float precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).rangeMax);
+        result.push("webgl fragment shader medium float precision:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision);
+        result.push("webgl fragment shader medium float precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).rangeMin);
+        result.push("webgl fragment shader medium float precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).rangeMax);
+        result.push("webgl fragment shader low float precision:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).precision);
+        result.push("webgl fragment shader low float precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).rangeMin);
+        result.push("webgl fragment shader low float precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).rangeMax);
+        result.push("webgl vertex shader high int precision:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).precision);
+        result.push("webgl vertex shader high int precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).rangeMin);
+        result.push("webgl vertex shader high int precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).rangeMax);
+        result.push("webgl vertex shader medium int precision:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).precision);
+        result.push("webgl vertex shader medium int precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).rangeMin);
+        result.push("webgl vertex shader medium int precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).rangeMax);
+        result.push("webgl vertex shader low int precision:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).precision);
+        result.push("webgl vertex shader low int precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).rangeMin);
+        result.push("webgl vertex shader low int precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).rangeMax);
+        result.push("webgl fragment shader high int precision:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).precision);
+        result.push("webgl fragment shader high int precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).rangeMin);
+        result.push("webgl fragment shader high int precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).rangeMax);
+        result.push("webgl fragment shader medium int precision:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).precision);
+        result.push("webgl fragment shader medium int precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).rangeMin);
+        result.push("webgl fragment shader medium int precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).rangeMax);
+        result.push("webgl fragment shader low int precision:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).precision);
+        result.push("webgl fragment shader low int precision rangeMin:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).rangeMin);
+        result.push("webgl fragment shader low int precision rangeMax:" +
+            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).rangeMax);
+        return result.join("~");
+    }
+    function webglId() {
+        try {
+            const n1 = getWebglFp();
+            const m1 = JSON.stringify(n1).replace(/,?"[0-9]+":/g, "");
+            const hash1 = hashMD5(m1);
+            const n2 = getWebglFp();
+            const m2 = JSON.stringify(n2).replace(/,?"[0-9]+":/g, "");
+            const hash2 = hashMD5(m2);
+            if (hash1 == hash2) {
+                return hash1;
+            }
+            return undefined;
+        }
+        catch (error) {
+            console.log('error', error);
+            return undefined;
+        }
+    }
+    function getGLRenderer() {
+        const gl = getWebglCanvas();
+        if (!gl) {
+            return undefined;
+        }
+        return gl.getParameter(gl.RENDERER);
+    }
+
+    function getCanvas() {
+        const start = Date.now();
+        if (!isFnCanvasDefender()) {
+            let result = getCanvasFingerprint();
+            if (result.geometry != "") {
+                return { value: result, duration: Date.now() - start };
+            }
+        }
+        return { value: undefined, duration: Date.now() - start };
+    }
+    function getCanvasFingerprint() {
+        let winding = false;
+        let geometry;
+        let text;
+        const [canvas, context] = makeCanvasContext();
+        if (!isSupported(canvas, context)) {
+            geometry = text = ''; // The value will be 'unsupported' in v3.4
+        }
+        else {
+            winding = doesSupportWinding(context);
+            renderTextImage(canvas, context);
+            const textImage1 = canvasToString(canvas);
+            const textImage2 = canvasToString(canvas);
+            if (textImage1 !== textImage2) {
+                geometry = text = 'unstable';
+            }
+            else {
+                text = textImage1;
+                renderGeometryImage(canvas, context);
+                geometry = canvasToString(canvas);
+            }
+        }
+        return { winding, geometry, text };
+    }
+    function makeCanvasContext() {
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        return [canvas, canvas.getContext('2d')];
+    }
+    function isSupported(canvas, context) {
+        return !!(context && canvas.toDataURL);
+    }
+    function doesSupportWinding(context) {
+        context.rect(0, 0, 10, 10);
+        context.rect(2, 2, 6, 6);
+        return !context.isPointInPath(5, 5, 'evenodd');
+    }
+    function renderTextImage(canvas, context) {
+        // Resizing the canvas cleans it
+        canvas.width = 240;
+        canvas.height = 60;
+        context.textBaseline = 'alphabetic';
+        context.fillStyle = '#f60';
+        context.fillRect(100, 1, 62, 20);
+        context.fillStyle = '#069';
+        context.font = '11pt "Times New Roman"';
+        const printedText = `Cwm fjordbank gly ${String.fromCharCode(55357, 56835) /* 😃 */}`;
+        context.fillText(printedText, 2, 15);
+        context.fillStyle = 'rgba(102, 204, 0, 0.2)';
+        context.font = '18pt Arial';
+        context.fillText(printedText, 4, 45);
+    }
+    function renderGeometryImage(canvas, context) {
+        // Resizing the canvas cleans it
+        canvas.width = 122;
+        canvas.height = 110;
+        // Canvas blending
+        context.globalCompositeOperation = 'multiply';
+        for (const [color, x, y] of [
+            ['#f2f', 40, 40],
+            ['#2ff', 80, 40],
+            ['#ff2', 60, 80],
+        ]) {
+            context.fillStyle = color;
+            context.beginPath();
+            context.arc(x, y, 40, 0, Math.PI * 2, true);
+            context.closePath();
+            context.fill();
+        }
+        // Canvas winding
+        context.fillStyle = '#f9c';
+        context.arc(60, 60, 60, 0, Math.PI * 2, true);
+        context.arc(60, 60, 20, 0, Math.PI * 2, true);
+        context.fill('evenodd');
+    }
+    function canvasToString(canvas) {
+        var url1 = canvas.toDataURL();
+        var url2 = canvas.toDataURL();
+        return url1 == url2 ? url1 : "";
     }
 
     function getDevicePixelRatio() {
@@ -5634,38 +5886,38 @@ var globalFP = (function (exports) {
         };
         return { value: result, duration: Date.now() - start };
     }
-    function getCanvas() {
-        const start = Date.now();
-        let result;
-        if (!isFnCanvasDefender()) {
-            let canvas = sources.canvas();
-            result = {
-                winding: canvas.winding,
-                geometry: canvas.geometry,
-                text: "",
-            };
-        }
-        return { value: result, duration: Date.now() - start };
-    }
     function getWebGL() {
         const start = Date.now();
-        let result = "undefined";
+        let result;
         if (!isFnWebGLDefender()) {
             result = webglId();
         }
         return { value: result, duration: Date.now() - start };
     }
-    function componentsToCanonicalString(components) {
+    function getDoNotTrack() {
+        const start = Date.now();
+        let result = navigator.doNotTrack;
+        return { value: result, duration: Date.now() - start };
+    }
+    function getWebGLRenderer(webgl) {
+        const start = Date.now();
+        if (webgl && webgl.value == undefined) {
+            return { value: undefined, duration: Date.now() - start };
+        }
+        return { value: getGLRenderer(), duration: Date.now() - start };
+    }
+    function componentsToJsonString(components) {
         let result = "";
+        let err;
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
-            const value = component.error ? "error" : JSON.stringify(component.value);
-            const duration = component.error
-                ? "error"
-                : JSON.stringify(component.duration);
-            result += `${result ? "},{" : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value == undefined ? `"undefined"` : `${value},"duration":${duration}`}`;
+            const value = component.error ? "error" : component.value;
+            if (component.error) {
+                err += `${componentKey}: ${component.error.message},`;
+            }
+            result += `${result ? "," : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${`${JSON.stringify(value == undefined ? `undefined` : value)}`}`;
         }
-        return `[${result}}]`;
+        return `${result}}`;
     }
     function getFontPreference() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -5695,23 +5947,26 @@ var globalFP = (function (exports) {
     }
     function getFP() {
         let visitorId;
-        let properties;
         const fpPromise = loadSources(sources, {}, [
             "screenResolution",
             "screenFrame",
             "canvas",
             "fontPreferences",
-            "languages",
+            "languages"
         ])();
+        const canvas = getCanvas();
+        const webgl = getWebGL();
         return fpPromise.then((components) => __awaiter(this, void 0, void 0, function* () {
-            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: getCanvas(), webglPrint: isFnCanvasDefender()
-                    ? getWebGL()
-                    : { value: "undefined", duration: 0 } });
+            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: canvas, webglRenderer: getWebGLRenderer(webgl), doNotTrack: getDoNotTrack() });
+            if (canvas && canvas.value == undefined) {
+                customComponents["webglPrint"] = webgl;
+            }
             visitorId = FingerprintJS.hashComponents(customComponents);
-            properties = componentsToCanonicalString(customComponents);
+            let properties = componentsToJsonString(customComponents);
             return Promise.resolve({
                 Id: visitorId,
                 Properties: properties,
+                ErrorValue: "",
                 CheckCanvasDefender: isFnCanvasDefender(),
                 CheckWebGLDefender: isFnWebGLDefender(),
                 CheckFontDefender: isFnFontDefender(),
@@ -5735,7 +5990,7 @@ var globalFP = (function (exports) {
     }
     // User Agent
     function testUserAgent() {
-        if (/Headless/.test(window.navigator.userAgent)) {
+        if (/Headless/.test(navigator.userAgent)) {
             // Headless
             return 1;
         }
@@ -5758,27 +6013,27 @@ var globalFP = (function (exports) {
     // Notification Permissions
     function testNotificationPermissions() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (!navigator.permissions) {
-                return 0;
+            if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+                return yield navigator.permissions
+                    .query({ name: "notifications" })
+                    .then(function (permissionStatus) {
+                    if (typeof Notification != "undefined" && Notification.permission === "denied" &&
+                        permissionStatus.state === "prompt") {
+                        // Headless
+                        return 0.5;
+                    }
+                    else {
+                        // Not Headless
+                        return 0;
+                    }
+                });
             }
-            return yield navigator.permissions
-                .query({ name: "notifications" })
-                .then(function (permissionStatus) {
-                if (Notification.permission === "denied" &&
-                    permissionStatus.state === "prompt") {
-                    // Headless
-                    return 0.5;
-                }
-                else {
-                    // Not Headless
-                    return 0;
-                }
-            });
+            return 0;
         });
     }
     // No Plugins
     function testPlugins() {
-        let length = navigator.plugins.length;
+        let length = navigator.plugins ? navigator.plugins.length : 0;
         return length === 0 ? 1 : 0;
     }
     // App Version
@@ -8894,9 +9149,9 @@ var globalFP = (function (exports) {
             });
         });
     }
-    function postDataFp(url, data, token) {
+    function postDataAuthorization(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url + "/fp", {
+            return fetch(url, {
                 method: "POST",
                 headers: {
                     Accept: "application/json",
@@ -8929,10 +9184,10 @@ var globalFP = (function (exports) {
         const cookies = getCookie();
         const fps = getFP().catch((error) => {
             var data = {
-                function: "FingerPrint",
+                function: "FingerPrint Capturing",
                 exception: error.message,
             };
-            postData(apiUrl + "/cle", JSON.stringify(data));
+            postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
         });
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
@@ -8946,16 +9201,19 @@ var globalFP = (function (exports) {
                 encryptingAsync({
                     di: fp && fp.Id,
                     attr: fp && fp.Properties,
+                    acpt: config.acpt,
+                    enc: config.enc,
+                    hk: config.hk,
                 }, cryptConfig)
                     .then((res) => {
-                    postData(apiUrl + "/fpa", JSON.stringify(res));
+                    postDataAuthorization(apiUrl + "/fpa", JSON.stringify(res), config.tk);
                 })
                     .catch((error) => {
                     var data = {
                         function: "FingerPrint Attribute",
                         exception: error.message,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
+                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
                 });
                 encryptingAsync({
                     fk: sKey,
@@ -8967,20 +9225,20 @@ var globalFP = (function (exports) {
                     salt: config.sa,
                 })
                     .then((res) => {
-                    postData(apiUrl + "/bi", JSON.stringify(res));
+                    postDataAuthorization(apiUrl + "/bi", JSON.stringify(res), config.tk);
                 })
                     .catch((error) => {
                     var data = {
                         function: "Browser Info",
                         exception: error.message,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
+                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
                 });
                 encryptingAsync({
                     di: fp && fp.Id,
                     fk: sKey,
                     subs: subId,
-                    cookieCode: cookie,
+                    ckc: cookie,
                     url: window.location && window.location.href
                         ? window.location.href
                         : "",
@@ -8992,15 +9250,22 @@ var globalFP = (function (exports) {
                     },
                 }, cryptConfig)
                     .then((res) => {
-                    postDataFp(apiUrl, JSON.stringify(res), config.tk);
+                    postDataAuthorization(apiUrl + "/fp", JSON.stringify(res), config.tk);
                 })
                     .catch((error) => {
                     var data = {
                         function: "FingerPrint",
                         exception: error.message,
                     };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
+                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
                 });
+                if (fp && fp.ErrorValue != "") {
+                    var data = {
+                        function: "FingerPrint Attributes Merge",
+                        exception: fp.ErrorValue,
+                    };
+                    postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
+                }
             }
         });
     }
