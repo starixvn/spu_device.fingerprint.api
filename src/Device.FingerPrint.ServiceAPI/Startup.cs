@@ -54,8 +54,9 @@ namespace Device.FingerPrint.ServiceAPI
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UsePathBase("/jobapi");
             app.UseSwagger();
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.FingerPrint.ServiceAPI v1"));
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("v1/swagger.json", "Device.FingerPrint.ServiceAPI v1"));
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
