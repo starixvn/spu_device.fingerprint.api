@@ -193,6 +193,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     return false;
                 return true;
             }
+
             return false;
         }
 
@@ -200,7 +201,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
         {
             if (ValidateVersion(version))
             {
-                return new Version(version);
+                return Version.Parse(version);
             }
             else
             {
@@ -220,7 +221,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 if (ValidateVersion(version))
                 {
-                    return new Version(version);
+                    return Version.Parse(version);
                 }
             }
             return null;
@@ -228,19 +229,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         static bool ValidateVersion(string version)
         {
-            var match = Regex.Match(version, @"^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)\.(?<revision>\d+)$");
-            if (match.Success)
+            try
             {
-                if (int.TryParse(match.Groups["major"].Value, out _) &&
-                  int.TryParse(match.Groups["minor"].Value, out _) &&
-                  int.TryParse(match.Groups["build"].Value, out _) &&
-                  int.TryParse(match.Groups["revision"].Value, out _))
-                {
-                    return true;
-                }
+                Version ver = Version.Parse(version);
+                return true;
             }
-
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         private bool CheckFonts(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
