@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
 using System;
+using System.Text.RegularExpressions;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
@@ -414,5 +415,51 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return crypto.Decrypt(key);
         }
 
+        [HttpPost("CheckVersion")]
+        public void CheckVersion([FromBody] string version)
+        {
+            if (ValidateVersion(version))
+            {
+                var version1 = new Version(version);
+            }
+            else
+            {
+                int dashIndex = version.IndexOf("-");
+                if (dashIndex > -1)
+                    version = version.Substring(0, dashIndex);
+
+                int parenthesisIndex = version.IndexOf("(");
+                if (parenthesisIndex > -1)
+                    version = version.Substring(0, parenthesisIndex);
+
+                String[] versionArray = version.Split(".");
+                if (versionArray.Length > 4)
+                {
+                    version = String.Concat(versionArray[0], ".", versionArray[1], ".", versionArray[2], ".", versionArray[3]);
+                }
+
+                if (ValidateVersion(version))
+                {
+                    var version1 = new Version(version);
+                }
+            }
+        }
+
+        static bool ValidateVersion(string version)
+        {
+            var match = Regex.Match(version, @"^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)\.(?<revision>\d+)$");
+            if (match.Success)
+            {
+                if (int.TryParse(match.Groups["major"].Value, out _) &&
+                  int.TryParse(match.Groups["minor"].Value, out _) &&
+                  int.TryParse(match.Groups["build"].Value, out _) &&
+                  int.TryParse(match.Groups["revision"].Value, out _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }

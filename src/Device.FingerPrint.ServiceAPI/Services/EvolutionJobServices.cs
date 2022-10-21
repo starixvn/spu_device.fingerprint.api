@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -181,13 +182,65 @@ namespace Device.FingerPrint.ServiceAPI.Services
         #region "Evolution"
         private bool CheckVersion(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            var version1 = new Version(source.BrowserVersion);
-            var version2 = new Version(destination.BrowserVersion);
-            var resultVersion = version1.CompareTo(version2);
+            var version1 = GetVersion(source.BrowserVersion);
+            var version2 = GetVersion(destination.BrowserVersion);
 
-            if (resultVersion < 0) // new < old
-                return false;
-            return true;
+            if (version1 != null && version2 != null)
+            {
+                var resultVersion = version1.CompareTo(version2);
+
+                if (resultVersion < 0) // new < old
+                    return false;
+                return true;
+            }
+            return false;
+        }
+
+        private Version GetVersion(string version)
+        {
+            if (ValidateVersion(version))
+            {
+                return new Version(version);
+            }
+            else
+            {
+                int dashIndex = version.IndexOf("-");
+                if (dashIndex > -1)
+                    version = version.Substring(0, dashIndex);
+
+                int parenthesisIndex = version.IndexOf("(");
+                if (parenthesisIndex > -1)
+                    version = version.Substring(0, parenthesisIndex);
+
+                String[] versionArray = version.Split(".");
+                if (versionArray.Length > 4)
+                {
+                    version = String.Concat(versionArray[0], ".", versionArray[1], ".", versionArray[2], ".", versionArray[3]);
+                }
+
+                if (ValidateVersion(version))
+                {
+                    return new Version(version);
+                }
+            }
+            return null;
+        }
+
+        static bool ValidateVersion(string version)
+        {
+            var match = Regex.Match(version, @"^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)\.(?<revision>\d+)$");
+            if (match.Success)
+            {
+                if (int.TryParse(match.Groups["major"].Value, out _) &&
+                  int.TryParse(match.Groups["minor"].Value, out _) &&
+                  int.TryParse(match.Groups["build"].Value, out _) &&
+                  int.TryParse(match.Groups["revision"].Value, out _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private bool CheckFonts(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)

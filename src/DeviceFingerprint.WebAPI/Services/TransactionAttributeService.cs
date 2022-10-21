@@ -1,11 +1,10 @@
 ﻿using Device.Fingerprint.WebAPI.Models;
-using Device.Fingerprint.WebAPI.Ultilities;
 using DeviceDetectorNET;
 
 namespace Device.Fingerprint.WebAPI.Services
 {
     public class TransactionAttributeService
-    {        
+    {
         public UserAgentInfoModel GetUserAgentInfo(string userAgent)
         {
             var deviceDetector = new DeviceDetector(userAgent);
