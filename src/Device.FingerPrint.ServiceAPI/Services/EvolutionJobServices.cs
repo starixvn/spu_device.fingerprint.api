@@ -156,27 +156,34 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private bool CompareRules(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            // Rule 2
-            if (!CheckVersion(source, destination)) return false;
+            try
+            {
+                // Rule 2
+                if (!CheckVersion(source, destination)) return false;
 
-            // Rule 3
-            if (!CheckForbiddenChanges(source, destination)) return false;
+                // Rule 3
+                if (!CheckForbiddenChanges(source, destination)) return false;
 
-            // Rule 4
-            if (!CheckFonts(source, destination)) return false;
+                // Rule 4
+                if (!CheckFonts(source, destination)) return false;
 
-            // Rule 5
-            int allowChangeWithSimCounter = 0;
-            if (!CheckAllowChangesWithSimilar(source, destination, ref allowChangeWithSimCounter)) return false;
+                // Rule 5
+                int allowChangeWithSimCounter = 0;
+                if (!CheckAllowChangesWithSimilar(source, destination, ref allowChangeWithSimCounter)) return false;
 
-            // Rule 6
-            int allowChangeCounter = 0;
-            if (!CheckAllowChanges(source, destination, ref allowChangeCounter)) return false;
+                // Rule 6
+                int allowChangeCounter = 0;
+                if (!CheckAllowChanges(source, destination, ref allowChangeCounter)) return false;
 
-            // Rule 7
-            if (allowChangeWithSimCounter != 0 && allowChangeCounter != 0) return false;
+                // Rule 7
+                if (allowChangeWithSimCounter != 0 && allowChangeCounter != 0) return false;
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message + "\nSourceId: " + source.Id.ToString() + "\nDestinationId: " + destination.Id.ToString());
+            }
         }
 
         #region "Evolution"
