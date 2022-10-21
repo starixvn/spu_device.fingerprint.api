@@ -207,7 +207,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private Version GetVersion(string version)
         {
-            throw new Exception("Test Ex!");
             if (ValidateVersion(version))
             {
                 return Version.Parse(version);
