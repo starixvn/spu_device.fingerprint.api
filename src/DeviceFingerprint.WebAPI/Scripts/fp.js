@@ -41,21 +41,41 @@ var subscriberId = '__subscriberId__';
 var sessionKey = '__sessionKey__';
 var cdnAPIUrl = '__cdnAPIUrl__';
 
-fp.post(apiUrl + '/ctl', {
-    'SessionKey': sessionKey,
-    'SubscriberId': subscriberId,
-    'Url': window.location && window.location.href
-        ? window.location.href
-        : "",
-    'UserAgent': navigator.userAgent
-}).then(() => {
+try {
     fp.url(cdnAPIUrl)
         .then(() => {
-            //fp.log(apiUrl, "Load API", "Successful");
-        globalFP.capture(apiUrl, subscriberId, sessionKey);
-    })
-    .catch((error) => {        
-        fp.log(apiUrl, "Load API", error.message);
-    });
-});
+            fp.post(apiUrl + '/ctl', {
+                'SessionKey': sessionKey,
+                'SubscriberId': subscriberId,
+                'Url': window.location && window.location.href
+                    ? window.location.href
+                    : "",
+                'UserAgent': navigator.userAgent,
+                'Information': 'Load script successful'
+            });
+        })
+        .then(() => {
+            globalFP.capture(apiUrl, subscriberId, sessionKey);
+        })
+        .then(() => {
+            fp.post(apiUrl + '/ctl', {
+                'SessionKey': sessionKey,
+                'SubscriberId': subscriberId,
+                'Url': window.location && window.location.href
+                    ? window.location.href
+                    : "",
+                'UserAgent': navigator.userAgent,
+                'Information': 'Capture data successful'
+            });
+        })
+        .catch((error) => {
+            fp.log(apiUrl, "Capture Data", error.message);
+        });
+}
+catch (err) {
+    fp.log(apiUrl, "Load API", err.message);
+}
+
+
+
 

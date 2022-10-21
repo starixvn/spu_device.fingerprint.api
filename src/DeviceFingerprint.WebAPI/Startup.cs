@@ -45,8 +45,8 @@ namespace Device.Fingerprint.WebAPI
 
             services.AddCors(opt =>
             {
-                opt.AddDefaultPolicy(x =>
-                    x.AllowAnyOrigin()
+                opt.AddDefaultPolicy(builder => builder
+                    .WithOrigins("*")
                     .AllowAnyHeader()
                     .AllowAnyMethod());
             });
