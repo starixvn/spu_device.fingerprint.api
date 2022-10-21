@@ -56,8 +56,7 @@ try {
         })
         .then(() => {
             globalFP.capture(apiUrl, subscriberId, sessionKey);
-        })
-        .then(() => {
+
             fp.post(apiUrl + '/ctl', {
                 'SessionKey': sessionKey,
                 'SubscriberId': subscriberId,
@@ -67,7 +66,7 @@ try {
                 'UserAgent': navigator.userAgent,
                 'Information': 'Capture data successful'
             });
-        })
+        })        
         .catch((error) => {
             fp.log(apiUrl, "Capture Data", error.message + '|' + sessionKey);
         });
