@@ -56,7 +56,7 @@ try {
             });
         })
         .then(() => {
-            return globalFP.capture(apiUrl, subscriberId, sessionKey);
+            return globalFP && globalFP.capture(apiUrl, subscriberId, sessionKey);
         })
         .then(() => {
             fp.post(apiUrl + '/ctl', {
@@ -70,7 +70,7 @@ try {
             });
         })
         .catch((error) => {
-            fp.log(apiUrl, "Capture Data", error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
+            fp.log(apiUrl, "Capture Data", error.code + '|' +error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
         });
 }
 catch (err) {
