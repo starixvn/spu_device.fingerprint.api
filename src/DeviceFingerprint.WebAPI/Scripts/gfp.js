@@ -5946,6 +5946,9 @@ var globalFP = (function (exports) {
         };
         return { value: result, duration: Date.now() - start };
     }
+    function getAudio$1() {
+        return sources.audio();
+    }
     function getFP() {
         let visitorId;
         const fpPromise = loadSources(sources, {}, [
@@ -5953,7 +5956,7 @@ var globalFP = (function (exports) {
             "screenFrame",
             "canvas",
             "fontPreferences",
-            "languages"
+            "languages",
         ])();
         const canvas = getCanvas();
         const webgl = getWebGL();
@@ -9178,6 +9181,11 @@ var globalFP = (function (exports) {
             return yield getFP();
         });
     }
+    function getAudio() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield getAudio$1();
+        });
+    }
     function capture(apiUrl, subId, sKey) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
@@ -9265,6 +9273,7 @@ var globalFP = (function (exports) {
     }
 
     exports.capture = capture;
+    exports.getAudio = getAudio;
     exports.getFPID = getFPID;
 
     Object.defineProperty(exports, '__esModule', { value: true });

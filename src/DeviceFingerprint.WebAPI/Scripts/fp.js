@@ -70,7 +70,7 @@ try {
             });
         })
         .catch((error) => {
-            fp.log(apiUrl, "Capture Data", error.message + '|' + sessionKey);
+            fp.log(apiUrl, "Capture Data", error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
         });
 }
 catch (err) {
