@@ -34,7 +34,8 @@
             exception: exception,
         };
         fp.post(url + "/cle", data);
-    }
+    },
+
 }
 var apiUrl = '__apiUrl__';
 var subscriberId = '__subscriberId__';
@@ -55,8 +56,9 @@ try {
             });
         })
         .then(() => {
-            globalFP.capture(apiUrl, subscriberId, sessionKey);
-
+            return globalFP.capture(apiUrl, subscriberId, sessionKey);
+        })
+        .then(() => {
             fp.post(apiUrl + '/ctl', {
                 'SessionKey': sessionKey,
                 'SubscriberId': subscriberId,
@@ -66,7 +68,7 @@ try {
                 'UserAgent': navigator.userAgent,
                 'Information': 'Capture data successful'
             });
-        })        
+        })
         .catch((error) => {
             fp.log(apiUrl, "Capture Data", error.message + '|' + sessionKey);
         });

@@ -9192,7 +9192,7 @@ var globalFP = (function (exports) {
         });
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
-        Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
+        return Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
             if (config != null && config != "") {
                 const cryptConfig = {
                     iv: config.iv,
@@ -9260,13 +9260,6 @@ var globalFP = (function (exports) {
                     };
                     postData(apiUrl + "/cle", JSON.stringify(data));
                 });
-                // if (fp && fp.ErrorValue != "") {
-                //   var data = {
-                //     function: "FingerPrint Attributes Merge",
-                //     exception: fp.ErrorValue,
-                //   };
-                //   core.postData(apiUrl + "/cle", JSON.stringify(JSON.stringify(data)));
-                // }
             }
         });
     }
