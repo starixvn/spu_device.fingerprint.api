@@ -5959,7 +5959,7 @@ var globalFP = (function (exports) {
             isTrident: isTrident,
         };
     }
-    function getFP() {
+    function getFP$1() {
         let visitorId;
         const fpPromise = loadSources(sources, {}, [
             "screenResolution",
@@ -9151,18 +9151,6 @@ var globalFP = (function (exports) {
     }
 
     var _cookieName = "__fp";
-    function postData(url, data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: data,
-            });
-        });
-    }
     function postDataAuthorization(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url, {
@@ -9186,9 +9174,9 @@ var globalFP = (function (exports) {
         });
     }
 
-    function getFPID() {
+    function getFP() {
         return __awaiter(this, void 0, void 0, function* () {
-            return yield getFP();
+            return yield getFP$1();
         });
     }
     function getAudio() {
@@ -9204,13 +9192,7 @@ var globalFP = (function (exports) {
             return conf.json();
         });
         const cookies = getCookie();
-        const fps = getFP().catch((error) => {
-            var data = {
-                function: "FingerPrint Capturing",
-                exception: error.message,
-            };
-            postData(apiUrl + "/cle", JSON.stringify(data));
-        });
+        const fps = getFP$1();
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
         return Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
@@ -9226,16 +9208,8 @@ var globalFP = (function (exports) {
                     acpt: config.acpt,
                     enc: config.enc,
                     hk: config.hk,
-                }, cryptConfig)
-                    .then((res) => {
+                }, cryptConfig).then((res) => {
                     postDataAuthorization(apiUrl + "/fpa", JSON.stringify(res), config.tk);
-                })
-                    .catch((error) => {
-                    var data = {
-                        function: "FingerPrint Attribute",
-                        exception: error.message,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     fk: sKey,
@@ -9245,16 +9219,8 @@ var globalFP = (function (exports) {
                     iv: config.iv,
                     pass: config.ek,
                     salt: config.sa,
-                })
-                    .then((res) => {
+                }).then((res) => {
                     postDataAuthorization(apiUrl + "/bi", JSON.stringify(res), config.tk);
-                })
-                    .catch((error) => {
-                    var data = {
-                        function: "Browser Info",
-                        exception: error.message,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     di: fp && fp.Id,
@@ -9270,16 +9236,8 @@ var globalFP = (function (exports) {
                         fd: fp && fp.CheckFontDefender,
                         ac: fp && fp.CheckAudioContextDefender,
                     },
-                }, cryptConfig)
-                    .then((res) => {
+                }, cryptConfig).then((res) => {
                     postDataAuthorization(apiUrl + "/fp", JSON.stringify(res), config.tk);
-                })
-                    .catch((error) => {
-                    var data = {
-                        function: "FingerPrint",
-                        exception: error.message,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
             }
         });
@@ -9288,7 +9246,7 @@ var globalFP = (function (exports) {
     exports.capture = capture;
     exports.getAudio = getAudio;
     exports.getBrowserSupport = getBrowserSupport;
-    exports.getFPID = getFPID;
+    exports.getFP = getFP;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
