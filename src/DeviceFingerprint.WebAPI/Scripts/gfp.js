@@ -5949,6 +5949,16 @@ var globalFP = (function (exports) {
     function getAudio$1() {
         return sources.audio();
     }
+    function getBrowserSupport$1() {
+        return {
+            isWebKit: isWebKit,
+            isDesktopSafari: isDesktopSafari,
+            isAndroid: isAndroid,
+            isChromium: isChromium,
+            isGecko: isGecko,
+            isTrident: isTrident,
+        };
+    }
     function getFP() {
         let visitorId;
         const fpPromise = loadSources(sources, {}, [
@@ -9186,6 +9196,9 @@ var globalFP = (function (exports) {
             return yield getAudio$1();
         });
     }
+    function getBrowserSupport() {
+        return getBrowserSupport$1();
+    }
     function capture(apiUrl, subId, sKey) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
@@ -9274,6 +9287,7 @@ var globalFP = (function (exports) {
 
     exports.capture = capture;
     exports.getAudio = getAudio;
+    exports.getBrowserSupport = getBrowserSupport;
     exports.getFPID = getFPID;
 
     Object.defineProperty(exports, '__esModule', { value: true });
