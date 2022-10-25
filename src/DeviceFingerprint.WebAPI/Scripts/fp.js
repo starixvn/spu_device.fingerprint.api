@@ -68,9 +68,6 @@ try {
                 'UserAgent': navigator.userAgent,
                 'Information': 'Capture data successful'
             });
-        })
-        .catch((error) => {
-            fp.log(apiUrl, "Capture Data", error.code + '|' +error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
         });
 }
 catch (err) {
