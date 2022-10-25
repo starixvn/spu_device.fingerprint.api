@@ -9076,141 +9076,6 @@ var globalFP = (function (exports) {
     });
     }(localforage));
 
-    var localForage = localforage.exports;
-
-    function initStorage() {
-        let localForageDrives = [];
-        // if (isIndexDB()) {
-        //   localForageDrives.push(localForage.INDEXEDDB);
-        // }
-        if (isWebSQL()) {
-            localForageDrives.push(localForage.WEBSQL);
-        }
-        // if (isLocalStorage()) {
-        //   localForageDrives.push(localForage.LOCALSTORAGE);
-        // }
-        return Promise.resolve(localForageDrives);
-    }
-    function isWebSQL() {
-        try {
-            if (!window.openDatabase)
-                return false;
-        }
-        catch (_a) {
-            return false;
-        }
-        return true;
-    }
-    function setCookie(name, value, days) {
-        var expires = "";
-        if (days) {
-            var date = new Date();
-            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-            expires = "; expires=" + date.toUTCString();
-        }
-        document.cookie =
-            name + "=" + (value || "") + expires + "; SameSite=None; Secure; path=/";
-    }
-    function getCookie$1(name) {
-        var nameEQ = name + "=";
-        var ca = document.cookie.split(";");
-        for (var i = 0; i < ca.length; i++) {
-            var c = ca[i];
-            while (c.charAt(0) == " ")
-                c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) == 0)
-                return c.substring(nameEQ.length, c.length);
-        }
-        return null;
-    }
-    function cookieHandler(cookieCode) {
-        return new Promise((resolve) => {
-            resolve(isGuid(cookieCode) ? cookieCode : generateUUID());
-        });
-    }
-    function isGuid(cookieCode) {
-        var regexGuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        return regexGuid.test(cookieCode);
-    }
-    function generateUUID() {
-        // Public Domain/MIT
-        var d = new Date().getTime(); //Timestamp
-        var d2 = (typeof performance !== "undefined" &&
-            performance.now &&
-            performance.now() * 1000) ||
-            0; //Time in microseconds since page-load or 0 if unsupported
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-            var r = Math.random() * 16; //random number between 0 and 16
-            if (d > 0) {
-                //Use timestamp until depleted
-                r = (d + r) % 16 | 0;
-                d = Math.floor(d / 16);
-            }
-            else {
-                //Use microseconds since page-load if supported
-                r = (d2 + r) % 16 | 0;
-                d2 = Math.floor(d2 / 16);
-            }
-            return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
-        });
-    }
-    function setStorage(name, value) {
-        initStorage().then((drivers) => {
-            drivers.forEach((drive) => {
-                var storageDriver = localForage.createInstance({
-                    driver: drive,
-                    name: drive + "-EC",
-                    storeName: "ec",
-                });
-                storageDriver
-                    .setItem(name, value, () => { })
-                    //.then(console.log)
-                    .catch((e) => {
-                    console.log(e.message);
-                });
-                setCookie(name, value, 30);
-            });
-        });
-    }
-    function storageHandler(name) {
-        return initStorage()
-            .then((driver) => {
-            var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
-                if (drive != null) {
-                    try {
-                        var storageDriver = localForage.createInstance({
-                            driver: drive,
-                            name: drive + "-EC",
-                            storeName: "ec",
-                        });
-                        return yield storageDriver.getItem(name, () => { });
-                    }
-                    catch (_a) {
-                        return Promise.resolve(null);
-                    }
-                }
-            }));
-            cookies.push(Promise.resolve(getCookie$1(name)));
-            return cookies;
-        })
-            .then((res) => {
-            return Promise.all(res).then((cookies) => {
-                var latestCookie = null;
-                for (const cookie of cookies) {
-                    if (cookie != null) {
-                        latestCookie = cookie;
-                        break;
-                    }
-                }
-                return cookieHandler(latestCookie).then((cookieValue) => {
-                    setStorage(name, cookieValue);
-                    return cookieValue;
-                });
-            });
-        });
-    }
-
-    var _cookieName = "__fp";
     function postDataAuthorization(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url, {
@@ -9223,9 +9088,6 @@ var globalFP = (function (exports) {
                 body: data,
             });
         });
-    }
-    function getCookie() {
-        return storageHandler(_cookieName);
     }
     function getConfig(url, sessionKey) {
         return fetch(url + "/conf/" + sessionKey, {
@@ -9251,7 +9113,7 @@ var globalFP = (function (exports) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
         });
-        const cookies = getCookie();
+        const cookies = new Promise(String); //core.getCookie();
         const fps = getFP$1();
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
