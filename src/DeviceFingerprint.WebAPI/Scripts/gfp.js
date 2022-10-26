@@ -6104,6 +6104,11 @@ var globalFP = (function (exports) {
             return 0;
         }
     }
+    function macOS() {
+        const macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"];
+        const platform = navigator.platform;
+        return macosPlatforms.indexOf(platform) !== -1;
+    }
     function isIOS$1() {
         const arrDevice = [
             "iPad Simulator",
@@ -6121,7 +6126,7 @@ var globalFP = (function (exports) {
     // Notification Permissions
     function testNotificationPermissions() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (isIOS$1())
+            if (isIOS$1() || macOS())
                 return 0;
             if (navigator.permissions &&
                 typeof navigator.permissions.query === "function") {

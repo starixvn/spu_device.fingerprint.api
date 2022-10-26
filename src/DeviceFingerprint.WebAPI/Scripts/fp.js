@@ -56,7 +56,7 @@ try {
             });
         })
         .then(() => {
-            return globalFP && globalFP.capture(apiUrl, subscriberId, sessionKey);
+            return globalFP != 'undefined' && globalFP.capture(apiUrl, subscriberId, sessionKey);
         })
         .then(() => {
             fp.post(apiUrl + '/ctl', {
