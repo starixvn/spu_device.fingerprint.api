@@ -5842,11 +5842,11 @@ var globalFP = (function (exports) {
             if (hash1 == hash2) {
                 return hash1;
             }
-            return undefined;
+            return "unstable";
         }
         catch (error) {
             console.log('error', error);
-            return undefined;
+            return 'error';
         }
     }
     function getGLRenderer() {
@@ -5861,11 +5861,12 @@ var globalFP = (function (exports) {
         const start = Date.now();
         if (!isFnCanvasDefender()) {
             let result = getCanvasFingerprint();
-            if (result.geometry != "") {
-                return { value: result, duration: Date.now() - start };
+            if (result.geometry != "unstable") {
+                const hash = hashMD5(JSON.stringify(result));
+                return { value: hash, duration: Date.now() - start };
             }
         }
-        return { value: undefined, duration: Date.now() - start };
+        return { value: "unstable", duration: Date.now() - start };
     }
     function getCanvasFingerprint() {
         let winding = false;
@@ -5884,7 +5885,7 @@ var globalFP = (function (exports) {
                 geometry = text = 'unstable';
             }
             else {
-                text = textImage1;
+                // text = textImage1
                 renderGeometryImage(canvas, context);
                 geometry = canvasToString(canvas);
             }
@@ -5944,9 +5945,7 @@ var globalFP = (function (exports) {
         context.fill('evenodd');
     }
     function canvasToString(canvas) {
-        var url1 = canvas.toDataURL();
-        var url2 = canvas.toDataURL();
-        return url1 == url2 ? url1 : "";
+        return canvas.toDataURL();
     }
 
     function getDevicePixelRatio() {
@@ -6012,7 +6011,8 @@ var globalFP = (function (exports) {
                 min: font["min"],
                 system: font["system"],
             };
-            return { value: result, duration: Date.now() - start };
+            const hash = hashMD5(JSON.stringify(result));
+            return { value: hash, duration: Date.now() - start };
         });
     }
     function getLanguages() {
@@ -6052,7 +6052,7 @@ var globalFP = (function (exports) {
         const webgl = getWebGL();
         return fpPromise.then((components) => __awaiter(this, void 0, void 0, function* () {
             const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: canvas, webglRenderer: getWebGLRenderer(webgl), doNotTrack: getDoNotTrack() });
-            if (canvas && canvas.value == undefined) {
+            if (canvas && (canvas.value == undefined || canvas.value == "unstable")) {
                 customComponents["webglPrint"] = webgl;
             }
             visitorId = index.hashComponents(customComponents);
@@ -6104,11 +6104,6 @@ var globalFP = (function (exports) {
             return 0;
         }
     }
-    function macOS() {
-        const macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"];
-        const platform = navigator.platform;
-        return macosPlatforms.indexOf(platform) !== -1;
-    }
     function isIOS$1() {
         const arrDevice = [
             "iPad Simulator",
@@ -6126,7 +6121,7 @@ var globalFP = (function (exports) {
     // Notification Permissions
     function testNotificationPermissions() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (isIOS$1() || macOS())
+            if (isIOS$1())
                 return 0;
             if (navigator.permissions &&
                 typeof navigator.permissions.query === "function") {
