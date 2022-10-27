@@ -1,18 +1,50 @@
 ﻿var fp = {
-    loadJS: function loadJS(_url, resolve, reject) {
-        var script = document.createElement('script');
-        script.type = 'text/javascript';
+
+    requireJs: function (_url, callback) {
+        var script = document.createElement("script");
         script.src = _url;
         script.async = true;
         script.defer = true;
-        script.addEventListener('load', function () {
-            return resolve(script);
-        }, false);
-        script.addEventListener('error', function () {
-            return reject(script);
-        }, false);
+        // IE < 7, does not support onload
+        if (callback) {
+            script.onreadystatechange = function () {
+                if (script.readyState === "loaded" || script.readyState === "complete") {
+                    // no need to be notified again
+                    script.onreadystatechange = null;
+                    // notify user
+                    callback();
+                }
+            };
 
-        document.head.appendChild(script);
+            // other browsers
+            script.onload = function () {
+                callback();
+            };
+        }
+
+        // append and execute script
+        document.documentElement.firstChild.appendChild(script);
+    },
+    loadJS: function loadJS(_url) {
+        return new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = _url;
+            script.async = true;
+            script.defer = true;
+            script.onerror = function (err) {
+                reject(err, script);
+            };
+            script.onload = script.onreadystatechange = function () {
+                if (!this.readyState || this.readyState == 'complete') {
+
+                    script.onreadystatechange = null;
+
+                    resolve();
+                }
+            };
+            document.head.appendChild(script);
+        });
     },
     url: function urls(_url) {
         return new Promise(function (resolve, reject) {
@@ -43,9 +75,19 @@ var sessionKey = '__sessionKey__';
 var cdnAPIUrl = '__cdnAPIUrl__';
 
 try {
-    fp.url(cdnAPIUrl)
+
+
+    //fp.requireJs(cdnAPIUrl, () => {
+    //    globalFP
+    //        .capture(apiUrl, subscriberId, sessionKey)
+    //        .catch((error) => {
+    //        fp.log(apiUrl, "Capture Data", error.code + '|' + error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
+    //    });
+    //});
+
+    fp.loadJS(cdnAPIUrl)
         .then(() => {
-            fp.post(apiUrl + '/ctl', {
+            Promise.resolve(fp.post(apiUrl + '/ctl', {
                 'SessionKey': sessionKey,
                 'SubscriberId': subscriberId,
                 'Url': window.location && window.location.href
@@ -53,13 +95,17 @@ try {
                     : "",
                 'UserAgent': navigator.userAgent,
                 'Information': 'Load script successful'
-            });
-        })
-        .then(() => {
-            return globalFP != 'undefined' && globalFP.capture(apiUrl, subscriberId, sessionKey);
-        })
-        .then(() => {
-            fp.post(apiUrl + '/ctl', {
+            }));
+
+            try {
+                globalFP.capture(apiUrl, subscriberId, sessionKey);
+            }
+            catch (err) {
+                fp.log(apiUrl, "Capture Data", err.code + '|' + err.name + '|' + err.stack + '|' + err.message + '|' + sessionKey);
+            }
+            
+
+            Promise.resolve(fp.post(apiUrl + '/ctl', {
                 'SessionKey': sessionKey,
                 'SubscriberId': subscriberId,
                 'Url': window.location && window.location.href
@@ -67,10 +113,10 @@ try {
                     : "",
                 'UserAgent': navigator.userAgent,
                 'Information': 'Capture data successful'
-            });
+            }));
         })
         .catch((error) => {
-            fp.log(apiUrl, "Capture Data", error.code + '|' + error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
+            fp.log(apiUrl, "Load Script", error.code + '|' + error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
         });
 }
 catch (err) {
