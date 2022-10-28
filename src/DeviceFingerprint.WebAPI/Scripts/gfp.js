@@ -5849,13 +5849,6 @@ var globalFP = (function (exports) {
             return 'error';
         }
     }
-    function getGLRenderer() {
-        const gl = getWebglCanvas();
-        if (!gl) {
-            return undefined;
-        }
-        return gl.getParameter(gl.RENDERER);
-    }
 
     function getCanvas() {
         const start = Date.now();
@@ -5948,6 +5941,7 @@ var globalFP = (function (exports) {
         return canvas.toDataURL();
     }
 
+    const listAttributeHash = ["math", "fontPreferencePrint"];
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
     }
@@ -5981,21 +5975,32 @@ var globalFP = (function (exports) {
     }
     function getWebGLRenderer(webgl) {
         const start = Date.now();
-        if (webgl && webgl.value == undefined) {
-            return { value: undefined, duration: Date.now() - start };
+        if (webgl && webgl.value == 'unstable') {
+            return { value: 'unstable', duration: Date.now() - start };
         }
         return { value: getGLRenderer(), duration: Date.now() - start };
+    }
+    function getGLRenderer() {
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl");
+        if (gl && typeof gl.getExtension === "function" && gl.getExtension("WEBGL_debug_renderer_info") != null) {
+            return gl.getParameter(gl.getExtension("WEBGL_debug_renderer_info").UNMASKED_RENDERER_WEBGL);
+        }
+        return "";
     }
     function componentsToJsonString(components) {
         let result = "";
         let err;
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
-            const value = component.error ? "error" : component.value;
+            let value = component.error ? "error" : JSON.stringify(component.value == undefined ? `undefined` : component.value);
+            if (listAttributeHash.indexOf(componentKey) > -1) {
+                value = JSON.stringify(hashMD5(value));
+            }
             if (component.error) {
                 err += `${componentKey}: ${component.error.message},`;
             }
-            result += `${result ? "," : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${`${JSON.stringify(value == undefined ? `undefined` : value)}`}`;
+            result += `${result ? "," : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value}`;
         }
         return `${result}}`;
     }
@@ -6011,8 +6016,7 @@ var globalFP = (function (exports) {
                 min: font["min"],
                 system: font["system"],
             };
-            const hash = hashMD5(JSON.stringify(result));
-            return { value: hash, duration: Date.now() - start };
+            return { value: result, duration: Date.now() - start };
         });
     }
     function getLanguages() {
@@ -6051,10 +6055,7 @@ var globalFP = (function (exports) {
         const canvas = getCanvas();
         const webgl = getWebGL();
         return fpPromise.then((components) => __awaiter(this, void 0, void 0, function* () {
-            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: canvas, webglRenderer: getWebGLRenderer(webgl), doNotTrack: getDoNotTrack() });
-            if (canvas && (canvas.value == undefined || canvas.value == "unstable")) {
-                customComponents["webglPrint"] = webgl;
-            }
+            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: canvas, webglPrint: webgl, webglRenderer: getWebGLRenderer(webgl), doNotTrack: getDoNotTrack() });
             visitorId = index.hashComponents(customComponents);
             let properties = componentsToJsonString(customComponents);
             return Promise.resolve({
