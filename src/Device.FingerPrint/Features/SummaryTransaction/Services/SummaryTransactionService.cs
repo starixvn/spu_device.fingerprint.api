@@ -8,6 +8,8 @@
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
+
+        void SummaryRecoverTypeDaily(int batchSize);
     }
     public class SummaryTransactionService : ISummaryTransactionService
     {
@@ -31,6 +33,11 @@
         public void SummaryTransactionDaily(int batchSize)
         {
             summaryTransactionDataAccess.SummaryTransactionDaily(batchSize);
+        }
+
+        public void SummaryRecoverTypeDaily(int batchSize)
+        {
+            summaryTransactionDataAccess.SummaryRecoverTypeDaily(batchSize);
         }
     }
 }

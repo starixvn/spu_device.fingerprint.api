@@ -12,6 +12,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
         Task<bool> SummaryClientTransactionDaily(int batchSize);
 
         Task<bool> SummaryTransactionDaily(int batchSize);
+
+        Task<bool> SummaryRecoverTypeDaily(int batchSize);
     }
 
     public class SummaryJobServices : ISummaryJobServices
@@ -62,6 +64,22 @@ namespace Device.FingerPrint.ServiceAPI.Services
             try
             {
                 summaryTransactionService.SummaryTransactionDaily(batchSize);
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+
+                return Task.FromResult(false);
+            }
+
+            return Task.FromResult(true);
+        }
+
+        public Task<bool> SummaryRecoverTypeDaily(int batchSize)
+        {
+            try
+            {
+                summaryTransactionService.SummaryRecoverTypeDaily(batchSize);
             }
             catch (Exception ex)
             {
