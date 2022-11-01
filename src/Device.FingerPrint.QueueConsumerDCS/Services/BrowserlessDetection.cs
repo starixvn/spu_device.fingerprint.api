@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.QueueConsumerDCS.Services
 {
@@ -11,36 +9,20 @@ namespace Device.FingerPrint.QueueConsumerDCS.Services
 
         private const string EncryptKey = "&f％p#s@m?b,c:*!~^._";
 
-        public const double TimeOutToken = 3600; ////86400;
+        public const double TimeOutToken = 3600;
 
-        /// <summary>
-        /// Encrypt a non-empty encrypted string.
-        /// </summary>
-        /// <param name="plaintext">Text need to encrypt.</param>
-        /// <returns>Return encrypted text.</returns>
         public static string Encrypt(string plaintext)
         {
             var encryptedText = RC4(EncryptKey, plaintext);
             return EncodeToHex(encryptedText);
         }
 
-        /// <summary>
-        /// Decrypt a non-empty encrypted string.
-        /// </summary>
-        /// <param name="token">Text need to decrypt.</param>
-        /// <returns>Return decrypted text.</returns>
         public static string Decrypt(string token)
         {
             var decryptedText = DecodeHex(token);
             return RC4(EncryptKey, decryptedText);
         }
 
-        /// <summary>
-        /// RC4 algorithms.
-        /// </summary>
-        /// <param name="key">Key to encode.</param>
-        /// <param name="value">Value to encode.</param>
-        /// <returns>Return encoded text.</returns>
         private static string RC4(string key, string value)
         {
             char[] ks = key.ToCharArray();
@@ -80,11 +62,6 @@ namespace Device.FingerPrint.QueueConsumerDCS.Services
             return ct;
         }
 
-        /// <summary>
-        /// Encode data to hex format.
-        /// </summary>
-        /// <param name="data">Data need to be encoded.</param>
-        /// <returns>Return encoded data.</returns>
         private static string EncodeToHex(string data)
         {
             var b16_digits = HexDigit;
@@ -105,11 +82,6 @@ namespace Device.FingerPrint.QueueConsumerDCS.Services
             return string.Join(null, result.ToArray());
         }
 
-        /// <summary>
-        /// Hex decoder.
-        /// </summary>
-        /// <param name="data">The data for decoding.</param>
-        /// <returns>The decoded data.</returns>
         public static string DecodeHex(string data)
         {
             var b16_digits = HexDigit;

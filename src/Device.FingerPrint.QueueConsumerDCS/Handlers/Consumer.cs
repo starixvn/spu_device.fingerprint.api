@@ -98,20 +98,11 @@ namespace Device.FingerPrint.QueueConsumerDCS.Handlers
 
         private void InsertTransaction(List<FPRawTransactionModel> trans)
         {
-            try
-            {
                 _fpcapturingService.InsertTransaction(trans);
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
         }
 
         private FPRawTransactionModel TransformRawTransaction(MessageQueue message)
         {
-            //LogMessage(message);
-
             var invalidDevice = string.Empty;
             var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
             var deviceInfo = _fpcapturingService.GetDeviceInfo(deviceCode);
