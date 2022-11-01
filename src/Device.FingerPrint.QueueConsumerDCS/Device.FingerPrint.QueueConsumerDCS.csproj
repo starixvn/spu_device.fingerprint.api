@@ -15,13 +15,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
-    <ProjectReference Include="..\src\Device.FingerPrint\Device.FingerPrint.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Fanex.Oneyed.Infrastructure.Models">
-      <HintPath>..\src\Components\Fanex.Oneyed.Infrastructure.Models.dll</HintPath>
+      <HintPath>..\Components\Fanex.Oneyed.Infrastructure.Models.dll</HintPath>
     </Reference>
   </ItemGroup>
 

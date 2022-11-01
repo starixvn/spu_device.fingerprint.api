@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingSomething", "Testing
 EndProject
 Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "FingerPrintEvolutionWebAPI", "src\FingerPrintEvolutionWebAPI\FingerPrintEvolutionWebAPI.pyproj", "{AF23795D-1C1E-4AA6-BC98-6E0A27290E0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.QueueConsumerDCS", "Device.FingerPrint.QueueConsumerDCS\Device.FingerPrint.QueueConsumerDCS.csproj", "{E9E3EC8A-7635-4CC0-A33B-46DD418AB29F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.QueueConsumerDCS", "src\Device.FingerPrint.QueueConsumerDCS\Device.FingerPrint.QueueConsumerDCS.csproj", "{E9E3EC8A-7635-4CC0-A33B-46DD418AB29F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
