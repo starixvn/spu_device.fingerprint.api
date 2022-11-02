@@ -179,8 +179,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                             try
                             {
-                                sentryClient.CaptureMessage(mergeTransJson);
-
                                 transactionService.MergeTransaction(mergeTransJson);
                             }
                             catch (Exception ex)
