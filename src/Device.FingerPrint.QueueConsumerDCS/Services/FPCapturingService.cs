@@ -1,6 +1,6 @@
 ﻿using Device.FingerPrint.Features.FPRawTransaction.Services;
 using Device.FingerPrint.QueueConsumerDCS.Model;
-using Fanex.DeviceDetector.Factory;
+using Device.FingerPrint.QueueConsumerDCS.Services.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -14,13 +14,15 @@ namespace Device.FingerPrint.QueueConsumerDCS.Services
         int InsertTransaction(List<FPRawTransactionModel> rawTrans);
     }
 
-    public class FPCapturingService: IFPCapturingService
+    public class FPCapturingService : IFPCapturingService
     {
         private readonly FPRawTransactionDataAccess capturingData;
+        private readonly IDeviceDetectorServices deviceDetectorServices;
 
-        public FPCapturingService()
+        public FPCapturingService(IDeviceDetectorServices deviceDetectorServices)
         {
             capturingData = new FPRawTransactionDataAccess();
+            this.deviceDetectorServices = deviceDetectorServices;
         }
 
         public int InsertTransaction(List<FPRawTransactionModel> rawTrans)
@@ -32,12 +34,13 @@ namespace Device.FingerPrint.QueueConsumerDCS.Services
 
         public FPDeviceInfoModel GetDeviceInfo(string deviceCode)
         {
+            //deviceCode = "eyJEZXZpY2VDb2RlIjoiNjU1MWY5OTdkZmY4MDBkNTI5MGI5NjdlYjhjZDZlOWEzZTA5NDJiNDs0ZWY3ZTY2YWZkMTcyZDBlOGY5OGI1MDdhNjgzYTU3NyIsIkFwcFZlcnNpb24iOiIxMjMiLCJUaW1lWm9uZSI6IlVUQyIsIlVzZXJBZ2VudCI6Ik1vemlsbGEvNS4wIChMaW51eDsgQW5kcm9pZCAxMDsgU00tQTc1MEdOKSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTA2LjAuMC4wIE1vYmlsZSBTYWZhcmkvNTM3LjM2IiwiRGV2aWNlSWQiOiJkOTk5YWU0ODU2MDM0YTdlYjhhODliZjhlNmZiYTY3MCJ9";
             if (string.IsNullOrWhiteSpace(deviceCode))
             {
                 return TransformEmptyDeviceInfo();
             }
 
-            var deviceInfo = DeviceFactory.GetDeviceInfo(deviceCode);
+            var deviceInfo = deviceDetectorServices.GetDeviceInfo(deviceCode);
 
             if (deviceInfo != null)
             {
@@ -69,7 +72,7 @@ namespace Device.FingerPrint.QueueConsumerDCS.Services
             };
         }
 
-        private FPDeviceInfoModel TransformDeviceInfo(Fanex.DeviceDetector.Models.DeviceInfo deviceInfo)
+        private FPDeviceInfoModel TransformDeviceInfo(DeviceInfo deviceInfo)
         {
             return new FPDeviceInfoModel
             {

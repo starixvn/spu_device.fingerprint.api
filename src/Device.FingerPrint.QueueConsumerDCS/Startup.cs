@@ -28,6 +28,7 @@ namespace Device.FingerPrint.QueueConsumerDCS
             services.AddSingleton<IAppSettings>(appSettings);
 
             services.AddSingleton<IFPCapturingService, FPCapturingService>();
+            services.AddSingleton<IDeviceDetectorServices, DeviceDetectorServices>();
 
             services.AddHealthChecks();
 

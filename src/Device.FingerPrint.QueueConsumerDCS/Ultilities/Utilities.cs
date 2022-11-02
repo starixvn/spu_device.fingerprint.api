@@ -44,7 +44,6 @@ namespace Device.FingerPrint.QueueConsumerDCS.Ultilities
         public static string GetDeviceCodeFromCapturedData(string di)
         {
             string[] splitingDI = di.Split(new[] { "###" }, StringSplitOptions.None);
-
             return splitingDI.Length >= 7 ? splitingDI[6] : string.Empty;
         }
 

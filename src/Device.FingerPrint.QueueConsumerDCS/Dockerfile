@@ -6,6 +6,7 @@ COPY ["./src/Device.FingerPrint.QueueConsumerDCS", "Device.FingerPrint.QueueCons
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
+COPY ["./src/Device.FingerPrint.QueueConsumerDCS.Services", "Device.FingerPrint.QueueConsumerDCS.Services/"]
 
 
 COPY ["./src/Device.FingerPrint.QueueConsumerDCS/Device.FingerPrint.QueueConsumerDCS.csproj", "Device.FingerPrint.QueueConsumerDCS/"]

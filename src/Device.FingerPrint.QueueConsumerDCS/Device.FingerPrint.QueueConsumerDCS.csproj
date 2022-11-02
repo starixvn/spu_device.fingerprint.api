@@ -7,7 +7,6 @@
   <ItemGroup>
     <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.0" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.7" />
-    <PackageReference Include="Fanex.Oneyed.DeviceDetector" Version="2.0.2" />
     <PackageReference Include="FileHelpers" Version="3.5.2" />
     <PackageReference Include="Sentry" Version="3.23.1" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.23.1" />
@@ -15,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Device.FingerPrint.QueueConsumerDCS.Services\Device.FingerPrint.QueueConsumerDCS.Services.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>
