@@ -1,19 +1,28 @@
-﻿var fp = {    
+﻿var apiUrl = '__apiUrl__';
+var subscriberId = '__subscriberId__';
+var sessionKey = '__sessionKey__';
+var cdnAPIUrl = '__cdnAPIUrl__';
+var fp = {
     requireJS: function(_url) {
         return new Promise(function (resolve, reject) {
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = _url;
-            script.async = true;
-            script.defer = true;
-            script.addEventListener('load', function () {
-                return resolve(script);
-            }, false);
-            script.addEventListener('error', function () {
-                return reject(script);
-            }, false);
+            try {
+                var script = document.createElement('script');
+                script.type = 'text/javascript';
+                script.src = _url;
+                script.async = true;
+                script.defer = true;
+                script.addEventListener('load', function () {
+                    return resolve(script);
+                }, false);
+                script.addEventListener('error', function () {
+                    return reject(script);
+                }, false);
 
-            document.head.appendChild(script);
+                document.head.appendChild(script);
+            }
+            catch (err) {
+                fp.log(apiUrl, "Load Script", err.message + '|' + sessionKey);
+            }            
         });
     },
     post: function(url, data) {
@@ -31,27 +40,12 @@
             exception: exception,
         };
         fp.post(url + "/cle", data);
-    },
-
+    }
 }
-var apiUrl = '__apiUrl__';
-var subscriberId = '__subscriberId__';
-var sessionKey = '__sessionKey__';
-var cdnAPIUrl = '__cdnAPIUrl__';
 
 try {    
     fp.requireJS(cdnAPIUrl)
-        .then(() => {
-            Promise.resolve(fp.post(apiUrl + '/ctl', {
-                'SessionKey': sessionKey,
-                'SubscriberId': subscriberId,
-                'Url': window.location && window.location.href
-                    ? window.location.href
-                    : "",
-                'UserAgent': navigator.userAgent,
-                'Information': 'Load script successful'
-            }));
-
+        .then(() => {           
             try {
                 globalFP.capture(apiUrl, subscriberId, sessionKey);
             }
