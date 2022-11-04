@@ -2,22 +2,22 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:5.0.102-ca-patch-buster-slim AS builder
 
 WORKDIR /src
 
-COPY ["./src/Device.FingerPrint.QueueConsumerDCS", "Device.FingerPrint.QueueConsumerDCS/"]
+COPY ["./src/Device.FingerPrint.DCS.QueueConsumer", "Device.FingerPrint.DCS.QueueConsumer/"]
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
-COPY ["./src/Device.FingerPrint.QueueConsumerDCS.Services", "Device.FingerPrint.QueueConsumerDCS.Services/"]
+COPY ["./src/Device.FingerPrint.DCS.QueueConsumer.Services", "Device.FingerPrint.DCS.QueueConsumer.Services/"]
 
 
-COPY ["./src/Device.FingerPrint.QueueConsumerDCS/Device.FingerPrint.QueueConsumerDCS.csproj", "Device.FingerPrint.QueueConsumerDCS/"]
+COPY ["./src/Device.FingerPrint.DCS.QueueConsumer/Device.FingerPrint.DCS.QueueConsumer.csproj", "Device.FingerPrint.DCS.QueueConsumer/"]
 
-WORKDIR "/src/Device.FingerPrint.QueueConsumerDCS"
+WORKDIR "/src/Device.FingerPrint.DCS.QueueConsumer"
 
 RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
 
 RUN dotnet restore -v n
 
-COPY ./src/Device.FingerPrint.QueueConsumerDCS .
+COPY ./src/Device.FingerPrint.DCS.QueueConsumer .
 
 RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 
@@ -34,4 +34,4 @@ COPY --from=builder /app .
 
 ENV TZ="America/La_Paz"
 
-ENTRYPOINT ["dotnet", "Device.FingerPrint.QueueConsumerDCS.dll"]
+ENTRYPOINT ["dotnet", "Device.FingerPrint.DCS.QueueConsumer.dll"]

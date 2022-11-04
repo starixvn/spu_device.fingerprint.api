@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Device.FingerPrint.QueueConsumerDCS.Services\Device.FingerPrint.QueueConsumerDCS.Services.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.DCS.QueueConsumer.Services\Device.FingerPrint.DCS.QueueConsumer.Services.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>

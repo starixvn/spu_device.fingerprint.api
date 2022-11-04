@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Device.FingerPrint.QueueConsumerDCS": {
+    "Device.FingerPrint.DCS.QueueConsumer": {
       "commandName": "Project",
       "dotnetRunMessages": "true",
       "launchBrowser": true,

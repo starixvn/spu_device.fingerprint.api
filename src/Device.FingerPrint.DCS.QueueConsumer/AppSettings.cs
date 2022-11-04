@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Device.FingerPrint.QueueConsumerDCS
+namespace Device.FingerPrint.DCS.QueueConsumer
 {
     public interface IAppSettings
     {

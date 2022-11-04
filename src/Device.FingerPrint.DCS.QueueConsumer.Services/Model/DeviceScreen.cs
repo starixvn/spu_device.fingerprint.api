@@ -1,4 +1,4 @@
-﻿namespace Device.FingerPrint.QueueConsumerDCS.Services.Model
+﻿namespace Device.FingerPrint.DCS.QueueConsumer.Services.Model
 {
     public class DeviceScreen
     {

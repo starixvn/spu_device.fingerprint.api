@@ -1,6 +1,6 @@
 ﻿using System.Numerics;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Model
+namespace Device.FingerPrint.DCS.QueueConsumer.Model
 {
     public class IpModel
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Ultilities
+namespace Device.FingerPrint.DCS.QueueConsumer.Ultilities
 {
     public class Cipher
     {

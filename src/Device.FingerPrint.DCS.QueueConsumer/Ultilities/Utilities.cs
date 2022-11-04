@@ -1,4 +1,4 @@
-﻿using Device.FingerPrint.QueueConsumerDCS.Model;
+﻿using Device.FingerPrint.DCS.QueueConsumer.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,7 +6,7 @@ using System.Net;
 using System.Numerics;
 using System.Text;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Ultilities
+namespace Device.FingerPrint.DCS.QueueConsumer.Ultilities
 {
     public static class Utilities
     {

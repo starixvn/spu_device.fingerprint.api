@@ -1,5 +1,5 @@
-using Device.FingerPrint.QueueConsumerDCS.Handlers;
-using Device.FingerPrint.QueueConsumerDCS.Services;
+using Device.FingerPrint.DCS.QueueConsumer.Handlers;
+using Device.FingerPrint.DCS.QueueConsumer.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Builder;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Linq;
 
-namespace Device.FingerPrint.QueueConsumerDCS
+namespace Device.FingerPrint.DCS.QueueConsumer
 {
     public class Startup
     {

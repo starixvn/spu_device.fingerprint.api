@@ -1,7 +1,7 @@
 ﻿using Device.FingerPrint.Queue;
-using Device.FingerPrint.QueueConsumerDCS.Model;
-using Device.FingerPrint.QueueConsumerDCS.Services;
-using Device.FingerPrint.QueueConsumerDCS.Ultilities;
+using Device.FingerPrint.DCS.QueueConsumer.Model;
+using Device.FingerPrint.DCS.QueueConsumer.Services;
+using Device.FingerPrint.DCS.QueueConsumer.Ultilities;
 using EasyNetQ;
 using EasyNetQ.Consumer;
 using Fanex.Oneyed.Infrastructure.Models;
@@ -15,7 +15,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Handlers
+namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
 {
     public class Consumer : BackgroundService
     {

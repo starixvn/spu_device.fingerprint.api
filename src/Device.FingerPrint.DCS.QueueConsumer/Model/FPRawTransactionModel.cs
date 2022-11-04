@@ -1,5 +1,5 @@
 ﻿
-namespace Device.FingerPrint.QueueConsumerDCS.Model
+namespace Device.FingerPrint.DCS.QueueConsumer.Model
 {
     using FileHelpers;
     using System;

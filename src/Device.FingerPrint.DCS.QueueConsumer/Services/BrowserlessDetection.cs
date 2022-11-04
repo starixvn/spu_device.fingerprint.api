@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Services
+namespace Device.FingerPrint.DCS.QueueConsumer.Services
 {
     public class BrowserlessDetection
     {

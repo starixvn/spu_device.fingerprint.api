@@ -1,10 +1,10 @@
 ﻿using Device.FingerPrint.Features.FPRawTransaction.Services;
-using Device.FingerPrint.QueueConsumerDCS.Model;
-using Device.FingerPrint.QueueConsumerDCS.Services.Model;
+using Device.FingerPrint.DCS.QueueConsumer.Model;
+using Device.FingerPrint.DCS.QueueConsumer.Services.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Services
+namespace Device.FingerPrint.DCS.QueueConsumer.Services
 {
 
     public interface IFPCapturingService

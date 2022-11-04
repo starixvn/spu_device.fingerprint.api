@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
-namespace Device.FingerPrint.QueueConsumerDCS
+namespace Device.FingerPrint.DCS.QueueConsumer
 {
     public class Program
     {

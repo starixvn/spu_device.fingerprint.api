@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Device.FingerPrint.QueueConsumerDCS
+namespace Device.FingerPrint.DCS.QueueConsumer
 {
     public enum Flagged
     {

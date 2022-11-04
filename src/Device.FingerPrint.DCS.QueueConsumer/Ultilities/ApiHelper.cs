@@ -3,7 +3,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Ultilities
+namespace Device.FingerPrint.DCS.QueueConsumer.Ultilities
 {
     public class ApiHelper
     {

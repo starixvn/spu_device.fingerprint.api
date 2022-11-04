@@ -1,8 +1,8 @@
-﻿using Device.FingerPrint.QueueConsumerDCS.Services.Encoders;
-using Device.FingerPrint.QueueConsumerDCS.Services.Model;
+﻿using Device.FingerPrint.DCS.QueueConsumer.Services.Encoders;
+using Device.FingerPrint.DCS.QueueConsumer.Services.Model;
 using Newtonsoft.Json;
 
-namespace Device.FingerPrint.QueueConsumerDCS.Services
+namespace Device.FingerPrint.DCS.QueueConsumer.Services
 {
     public interface IDeviceDetectorServices
     {
