@@ -11,16 +11,16 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Services
 
     public class DeviceDetectorServices : IDeviceDetectorServices
     {
-        public DeviceInfo GetDeviceInfo(string deviceInfo)
+        public DeviceInfo GetDeviceInfo(string deviceCode)
         {
             try
             {
-                if (string.IsNullOrEmpty(deviceInfo))
+                if (string.IsNullOrEmpty(deviceCode))
                 {
                     return GenerateEmptyDeviceInfo();
                 }
 
-                var decryptedText = Base64.Decode(deviceInfo);
+                var decryptedText = Base64.Decode(deviceCode);
                 return JsonConvert.DeserializeObject<DeviceInfo>(decryptedText);
             }
             catch
