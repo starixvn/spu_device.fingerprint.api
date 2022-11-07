@@ -21,9 +21,9 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
     {
         private readonly IAppSettings appSettings;
         private readonly ISentryClient sentryClient;
-        private readonly IFPCapturingService _fpcapturingService;
+        private readonly ICapturingService _fpcapturingService;
 
-        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, IFPCapturingService _fpcapturingService)
+        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, ICapturingService _fpcapturingService)
         {
             this.appSettings = appSettings;
             this.sentryClient = sentryClient;
@@ -44,7 +44,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                 if (appSettings.Configuration["ConsumerConfig:Queue-Consume"] == "1")
                 {
                     var easyNetQConnector = RabbitMQBus();
-                    var trans = new List<FPRawTransactionModel>();
+                    var trans = new List<RawTransactionModel>();
 
                     easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                     {
@@ -96,12 +96,12 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
         }
 
 
-        private void InsertTransaction(List<FPRawTransactionModel> trans)
+        private void InsertTransaction(List<RawTransactionModel> trans)
         {
                 _fpcapturingService.InsertTransaction(trans);
         }
 
-        private FPRawTransactionModel TransformRawTransaction(MessageQueue message)
+        private RawTransactionModel TransformRawTransaction(MessageQueue message)
         {
             var invalidDevice = string.Empty;
             var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
@@ -135,7 +135,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                 transBit.Set((int)TransStatus.InvalidLoginName, true);
             }
 
-            var result = new FPRawTransactionModel
+            var result = new RawTransactionModel
             {
                 DeviceCode = deviceInfo.DeviceNo,
                 InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
@@ -175,7 +175,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
             return Regex.Replace(inputValue, @"[^\u0000-\u007F]", String.Empty);
         }
 
-        private static string EncodeCapturedData(FPDeviceInfoModel deviceInfo)
+        private static string EncodeCapturedData(DeviceInfoModel deviceInfo)
         {
             return Cipher.Encrypt(string.Format("{0}#{1}#{2}#{3}#{4}",
                 deviceInfo.Battery,

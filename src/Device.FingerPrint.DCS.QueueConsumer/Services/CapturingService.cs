@@ -7,32 +7,32 @@ using System.Collections.Generic;
 namespace Device.FingerPrint.DCS.QueueConsumer.Services
 {
 
-    public interface IFPCapturingService
+    public interface ICapturingService
     {
-        FPDeviceInfoModel GetDeviceInfo(string deviceCode);
+        DeviceInfoModel GetDeviceInfo(string deviceCode);
 
-        int InsertTransaction(List<FPRawTransactionModel> rawTrans);
+        int InsertTransaction(List<RawTransactionModel> rawTrans);
     }
 
-    public class FPCapturingService : IFPCapturingService
+    public class CapturingService : ICapturingService
     {
         private readonly FPRawTransactionDataAccess capturingData;
         private readonly IDeviceDetectorServices deviceDetectorServices;
 
-        public FPCapturingService(IDeviceDetectorServices deviceDetectorServices)
+        public CapturingService(IDeviceDetectorServices deviceDetectorServices)
         {
             capturingData = new FPRawTransactionDataAccess();
             this.deviceDetectorServices = deviceDetectorServices;
         }
 
-        public int InsertTransaction(List<FPRawTransactionModel> rawTrans)
+        public int InsertTransaction(List<RawTransactionModel> rawTrans)
         {
             var model = JsonConvert.SerializeObject(rawTrans);
 
             return capturingData.InsertTransaction(model);
         }
 
-        public FPDeviceInfoModel GetDeviceInfo(string deviceCode)
+        public DeviceInfoModel GetDeviceInfo(string deviceCode)
         {
             //deviceCode = "eyJEZXZpY2VDb2RlIjoiNjU1MWY5OTdkZmY4MDBkNTI5MGI5NjdlYjhjZDZlOWEzZTA5NDJiNDs0ZWY3ZTY2YWZkMTcyZDBlOGY5OGI1MDdhNjgzYTU3NyIsIkFwcFZlcnNpb24iOiIxMjMiLCJUaW1lWm9uZSI6IlVUQyIsIlVzZXJBZ2VudCI6Ik1vemlsbGEvNS4wIChMaW51eDsgQW5kcm9pZCAxMDsgU00tQTc1MEdOKSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTA2LjAuMC4wIE1vYmlsZSBTYWZhcmkvNTM3LjM2IiwiRGV2aWNlSWQiOiJkOTk5YWU0ODU2MDM0YTdlYjhhODliZjhlNmZiYTY3MCJ9";
             if (string.IsNullOrWhiteSpace(deviceCode))
@@ -50,9 +50,9 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Services
             return TransformEmptyDeviceInfo();
         }
 
-        private FPDeviceInfoModel TransformEmptyDeviceInfo()
+        private DeviceInfoModel TransformEmptyDeviceInfo()
         {
-            return new FPDeviceInfoModel
+            return new DeviceInfoModel
             {
                 AppVersion = string.Empty,
                 CapturedDate = 0,
@@ -60,7 +60,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Services
                 DeviceNo = string.Empty,
                 HRef = string.Empty,
                 NA = string.Empty,
-                Screen = new FPScreenInfoModel
+                Screen = new ScreenInfoModel
                 {
                     ColorDepth = 0,
                     Height = 0,
@@ -72,9 +72,9 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Services
             };
         }
 
-        private FPDeviceInfoModel TransformDeviceInfo(DeviceInfo deviceInfo)
+        private DeviceInfoModel TransformDeviceInfo(DeviceInfo deviceInfo)
         {
-            return new FPDeviceInfoModel
+            return new DeviceInfoModel
             {
                 AppVersion = deviceInfo.AppVersion,
                 CapturedDate = deviceInfo.CapturedDate,
@@ -85,13 +85,13 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Services
                 TimeZone = deviceInfo.TimeZone,
                 UserAgent = deviceInfo.UserAgent,
                 Screen = deviceInfo.Screen == null
-                    ? new FPScreenInfoModel
+                    ? new ScreenInfoModel
                     {
                         ColorDepth = 0,
                         Height = 0,
                         Width = 0
                     }
-                    : new FPScreenInfoModel
+                    : new ScreenInfoModel
                     {
                         ColorDepth = deviceInfo.Screen.ColorDepth,
                         Height = deviceInfo.Screen.Height,

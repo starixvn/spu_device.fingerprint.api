@@ -27,7 +27,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
 
-            services.AddSingleton<IFPCapturingService, FPCapturingService>();
+            services.AddSingleton<ICapturingService, CapturingService>();
             services.AddSingleton<IDeviceDetectorServices, DeviceDetectorServices>();
 
             services.AddHealthChecks();

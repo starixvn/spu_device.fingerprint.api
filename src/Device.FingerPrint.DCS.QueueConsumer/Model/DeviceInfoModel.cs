@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.DCS.QueueConsumer.Model
 {
-    public class FPDeviceInfoModel
+    public class DeviceInfoModel
     {
         public string OSName { get; set; }
 
@@ -16,7 +16,7 @@
 
         public string UserAgent { get; set; }
 
-        public FPScreenInfoModel Screen { get; set; }
+        public ScreenInfoModel Screen { get; set; }
 
         public string HRef { get; set; }
 

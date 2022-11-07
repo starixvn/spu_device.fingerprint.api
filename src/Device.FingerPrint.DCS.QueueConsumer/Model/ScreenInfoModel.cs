@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.DCS.QueueConsumer.Model
 {
-    public class FPScreenInfoModel
+    public class ScreenInfoModel
     {
         public int Width { get; set; }
 

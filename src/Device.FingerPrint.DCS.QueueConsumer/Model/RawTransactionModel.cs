@@ -6,7 +6,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Model
     using System.Numerics;
 
     [DelimitedRecord("|")]
-    public class FPRawTransactionModel
+    public class RawTransactionModel
     {
         public string LoginName { get; set; }
 
