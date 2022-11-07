@@ -41,7 +41,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
         {
             try
             {
-                if (appSettings.Configuration["ConsumerConfig:Queue-Consume"] == "1")
+                if (appSettings.QueueConsume == 1)
                 {
                     var easyNetQConnector = RabbitMQBus();
                     var trans = new List<RawTransactionModel>();
@@ -54,7 +54,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                             {
                                 var messageBody = message.Body;
 
-                                var ignoreSubs = appSettings.Configuration["ConsumerConfig:IgnoreSubs"];
+                                var ignoreSubs = appSettings.IgnoreSubs;
 
                                 if (!string.IsNullOrWhiteSpace(ignoreSubs))
                                 {
@@ -64,7 +64,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                                     {
                                         var tran = TransformRawTransaction(messageBody);
 
-                                        var url = appSettings.Configuration["ConsumerConfig:FPS-Web-API"] + "/getsubscriber/" + tran.SubscriberName;
+                                        var url = appSettings.FPSWebAPI + "/getsubscriber/" + tran.SubscriberName;
                                         var result = await ApiHelper.Get<SubscriberModel>(url);
                                         if (result != null)
                                         {
@@ -307,17 +307,17 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
 
         private EasyNetQConnector RabbitMQBus()
         {
-            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
-                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
-                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
-                                      appSettings.Configuration["RabbitMQ:UserName"],
-                                      appSettings.Configuration["RabbitMQ:Password"]);
+            var easyNetQConnector = new EasyNetQConnector(appSettings.RabitMQHost + ":" + appSettings.RabitMQPort,
+                                      appSettings.RabitMQVirtualHost,
+                                      int.Parse(appSettings.RabitMQPrefetchCount),
+                                      appSettings.RabitMQUserName,
+                                      appSettings.RabitMQPassword);
 
             easyNetQConnector
                     .CreateBus()
-                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Exchange"])
-                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Name"])
-                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:RoutingKey"])
+                    .DeclareExchange(appSettings.RabitMQExchange)
+                    .DeclareQueue(appSettings.RabitMQName)
+                    .DeclareRoutingKey(appSettings.RabitMQRoutingKey)
                     .Bind();
 
             return easyNetQConnector;
