@@ -61,6 +61,8 @@
                 CookieCode = model.CookieCode,
                 FingerprintAttribute = model.FingerprintAttribute,
                 UserAgentInfo = model.UserAgentInfo,
+                Platform = model.Platform,
+                BrowserInstanceCode = model.BrowserInstanceCode
                 BrowserInfo = model.BrowserInfo,
                 BrowserInfoAttribute = model.BrowserInfoAttribute
             };
