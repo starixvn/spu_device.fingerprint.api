@@ -3,6 +3,7 @@ using Device.FingerPrint.DCS.QueueConsumer.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -65,12 +66,9 @@ namespace Device.FingerPrint.DCS.QueueConsumer
 
             app.UseRouting();
 
-            app.UseEndpoints(endpoints =>
+            app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
-                endpoints.MapGet("/", async context =>
-                {
-                    await context.Response.WriteAsync("Hello World!");
-                });
+                Predicate = _ => true
             });
         }
     }

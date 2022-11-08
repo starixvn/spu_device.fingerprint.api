@@ -4,6 +4,7 @@ WORKDIR /src
 
 COPY ["./src/Device.FingerPrint.DCS.QueueConsumer", "Device.FingerPrint.DCS.QueueConsumer/"]
 
+COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
 COPY ["./src/Device.FingerPrint.DCS.QueueConsumer.Services", "Device.FingerPrint.DCS.QueueConsumer.Services/"]
@@ -18,6 +19,8 @@ RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
 RUN dotnet restore -v n
 
 COPY ./src/Device.FingerPrint.DCS.QueueConsumer .
+
+COPY ./src/Components/Fanex.Oneyed.Infrastructure.Models.dll Fanex.Oneyed.Infrastructure.Models.dll
 
 RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 
