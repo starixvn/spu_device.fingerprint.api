@@ -65,7 +65,6 @@ var globalFP = (function (exports) {
         }
     }
 
-    /** @deprecated */
     function __spreadArrays() {
         for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
         for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -4556,7 +4555,7 @@ var globalFP = (function (exports) {
         return navigator.cpuClass;
     }
 
-    function getPlatform() {
+    function getPlatform$1() {
         // Android Chrome 86 and 87 and Android Firefox 80 and 84 don't mock the platform value when desktop mode is requested
         var platform = navigator.platform;
         // iOS mocks the platform value when desktop version is requested: https://github.com/fingerprintjs/fingerprintjs/issues/514
@@ -5426,7 +5425,7 @@ var globalFP = (function (exports) {
         indexedDB: getIndexedDB,
         openDatabase: getOpenDatabase,
         cpuClass: getCpuClass,
-        platform: getPlatform,
+        platform: getPlatform$1,
         plugins: getPlugins,
         canvas: getCanvasFingerprint$1,
         touchSupport: getTouchSupport,
@@ -5975,17 +5974,15 @@ var globalFP = (function (exports) {
     }
     function getWebGLRenderer(webgl) {
         const start = Date.now();
-        if (webgl && webgl.value == "unstable") {
-            return { value: "unstable", duration: Date.now() - start };
+        if (webgl && webgl.value == 'unstable') {
+            return { value: 'unstable', duration: Date.now() - start };
         }
         return { value: getGLRenderer(), duration: Date.now() - start };
     }
     function getGLRenderer() {
         const canvas = document.createElement("canvas");
         const gl = canvas.getContext("webgl");
-        if (gl &&
-            typeof gl.getExtension === "function" &&
-            gl.getExtension("WEBGL_debug_renderer_info") != null) {
+        if (gl && typeof gl.getExtension === "function" && gl.getExtension("WEBGL_debug_renderer_info") != null) {
             return gl.getParameter(gl.getExtension("WEBGL_debug_renderer_info").UNMASKED_RENDERER_WEBGL);
         }
         return "";
@@ -5995,11 +5992,7 @@ var globalFP = (function (exports) {
         let err;
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
-            let value = JSON.stringify(component.error
-                ? "error"
-                : component.value == undefined
-                    ? `undefined`
-                    : component.value);
+            let value = component.error ? "error" : JSON.stringify(component.value == undefined ? `undefined` : component.value);
             if (listAttributeHash.indexOf(componentKey) > -1) {
                 value = JSON.stringify(hashMD5(value));
             }
@@ -6048,6 +6041,9 @@ var globalFP = (function (exports) {
             isGecko: isGecko,
             isTrident: isTrident,
         };
+    }
+    function getPlatform() {
+        return sources.platform();
     }
     function getFP() {
         let visitorId;
@@ -9298,6 +9294,7 @@ var globalFP = (function (exports) {
         });
         const cookies = getCookie();
         const fps = getFP();
+        const platform = getPlatform();
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
         Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
@@ -9313,6 +9310,7 @@ var globalFP = (function (exports) {
                     acpt: config.acpt,
                     enc: config.enc,
                     hk: config.hk,
+                    pf: platform
                 }, cryptConfig).then((res) => {
                     postDataAuthorization(apiUrl + "/fpa", JSON.stringify(res), config.tk);
                 });

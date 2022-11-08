@@ -6,7 +6,7 @@
 
         public string UserAgent { get; set; }
 
-        public string BrowserInstanceCode { get; set; }
+        public string BrowserFamilyCode { get; set; }
 
         public string BrowserVersion { get; set; }
 

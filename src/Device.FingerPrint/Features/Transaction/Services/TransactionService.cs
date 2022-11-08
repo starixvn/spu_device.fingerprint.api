@@ -22,7 +22,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
 
-        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode);
 
         void EvolutionNewDevice(string transJson);
 
@@ -58,9 +58,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
         }
 
-        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode)
         {
-            return transactionDataAccess.GetTransactionEvolutionAttributes(fingerPrintIds, BrowserInstanceCode);
+            return transactionDataAccess.GetTransactionEvolutionAttributes(fingerPrintIds, BrowserFamilyCode);
         }
 
         public IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize)

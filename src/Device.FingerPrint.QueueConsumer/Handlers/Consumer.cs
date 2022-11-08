@@ -115,7 +115,9 @@
                 OSName = model.OSName,
                 BrowserName = model.BrowserName,
                 BrowserVersion = model.BrowserVersion,
-                UserAgent = model.UserAgent
+                UserAgent = model.UserAgent,
+                Platform = model.Platform,
+                BrowserInstanceCode = model.BrowserInstanceCode
             };
         }
 

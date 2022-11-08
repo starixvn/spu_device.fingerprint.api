@@ -140,7 +140,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
             if (source != null && !string.IsNullOrEmpty(source.FPIds))
             {
-                var fpAttributes = transactionService.GetTransactionEvolutionAttributes(source.FPIds, source.BrowserInstanceCode);
+                var fpAttributes = transactionService.GetTransactionEvolutionAttributes(source.FPIds, source.BrowserFamilyCode);
 
                 foreach (TransactionEvolutionAttributesEntity destination in fpAttributes)
                 {
@@ -221,6 +221,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 if (parenthesisIndex > -1)
                     version = version.Substring(0, parenthesisIndex);
 
+                version += ".0.0.0";
                 String[] versionArray = version.Split(".");
                 if (versionArray.Length > 4)
                 {

@@ -157,18 +157,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await evolutionJobServices.Evolution(batchSize, numberOfBatch);
         }
 
-        [HttpPost("compareString")]
-        public void compareString([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
-        {
-            var arr1 = JsonConvert.DeserializeObject<string[]>(strA);
-            var arr2 = JsonConvert.DeserializeObject<string[]>(strB);
-            bool isSubset1 = !arr1.Except(arr2).Any();
-            bool isSubset2 = !arr2.Except(arr1).Any();
-
-            var a1 = arr1.All(arr2.Contains);
-            var a2 = arr2.All(arr1.Contains);
-        }
-
         [HttpPost("testSentryCaptureMessage")]
         public void TestSentryCaptureMessage([FromForm] string message)
         {
