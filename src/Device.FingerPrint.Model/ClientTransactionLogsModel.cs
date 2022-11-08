@@ -13,5 +13,7 @@ namespace Device.FingerPrint.Model
         public string UserAgent { get; set; }
 
         public DateTime TransTime { get; set; }
+
+        public string Information { get; set; }
     }
 }

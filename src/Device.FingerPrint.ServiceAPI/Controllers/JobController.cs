@@ -111,6 +111,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await summaryJobServices.SummaryTransactionDaily(batchSize);
         }
 
+        [HttpPost("summaryrecovertypedaily")]
+        public async Task<bool> SummaryRecoverTypeDaily([FromForm] int batchSize)
+        {
+            return await summaryJobServices.SummaryRecoverTypeDaily(batchSize);
+        }
+
         [HttpPost("monitordailyreport")]
         public async Task<bool> MonitorDailyReport()
         {

@@ -10,6 +10,8 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         void SummaryClientTransactionDaily(int batchSize);
 
         void SummaryTransactionDaily(int batchSize);
+
+        void SummaryRecoverTypeDaily(int batchSize);
     }
     public class SummaryTransactionDataAccess : ISummaryTransactionDataAccess
     {
@@ -43,6 +45,16 @@ namespace Device.FingerPrint.Features.SummaryTransaction.Services
         public void SummaryTransactionDaily(int batchSize)
         {
             var criteria = new SummaryTransactionDailyCriteria
+            {
+                BatchSize = batchSize
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void SummaryRecoverTypeDaily(int batchSize)
+        {
+            var criteria = new SummaryRecoverTypeDailyCriteria
             {
                 BatchSize = batchSize
             };

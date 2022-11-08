@@ -2997,14 +2997,14 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v3.3.3 - Copyright (c) FingerprintJS, Inc, 2022 (https://fingerprintjs.com)
+     * FingerprintJS v3.3.6 - Copyright (c) FingerprintJS, Inc, 2022 (https://fingerprint.com)
      * Licensed under the MIT (http://www.opensource.org/licenses/mit-license.php) license.
      *
      * This software contains code from open-source projects:
      * MurmurHash3 by Karan Lyons (https://github.com/karanlyons/murmurHash3.js)
      */
 
-    var version = "3.3.3";
+    var version = "3.3.6";
 
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
@@ -3086,6 +3086,15 @@ var globalFP = (function (exports) {
                 }
             });
         });
+    }
+    /**
+     * Makes the given promise never emit an unhandled promise rejection console warning.
+     * The promise will still pass errors to the next promises.
+     *
+     * Otherwise, promise emits a console warning unless it has a `catch` listener.
+     */
+    function suppressUnhandledRejectionWarning(promise) {
+        promise.then(undefined, function () { return undefined; });
     }
 
     /*
@@ -3429,6 +3438,9 @@ var globalFP = (function (exports) {
     function ensureErrorWithMessage(error) {
         return error && typeof error === 'object' && 'message' in error ? error : { message: error };
     }
+    function isFinalResultLoaded(loadResult) {
+        return typeof loadResult !== 'function';
+    }
     /**
      * Loads the given entropy source. Returns a function that gets an entropy component from the source.
      *
@@ -3436,9 +3448,6 @@ var globalFP = (function (exports) {
      * waiting for one source to load before getting the components from the other sources.
      */
     function loadSource(source, sourceOptions) {
-        var isFinalResultLoaded = function (loadResult) {
-            return typeof loadResult !== 'function';
-        };
         var sourceLoadPromise = new Promise(function (resolveLoad) {
             var loadStartTime = Date.now();
             // `awaitIfAsync` is used instead of just `await` in order to measure the duration of synchronous sources
@@ -3479,6 +3488,7 @@ var globalFP = (function (exports) {
                 });
             });
         });
+        suppressUnhandledRejectionWarning(sourceLoadPromise);
         return function getComponent() {
             return sourceLoadPromise.then(function (finalizeSource) { return finalizeSource(); });
         };
@@ -3522,7 +3532,9 @@ var globalFP = (function (exports) {
                                                     if (!componentPromises[index]) {
                                                         // `sourceGetters` may be incomplete at this point of execution because `forEachWithBreaks` is asynchronous
                                                         if (sourceGetters[index]) {
-                                                            componentPromises[index] = sourceGetters[index]().then(function (component) { return (components[sourceKey] = component); });
+                                                            var componentPromise = sourceGetters[index]().then(function (component) { return (components[sourceKey] = component); });
+                                                            suppressUnhandledRejectionWarning(componentPromise);
+                                                            componentPromises[index] = componentPromise;
                                                         }
                                                         else {
                                                             hasAllComponentPromises = false;
@@ -3759,7 +3771,7 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * A deep description: https://fingerprintjs.com/blog/audio-fingerprinting/
+     * A deep description: https://fingerprint.com/blog/audio-fingerprinting/
      * Inspired by and based on https://github.com/cozylife/audio-fingerprint
      */
     function getAudioFingerprint() {
@@ -3798,7 +3810,7 @@ var globalFP = (function (exports) {
             throw error;
         });
         // Suppresses the console error message in case when the fingerprint fails before requested
-        fingerprintPromise.catch(function () { return undefined; });
+        suppressUnhandledRejectionWarning(fingerprintPromise);
         return function () {
             finishRendering();
             return fingerprintPromise;
@@ -4184,19 +4196,34 @@ var globalFP = (function (exports) {
 
     // https://www.browserleaks.com/canvas#how-does-it-work
     function getCanvasFingerprint$1() {
+        var winding = false;
+        var geometry;
+        var text;
         var _a = makeCanvasContext$1(), canvas = _a[0], context = _a[1];
         if (!isSupported$1(canvas, context)) {
-            return { winding: false, geometry: '', text: '' };
+            geometry = text = ''; // The value will be 'unsupported' in v3.4
         }
-        return {
-            winding: doesSupportWinding$1(context),
-            geometry: makeGeometryImage(canvas, context),
-            // Text is unstable:
-            // https://github.com/fingerprintjs/fingerprintjs/issues/583
-            // https://github.com/fingerprintjs/fingerprintjs/issues/103
-            // Therefore it's extracted into a separate image.
-            text: makeTextImage(canvas, context),
-        };
+        else {
+            winding = doesSupportWinding$1(context);
+            renderTextImage$1(canvas, context);
+            var textImage1 = canvasToString$1(canvas);
+            var textImage2 = canvasToString$1(canvas); // It's slightly faster to double-encode the text image
+            // Some browsers add a noise to the canvas: https://github.com/fingerprintjs/fingerprintjs/issues/791
+            // The canvas is excluded from the fingerprint in this case
+            if (textImage1 !== textImage2) {
+                geometry = text = 'unstable';
+            }
+            else {
+                text = textImage1;
+                // Text is unstable:
+                // https://github.com/fingerprintjs/fingerprintjs/issues/583
+                // https://github.com/fingerprintjs/fingerprintjs/issues/103
+                // Therefore it's extracted into a separate image.
+                renderGeometryImage$1(canvas, context);
+                geometry = canvasToString$1(canvas);
+            }
+        }
+        return { winding: winding, geometry: geometry, text: text };
     }
     function makeCanvasContext$1() {
         var canvas = document.createElement('canvas');
@@ -4205,7 +4232,6 @@ var globalFP = (function (exports) {
         return [canvas, canvas.getContext('2d')];
     }
     function isSupported$1(canvas, context) {
-        // TODO: look into: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
         return !!(context && canvas.toDataURL);
     }
     function doesSupportWinding$1(context) {
@@ -4215,7 +4241,7 @@ var globalFP = (function (exports) {
         context.rect(2, 2, 6, 6);
         return !context.isPointInPath(5, 5, 'evenodd');
     }
-    function makeTextImage(canvas, context) {
+    function renderTextImage$1(canvas, context) {
         // Resizing the canvas cleans it
         canvas.width = 240;
         canvas.height = 60;
@@ -4237,9 +4263,8 @@ var globalFP = (function (exports) {
         context.fillStyle = 'rgba(102, 204, 0, 0.2)';
         context.font = '18pt Arial';
         context.fillText(printedText, 4, 45);
-        return save(canvas);
     }
-    function makeGeometryImage(canvas, context) {
+    function renderGeometryImage$1(canvas, context) {
         // Resizing the canvas cleans it
         canvas.width = 122;
         canvas.height = 110;
@@ -4266,10 +4291,8 @@ var globalFP = (function (exports) {
         context.arc(60, 60, 60, 0, Math.PI * 2, true);
         context.arc(60, 60, 20, 0, Math.PI * 2, true);
         context.fill('evenodd');
-        return save(canvas);
     }
-    function save(canvas) {
-        // TODO: look into: https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/toBlob
+    function canvasToString$1(canvas) {
         return canvas.toDataURL();
     }
 
@@ -4629,251 +4652,306 @@ var globalFP = (function (exports) {
      * `embed` and `position: fixed;` will be considered as blocked anyway because it always has no offsetParent.
      * Avoid `iframe` and anything with `[src=]` because they produce excess HTTP requests.
      *
-     * See docs/content_blockers.md to learn how to make the list
+     * The "inappropriate" selectors are obfuscated. See https://github.com/fingerprintjs/fingerprintjs/issues/734.
+     * A function is used instead of a plain object to help tree-shaking.
+     *
+     * The function code is generated automatically. See docs/content_blockers.md to learn how to make the list.
      */
-    var filters = {
-        abpIndo: [
-            '#Iklan-Melayang',
-            '#Kolom-Iklan-728',
-            '#SidebarIklan-wrapper',
-            'a[title="7naga poker" i]',
-            '[title="ALIENBOLA" i]',
-        ],
-        abpvn: [
-            '#quangcaomb',
-            '.iosAdsiosAds-layout',
-            '.quangcao',
-            '[href^="https://r88.vn/"]',
-            '[href^="https://zbet.vn/"]',
-        ],
-        adBlockFinland: [
-            '.mainostila',
-            '.sponsorit',
-            '.ylamainos',
-            'a[href*="/clickthrgh.asp?"]',
-            'a[href^="https://app.readpeak.com/ads"]',
-        ],
-        adBlockPersian: [
-            '#navbar_notice_50',
-            'a[href^="http://g1.v.fwmrm.net/ad/"]',
-            '.kadr',
-            'TABLE[width="140px"]',
-            '#divAgahi',
-        ],
-        adBlockWarningRemoval: ['#adblock-honeypot', '.adblocker-root', '.wp_adblock_detect'],
-        adGuardAnnoyances: ['amp-embed[type="zen"]', '.hs-sosyal', '#cookieconsentdiv', 'div[class^="app_gdpr"]', '.as-oil'],
-        adGuardBase: ['#ad-after', '#ad-p3', '.BetterJsPopOverlay', '#ad_300X250', '#bannerfloat22'],
-        adGuardChinese: [
-            // Disabled because not reproducible. Will be replaced during the next filter update.
-            // '#piao_div_0[style*="width:140px;"]',
-            'a[href*=".ttz5.cn"]',
-            'a[href*=".yabovip2027.com/"]',
-            '.tm3all2h4b',
-            '.cc5278_banner_ad',
-        ],
-        adGuardFrench: [
-            '.zonepub',
-            '[class*="_adLeaderboard"]',
-            '[id^="block-xiti_oas-"]',
-            'a[href^="http://ptapjmp.com/"]',
-            'a[href^="https://go.alvexo.com/"]',
-        ],
-        adGuardGerman: [
-            '.banneritemwerbung_head_1',
-            '.boxstartwerbung',
-            '.werbung3',
-            'a[href^="http://www.eis.de/index.phtml?refid="]',
-            'a[href^="https://www.tipico.com/?affiliateId="]',
-        ],
-        adGuardJapanese: [
-            '#kauli_yad_1',
-            '#ad-giftext',
-            '#adsSPRBlock',
-            'a[href^="http://ad2.trafficgate.net/"]',
-            'a[href^="http://www.rssad.jp/"]',
-        ],
-        adGuardMobile: ['amp-auto-ads', '#mgid_iframe', '.amp_ad', 'amp-embed[type="24smi"]', '#mgid_iframe1'],
-        adGuardRussian: [
-            'a[href^="https://ya-distrib.ru/r/"]',
-            'a[href^="https://ad.letmeads.com/"]',
-            '.reclama',
-            'div[id^="smi2adblock"]',
-            'div[id^="AdFox_banner_"]',
-        ],
-        adGuardSocial: [
-            'a[href^="//www.stumbleupon.com/submit?url="]',
-            'a[href^="//telegram.me/share/url?"]',
-            '.etsy-tweet',
-            '#inlineShare',
-            '.popup-social',
-        ],
-        adGuardSpanishPortuguese: [
-            '#barraPublicidade',
-            '#Publicidade',
-            '#publiEspecial',
-            '#queTooltip',
-            '[href^="http://ads.glispa.com/"]',
-        ],
-        adGuardTrackingProtection: [
-            'amp-embed[type="taboola"]',
-            '#qoo-counter',
-            'a[href^="http://click.hotlog.ru/"]',
-            'a[href^="http://hitcounter.ru/top/stat.php"]',
-            'a[href^="http://top.mail.ru/jump"]',
-        ],
-        adGuardTurkish: [
-            '#backkapat',
-            '#reklami',
-            'a[href^="http://adserv.ontek.com.tr/"]',
-            'a[href^="http://izlenzi.com/campaign/"]',
-            'a[href^="http://www.installads.net/"]',
-        ],
-        bulgarian: ['td#freenet_table_ads', '#adbody', '#ea_intext_div', '.lapni-pop-over', '#xenium_hot_offers'],
-        easyList: ['#AD_banner_bottom', '#Ads_google_02', '#N-ad-article-rightRail-1', '#ad-fullbanner2', '#ad-zone-2'],
-        easyListChina: [
-            'a[href*=".wensixuetang.com/"]',
-            'A[href*="/hth107.com/"]',
-            '.appguide-wrap[onclick*="bcebos.com"]',
-            '.frontpageAdvM',
-            '#taotaole',
-        ],
-        easyListCookie: ['#adtoniq-msg-bar', '#CoockiesPage', '#CookieModal_cookiemodal', '#DO_CC_PANEL', '#ShowCookie'],
-        easyListCzechSlovak: ['#onlajny-stickers', '#reklamni-box', '.reklama-megaboard', '.sklik', '[id^="sklikReklama"]'],
-        easyListDutch: [
-            '#advertentie',
-            '#vipAdmarktBannerBlock',
-            '.adstekst',
-            'a[href^="https://xltube.nl/click/"]',
-            '#semilo-lrectangle',
-        ],
-        easyListGermany: [
-            'a[href^="http://www.hw-area.com/?dp="]',
-            'a[href^="https://ads.sunmaker.com/tracking.php?"]',
-            '.werbung-skyscraper2',
-            '.bannergroup_werbung',
-            '.ads_rechts',
-        ],
-        easyListItaly: [
-            '.box_adv_annunci',
-            '.sb-box-pubbliredazionale',
-            'a[href^="http://affiliazioniads.snai.it/"]',
-            'a[href^="https://adserver.html.it/"]',
-            'a[href^="https://affiliazioniads.snai.it/"]',
-        ],
-        easyListLithuania: [
-            '.reklamos_tarpas',
-            '.reklamos_nuorodos',
-            'img[alt="Reklaminis skydelis"]',
-            'img[alt="Dedikuoti.lt serveriai"]',
-            'img[alt="Hostingas Serveriai.lt"]',
-        ],
-        estonian: ['A[href*="http://pay4results24.eu"]'],
-        fanboyAnnoyances: [
-            '#feedback-tab',
-            '#taboola-below-article',
-            '.feedburnerFeedBlock',
-            '.widget-feedburner-counter',
-            '[title="Subscribe to our blog"]',
-        ],
-        fanboyAntiFacebook: ['.util-bar-module-firefly-visible'],
-        fanboyEnhancedTrackers: [
-            '.open.pushModal',
-            '#issuem-leaky-paywall-articles-zero-remaining-nag',
-            '#sovrn_container',
-            'div[class$="-hide"][zoompage-fontsize][style="display: block;"]',
-            '.BlockNag__Card',
-        ],
-        fanboySocial: [
-            '.td-tags-and-social-wrapper-box',
-            '.twitterContainer',
-            '.youtube-social',
-            'a[title^="Like us on Facebook"]',
-            'img[alt^="Share on Digg"]',
-        ],
-        frellwitSwedish: [
-            'a[href*="casinopro.se"][target="_blank"]',
-            'a[href*="doktor-se.onelink.me"]',
-            'article.category-samarbete',
-            'div.holidAds',
-            'ul.adsmodern',
-        ],
-        greekAdBlock: [
-            'A[href*="adman.otenet.gr/click?"]',
-            'A[href*="http://axiabanners.exodus.gr/"]',
-            'A[href*="http://interactive.forthnet.gr/click?"]',
-            'DIV.agores300',
-            'TABLE.advright',
-        ],
-        hungarian: [
-            'A[href*="ad.eval.hu"]',
-            'A[href*="ad.netmedia.hu"]',
-            'A[href*="daserver.ultraweb.hu"]',
-            '#cemp_doboz',
-            '.optimonk-iframe-container',
-        ],
-        iDontCareAboutCookies: [
-            '.alert-info[data-block-track*="CookieNotice"]',
-            '.ModuleTemplateCookieIndicator',
-            '.o--cookies--container',
-            '.cookie-msg-info-container',
-            '#cookies-policy-sticky',
-        ],
-        icelandicAbp: ['A[href^="/framework/resources/forms/ads.aspx"]'],
-        latvian: [
-            'a[href="http://www.salidzini.lv/"][style="display: block; width: 120px; height: 40px; overflow: hidden; position: relative;"]',
-            'a[href="http://www.salidzini.lv/"][style="display: block; width: 88px; height: 31px; overflow: hidden; position: relative;"]',
-        ],
-        listKr: [
-            'a[href*="//kingtoon.slnk.kr"]',
-            'a[href*="//playdsb.com/kr"]',
-            'div.logly-lift-adz',
-            'div[data-widget_id="ml6EJ074"]',
-            'ins.daum_ddn_area',
-        ],
-        listeAr: [
-            '.geminiLB1Ad',
-            '.right-and-left-sponsers',
-            'a[href*=".aflam.info"]',
-            'a[href*="booraq.org"]',
-            'a[href*="dubizzle.com/ar/?utm_source="]',
-        ],
-        listeFr: [
-            'a[href^="http://promo.vador.com/"]',
-            '#adcontainer_recherche',
-            'a[href*="weborama.fr/fcgi-bin/"]',
-            '.site-pub-interstitiel',
-            'div[id^="crt-"][data-criteo-id]',
-        ],
-        officialPolish: [
-            '#ceneo-placeholder-ceneo-12',
-            '[href^="https://aff.sendhub.pl/"]',
-            'a[href^="http://advmanager.techfun.pl/redirect/"]',
-            'a[href^="http://www.trizer.pl/?utm_source"]',
-            'div#skapiec_ad',
-        ],
-        ro: [
-            'a[href^="//afftrk.altex.ro/Counter/Click"]',
-            'a[href^="/magazin/"]',
-            'a[href^="https://blackfridaysales.ro/trk/shop/"]',
-            'a[href^="https://event.2performant.com/events/click"]',
-            'a[href^="https://l.profitshare.ro/"]',
-        ],
-        ruAd: [
-            'a[href*="//febrare.ru/"]',
-            'a[href*="//utimg.ru/"]',
-            'a[href*="://chikidiki.ru"]',
-            '#pgeldiz',
-            '.yandex-rtb-block',
-        ],
-        thaiAds: ['a[href*=macau-uta-popup]', '#ads-google-middle_rectangle-group', '.ads300s', '.bumq', '.img-kosana'],
-        webAnnoyancesUltralist: [
-            '#mod-social-share-2',
-            '#social-tools',
-            '.ctpl-fullbanner',
-            '.zergnet-recommend',
-            '.yt.btn-link.btn-md.btn',
-        ],
-    };
+    function getFilters() {
+        var fromB64 = atob; // Just for better minification
+        return {
+            abpIndo: [
+                '#Iklan-Melayang',
+                '#Kolom-Iklan-728',
+                '#SidebarIklan-wrapper',
+                fromB64('YVt0aXRsZT0iN25hZ2EgcG9rZXIiIGld'),
+                '[title="ALIENBOLA" i]',
+            ],
+            abpvn: [
+                '#quangcaomb',
+                fromB64('Lmlvc0Fkc2lvc0Fkcy1sYXlvdXQ='),
+                '.quangcao',
+                fromB64('W2hyZWZePSJodHRwczovL3I4OC52bi8iXQ=='),
+                fromB64('W2hyZWZePSJodHRwczovL3piZXQudm4vIl0='),
+            ],
+            adBlockFinland: [
+                '.mainostila',
+                fromB64('LnNwb25zb3JpdA=='),
+                '.ylamainos',
+                fromB64('YVtocmVmKj0iL2NsaWNrdGhyZ2guYXNwPyJd'),
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9hcHAucmVhZHBlYWsuY29tL2FkcyJd'),
+            ],
+            adBlockPersian: ['#navbar_notice_50', '.kadr', 'TABLE[width="140px"]', '#divAgahi', fromB64('I2FkMl9pbmxpbmU=')],
+            adBlockWarningRemoval: [
+                '#adblock-honeypot',
+                '.adblocker-root',
+                '.wp_adblock_detect',
+                fromB64('LmhlYWRlci1ibG9ja2VkLWFk'),
+                fromB64('I2FkX2Jsb2NrZXI='),
+            ],
+            adGuardAnnoyances: [
+                'amp-embed[type="zen"]',
+                '.hs-sosyal',
+                '#cookieconsentdiv',
+                'div[class^="app_gdpr"]',
+                '.as-oil',
+            ],
+            adGuardBase: [
+                '.BetterJsPopOverlay',
+                fromB64('I2FkXzMwMFgyNTA='),
+                fromB64('I2Jhbm5lcmZsb2F0MjI='),
+                fromB64('I2FkLWJhbm5lcg=='),
+                fromB64('I2NhbXBhaWduLWJhbm5lcg=='),
+            ],
+            adGuardChinese: [
+                fromB64('LlppX2FkX2FfSA=='),
+                fromB64('YVtocmVmKj0iL29kMDA1LmNvbSJd'),
+                fromB64('YVtocmVmKj0iLmh0aGJldDM0LmNvbSJd'),
+                '.qq_nr_lad',
+                '#widget-quan',
+            ],
+            adGuardFrench: [
+                fromB64('I2Jsb2NrLXZpZXdzLWFkcy1zaWRlYmFyLWJsb2NrLWJsb2Nr'),
+                '#pavePub',
+                fromB64('LmFkLWRlc2t0b3AtcmVjdGFuZ2xl'),
+                '.mobile_adhesion',
+                '.widgetadv',
+            ],
+            adGuardGerman: [
+                fromB64('LmJhbm5lcml0ZW13ZXJidW5nX2hlYWRfMQ=='),
+                fromB64('LmJveHN0YXJ0d2VyYnVuZw=='),
+                fromB64('LndlcmJ1bmcz'),
+                fromB64('YVtocmVmXj0iaHR0cDovL3d3dy5laXMuZGUvaW5kZXgucGh0bWw/cmVmaWQ9Il0='),
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly93d3cudGlwaWNvLmNvbS8/YWZmaWxpYXRlSWQ9Il0='),
+            ],
+            adGuardJapanese: [
+                '#kauli_yad_1',
+                fromB64('YVtocmVmXj0iaHR0cDovL2FkMi50cmFmZmljZ2F0ZS5uZXQvIl0='),
+                fromB64('Ll9wb3BJbl9pbmZpbml0ZV9hZA=='),
+                fromB64('LmFkZ29vZ2xl'),
+                fromB64('LmFkX3JlZ3VsYXIz'),
+            ],
+            adGuardMobile: [
+                fromB64('YW1wLWF1dG8tYWRz'),
+                fromB64('LmFtcF9hZA=='),
+                'amp-embed[type="24smi"]',
+                '#mgid_iframe1',
+                fromB64('I2FkX2ludmlld19hcmVh'),
+            ],
+            adGuardRussian: [
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9hZC5sZXRtZWFkcy5jb20vIl0='),
+                fromB64('LnJlY2xhbWE='),
+                'div[id^="smi2adblock"]',
+                fromB64('ZGl2W2lkXj0iQWRGb3hfYmFubmVyXyJd'),
+                fromB64('I2FkX3NxdWFyZQ=='),
+            ],
+            adGuardSocial: [
+                fromB64('YVtocmVmXj0iLy93d3cuc3R1bWJsZXVwb24uY29tL3N1Ym1pdD91cmw9Il0='),
+                fromB64('YVtocmVmXj0iLy90ZWxlZ3JhbS5tZS9zaGFyZS91cmw/Il0='),
+                '.etsy-tweet',
+                '#inlineShare',
+                '.popup-social',
+            ],
+            adGuardSpanishPortuguese: [
+                '#barraPublicidade',
+                '#Publicidade',
+                '#publiEspecial',
+                '#queTooltip',
+                fromB64('W2hyZWZePSJodHRwOi8vYWRzLmdsaXNwYS5jb20vIl0='),
+            ],
+            adGuardTrackingProtection: [
+                '#qoo-counter',
+                fromB64('YVtocmVmXj0iaHR0cDovL2NsaWNrLmhvdGxvZy5ydS8iXQ=='),
+                fromB64('YVtocmVmXj0iaHR0cDovL2hpdGNvdW50ZXIucnUvdG9wL3N0YXQucGhwIl0='),
+                fromB64('YVtocmVmXj0iaHR0cDovL3RvcC5tYWlsLnJ1L2p1bXAiXQ=='),
+                '#top100counter',
+            ],
+            adGuardTurkish: [
+                '#backkapat',
+                fromB64('I3Jla2xhbWk='),
+                fromB64('YVtocmVmXj0iaHR0cDovL2Fkc2Vydi5vbnRlay5jb20udHIvIl0='),
+                fromB64('YVtocmVmXj0iaHR0cDovL2l6bGVuemkuY29tL2NhbXBhaWduLyJd'),
+                fromB64('YVtocmVmXj0iaHR0cDovL3d3dy5pbnN0YWxsYWRzLm5ldC8iXQ=='),
+            ],
+            bulgarian: [
+                fromB64('dGQjZnJlZW5ldF90YWJsZV9hZHM='),
+                '#ea_intext_div',
+                '.lapni-pop-over',
+                '#xenium_hot_offers',
+                fromB64('I25ld0Fk'),
+            ],
+            easyList: [
+                fromB64('I0FEX0NPTlRST0xfMjg='),
+                fromB64('LnNlY29uZC1wb3N0LWFkcy13cmFwcGVy'),
+                '.universalboxADVBOX03',
+                fromB64('LmFkdmVydGlzZW1lbnQtNzI4eDkw'),
+                fromB64('LnNxdWFyZV9hZHM='),
+            ],
+            easyListChina: [
+                fromB64('YVtocmVmKj0iLndlbnNpeHVldGFuZy5jb20vIl0='),
+                fromB64('LmFwcGd1aWRlLXdyYXBbb25jbGljayo9ImJjZWJvcy5jb20iXQ=='),
+                fromB64('LmZyb250cGFnZUFkdk0='),
+                '#taotaole',
+                '#aafoot.top_box',
+            ],
+            easyListCookie: [
+                '#AdaCompliance.app-notice',
+                '.text-center.rgpd',
+                '.panel--cookie',
+                '.js-cookies-andromeda',
+                '.elxtr-consent',
+            ],
+            easyListCzechSlovak: [
+                '#onlajny-stickers',
+                fromB64('I3Jla2xhbW5pLWJveA=='),
+                fromB64('LnJla2xhbWEtbWVnYWJvYXJk'),
+                '.sklik',
+                fromB64('W2lkXj0ic2tsaWtSZWtsYW1hIl0='),
+            ],
+            easyListDutch: [
+                fromB64('I2FkdmVydGVudGll'),
+                fromB64('I3ZpcEFkbWFya3RCYW5uZXJCbG9jaw=='),
+                '.adstekst',
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly94bHR1YmUubmwvY2xpY2svIl0='),
+                '#semilo-lrectangle',
+            ],
+            easyListGermany: [
+                fromB64('I0FkX1dpbjJkYXk='),
+                fromB64('I3dlcmJ1bmdzYm94MzAw'),
+                fromB64('YVtocmVmXj0iaHR0cDovL3d3dy5yb3RsaWNodGthcnRlaS5jb20vP3NjPSJd'),
+                fromB64('I3dlcmJ1bmdfd2lkZXNreXNjcmFwZXJfc2NyZWVu'),
+                fromB64('YVtocmVmXj0iaHR0cDovL2xhbmRpbmcucGFya3BsYXR6a2FydGVpLmNvbS8/YWc9Il0='),
+            ],
+            easyListItaly: [
+                fromB64('LmJveF9hZHZfYW5udW5jaQ=='),
+                '.sb-box-pubbliredazionale',
+                fromB64('YVtocmVmXj0iaHR0cDovL2FmZmlsaWF6aW9uaWFkcy5zbmFpLml0LyJd'),
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9hZHNlcnZlci5odG1sLml0LyJd'),
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9hZmZpbGlhemlvbmlhZHMuc25haS5pdC8iXQ=='),
+            ],
+            easyListLithuania: [
+                fromB64('LnJla2xhbW9zX3RhcnBhcw=='),
+                fromB64('LnJla2xhbW9zX251b3JvZG9z'),
+                fromB64('aW1nW2FsdD0iUmVrbGFtaW5pcyBza3lkZWxpcyJd'),
+                fromB64('aW1nW2FsdD0iRGVkaWt1b3RpLmx0IHNlcnZlcmlhaSJd'),
+                fromB64('aW1nW2FsdD0iSG9zdGluZ2FzIFNlcnZlcmlhaS5sdCJd'),
+            ],
+            estonian: [fromB64('QVtocmVmKj0iaHR0cDovL3BheTRyZXN1bHRzMjQuZXUiXQ==')],
+            fanboyAnnoyances: [
+                '#feedback-tab',
+                '#taboola-below-article',
+                '.feedburnerFeedBlock',
+                '.widget-feedburner-counter',
+                '[title="Subscribe to our blog"]',
+            ],
+            fanboyAntiFacebook: ['.util-bar-module-firefly-visible'],
+            fanboyEnhancedTrackers: [
+                '.open.pushModal',
+                '#issuem-leaky-paywall-articles-zero-remaining-nag',
+                '#sovrn_container',
+                'div[class$="-hide"][zoompage-fontsize][style="display: block;"]',
+                '.BlockNag__Card',
+            ],
+            fanboySocial: [
+                '.td-tags-and-social-wrapper-box',
+                '.twitterContainer',
+                '.youtube-social',
+                'a[title^="Like us on Facebook"]',
+                'img[alt^="Share on Digg"]',
+            ],
+            frellwitSwedish: [
+                fromB64('YVtocmVmKj0iY2FzaW5vcHJvLnNlIl1bdGFyZ2V0PSJfYmxhbmsiXQ=='),
+                fromB64('YVtocmVmKj0iZG9rdG9yLXNlLm9uZWxpbmsubWUiXQ=='),
+                'article.category-samarbete',
+                fromB64('ZGl2LmhvbGlkQWRz'),
+                'ul.adsmodern',
+            ],
+            greekAdBlock: [
+                fromB64('QVtocmVmKj0iYWRtYW4ub3RlbmV0LmdyL2NsaWNrPyJd'),
+                fromB64('QVtocmVmKj0iaHR0cDovL2F4aWFiYW5uZXJzLmV4b2R1cy5nci8iXQ=='),
+                fromB64('QVtocmVmKj0iaHR0cDovL2ludGVyYWN0aXZlLmZvcnRobmV0LmdyL2NsaWNrPyJd'),
+                'DIV.agores300',
+                'TABLE.advright',
+            ],
+            hungarian: [
+                '#cemp_doboz',
+                '.optimonk-iframe-container',
+                fromB64('LmFkX19tYWlu'),
+                fromB64('W2NsYXNzKj0iR29vZ2xlQWRzIl0='),
+                '#hirdetesek_box',
+            ],
+            iDontCareAboutCookies: [
+                '.alert-info[data-block-track*="CookieNotice"]',
+                '.ModuleTemplateCookieIndicator',
+                '.o--cookies--container',
+                '.cookie-msg-info-container',
+                '#cookies-policy-sticky',
+            ],
+            icelandicAbp: [fromB64('QVtocmVmXj0iL2ZyYW1ld29yay9yZXNvdXJjZXMvZm9ybXMvYWRzLmFzcHgiXQ==')],
+            latvian: [
+                fromB64('YVtocmVmPSJodHRwOi8vd3d3LnNhbGlkemluaS5sdi8iXVtzdHlsZT0iZGlzcGxheTogYmxvY2s7IHdpZHRoOiAxMjBweDsgaGVpZ2h0O' +
+                    'iA0MHB4OyBvdmVyZmxvdzogaGlkZGVuOyBwb3NpdGlvbjogcmVsYXRpdmU7Il0='),
+                fromB64('YVtocmVmPSJodHRwOi8vd3d3LnNhbGlkemluaS5sdi8iXVtzdHlsZT0iZGlzcGxheTogYmxvY2s7IHdpZHRoOiA4OHB4OyBoZWlnaHQ6I' +
+                    'DMxcHg7IG92ZXJmbG93OiBoaWRkZW47IHBvc2l0aW9uOiByZWxhdGl2ZTsiXQ=='),
+            ],
+            listKr: [
+                fromB64('YVtocmVmKj0iLy9hZC5wbGFuYnBsdXMuY28ua3IvIl0='),
+                fromB64('I2xpdmVyZUFkV3JhcHBlcg=='),
+                fromB64('YVtocmVmKj0iLy9hZHYuaW1hZHJlcC5jby5rci8iXQ=='),
+                fromB64('aW5zLmZhc3R2aWV3LWFk'),
+                '.revenue_unit_item.dable',
+            ],
+            listeAr: [
+                fromB64('LmdlbWluaUxCMUFk'),
+                '.right-and-left-sponsers',
+                fromB64('YVtocmVmKj0iLmFmbGFtLmluZm8iXQ=='),
+                fromB64('YVtocmVmKj0iYm9vcmFxLm9yZyJd'),
+                fromB64('YVtocmVmKj0iZHViaXp6bGUuY29tL2FyLz91dG1fc291cmNlPSJd'),
+            ],
+            listeFr: [
+                fromB64('YVtocmVmXj0iaHR0cDovL3Byb21vLnZhZG9yLmNvbS8iXQ=='),
+                fromB64('I2FkY29udGFpbmVyX3JlY2hlcmNoZQ=='),
+                fromB64('YVtocmVmKj0id2Vib3JhbWEuZnIvZmNnaS1iaW4vIl0='),
+                '.site-pub-interstitiel',
+                'div[id^="crt-"][data-criteo-id]',
+            ],
+            officialPolish: [
+                '#ceneo-placeholder-ceneo-12',
+                fromB64('W2hyZWZePSJodHRwczovL2FmZi5zZW5kaHViLnBsLyJd'),
+                fromB64('YVtocmVmXj0iaHR0cDovL2Fkdm1hbmFnZXIudGVjaGZ1bi5wbC9yZWRpcmVjdC8iXQ=='),
+                fromB64('YVtocmVmXj0iaHR0cDovL3d3dy50cml6ZXIucGwvP3V0bV9zb3VyY2UiXQ=='),
+                fromB64('ZGl2I3NrYXBpZWNfYWQ='),
+            ],
+            ro: [
+                fromB64('YVtocmVmXj0iLy9hZmZ0cmsuYWx0ZXgucm8vQ291bnRlci9DbGljayJd'),
+                'a[href^="/magazin/"]',
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9ibGFja2ZyaWRheXNhbGVzLnJvL3Ryay9zaG9wLyJd'),
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9ldmVudC4ycGVyZm9ybWFudC5jb20vZXZlbnRzL2NsaWNrIl0='),
+                fromB64('YVtocmVmXj0iaHR0cHM6Ly9sLnByb2ZpdHNoYXJlLnJvLyJd'),
+            ],
+            ruAd: [
+                fromB64('YVtocmVmKj0iLy9mZWJyYXJlLnJ1LyJd'),
+                fromB64('YVtocmVmKj0iLy91dGltZy5ydS8iXQ=='),
+                fromB64('YVtocmVmKj0iOi8vY2hpa2lkaWtpLnJ1Il0='),
+                '#pgeldiz',
+                '.yandex-rtb-block',
+            ],
+            thaiAds: [
+                'a[href*=macau-uta-popup]',
+                fromB64('I2Fkcy1nb29nbGUtbWlkZGxlX3JlY3RhbmdsZS1ncm91cA=='),
+                fromB64('LmFkczMwMHM='),
+                '.bumq',
+                '.img-kosana',
+            ],
+            webAnnoyancesUltralist: [
+                '#mod-social-share-2',
+                '#social-tools',
+                fromB64('LmN0cGwtZnVsbGJhbm5lcg=='),
+                '.zergnet-recommend',
+                '.yt.btn-link.btn-md.btn',
+            ],
+        };
+    }
     /**
      * The order of the returned array means nothing (it's always sorted alphabetically).
      *
@@ -4886,7 +4964,7 @@ var globalFP = (function (exports) {
     function getDomBlockers(_a) {
         var debug = (_a === void 0 ? {} : _a).debug;
         return __awaiter(this, void 0, void 0, function () {
-            var filterNames, allSelectors, blockedSelectors, activeBlockers;
+            var filters, filterNames, allSelectors, blockedSelectors, activeBlockers;
             var _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
@@ -4894,13 +4972,14 @@ var globalFP = (function (exports) {
                         if (!isApplicable()) {
                             return [2 /*return*/, undefined];
                         }
+                        filters = getFilters();
                         filterNames = Object.keys(filters);
                         allSelectors = (_b = []).concat.apply(_b, filterNames.map(function (filterName) { return filters[filterName]; }));
                         return [4 /*yield*/, getBlockedSelectors(allSelectors)];
                     case 1:
                         blockedSelectors = _c.sent();
                         if (debug) {
-                            printDebug(blockedSelectors);
+                            printDebug(filters, blockedSelectors);
                         }
                         activeBlockers = filterNames.filter(function (filterName) {
                             var selectors = filters[filterName];
@@ -4970,14 +5049,14 @@ var globalFP = (function (exports) {
     function forceShow(element) {
         element.style.setProperty('display', 'block', 'important');
     }
-    function printDebug(blockedSelectors) {
+    function printDebug(filters, blockedSelectors) {
         var message = 'DOM blockers debug:\n```';
         for (var _i = 0, _a = Object.keys(filters); _i < _a.length; _i++) {
             var filterName = _a[_i];
             message += "\n" + filterName + ":";
             for (var _b = 0, _c = filters[filterName]; _b < _c.length; _b++) {
                 var selector = _c[_b];
-                message += "\n  " + selector + " " + (blockedSelectors[selector] ? '🚫' : '➡️');
+                message += "\n  " + (blockedSelectors[selector] ? '🚫' : '➡️') + " " + selector;
             }
         }
         // console.log is ok here because it's under a debug clause
@@ -5003,15 +5082,15 @@ var globalFP = (function (exports) {
      * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@media/inverted-colors
      */
     function areColorsInverted() {
-        if (doesMatch('inverted')) {
+        if (doesMatch$4('inverted')) {
             return true;
         }
-        if (doesMatch('none')) {
+        if (doesMatch$4('none')) {
             return false;
         }
         return undefined;
     }
-    function doesMatch(value) {
+    function doesMatch$4(value) {
         return matchMedia("(inverted-colors: " + value + ")").matches;
     }
 
@@ -5019,15 +5098,15 @@ var globalFP = (function (exports) {
      * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@media/forced-colors
      */
     function areColorsForced() {
-        if (doesMatch$1('active')) {
+        if (doesMatch$3('active')) {
             return true;
         }
-        if (doesMatch$1('none')) {
+        if (doesMatch$3('none')) {
             return false;
         }
         return undefined;
     }
-    function doesMatch$1(value) {
+    function doesMatch$3(value) {
         return matchMedia("(forced-colors: " + value + ")").matches;
     }
 
@@ -5083,15 +5162,15 @@ var globalFP = (function (exports) {
      * @see https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
      */
     function isMotionReduced() {
-        if (doesMatch$3('reduce')) {
+        if (doesMatch$1('reduce')) {
             return true;
         }
-        if (doesMatch$3('no-preference')) {
+        if (doesMatch$1('no-preference')) {
             return false;
         }
         return undefined;
     }
-    function doesMatch$3(value) {
+    function doesMatch$1(value) {
         return matchMedia("(prefers-reduced-motion: " + value + ")").matches;
     }
 
@@ -5099,15 +5178,15 @@ var globalFP = (function (exports) {
      * @see https://www.w3.org/TR/mediaqueries-5/#dynamic-range
      */
     function isHDR() {
-        if (doesMatch$4('high')) {
+        if (doesMatch('high')) {
             return true;
         }
-        if (doesMatch$4('standard')) {
+        if (doesMatch('standard')) {
             return false;
         }
         return undefined;
     }
-    function doesMatch$4(value) {
+    function doesMatch(value) {
         return matchMedia("(dynamic-range: " + value + ")").matches;
     }
 
@@ -5320,6 +5399,9 @@ var globalFP = (function (exports) {
      *
      * This value isn't restricted by Semantic Versioning, i.e. it may be changed without bumping minor or major version of
      * this package.
+     *
+     * Note: Rollup and Webpack are smart enough to remove unused properties of this object during tree-shaking, so there is
+     * no need to export the sources individually.
      */
     var sources = {
         // READ FIRST:
@@ -5544,8 +5626,6 @@ var globalFP = (function (exports) {
     // It should contain all the public exported values.
     var index = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
 
-    var FingerprintJS = index;
-
     function checkFunctionCode(func, expectedName) {
         const reg = new RegExp("^\\s*function " +
             expectedName +
@@ -5762,30 +5842,24 @@ var globalFP = (function (exports) {
             if (hash1 == hash2) {
                 return hash1;
             }
-            return undefined;
+            return "unstable";
         }
         catch (error) {
             console.log('error', error);
-            return undefined;
+            return 'error';
         }
-    }
-    function getGLRenderer() {
-        const gl = getWebglCanvas();
-        if (!gl) {
-            return undefined;
-        }
-        return gl.getParameter(gl.RENDERER);
     }
 
     function getCanvas() {
         const start = Date.now();
         if (!isFnCanvasDefender()) {
             let result = getCanvasFingerprint();
-            if (result.geometry != "") {
-                return { value: result, duration: Date.now() - start };
+            if (result.geometry != "unstable") {
+                const hash = hashMD5(JSON.stringify(result));
+                return { value: hash, duration: Date.now() - start };
             }
         }
-        return { value: undefined, duration: Date.now() - start };
+        return { value: "unstable", duration: Date.now() - start };
     }
     function getCanvasFingerprint() {
         let winding = false;
@@ -5804,7 +5878,7 @@ var globalFP = (function (exports) {
                 geometry = text = 'unstable';
             }
             else {
-                text = textImage1;
+                // text = textImage1
                 renderGeometryImage(canvas, context);
                 geometry = canvasToString(canvas);
             }
@@ -5864,11 +5938,10 @@ var globalFP = (function (exports) {
         context.fill('evenodd');
     }
     function canvasToString(canvas) {
-        var url1 = canvas.toDataURL();
-        var url2 = canvas.toDataURL();
-        return url1 == url2 ? url1 : "";
+        return canvas.toDataURL();
     }
 
+    const listAttributeHash = ["math", "fontPreferencePrint"];
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
     }
@@ -5902,21 +5975,32 @@ var globalFP = (function (exports) {
     }
     function getWebGLRenderer(webgl) {
         const start = Date.now();
-        if (webgl && webgl.value == undefined) {
-            return { value: undefined, duration: Date.now() - start };
+        if (webgl && webgl.value == 'unstable') {
+            return { value: 'unstable', duration: Date.now() - start };
         }
         return { value: getGLRenderer(), duration: Date.now() - start };
+    }
+    function getGLRenderer() {
+        const canvas = document.createElement("canvas");
+        const gl = canvas.getContext("webgl");
+        if (gl && typeof gl.getExtension === "function" && gl.getExtension("WEBGL_debug_renderer_info") != null) {
+            return gl.getParameter(gl.getExtension("WEBGL_debug_renderer_info").UNMASKED_RENDERER_WEBGL);
+        }
+        return "";
     }
     function componentsToJsonString(components) {
         let result = "";
         let err;
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
-            const value = component.error ? "error" : component.value;
+            let value = component.error ? "error" : JSON.stringify(component.value == undefined ? `undefined` : component.value);
+            if (listAttributeHash.indexOf(componentKey) > -1) {
+                value = JSON.stringify(hashMD5(value));
+            }
             if (component.error) {
                 err += `${componentKey}: ${component.error.message},`;
             }
-            result += `${result ? "," : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${`${JSON.stringify(value == undefined ? `undefined` : value)}`}`;
+            result += `${result ? "," : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value}`;
         }
         return `${result}}`;
     }
@@ -5946,6 +6030,19 @@ var globalFP = (function (exports) {
         };
         return { value: result, duration: Date.now() - start };
     }
+    function getAudio() {
+        return sources.audio();
+    }
+    function getBrowserSupport() {
+        return {
+            isWebKit: isWebKit,
+            isDesktopSafari: isDesktopSafari,
+            isAndroid: isAndroid,
+            isChromium: isChromium,
+            isGecko: isGecko,
+            isTrident: isTrident,
+        };
+    }
     function getFP() {
         let visitorId;
         const fpPromise = loadSources(sources, {}, [
@@ -5953,16 +6050,13 @@ var globalFP = (function (exports) {
             "screenFrame",
             "canvas",
             "fontPreferences",
-            "languages"
+            "languages",
         ])();
         const canvas = getCanvas();
         const webgl = getWebGL();
         return fpPromise.then((components) => __awaiter(this, void 0, void 0, function* () {
-            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: canvas, webglRenderer: getWebGLRenderer(webgl), doNotTrack: getDoNotTrack() });
-            if (canvas && canvas.value == undefined) {
-                customComponents["webglPrint"] = webgl;
-            }
-            visitorId = FingerprintJS.hashComponents(customComponents);
+            const customComponents = Object.assign(Object.assign({}, components), { screenPrint: getScreenPrint(), fontPreferencePrint: yield getFontPreference(), languagesPrint: getLanguages(), canvasPrint: canvas, webglPrint: webgl, webglRenderer: getWebGLRenderer(webgl), doNotTrack: getDoNotTrack() });
+            visitorId = index.hashComponents(customComponents);
             let properties = componentsToJsonString(customComponents);
             return Promise.resolve({
                 Id: visitorId,
@@ -6011,14 +6105,37 @@ var globalFP = (function (exports) {
             return 0;
         }
     }
+    function macOS() {
+        const macosPlatforms = ["Macintosh", "MacIntel", "MacPPC", "Mac68K"];
+        const platform = navigator.platform;
+        return macosPlatforms.indexOf(platform) !== -1;
+    }
+    function isIOS$1() {
+        const arrDevice = [
+            "iPad Simulator",
+            "iPhone Simulator",
+            "iPod Simulator",
+            "iPad",
+            "iPhone",
+            "iPod",
+        ];
+        const platform = navigator.platform;
+        return ((!!platform && !!arrDevice.find((v) => platform.includes(v))) ||
+            // iPad on iOS 13 detection
+            (navigator.userAgent.includes("Mac") && "ontouchend" in document));
+    }
     // Notification Permissions
     function testNotificationPermissions() {
         return __awaiter(this, void 0, void 0, function* () {
-            if (navigator.permissions && typeof navigator.permissions.query === 'function') {
+            if (isIOS$1() || macOS())
+                return 0;
+            if (navigator.permissions &&
+                typeof navigator.permissions.query === "function") {
                 return yield navigator.permissions
                     .query({ name: "notifications" })
                     .then(function (permissionStatus) {
-                    if (typeof Notification != "undefined" && Notification.permission === "denied" &&
+                    if (typeof Notification != "undefined" &&
+                        Notification.permission === "denied" &&
                         permissionStatus.state === "prompt") {
                         // Headless
                         return 0.5;
@@ -9089,12 +9206,7 @@ var globalFP = (function (exports) {
                     name: drive + "-EC",
                     storeName: "ec",
                 });
-                storageDriver
-                    .setItem(name, value, () => { })
-                    //.then(console.log)
-                    .catch((e) => {
-                    console.log(e.message);
-                });
+                storageDriver.setItem(name, value, () => { });
                 setCookie(name, value, 30);
             });
         });
@@ -9138,18 +9250,6 @@ var globalFP = (function (exports) {
     }
 
     var _cookieName = "__fp";
-    function postData(url, data) {
-        return __awaiter(this, void 0, void 0, function* () {
-            return fetch(url, {
-                method: "POST",
-                headers: {
-                    Accept: "application/json",
-                    "Content-Type": "application/json",
-                },
-                body: data,
-            });
-        });
-    }
     function postDataAuthorization(url, data, token) {
         return __awaiter(this, void 0, void 0, function* () {
             return fetch(url, {
@@ -9173,23 +9273,25 @@ var globalFP = (function (exports) {
         });
     }
 
-    function getFPID() {
+    function debugFP() {
         return __awaiter(this, void 0, void 0, function* () {
             return yield getFP();
         });
+    }
+    function debugAudio() {
+        return __awaiter(this, void 0, void 0, function* () {
+            return yield getAudio();
+        });
+    }
+    function debugBrowserSupport() {
+        return getBrowserSupport();
     }
     function capture(apiUrl, subId, sKey) {
         const configs = getConfig(apiUrl, sKey).then((conf) => {
             return conf.json();
         });
         const cookies = getCookie();
-        const fps = getFP().catch((error) => {
-            var data = {
-                function: "FingerPrint Capturing",
-                exception: error.message,
-            };
-            postData(apiUrl + "/cle", JSON.stringify(data));
-        });
+        const fps = getFP();
         const headless = getHeadlessScore();
         const browserInfo = getBrowserInfo();
         Promise.all([configs, cookies, fps, headless, browserInfo]).then(([config, cookie, fp, hl, bi]) => {
@@ -9205,16 +9307,8 @@ var globalFP = (function (exports) {
                     acpt: config.acpt,
                     enc: config.enc,
                     hk: config.hk,
-                }, cryptConfig)
-                    .then((res) => {
+                }, cryptConfig).then((res) => {
                     postDataAuthorization(apiUrl + "/fpa", JSON.stringify(res), config.tk);
-                })
-                    .catch((error) => {
-                    var data = {
-                        function: "FingerPrint Attribute",
-                        exception: error.message,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     fk: sKey,
@@ -9224,16 +9318,8 @@ var globalFP = (function (exports) {
                     iv: config.iv,
                     pass: config.ek,
                     salt: config.sa,
-                })
-                    .then((res) => {
+                }).then((res) => {
                     postDataAuthorization(apiUrl + "/bi", JSON.stringify(res), config.tk);
-                })
-                    .catch((error) => {
-                    var data = {
-                        function: "Browser Info",
-                        exception: error.message,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
                 encryptingAsync({
                     di: fp && fp.Id,
@@ -9249,30 +9335,17 @@ var globalFP = (function (exports) {
                         fd: fp && fp.CheckFontDefender,
                         ac: fp && fp.CheckAudioContextDefender,
                     },
-                }, cryptConfig)
-                    .then((res) => {
+                }, cryptConfig).then((res) => {
                     postDataAuthorization(apiUrl + "/fp", JSON.stringify(res), config.tk);
-                })
-                    .catch((error) => {
-                    var data = {
-                        function: "FingerPrint",
-                        exception: error.message,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
                 });
-                if (fp && fp.ErrorValue != "") {
-                    var data = {
-                        function: "FingerPrint Attributes Merge",
-                        exception: fp.ErrorValue,
-                    };
-                    postData(apiUrl + "/cle", JSON.stringify(data));
-                }
             }
         });
     }
 
     exports.capture = capture;
-    exports.getFPID = getFPID;
+    exports.debugAudio = debugAudio;
+    exports.debugBrowserSupport = debugBrowserSupport;
+    exports.debugFP = debugFP;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

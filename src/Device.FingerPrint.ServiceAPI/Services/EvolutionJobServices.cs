@@ -182,25 +182,34 @@ namespace Device.FingerPrint.ServiceAPI.Services
         #region "Evolution"
         private bool CheckVersion(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            var version1 = GetVersion(source.BrowserVersion);
-            var version2 = GetVersion(destination.BrowserVersion);
-
-            if (version1 != null && version2 != null)
+            try
             {
-                var resultVersion = version1.CompareTo(version2);
+                var version1 = GetVersion(source.BrowserVersion);
+                var version2 = GetVersion(destination.BrowserVersion);
 
-                if (resultVersion < 0) // new < old
-                    return false;
-                return true;
+                if (version1 != null && version2 != null)
+                {
+                    var resultVersion = version1.CompareTo(version2);
+
+                    if (resultVersion < 0) // new < old
+                        return false;
+                    return true;
+                }
+
+                return false;
             }
-            return false;
+            catch (Exception ex)
+            {
+                sentryClient.CaptureMessage(ex.Message + "\nSource EvolutionId: " + source.Id.ToString() + "\nDestination RawFingerPrintId: " + destination.Id.ToString());
+                return false;
+            }
         }
 
         private Version GetVersion(string version)
         {
             if (ValidateVersion(version))
             {
-                return new Version(version);
+                return Version.Parse(version);
             }
             else
             {
@@ -220,7 +229,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 if (ValidateVersion(version))
                 {
-                    return new Version(version);
+                    return Version.Parse(version);
                 }
             }
             return null;
@@ -228,19 +237,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         static bool ValidateVersion(string version)
         {
-            var match = Regex.Match(version, @"^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)\.(?<revision>\d+)$");
-            if (match.Success)
+            try
             {
-                if (int.TryParse(match.Groups["major"].Value, out _) &&
-                  int.TryParse(match.Groups["minor"].Value, out _) &&
-                  int.TryParse(match.Groups["build"].Value, out _) &&
-                  int.TryParse(match.Groups["revision"].Value, out _))
-                {
-                    return true;
-                }
+                Version ver = Version.Parse(version);
+                return true;
             }
-
-            return false;
+            catch
+            {
+                return false;
+            }
         }
 
         private bool CheckFonts(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)

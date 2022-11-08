@@ -176,6 +176,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         tasks.Add(Task.Run(() =>
                         {
                             var mergeTransJson = JsonConvert.SerializeObject(trans);
+
                             try
                             {
                                 transactionService.MergeTransaction(mergeTransJson);

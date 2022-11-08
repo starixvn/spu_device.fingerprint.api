@@ -100,7 +100,8 @@
                 SubscriberId = model.SubscriberId,
                 Url = model.Url,
                 UserAgent = model.UserAgent,
-                TransTime = model.TransTime
+                TransTime = model.TransTime,
+                Information = model.Information
             };
         }
 
