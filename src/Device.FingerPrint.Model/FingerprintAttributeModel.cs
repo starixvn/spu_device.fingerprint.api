@@ -26,21 +26,23 @@ namespace Device.FingerPrint.Model
 
         public string BrowserInstanceCode { get; set; }
 
-        public string BrowserInstanceJson { 
-            get
+        public string BrowserInstanceJson { get; set; }
+        public void GetBrowserInstanceJson()
+        {
+
+            var browserInstanceModel = new BrowserInstanceModel
             {
-                return JsonConvert.SerializeObject(new BrowserInstanceModel
-                {
-                    OSName = this.OSName,
-                    BrowserName = this.BrowserName,
-                    BrowserVersion = this.BrowserVersion,
-                    Accept = this.Accept,
-                    Encoding = this.Encoding,
-                    Headers = this.Headers,
-                    UserAgent = this.UserAgent,
-                    Platform = this.Platform
-                });
-            }
+                OSName = this.OSName,
+                BrowserName = this.BrowserName,
+                BrowserVersion = this.BrowserVersion,
+                Accept = this.Accept,
+                Encoding = this.Encoding,
+                Headers = this.Headers,
+                UserAgent = this.UserAgent,
+                Platform = this.Platform
+            };
+
+            this.BrowserInstanceJson = JsonConvert.SerializeObject(browserInstanceModel);
         }
     }
 }

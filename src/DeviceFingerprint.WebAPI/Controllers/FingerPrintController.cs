@@ -1,5 +1,4 @@
-﻿using Device.Fingerprint.WebAPI.Models;
-using Device.Fingerprint.WebAPI.Services;
+﻿using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
@@ -150,12 +149,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return Ok(string.Empty);
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]        
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] string data)
         {
             try
-            {                
+            {
                 var decryptedData = crypto.Decrypt(data);
 
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
@@ -163,7 +162,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
                     {
-                        var defenderAttributesService = new DefenderAttributesService();                   
+                        var defenderAttributesService = new DefenderAttributesService();
 
                         var clientTransactionModel = new ClientTransactionModel
                         {
@@ -195,12 +194,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                if(!appSettings.IgnoreClientTransLogs)
+                if (!appSettings.IgnoreClientTransLogs)
                 {
                     data.TransTime = DateTime.Now;
 
                     easyNetQService.PushData(data);
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -267,8 +266,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 sentryClient.CaptureException(ex);
             }
         }
-                
-        [HttpPost("fpa")]        
+
+        [HttpPost("fpa")]
         public void FpAttributes([FromBody] string data)
         {
             try
@@ -277,25 +276,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
                 if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
-                {   
+                {
                     var transactionAttributeService = new TransactionAttributeService();
                     var userAgent = Request.Headers["User-Agent"];
                     var userAgentInfo = transactionAttributeService.GetUserAgentInfo(userAgent);
-
-                    var browserInstanceModel = new BrowserInstanceModel
-                    {
-                        OSName = userAgentInfo.OSName,
-                        BrowserName = userAgentInfo.BrowserName,
-                        BrowserVersion = userAgentInfo.BrowserVersion,
-                        Accept = fpAttributes.Accept,
-                        Encoding = fpAttributes.Encoding,
-                        Headers = fpAttributes.HeaderKeys,
-                        UserAgent = userAgent,
-                        Platform = fpAttributes.Platform
-                    };
-
-                    var browserInstanceJson = JsonConvert.SerializeObject(browserInstanceModel);
-                    var browserInstanceCode = crypto.GetMD5Hash(browserInstanceJson);
 
                     var fpAttributesModel = new FingerprintAttributesModel
                     {
@@ -309,8 +293,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Headers = fpAttributes.HeaderKeys,
                         UserAgent = userAgent,
                         Platform = fpAttributes.Platform,
-                        BrowserInstanceCode = browserInstanceCode
                     };
+
+                    fpAttributesModel.GetBrowserInstanceJson();
+                    fpAttributesModel.BrowserInstanceCode = crypto.GetMD5Hash(fpAttributesModel.BrowserInstanceJson);
 
                     easyNetQService.PushData(fpAttributesModel);
                 }
@@ -324,7 +310,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 sentryClient.CaptureException(ex);
             }
         }
-                
+
         [HttpPost("bi")]
         public void Browserinfo([FromBody] string data)
         {
