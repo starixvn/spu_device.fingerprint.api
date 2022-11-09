@@ -295,7 +295,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Platform = fpAttributes.Platform,
                     };
 
-                    fpAttributesModel.GetBrowserInstanceJson();
                     fpAttributesModel.BrowserInstanceCode = crypto.GetMD5Hash(fpAttributesModel.BrowserInstanceJson);
 
                     easyNetQService.PushData(fpAttributesModel);
