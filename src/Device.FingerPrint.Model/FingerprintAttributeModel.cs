@@ -1,4 +1,6 @@
-﻿namespace Device.FingerPrint.Model
+﻿using Newtonsoft.Json;
+
+namespace Device.FingerPrint.Model
 {
     public class FingerprintAttributeModel
     {
@@ -23,5 +25,24 @@
         public string Platform { get; set; }
 
         public string BrowserInstanceCode { get; set; }
+
+        public string BrowserInstanceJson { get; set; }
+        public void GetBrowserInstanceJson()
+        {
+
+            var browserInstanceModel = new BrowserInstanceModel
+            {
+                OSName = this.OSName,
+                BrowserName = this.BrowserName,
+                BrowserVersion = this.BrowserVersion,
+                Accept = this.Accept,
+                Encoding = this.Encoding,
+                Headers = this.Headers,
+                UserAgent = this.UserAgent,
+                Platform = this.Platform
+            };
+
+            this.BrowserInstanceJson = JsonConvert.SerializeObject(browserInstanceModel);
+        }
     }
 }
