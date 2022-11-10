@@ -5,7 +5,7 @@ var cdnAPIUrl = '__cdnAPIUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
 
 var fp = {
-    requireJS: function(_url) {
+    requireJS: function (_url) {
         return new Promise(function (resolve, reject) {
             try {
                 var script = document.createElement('script');
@@ -24,10 +24,10 @@ var fp = {
             }
             catch (err) {
                 fp.log(apiUrl, "Load Script", err.message + '|' + sessionKey);
-            }            
+            }
         });
     },
-    post: function(url, data) {
+    post: function (url, data) {
         return fetch(url, {
             method: "POST",
             headers: {
@@ -36,7 +36,7 @@ var fp = {
             body: JSON.stringify(data),
         });
     },
-    log: function(url, functionName, exception) {
+    log: function (url, functionName, exception) {
         var data = {
             function: functionName,
             exception: exception,
@@ -49,14 +49,31 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/cookie').then(() => {
     return fpCookie.storageHandler("gfp");
 }).then(res => {
     var data = {
-        "SubscriberId": subscriberId,
-        "SessionKey": sessionKey,
-        "Cookie": res
+        'ClientTransCookie': {
+            "SubscriberId": subscriberId,
+            "SessionKey": sessionKey,
+            "Cookie": res
+        },
+        'RedisKey': sessionKey
     };
 
     fp.post(portalAPIUrl + '/cookie', data);
 });
 
+fp.requireJS(cdnAPIUrl + '/scr/cdn/headless').then(() => {
+    return fpHeadless.getHeadlessScore();
+}).then(res => {
+    var data = {
+        'HeadlessBrowser': {
+            "Score": res.Score,
+            "TestsRun": res.testsRun,
+            "TestsDetail": res.testsDetail
+        },
+        'RedisKey': sessionKey
+    };
+
+    fp.post(portalAPIUrl + '/headless', data);
+});
 
 //try {    
 //    fp.requireJS(cdnAPIUrl)

@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Model;
+using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,11 +20,20 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         }
 
         [HttpPost("cookie")]
-        public void Cookie([FromBody] ClientTransactionCookieModel data)
+        public void Cookie([FromBody] CookieParameter data)
         {
-            if(!redisService.RedisDatabase.ExistsAsync(data.SessionKey).Result)
+            if(!redisService.CookieDatabase.ExistsAsync(data.RedisKey).Result)
             {
-                redisService.RedisDatabase.AddAsync(data.SessionKey, data, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                redisService.CookieDatabase.AddAsync(data.RedisKey, data.ClientTransCookie, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+            }
+        }
+
+        [HttpPost("headless")]
+        public void Headless([FromBody] HeadlessParameter data)
+        {
+            if (!redisService.HeadlessDatabase.ExistsAsync(data.RedisKey).Result)
+            {
+                redisService.HeadlessDatabase.AddAsync(data.RedisKey, data.HeadlessBrowser, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
             }
         }
 
