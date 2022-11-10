@@ -124,11 +124,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             try
             {
-                var scriptPath = $"{environment.ContentRootPath}/Scripts/cookie.js";
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie.js";
 
                 if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
                 {
-                    scriptPath = $"{environment.ContentRootPath}/Scripts/cookie.min.js";
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie.min.js";
                 }
 
                 var bundleFile = new BundleFile(scriptPath);
@@ -147,6 +147,36 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return new EmptyResult();
         }
+
+        [HttpGet("scr/cdn/headless")]
+        public ActionResult HeadlessBrowserScript()
+        {
+            try
+            {
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
+
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+                {
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.min.js";
+                }
+
+                var bundleFile = new BundleFile(scriptPath);
+
+                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                {
+
+                    return new JavascriptResult(bundleFile.Content);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+
+            return new EmptyResult();
+        }
+
 
         [HttpGet("conf/{sessionKey}")]
         [ResponseCache(NoStore = true, Duration = 0)]
