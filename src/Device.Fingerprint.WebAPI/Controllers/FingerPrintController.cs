@@ -3,13 +3,14 @@ using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
 using System;
+using System.Text.RegularExpressions;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
@@ -23,10 +24,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISubscriberServices subscriberServices;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IEasyNetQService easyNetQService;
+        private readonly Crypto crypto;
         private readonly IRedisService redisService;
         private readonly ISentryClient sentryClient;
-
-        private string etagValue;
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
@@ -41,21 +41,19 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.easyNetQService = easyNetQService;
+            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.redisService = redisService;
             this.sentryClient = sentryClient;
             this.clientTransactionService = clientTransactionService;
-
-            etagValue = etagValue ?? Guid.NewGuid().ToString("N");
         }
 
         [HttpGet("scr/{subscriberName}")]
-        [ETagFilter(200)]
         public ActionResult Script(string subscriberName)
         {
             try
             {
                 if (!string.IsNullOrWhiteSpace(subscriberName))
-                {   
+                {
                     var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
                     if (appSettings.Environment == "PROD")
@@ -121,46 +119,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/ce")]   
-        [ETagFilter(200)]
+        [HttpGet("scr/cdn/cookie")]
         public ActionResult CookieScript()
         {
             try
             {
-                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie.js";
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/cookie.js";
 
                 if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
                 {
-                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie.min.js";
-                }
-
-                var bundleFile = new BundleFile(scriptPath);
-
-                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-                {
-                    return new JavascriptResult(bundleFile.Content);
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
-
-            return new EmptyResult();
-        }
-
-        [HttpGet("scr/cdn/hl")]
-        [ETagFilter(200)]
-        public ActionResult HeadlessBrowserScript()
-        {
-            try
-            {
-
-                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
-
-                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-                {
-                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.min.js";
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/cookie.min.js";
                 }
 
                 var bundleFile = new BundleFile(scriptPath);
@@ -179,104 +147,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return new EmptyResult();
         }
-
-        [HttpGet("scr/cdn/bi")]
-        [ETagFilter(200)]
-        public ActionResult BrowserInfoScript()
-        {
-            try
-            {
-                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.js";
-
-                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-                {
-                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.min.js";
-                }
-
-                var bundleFile = new BundleFile(scriptPath);
-
-                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-                {
-
-                    return new JavascriptResult(bundleFile.Content);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
-
-            return new EmptyResult();
-        }
-
-        [HttpGet("scr/cdn/fp")]
-        [ETagFilter(200)]
-        public ActionResult FingerPrintScript()
-        {
-            try
-            {
-                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
-
-                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-                {
-                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.min.js";
-                }
-
-                var bundleFile = new BundleFile(scriptPath);
-
-                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-                {
-
-                    return new JavascriptResult(bundleFile.Content);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
-
-            return new EmptyResult();
-        }
-
-        [HttpGet("scr/cdn/crt")]
-        [ETagFilter(200)]
-        public ActionResult CryptScript()
-        {
-            try
-            {
-                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.js";
-
-                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-                {
-                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.min.js";
-                }
-
-                var bundleFile = new BundleFile(scriptPath);
-
-                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-                {
-                    var newContent = bundleFile.Content
-                        .Replace("__keyIV__", appSettings.CryptoIV)
-                        .Replace("__keySalt__", appSettings.CryptoSalt)
-                        .Replace("__keyPass__", appSettings.CryptoPassword);
-
-                    return new JavascriptResult(newContent);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
-
-            return new EmptyResult();
-        }
-
-
-
-
 
         [HttpGet("conf/{sessionKey}")]
         [ResponseCache(NoStore = true, Duration = 0)]
@@ -310,6 +180,46 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return Ok(string.Empty);
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("fp")]
+        public void FingerPrint([FromBody] string data)
+        {
+            try
+            {
+                var decryptedData = crypto.Decrypt(data);
+
+                var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
+                if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrintCode))
+                {
+                    if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
+                    {
+                        var defenderAttributesService = new DefenderAttributesService();
+
+                        var clientTransactionModel = new ClientTransactionModel
+                        {
+                            FingerPrintCode = fingerPrint.FingerPrintCode,
+                            SessionKey = fingerPrint.SessionKey,
+                            SubscriberId = fingerPrint.SubscriberId,
+                            CookieCode = fingerPrint.CookieCode,
+                            Url = fingerPrint.Url,
+                            AddonCode = defenderAttributesService.GenerateAddonCode(fingerPrint.DefenderAttributes),
+                            TransTime = DateTime.Now
+                        };
+
+                        easyNetQService.PushData(clientTransactionModel);
+                    }
+                }
+                else
+                {
+                    sentryClient.CaptureMessage($"FingerPrint does not exists. ({data})", SentryLevel.Info);
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
         [HttpPost("ctl")]
         public void ClientTransLog([FromBody] ClientTransactionLogsModel data)
         {
@@ -337,6 +247,133 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
 
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
+        [HttpPost("transaction")]
+        public void Transaction([FromBody] TransactionDTO data)
+        {
+            try
+            {
+                if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
+                {
+                    var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
+                    if (subscriber != null)
+                    {
+                        var urlAddress = new Uri(data.Url);
+
+                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+
+                        var transaction = new TransactionModel
+                        {
+                            SubscriberId = subscriber.SubscriberId,
+                            ClientIp = data.ClientIp,
+                            LoginName = data.LoginName,
+                            SessionKey = data.SessionKey,
+                            UserAgent = data.UserAgent,
+                            UserAgentCode = userAgentCode,
+                            TransTime = DateTime.Now,
+                            Url = urlAddress.GetLeftPart(UriPartial.Path),
+                            Action = data.Action,
+                            TransKey = data.TransKey,
+                            CustId = data.CustId,
+                            SubAccId = data.SubAccId
+                        };
+
+                        easyNetQService.PushData(transaction);
+                    }
+                    else
+                    {
+                        sentryClient.CaptureMessage($"{data.SubscriberName} does not exists.", SentryLevel.Info);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
+        [HttpPost("fpa")]
+        public void FpAttributes([FromBody] string data)
+        {
+            try
+            {
+                var decryptedData = crypto.Decrypt(data);
+
+                var fpAttributes = JsonConvert.DeserializeObject<Models.FingerPrintAttributesModel>(decryptedData);
+                if (fpAttributes != null && !string.IsNullOrWhiteSpace(fpAttributes.FingerPrintCode))
+                {
+                    var transactionAttributeService = new TransactionAttributeService();
+                    var userAgent = Request.Headers["User-Agent"];
+                    var userAgentInfo = transactionAttributeService.GetUserAgentInfo(userAgent);
+
+                    var fpAttributesModel = new FingerprintAttributesModel
+                    {
+                        FingerPrintCode = fpAttributes.FingerPrintCode,
+                        Attribute = fpAttributes.Attributes,
+                        OSName = userAgentInfo.OSName,
+                        BrowserName = userAgentInfo.BrowserName,
+                        BrowserVersion = userAgentInfo.BrowserVersion,
+                        Accept = fpAttributes.Accept,
+                        Encoding = fpAttributes.Encoding,
+                        Headers = fpAttributes.HeaderKeys,
+                        UserAgent = userAgent,
+                        Platform = fpAttributes.Platform,
+                    };
+
+                    fpAttributesModel.BrowserInstanceCode = crypto.GetMD5Hash(fpAttributesModel.BrowserInstanceJson);
+
+                    easyNetQService.PushData(fpAttributesModel);
+                }
+                else
+                {
+                    sentryClient.CaptureMessage($"FingerPrintCode cannot null. ({data})", SentryLevel.Info);
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+        }
+
+        [HttpPost("bi")]
+        public void Browserinfo([FromBody] string data)
+        {
+            try
+            {
+                var decryptedData = crypto.Decrypt(data);
+
+                var model = JsonConvert.DeserializeObject<Models.BrowserInfoJsonModel>(decryptedData);
+                if (model != null && !string.IsNullOrWhiteSpace(model.SessionKey))
+                {
+
+                    var browserInfo = new BrowserInfo();
+                    var (browserInfoModel, browserInfoAttributeModel) = browserInfo.GetBrowserInfo(HttpContext, model, sentryClient);
+
+                    var browserInfoJson = JsonConvert.SerializeObject(browserInfoModel);
+                    var browserInfoAttributeJson = JsonConvert.SerializeObject(browserInfoAttributeModel);
+                    var browserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeJson);
+
+                    var rawBrowserInfoModel = new FingerPrint.Model.BrowserInfoModel
+                    {
+                        SessionKey = model.SessionKey,
+                        HeadlessScore = model.HeadlessScore,
+                        BrowserInfo = browserInfoJson,
+                        BrowserInfoAttribute = browserInfoAttributeJson,
+                        BrowserInfoAttributeCode = browserInfoAttributeCode
+                    };
+
+                    easyNetQService.PushData(rawBrowserInfoModel);
+                }
+                else
+                {
+                    sentryClient.CaptureMessage($"SessionKey does not exists. ({data})", SentryLevel.Info);
+                }
             }
             catch (Exception ex)
             {
@@ -403,6 +440,59 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return "No values";
-        }        
+        }
+
+        [HttpGet("DecryptData")]
+        public ActionResult<string> DecryptData(string key)
+        {
+            return crypto.Decrypt(key);
+        }
+
+        [HttpPost("CheckVersion")]
+        public void CheckVersion([FromBody] string version)
+        {
+            if (ValidateVersion(version))
+            {
+                var version1 = new Version(version);
+            }
+            else
+            {
+                int dashIndex = version.IndexOf("-");
+                if (dashIndex > -1)
+                    version = version.Substring(0, dashIndex);
+
+                int parenthesisIndex = version.IndexOf("(");
+                if (parenthesisIndex > -1)
+                    version = version.Substring(0, parenthesisIndex);
+
+                String[] versionArray = version.Split(".");
+                if (versionArray.Length > 4)
+                {
+                    version = String.Concat(versionArray[0], ".", versionArray[1], ".", versionArray[2], ".", versionArray[3]);
+                }
+
+                if (ValidateVersion(version))
+                {
+                    var version1 = new Version(version);
+                }
+            }
+        }
+
+        static bool ValidateVersion(string version)
+        {
+            var match = Regex.Match(version, @"^(?<major>\d+)\.(?<minor>\d+)\.(?<build>\d+)\.(?<revision>\d+)$");
+            if (match.Success)
+            {
+                if (int.TryParse(match.Groups["major"].Value, out _) &&
+                  int.TryParse(match.Groups["minor"].Value, out _) &&
+                  int.TryParse(match.Groups["build"].Value, out _) &&
+                  int.TryParse(match.Groups["revision"].Value, out _))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
