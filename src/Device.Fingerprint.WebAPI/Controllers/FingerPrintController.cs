@@ -48,12 +48,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.clientTransactionService = clientTransactionService;
         }
 
-        [HttpGet("scr/{sessionKey}/{subscriberName}")]
-        public ActionResult Script(string sessionKey, string subscriberName)
+        [HttpGet("scr/{subscriberName}")]
+        public ActionResult Script(string subscriberName)
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(sessionKey) && !string.IsNullOrWhiteSpace(subscriberName) && Validation.SessionKey(sessionKey))
+                if (!string.IsNullOrWhiteSpace(subscriberName))
                 {
                     var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
@@ -70,6 +70,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                         if (subscribers != null)
                         {
+                            var sessionKey = Session.Generate();
+
                             var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
 
                             return new JavascriptResult(bundleContent.Content);
@@ -99,6 +101,35 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
+                }
+
+                var bundleFile = new BundleFile(scriptPath);
+
+                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                {
+
+                    return new JavascriptResult(bundleFile.Content);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+
+            return new EmptyResult();
+        }
+
+        [HttpGet("scr/cdn/cookie")]
+        public ActionResult CookieScript()
+        {
+            try
+            {
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/cookie.js";
+
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+                {
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/cookie.min.js";
                 }
 
                 var bundleFile = new BundleFile(scriptPath);

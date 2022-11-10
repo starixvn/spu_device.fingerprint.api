@@ -13,14 +13,14 @@ namespace demoAPI.Controllers
             {
                 return Redirect("Login");
             }
-            try
-            {
-                FpsIntegration(Session["Username"].ToString());
-            }
-            catch(Exception ex)
-            {
-                return View(ex.Message);
-            }
+            //try
+            //{
+            //    FpsIntegration(Session["Username"].ToString());
+            //}
+            //catch(Exception ex)
+            //{
+            //    return View(ex.Message);
+            //}
 
             return View();
         }
