@@ -18,6 +18,8 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
         string Insert(string action, string loginName, long loginTime);
 
         string Insert(string action, string loginName, long custId, long subAccId, long loginTime);
+
+        void Insert(string action, string loginName, long custId, long subAccId, string gfpValidation);
     }
 
     public class TransactionServices : ITransactionServices
@@ -249,6 +251,36 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
         private string GetScriptUrl(string sessionKey)
         {
             return GetUrl(externalAPIUrl, $"api/scr/{sessionKey}/{subscriberName}");
+        }
+        
+        public void Insert(string action, string loginName, long custId, long subAccId, string gfpValidation)
+        {
+            if (string.IsNullOrWhiteSpace(loginName)) throw new ArgumentNullException(loginName, "Login Name cannot be null.");
+            if (string.IsNullOrWhiteSpace(gfpValidation)) throw new ArgumentNullException(gfpValidation, "gfpValidation cannot be null.");            
+
+            var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+            var clientIp = GetIP();
+
+            var gfp = gfpValidation.Split(':');
+            var sessionKey = gfp[0];
+            var subscriberId = gfp[1];
+
+            var transaction = new TransactionModel
+            {
+                LoginName = loginName,
+                SessionKey = sessionKey,
+                SubscriberId = Convert.ToInt32(subscriberId),
+                UserAgent = userAgent,
+                ClientIp = clientIp,
+                Url = HttpContext.Current.Request.Url.AbsoluteUri,
+                Action = action,
+                TransKey = loginName + "#" + sessionKey,
+                CustId = custId,
+                SubAccId = subAccId
+            };
+            var cancelToken = new CancellationToken();
+
+            _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
         }
     }
 }

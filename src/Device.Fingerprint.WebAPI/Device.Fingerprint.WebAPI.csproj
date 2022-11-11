@@ -15,8 +15,8 @@
   <ItemGroup>
     <None Remove="Scripts\fp.js" />
     <None Remove="Scripts\fp.min.js" />
-    <None Remove="Scripts\gfp.js" />
-    <None Remove="Scripts\gfp.min.js" />
+    <None Remove="Scripts\libs\gfp.js" />
+    <None Remove="Scripts\libs\gfp.min.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,10 +26,10 @@
     <Content Include="Scripts\fp.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\gfp.js">
+    <Content Include="Scripts\libs\gfp.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Scripts\gfp.min.js">
+    <Content Include="Scripts\libs\gfp.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

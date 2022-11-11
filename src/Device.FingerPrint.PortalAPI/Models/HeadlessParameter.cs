@@ -11,5 +11,7 @@ namespace Device.FingerPrint.PortalAPI.Models
         public HeadlessBrowserModel HeadlessBrowser { get; set; }
 
         public string RedisKey { get; set; }
+
+        public int SubscriberId { get; set; }
     }
 }

@@ -178,6 +178,64 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("scr/cdn/browserinfo")]
+        public ActionResult BrowserInfoScript()
+        {
+            try
+            {
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.js";
+
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+                {
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.min.js";
+                }
+
+                var bundleFile = new BundleFile(scriptPath);
+
+                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                {
+
+                    return new JavascriptResult(bundleFile.Content);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+
+            return new EmptyResult();
+        }
+
+        [HttpGet("scr/cdn/fingerprint")]
+        public ActionResult FingerPrintScript()
+        {
+            try
+            {
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
+
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+                {
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.min.js";
+                }
+
+                var bundleFile = new BundleFile(scriptPath);
+
+                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                {
+
+                    return new JavascriptResult(bundleFile.Content);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+
+            return new EmptyResult();
+        }
+
 
         [HttpGet("conf/{sessionKey}")]
         [ResponseCache(NoStore = true, Duration = 0)]

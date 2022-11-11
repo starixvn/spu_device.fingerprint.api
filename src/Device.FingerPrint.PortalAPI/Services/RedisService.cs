@@ -1,8 +1,4 @@
 ﻿using StackExchange.Redis.Extensions.Core.Abstractions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
@@ -13,6 +9,10 @@ namespace Device.FingerPrint.PortalAPI.Services
         IRedisDatabase CookieDatabase { get; }
 
         IRedisDatabase HeadlessDatabase { get; }
+
+        IRedisDatabase BrowserDetectDatabase { get; }
+
+        IRedisDatabase FingerPrintDatabase { get; }
     }
     public class RedisService : IRedisService
     {
@@ -22,6 +22,10 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         private readonly IRedisDatabase headlessDatabase;
 
+        private readonly IRedisDatabase browserDetectDatabase;
+
+        private readonly IRedisDatabase fingerPrintDatabase;
+
         public RedisService(IRedisClient redisClient)
         {
             redisDatabase = redisClient.GetDefaultDatabase();
@@ -29,6 +33,10 @@ namespace Device.FingerPrint.PortalAPI.Services
             cookieDatabase = redisClient.Db14;
 
             headlessDatabase = redisClient.Db15;
+
+            browserDetectDatabase = redisClient.Db13;
+
+            fingerPrintDatabase = redisClient.Db12;
         }
 
         public IRedisDatabase RedisDatabase => redisDatabase;
@@ -36,5 +44,9 @@ namespace Device.FingerPrint.PortalAPI.Services
         public IRedisDatabase CookieDatabase => cookieDatabase;
 
         public IRedisDatabase HeadlessDatabase => headlessDatabase;
+
+        public IRedisDatabase BrowserDetectDatabase => browserDetectDatabase;
+
+        public IRedisDatabase FingerPrintDatabase => fingerPrintDatabase;
     }
 }
