@@ -73,7 +73,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     sentryClient.CaptureException(ex);
                 }
-            }
+            }           
         }
 
         [HttpPost("hl")]
@@ -106,6 +106,37 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     sentryClient.CaptureException(ex);
                 }
             }
+                
+        }
+
+        [HttpPost("browserinfo")]
+        public void BrowserInfo([FromBody] BrowserDetectParameter data)
+        {
+            if(data != null)
+            {
+                var redisKey = $"browserinfo:{data.SubscriberId}:{data.RedisKey}";
+
+                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                {
+                    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                }
+            }
+            
+        }
+
+        [HttpPost("fingerprint")]
+        public void FingerPrint([FromBody] FingerprintParameter data)
+        {
+            if(data != null)
+            {
+                var redisKey = $"fingerprint:{data.SubscriberId}:{data.RedisKey}";
+
+                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                {
+                    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                }
+            }
+            
         }
 
         [HttpPost("bi")]

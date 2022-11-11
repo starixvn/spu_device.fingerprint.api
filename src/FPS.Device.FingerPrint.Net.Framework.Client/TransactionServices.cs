@@ -279,6 +279,8 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             var cancelToken = new CancellationToken();
 
             _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
+
+            _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
         }
     }
 }

@@ -49,12 +49,9 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/cookie').then(() => {
     return fpCookie.storageHandler("gfp");
 }).then(res => {
     var data = {
-        'ClientTransCookie': {
-            "SubscriberId": subscriberId,
-            "SessionKey": sessionKey,
-            "Cookie": res
-        },
-        'RedisKey': sessionKey
+        'Cookie': res,
+        'RedisKey': sessionKey,
+        'SubscriberId': subscriberId
     };
 
     fp.post(portalAPIUrl + '/cookie', data);
@@ -69,41 +66,55 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/headless').then(() => {
             "TestsRun": res.testsRun,
             "TestsDetail": res.testsDetail
         },
-        'RedisKey': sessionKey
+        'RedisKey': sessionKey,
+        'SubscriberId': subscriberId
     };
 
     fp.post(portalAPIUrl + '/headless', data);
 });
 
-//try {    
-//    fp.requireJS(cdnAPIUrl)
-//        .then(() => {           
-//            try {
-//                globalFP.capture(apiUrl, subscriberId, sessionKey);
-//            }
-//            catch (err) {
-//                fp.log(apiUrl, "Capture Data", err.code + '|' + err.name + '|' + err.stack + '|' + err.message + '|' + sessionKey);
-//            }
+fp.requireJS(cdnAPIUrl + '/scr/cdn/browserinfo').then(() => {
+    return fpBrowserDetect.getBrowserInfo();
+}).then(res => {
+    var data = {
+        'BrowserDetect': {
+            "OsName": res.OsName,
+            "BrowserName": res.BrowserName,
+            "Platform": res.Platform,
+            "Vendor": res.Vendor,
+            "IsMobileDevice": res.IsMobileDevice
+        },
+        'RedisKey': sessionKey,
+        'SubscriberId': subscriberId
+    };
 
+    fp.post(portalAPIUrl + '/browserinfo', data);
+});
 
-//            Promise.resolve(fp.post(apiUrl + '/ctl', {
-//                'SessionKey': sessionKey,
-//                'SubscriberId': subscriberId,
-//                'Url': window.location && window.location.href
-//                    ? window.location.href
-//                    : "",
-//                'UserAgent': navigator.userAgent,
-//                'Information': 'Capture data successful'
-//            }));
-//        })
-//        .catch((error) => {
-//            fp.log(apiUrl, "Load Script", error.code + '|' + error.name + '|' + error.stack + '|' + error.message + '|' + sessionKey);
-//        });
-//}
-//catch (err) {
-//    fp.log(apiUrl, "Load API", err.message);
-//}
+fp.requireJS(cdnAPIUrl + '/scr/cdn/fingerprint').then(() => {
+    return globalFP.getFP();
+}).then(res => {
+    var data = {
+        'fingerprint': {
+            "Id": res.Id,
+            "Attributes": res.Properties
+        },
+        'RedisKey': sessionKey,
+        'SubscriberId': subscriberId
+    };
 
+    fp.post(portalAPIUrl + '/fingerprint', data);
+});
+
+var gfpInput = document.getElementById("__gfpValidation");
+if (gfpInput === null) {
+    var container = document.forms[0] || document.body;
+    gfpInput = document.createElement("INPUT");
+    gfpInput.id = gfpInput.name = "__gfpValidation";
+    gfpInput.setAttribute("type", "hidden");
+    gfpInput.setAttribute("value", sessionKey + ':' + subscriberId)
+    container.appendChild(gfpInput);
+}
 
 
 
