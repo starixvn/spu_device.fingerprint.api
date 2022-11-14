@@ -3,14 +3,12 @@ using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
 using System;
-using System.Text.RegularExpressions;
 
 namespace Device.Fingerprint.WebAPI.Controllers
 {
@@ -24,7 +22,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISubscriberServices subscriberServices;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IEasyNetQService easyNetQService;
-        private readonly Crypto crypto;
         private readonly IRedisService redisService;
         private readonly ISentryClient sentryClient;
 
@@ -41,7 +38,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.easyNetQService = easyNetQService;
-            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.redisService = redisService;
             this.sentryClient = sentryClient;
             this.clientTransactionService = clientTransactionService;

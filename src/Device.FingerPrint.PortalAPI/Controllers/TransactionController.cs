@@ -53,7 +53,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     if (!string.IsNullOrWhiteSpace(descryptData))
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
-
+                }
                         var redisKey = redisService.GetRedisKey(RedisKey.Cookie.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
@@ -71,7 +71,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 catch (Exception ex)
                 {
                     sentryClient.CaptureException(ex);
-            }           
+            }
         }
 
         [HttpPost("hl")]
@@ -103,37 +103,36 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     sentryClient.CaptureException(ex);
             }
-                
+
         }
 
         [HttpPost("bi")]
         public void BrowserInfo([FromBody] BrowserDetectParameter data)
         {
-            if(data != null)
+            if (data != null)
             {
                 var redisKey = $"browserinfo:{data.SubscriberId}:{data.RedisKey}";
 
-                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                //{
-                //    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                //}
+                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                {
+                    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                }
             }
-            
+
         }
 
         [HttpPost("fp")]
         public void FingerPrint([FromBody] FingerprintParameter data)
         {
-            if(data != null)
+            if (data != null)
             {
                 var redisKey = $"fingerprint:{data.SubscriberId}:{data.RedisKey}";
 
-                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                //{
-                //    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                //}
+                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                {
+                    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                }
             }
-            
         }
 
         [HttpPost("bi")]
@@ -155,6 +154,26 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
                             RedisAddAsync<BrowserDetectModel>(redisKey, deserilizeData.BrowserDetect);
+                        ClientIp = data.ClientIp,
+                        LoginName = data.LoginName,
+                        SessionKey = data.SessionKey,
+                        UserAgent = data.UserAgent,
+                        UserAgentCode = userAgentCode,
+                        TransTime = DateTime.Now,
+                        Url = urlAddress.GetLeftPart(UriPartial.Path),
+                        Action = data.Action,
+                        TransKey = data.TransKey,
+                        CustId = data.CustId,
+                        SubAccId = data.SubAccId
+                    };
+
+                    easyNetQService.PushData(transaction);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error("PortalAPI Transaction", ex);
+            }
                         }
                         else
                         {
