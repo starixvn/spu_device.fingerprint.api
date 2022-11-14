@@ -3,9 +3,6 @@ using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
 {
@@ -20,7 +17,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             this.redisService = redisService;
         }
 
-        [HttpPost("cookie")]
+        [HttpPost("ce")]
         public void Cookie([FromBody] CookieParameter data)
         {
             if(data != null)
@@ -35,7 +32,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }           
         }
 
-        [HttpPost("headless")]
+        [HttpPost("hl")]
         public void Headless([FromBody] HeadlessParameter data)
         {
             if (data != null)
@@ -50,7 +47,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 
         }
 
-        [HttpPost("browserinfo")]
+        [HttpPost("bi")]
         public void BrowserInfo([FromBody] BrowserDetectParameter data)
         {
             if(data != null)
@@ -65,7 +62,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             
         }
 
-        [HttpPost("fingerprint")]
+        [HttpPost("fp")]
         public void FingerPrint([FromBody] FingerprintParameter data)
         {
             if(data != null)

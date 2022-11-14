@@ -19,7 +19,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
 
         string Insert(string action, string loginName, long custId, long subAccId, long loginTime);
 
-        void Insert(string action, string loginName, long custId, long subAccId, string gfpValidation);
+        void Insert(string action, string loginName, long custId, long subAccId);
     }
 
     public class TransactionServices : ITransactionServices
@@ -253,15 +253,15 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             return GetUrl(externalAPIUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
         
-        public void Insert(string action, string loginName, long custId, long subAccId, string gfpValidation)
+        public void Insert(string action, string loginName, long custId, long subAccId)
         {
             if (string.IsNullOrWhiteSpace(loginName)) throw new ArgumentNullException(loginName, "Login Name cannot be null.");
-            if (string.IsNullOrWhiteSpace(gfpValidation)) throw new ArgumentNullException(gfpValidation, "gfpValidation cannot be null.");            
+                        
 
             var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
             var clientIp = GetIP();
 
-            var gfp = gfpValidation.Split(':');
+            var gfp = HttpContext.Current.Request.Form["__fdi"].Split(':');
             var sessionKey = gfp[0];
             var subscriberId = gfp[1];
 

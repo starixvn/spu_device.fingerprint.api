@@ -26,7 +26,7 @@ namespace demoAPI.Controllers
                 Session["Username"] = loginModel.Username;
 
 
-                FpsIntegration(loginModel.Username, Request.Form["__gfpValidation"]);
+                FpsIntegration(loginModel.Username);
 
                 return RedirectToAction("index", "home");
             }
@@ -34,16 +34,17 @@ namespace demoAPI.Controllers
             return View("Index");
         }
 
-        private void FpsIntegration(string loginName, string gfpValidation)
+        private void FpsIntegration(string loginName)
         {
             try
             {
+
                 var subscriberName = ConfigurationManager.AppSettings["subscriberName"].ToString();
                 var internalAPIUrl = ConfigurationManager.AppSettings["internalAPIUrl"].ToString();
 
                 var fpsService = new TransactionServices(subscriberName, internalAPIUrl);
 
-                fpsService.Insert("Login", loginName, 0, 0, gfpValidation);
+                fpsService.Insert("Login", loginName, 0, 0);
 
 
             }
