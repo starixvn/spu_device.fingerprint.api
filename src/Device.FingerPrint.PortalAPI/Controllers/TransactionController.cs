@@ -27,11 +27,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"cookie:{data.SubscriberId}:{data.RedisKey}";
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
+                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                //{
 
-                    redisService.RedisDatabase.AddAsync(redisKey, data.Cookie, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                }
+                //    redisService.RedisDatabase.AddAsync(redisKey, data.Cookie, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                //}
             }           
         }
 
@@ -42,10 +42,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"headless:{data.SubscriberId}:{data.RedisKey}";
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.HeadlessBrowser, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                }
+                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                //{
+                //    redisService.RedisDatabase.AddAsync(redisKey, data.HeadlessBrowser, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                //}
             }
                 
         }
@@ -57,10 +57,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"browserinfo:{data.SubscriberId}:{data.RedisKey}";
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                }
+                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                //{
+                //    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                //}
             }
             
         }
@@ -72,10 +72,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"fingerprint:{data.SubscriberId}:{data.RedisKey}";
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                }
+                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                //{
+                //    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                //}
             }
             
         }

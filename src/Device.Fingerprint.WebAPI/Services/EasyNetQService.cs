@@ -1,5 +1,4 @@
-﻿using Device.FingerPrint.Model;
-using Device.FingerPrint.Queue;
+﻿using Device.FingerPrint.Queue;
 using EasyNetQ;
 using Microsoft.Extensions.Configuration;
 using System;
