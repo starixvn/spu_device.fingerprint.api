@@ -14,5 +14,12 @@ namespace Device.Fingerprint.WebAPI.Services
 
             return string.Format("{0}", guid);
         }
+
+        public static string Generate(int subscriberId)
+        {
+            var guid = Guid.NewGuid().ToString("N");
+
+            return string.Format("{0}-{1}", subscriberId, guid);
+        }
     }
 }
