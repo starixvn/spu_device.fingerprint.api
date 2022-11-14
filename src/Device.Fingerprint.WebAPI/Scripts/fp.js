@@ -112,7 +112,7 @@ if (gfpInput === null) {
     gfpInput = document.createElement("INPUT");
     gfpInput.id = gfpInput.name = "__fdi";
     gfpInput.setAttribute("type", "hidden");
-    gfpInput.setAttribute("value", sessionKey + ':' + subscriberId)
+    gfpInput.setAttribute("value", sessionKey)
     container.appendChild(gfpInput);
 }
 

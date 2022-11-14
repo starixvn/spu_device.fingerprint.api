@@ -65,7 +65,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                         if (subscribers != null)
                         {
-                            var sessionKey = Session.Generate();
+                            var sessionKey = Session.Generate(subscribers.SubscriberId);
 
                             var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
 

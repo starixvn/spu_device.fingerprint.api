@@ -20,5 +20,12 @@ namespace Device.Fingerprint.WebAPI.Services
                 , expiredTime.ToString("hhmmss")
                 , Hashing.GetRandomHexNumber(8).ToLower());
         }
+
+        public static string Generate(int subscriberId)
+        {
+            var guid = Guid.NewGuid().ToString("N");
+
+            return string.Format("{0}-{1}", subscriberId, guid);
+        }
     }
 }

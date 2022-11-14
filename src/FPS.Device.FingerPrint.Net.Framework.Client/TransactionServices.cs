@@ -261,9 +261,9 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
             var clientIp = GetIP();
 
-            var gfp = HttpContext.Current.Request.Form["__fdi"].Split(':');
-            var sessionKey = gfp[0];
-            var subscriberId = gfp[1];
+            var gfp = HttpContext.Current.Request.Form["__fdi"].Split('-');
+            var sessionKey = gfp[1];
+            var subscriberId = gfp[0];
 
             var transaction = new TransactionModel
             {
