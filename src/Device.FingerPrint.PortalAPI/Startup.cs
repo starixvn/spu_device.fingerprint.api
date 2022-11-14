@@ -1,21 +1,18 @@
+using Device.FingerPrint.PortalAPI.Services;
+using Fanex.Data;
+using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.OpenApi.Models;
-using StackExchange.Redis.Extensions.Core.Configuration;
-using StackExchange.Redis.Extensions.Core.Abstractions;
-using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.Core;
-using Device.FingerPrint.PortalAPI.Services;
+using StackExchange.Redis.Extensions.Core.Abstractions;
+using StackExchange.Redis.Extensions.Core.Configuration;
+using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.MsgPack;
+using System.Linq;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -31,6 +28,9 @@ namespace Device.FingerPrint.PortalAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var appSettings = new AppSettings(this.Configuration);
+            services.AddSingleton<IAppSettings>(appSettings);
+
             services.AddControllers();
 
             services.AddCors(opt =>
@@ -71,6 +71,9 @@ namespace Device.FingerPrint.PortalAPI
             });
 
             RegisterRedis(services);
+
+            services.RegisterService();
+            FanexDataConfig(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -93,8 +96,27 @@ namespace Device.FingerPrint.PortalAPI
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();                
+                endpoints.MapControllers();
             });
+        }
+
+        private void FanexDataConfig(IAppSettings appSettings)
+        {
+            var connections = Configuration
+                                  .GetSection("AppConfig:Connections")
+                                  .GetChildren()
+                                  .AsEnumerable()
+                                  .ToDictionary(
+                                           x => x.GetValue<string>("Name"),
+                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+                                   );
+
+            DbSettingProviderManager
+              .StartNewSession()
+              .Use(connections)
+              .WithMySql()
+              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
+              .Run();
         }
 
         private void RegisterRedis(IServiceCollection services)

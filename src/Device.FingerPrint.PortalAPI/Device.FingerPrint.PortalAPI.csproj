@@ -5,6 +5,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.7" />
+    <PackageReference Include="Sentry.AspNetCore" Version="2.1.8" />
     <PackageReference Include="StackExchange.Redis.Extensions.AspNetCore" Version="8.0.5" />
     <PackageReference Include="StackExchange.Redis.Extensions.MsgPack" Version="8.0.5" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
@@ -12,6 +14,17 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="App_Data\LOCAL\SPNames.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="App_Data\PROD\SPNames.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 

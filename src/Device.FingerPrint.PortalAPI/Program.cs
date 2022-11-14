@@ -1,3 +1,4 @@
+using Fanex.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -33,8 +34,11 @@ namespace Device.FingerPrint.PortalAPI
                     webBuilder.UseUrls("http://*:5009");
 #else
                     webBuilder.UseUrls("http://*:5000");
-#endif 
-                    webBuilder.UseStartup<Startup>();
+#endif
+
+                    webBuilder
+                    .UseSentry()
+                    .UseStartup<Startup>();
                 });
     }
 }
