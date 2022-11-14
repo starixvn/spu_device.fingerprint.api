@@ -72,7 +72,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 catch (Exception ex)
                 {
                     sentryClient.CaptureException(ex);
-                }
             }           
         }
 
@@ -104,7 +103,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 catch (Exception ex)
                 {
                     sentryClient.CaptureException(ex);
-                }
             }
                 
         }
@@ -116,10 +114,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"browserinfo:{data.SubscriberId}:{data.RedisKey}";
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                }
+                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                //{
+                //    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                //}
             }
             
         }
@@ -131,10 +129,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"fingerprint:{data.SubscriberId}:{data.RedisKey}";
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
-                }
+                //if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                //{
+                //    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                //}
             }
             
         }
