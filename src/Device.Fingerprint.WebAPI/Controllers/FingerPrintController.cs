@@ -119,7 +119,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/cookie")]
+        [HttpGet("scr/cdn/ce")]
         public ActionResult CookieScript()
         {
             try
@@ -148,7 +148,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/headless")]
+        [HttpGet("scr/cdn/hl")]
         public ActionResult HeadlessBrowserScript()
         {
             try
@@ -177,7 +177,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/browserinfo")]
+        [HttpGet("scr/cdn/bi")]
         public ActionResult BrowserInfoScript()
         {
             try
@@ -206,7 +206,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/fingerprint")]
+        [HttpGet("scr/cdn/fp")]
         public ActionResult FingerPrintScript()
         {
             try

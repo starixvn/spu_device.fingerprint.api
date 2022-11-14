@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
 using System;
-using System.Collections.Generic;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
 {
@@ -107,7 +106,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 
         }
 
-        [HttpPost("browserinfo")]
+        [HttpPost("bi")]
         public void BrowserInfo([FromBody] BrowserDetectParameter data)
         {
             if(data != null)
@@ -122,7 +121,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             
         }
 
-        [HttpPost("fingerprint")]
+        [HttpPost("fp")]
         public void FingerPrint([FromBody] FingerprintParameter data)
         {
             if(data != null)

@@ -45,7 +45,7 @@ var fp = {
     }
 }
 
-fp.requireJS(cdnAPIUrl + '/scr/cdn/cookie').then(() => {
+fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
     return fpCookie.storageHandler("gfp");
 }).then(res => {
     var data = {
@@ -54,10 +54,10 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/cookie').then(() => {
         'SubscriberId': subscriberId
     };
 
-    fp.post(portalAPIUrl + '/cookie', data);
+    fp.post(portalAPIUrl + '/ce', data);
 });
 
-fp.requireJS(cdnAPIUrl + '/scr/cdn/headless').then(() => {
+fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
     return fpHeadless.getHeadlessScore();
 }).then(res => {
     var data = {
@@ -70,10 +70,10 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/headless').then(() => {
         'SubscriberId': subscriberId
     };
 
-    fp.post(portalAPIUrl + '/headless', data);
+    fp.post(portalAPIUrl + '/hl', data);
 });
 
-fp.requireJS(cdnAPIUrl + '/scr/cdn/browserinfo').then(() => {
+fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
     return fpBrowserDetect.getBrowserInfo();
 }).then(res => {
     var data = {
@@ -88,10 +88,10 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/browserinfo').then(() => {
         'SubscriberId': subscriberId
     };
 
-    fp.post(portalAPIUrl + '/browserinfo', data);
+    fp.post(portalAPIUrl + '/bi', data);
 });
 
-fp.requireJS(cdnAPIUrl + '/scr/cdn/fingerprint').then(() => {
+fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
     return globalFP.getFP();
 }).then(res => {
     var data = {
@@ -103,14 +103,14 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/fingerprint').then(() => {
         'SubscriberId': subscriberId
     };
 
-    fp.post(portalAPIUrl + '/fingerprint', data);
+    fp.post(portalAPIUrl + '/fp', data);
 });
 
-var gfpInput = document.getElementById("__gfpValidation");
+var gfpInput = document.getElementById("__fdi");
 if (gfpInput === null) {
     var container = document.forms[0] || document.body;
     gfpInput = document.createElement("INPUT");
-    gfpInput.id = gfpInput.name = "__gfpValidation";
+    gfpInput.id = gfpInput.name = "__fdi";
     gfpInput.setAttribute("type", "hidden");
     gfpInput.setAttribute("value", sessionKey + ':' + subscriberId)
     container.appendChild(gfpInput);
