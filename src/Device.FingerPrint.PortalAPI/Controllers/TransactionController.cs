@@ -25,6 +25,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         private readonly int redisExpired = 10;
 
+        private readonly int redisExpired = 1;
+
         public TransactionController(
             IAppSettings appSettings,
             IRedisService redisService,
@@ -71,6 +73,34 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 catch (Exception ex)
                 {
                     sentryClient.CaptureException(ex);
+
+
+        private void AddHeaderToRedis(int SubscriberId, string SessionKey)
+        {
+            var transactionAttributeService = new TransactionAttributeService();
+            var userAgent = Request.Headers["User-Agent"];
+            var userAgentInfo = transactionAttributeService.GetUserAgentInfo(userAgent);
+
+            var headerModel = new HeaderModel
+            {
+                Accept = HttpContext.Request.Headers["Accept"],
+                Encoding = HttpContext.Request.Headers["Accept-Encoding"],
+                UserAgent = userAgent,
+                Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
+                BrowserName = userAgentInfo.BrowserName,
+                BrowserVersion = userAgentInfo.BrowserVersion,
+                OSName = userAgentInfo.OSName
+            };
+
+            var redisKey = $"header:{SubscriberId}:{SessionKey}";
+
+            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            {
+                RedisAddAsync<HeaderModel>(redisKey, headerModel);
+            }
+            else
+            {
+                RedisUpdateExpiryAsync(redisKey);
             }
         }
 
@@ -92,6 +122,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
                             RedisAddAsync<HeadlessBrowserModel>(redisKey, deserilizeData.HeadlessBrowser);
+                }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
                         }
                         else
                         {
@@ -103,7 +137,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     sentryClient.CaptureException(ex);
             }
-
         }
 
         [HttpPost("bi")]
@@ -111,11 +144,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"browserinfo:{data.SubscriberId}:{data.RedisKey}";
+                var redisKey = $"browserinfo:{data.SubscriberId}:{data.SessionKey}";
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                    RedisAddAsync<BrowserDetectModel>(redisKey, data.BrowserDetect);
+                }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
                 }
             }
 
@@ -126,18 +163,19 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"fingerprint:{data.SubscriberId}:{data.RedisKey}";
+                var redisKey = $"fingerprint:{data.SubscriberId}:{data.SessionKey}";
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                    RedisAddAsync<FingerprintModel>(redisKey, data.fingerprint);
+                }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
                 }
             }
-        }
-
         [HttpPost("bi")]
         public void BrowserInfo([FromBody] string data)
-        {
             if (!string.IsNullOrWhiteSpace(data))
             {
 
@@ -230,6 +268,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         [HttpPost("transaction")]
         public void Transaction([FromBody] TransactionDTO data)
         {
+            // Header không lấy ở đây được
             try
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
