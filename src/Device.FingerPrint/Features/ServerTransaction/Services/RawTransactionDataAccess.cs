@@ -14,6 +14,8 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
 
         IEnumerable<ServerTransactionEntity> GetRawTransN(int batchSize, int retry, int offsetId);
 
+        void InsertTransaction(string transJson);
+
         void InsertServerTransaction(string transJson);
 
         void UpdateServerTransaction(string rawTransJson, int retry, int offsetId, long offsetValue);                
@@ -58,6 +60,16 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
         public void InsertServerTransaction(string transJson)
         {
             var criteria = new InsertServerTransactionCriteria
+            {
+                Transaction = transJson
+            };
+
+            repository.Execute(criteria);
+        }
+
+        public void InsertTransaction(string transJson)
+        {
+            var criteria = new InsertTransactionCriteria
             {
                 Transaction = transJson
             };

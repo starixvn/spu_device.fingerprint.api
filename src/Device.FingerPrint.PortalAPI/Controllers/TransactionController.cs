@@ -4,6 +4,7 @@ using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
@@ -14,14 +15,19 @@ namespace Device.FingerPrint.PortalAPI.Controllers
     {
         private readonly IRedisService redisService;
         private readonly IEasyNetQService easyNetQService;
+        private readonly ITransactionService transactionService;
         private readonly Crypto crypto;
+
+        private readonly int redisExpired = 1;
 
         public TransactionController(
             IAppSettings appSettings,
             IRedisService redisService,
+            ITransactionService transactionService,
             IEasyNetQService easyNetQService)
         {
             this.redisService = redisService;
+            this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
         }
@@ -31,12 +37,47 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"cookie:{data.SubscriberId}:{data.RedisKey}";
+                var redisKey = $"cookie:{data.SubscriberId}:{data.SessionKey}";
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.Cookie, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                    RedisAddAsync<string>(redisKey, data.Cookie);
                 }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
+                }
+            }
+            AddHeaderToRedis(data.SubscriberId, data.SessionKey);
+        }
+
+
+        private void AddHeaderToRedis(int SubscriberId, string SessionKey)
+        {
+            var transactionAttributeService = new TransactionAttributeService();
+            var userAgent = Request.Headers["User-Agent"];
+            var userAgentInfo = transactionAttributeService.GetUserAgentInfo(userAgent);
+
+            var headerModel = new HeaderModel
+            {
+                Accept = HttpContext.Request.Headers["Accept"],
+                Encoding = HttpContext.Request.Headers["Accept-Encoding"],
+                UserAgent = userAgent,
+                Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
+                BrowserName = userAgentInfo.BrowserName,
+                BrowserVersion = userAgentInfo.BrowserVersion,
+                OSName = userAgentInfo.OSName
+            };
+
+            var redisKey = $"header:{SubscriberId}:{SessionKey}";
+
+            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            {
+                RedisAddAsync<HeaderModel>(redisKey, headerModel);
+            }
+            else
+            {
+                RedisUpdateExpiryAsync(redisKey);
             }
         }
 
@@ -45,14 +86,17 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"headless:{data.SubscriberId}:{data.RedisKey}";
+                var redisKey = $"headless:{data.SubscriberId}:{data.SessionKey}";
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.HeadlessBrowser, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                    RedisAddAsync<HeadlessBrowserModel>(redisKey, data.HeadlessBrowser);
+                }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
                 }
             }
-
         }
 
         [HttpPost("bi")]
@@ -60,11 +104,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"browserinfo:{data.SubscriberId}:{data.RedisKey}";
+                var redisKey = $"browserinfo:{data.SubscriberId}:{data.SessionKey}";
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.BrowserDetect, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                    RedisAddAsync<BrowserDetectModel>(redisKey, data.BrowserDetect);
+                }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
                 }
             }
 
@@ -75,24 +123,23 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"fingerprint:{data.SubscriberId}:{data.RedisKey}";
+                var redisKey = $"fingerprint:{data.SubscriberId}:{data.SessionKey}";
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    redisService.RedisDatabase.AddAsync(redisKey, data.fingerprint, DateTimeOffset.UtcNow.AddMinutes(1), when: StackExchange.Redis.When.NotExists);
+                    RedisAddAsync<FingerprintModel>(redisKey, data.fingerprint);
+                }
+                else
+                {
+                    RedisUpdateExpiryAsync(redisKey);
                 }
             }
-        }
-
-        [HttpGet("getcookie")]
-        public ClientTransactionCookieModel GetCookie(string sessionKey)
-        {
-            return redisService.RedisDatabase.GetAsync<ClientTransactionCookieModel>(sessionKey).Result;
         }
 
         [HttpPost("transaction")]
         public void Transaction([FromBody] TransactionDTO data)
         {
+            // Header không lấy ở đây được
             try
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && data.SubscriberId > 0)
@@ -116,13 +163,26 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         SubAccId = data.SubAccId
                     };
 
-                    easyNetQService.PushData(transaction);
+                    var transactionInsertModel = transactionService.MergeData(transaction);
+
+                    easyNetQService.PushData(transactionInsertModel);
                 }
             }
             catch (Exception ex)
             {
                 LogService.Error("PortalAPI Transaction", ex);
             }
+        }
+
+
+        private void RedisAddAsync<T>(string redisKey, T value)
+        {
+            redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired), when: StackExchange.Redis.When.NotExists);
+        }
+
+        private void RedisUpdateExpiryAsync(string redisKey)
+        {
+            redisService.RedisDatabase.UpdateExpiryAsync(redisKey, DateTimeOffset.UtcNow.AddMinutes(redisExpired));
         }
     }
 }

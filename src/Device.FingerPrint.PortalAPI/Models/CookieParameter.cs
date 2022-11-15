@@ -6,6 +6,6 @@
 
         public string Cookie { get; set; }
 
-        public string RedisKey { get; set; }
+        public string SessionKey { get; set; }
     }
 }

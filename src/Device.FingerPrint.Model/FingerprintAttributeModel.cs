@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.Model
 {
-    public class FingerprintAttributesModel
+    public class FingerprintAttributeModel
     {
         public string FingerPrintCode { get; set; }
 

@@ -29,6 +29,7 @@
         private readonly IBrowserInfoService browserInfoService;
         
 
+        private readonly List<TransactionModel> listTransactionInsertModel;
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
         private readonly List<ClientTransactionLogsEntity> listClientTransLogs;
@@ -48,6 +49,7 @@
             this.transactionReportServices = transactionReportServices;
             this.browserInfoService = browserInfoService;           
 
+            listTransactionInsertModel = new List<TransactionModel>();
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
             listFpAttributes = new List<FingerprintAttributesEntity>();
@@ -101,7 +103,7 @@
             };
         }
 
-        private static FingerprintAttributesEntity TranformFingerprintAttributesEntity(FingerprintAttributesModel model)
+        private static FingerprintAttributesEntity TranformFingerprintAttributesEntity(FingerprintAttributeModel model)
         {
             return new FingerprintAttributesEntity
             {
@@ -130,91 +132,37 @@
         }
 
         private void StartConsuming()
-        {            
-            var easyNetQConnector = RabbitMQBus();
-
-            easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+        {
+            try
             {
-                x.Add<TransactionModel>((message, info) =>
+                var easyNetQConnector = RabbitMQBus();
+
+                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
-                    var serverTransaction = TranformTransactionEntity(message.Body);
-
-                    listServerTrans.Add(serverTransaction);
-
-                    if (listServerTrans.Count >= appSettings.ServerTransBatchSize)
+                    x.Add<TransactionModel>((message, info) =>
                     {
-                        rawTransactionService.InsertServerTransaction(listServerTrans);
+                        try
+                        {
+                            listTransactionInsertModel.Add(message.Body);
 
-                        var groupTrans = listServerTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
-                                        .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
-                                        .ToList();
+                            if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                            {
+                                rawTransactionService.InsertTransaction(listTransactionInsertModel);
 
-                        Task.Run(() => InsertServerTransactionDailySum(groupTrans));
-
-                        listServerTrans.Clear();
-                    }
-                })
-                .Add<ClientTransactionModel>((message, info) =>
-                {
-                    var clientTrans = TranformClientTransactionEntity(message.Body);
-
-                    if (!listClientTrans.Exists(x => x.SessionKey == clientTrans.SessionKey))
-                    {
-                        listClientTrans.Add(clientTrans);
-                    }
-
-                    if (listClientTrans.Count >= appSettings.ClientTransBatchSize)
-                    {
-                        fingerPrintService.InsertClientTransaction(listClientTrans);
-
-                        var groupTrans = listClientTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
-                                        .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
-                                        .ToList();
-
-                        Task.Run(() => InsertClientTransactionDailySum(groupTrans));
-
-                        listClientTrans.Clear();
-                    }
-                })
-                .Add<FingerprintAttributesModel>((message, info) =>
-                {
-                    listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
-
-                    if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
-                    {
-                        fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
-
-                        listFpAttributes.Clear();
-                    }
-                })
-                .Add<BrowserInfoModel>((message, info) =>
-                {
-                    listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
-
-                    if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
-                    {
-                        browserInfoService.InsertBrowserInfo(listBrowserInfo);
-
-                        listBrowserInfo.Clear();
-                    }
-                })
-                .Add<ClientTransactionLogsModel>((message, info) =>
-                {
-                    var clientTrans = TranformClientTransactionLogsEntity(message.Body);
-
-                    if (!listClientTransLogs.Exists(x => x.SessionKey == clientTrans.SessionKey))
-                    {
-                        listClientTransLogs.Add(clientTrans);
-                    }
-
-                    if (listClientTransLogs.Count >= appSettings.ClientTransLogsBatchSize)
-                    {
-                        fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
-
-                        listClientTransLogs.Clear();
-                    }
+                                listTransactionInsertModel.Clear();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
+                        }
+                    });
                 });
-            });
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
         }
 
         private EasyNetQConnector RabbitMQBus()

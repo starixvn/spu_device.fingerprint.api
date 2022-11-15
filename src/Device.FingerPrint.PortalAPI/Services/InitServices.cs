@@ -12,6 +12,7 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         private static void InitService(this IServiceCollection services)
         {
+            services.AddSingleton<ITransactionService, TransactionService>();
         }
 
         private static void RegisterQueueService(this IServiceCollection services)

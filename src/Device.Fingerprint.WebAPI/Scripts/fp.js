@@ -50,7 +50,7 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
 }).then(res => {
     var data = {
         'Cookie': res,
-        'RedisKey': sessionKey,
+        'SessionKey': sessionKey,
         'SubscriberId': subscriberId
     };
 
@@ -66,7 +66,7 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
             "TestsRun": res.testsRun,
             "TestsDetail": res.testsDetail
         },
-        'RedisKey': sessionKey,
+        'SessionKey': sessionKey,
         'SubscriberId': subscriberId
     };
 
@@ -84,7 +84,7 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
             "Vendor": res.Vendor,
             "IsMobileDevice": res.IsMobileDevice
         },
-        'RedisKey': sessionKey,
+        'SessionKey': sessionKey,
         'SubscriberId': subscriberId
     };
 
@@ -99,7 +99,7 @@ fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
             "Id": res.Id,
             "Attributes": res.Properties
         },
-        'RedisKey': sessionKey,
+        'SessionKey': sessionKey,
         'SubscriberId': subscriberId
     };
 
@@ -112,7 +112,7 @@ if (gfpInput === null) {
     gfpInput = document.createElement("INPUT");
     gfpInput.id = gfpInput.name = "__fdi";
     gfpInput.setAttribute("type", "hidden");
-    gfpInput.setAttribute("value", sessionKey)
+    gfpInput.setAttribute("value", subscriberId+"-"+sessionKey)
     container.appendChild(gfpInput);
 }
 

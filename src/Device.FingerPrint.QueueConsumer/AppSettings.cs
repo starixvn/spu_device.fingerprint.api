@@ -14,6 +14,8 @@ namespace Device.FingerPrint.QueueConsumer
 
         string Environment { get; }
 
+        int TransBatchSize { get; }
+
         int ClientTransBatchSize { get; }
 
         int ClientTransLogsBatchSize { get; }
@@ -34,6 +36,7 @@ namespace Device.FingerPrint.QueueConsumer
         private readonly string apiUrl;
         private readonly string sentryDsn;
         private readonly string environment;
+        private readonly int transBatchSize;
         private readonly int clientTransBatchSize;
         private readonly int clientTransLogsBatchSize;
         private readonly int serverTransBatchSize;
@@ -51,6 +54,8 @@ namespace Device.FingerPrint.QueueConsumer
             sentryDsn = GetValue<string>("Sentry:Dsn");
 
             environment = GetValue<string>("AppConfig:Environment");
+
+            transBatchSize = GetValue<int>("Consumer:TransBatchSize");
 
             clientTransBatchSize = GetValue<int>("Consumer:ClientTrans");
 
@@ -70,6 +75,8 @@ namespace Device.FingerPrint.QueueConsumer
         public string SentryDsn => sentryDsn;
 
         public string Environment => environment;
+
+        public int TransBatchSize => transBatchSize;
 
         public int ClientTransBatchSize => clientTransBatchSize;
 

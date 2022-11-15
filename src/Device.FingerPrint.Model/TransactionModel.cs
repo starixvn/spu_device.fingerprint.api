@@ -29,5 +29,9 @@ namespace Device.FingerPrint.Model
         public long SubAccId { get; set; }
 
         public DateTime TransTime { get; set; }
+
+        public string CookieCode { get; set; }
+
+        public FingerprintAttributeModel FingerprintAttribute { get; set; }
     }
 }
