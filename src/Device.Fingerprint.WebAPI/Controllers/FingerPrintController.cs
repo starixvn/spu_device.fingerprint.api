@@ -4,6 +4,7 @@ using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
@@ -25,6 +26,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IRedisService redisService;
         private readonly ISentryClient sentryClient;
 
+        private string etagValue;
+
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -41,15 +44,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.redisService = redisService;
             this.sentryClient = sentryClient;
             this.clientTransactionService = clientTransactionService;
+
+            etagValue = etagValue ?? Guid.NewGuid().ToString("N");
         }
 
         [HttpGet("scr/{subscriberName}")]
+        [ETagFilter(200)]
         public ActionResult Script(string subscriberName)
         {
             try
             {
                 if (!string.IsNullOrWhiteSpace(subscriberName))
-                {
+                {   
                     var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
                     if (appSettings.Environment == "PROD")
@@ -115,7 +121,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/ce")]
+        [HttpGet("scr/cdn/ce")]   
+        [ETagFilter(200)]
         public ActionResult CookieScript()
         {
             try
@@ -131,9 +138,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (!string.IsNullOrWhiteSpace(bundleFile.Content))
                 {
-
                     return new JavascriptResult(bundleFile.Content);
-
                 }
             }
             catch (Exception ex)
@@ -145,10 +150,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/cdn/hl")]
+        [ETagFilter(200)]
         public ActionResult HeadlessBrowserScript()
         {
             try
             {
+
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
 
                 if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
@@ -174,6 +181,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/cdn/bi")]
+        [ETagFilter(200)]
         public ActionResult BrowserInfoScript()
         {
             try
@@ -203,6 +211,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/cdn/fp")]
+        [ETagFilter(200)]
         public ActionResult FingerPrintScript()
         {
             try
@@ -357,6 +366,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return "No values";
+        }
+
+        private void Etag()
+        {
+            if (HttpContext.Request.Headers.Keys.Contains("If-None-Match") && !string.IsNullOrWhiteSpace(HttpContext.Request.Headers["If-None-Match"]))
+            {   
+                etagValue = HttpContext.Request.Headers["If-None-Match"];
+            }
+
+            HttpContext.Response.Headers.Add("ETag", new[] { etagValue });
         }
     }
 }

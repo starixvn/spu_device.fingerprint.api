@@ -4,6 +4,7 @@ using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.PortalAPI.Ultilities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Sentry;
@@ -24,8 +25,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly ISubscriberServices subscriberServices;
 
         private readonly int redisExpired = 10;
-
+        
         private readonly int redisExpired = 1;
+
 
         public TransactionController(
             IAppSettings appSettings,
@@ -38,7 +40,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
-            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
+            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);            
             this.sentryClient = sentryClient;
             this.subscriberServices = subscriberServices;
         }
