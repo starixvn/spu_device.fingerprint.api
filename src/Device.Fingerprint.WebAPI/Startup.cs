@@ -61,6 +61,8 @@ namespace Device.Fingerprint.WebAPI
                 jsonInputFormatter.SupportedMediaTypes.Add("application/json");
             });
 
+            services.AddHttpContextAccessor();
+
             services.AddHealthChecks();
 
             #region Swagger Configuration
@@ -152,7 +154,7 @@ namespace Device.Fingerprint.WebAPI
                     new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
                     {
                         Private = true,
-                        MaxAge = TimeSpan.FromSeconds(600)
+                        MaxAge = TimeSpan.FromDays(30)
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
                     new string[] { "Accept-Encoding" };

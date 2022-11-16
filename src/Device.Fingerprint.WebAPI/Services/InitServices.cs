@@ -14,7 +14,7 @@ namespace Device.Fingerprint.WebAPI.Services
             RegisterTransactionService(services);
             RegisterRawTransactionService(services);
             RegisterSubscriberService(services);            
-            RegisterQueueService(services);
+            RegisterQueueService(services);                       
         }
 
         private static void RegisterFingerPrintService(this IServiceCollection services)

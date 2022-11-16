@@ -3,6 +3,7 @@ using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -17,8 +18,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly IEasyNetQService easyNetQService;
         private readonly ITransactionService transactionService;
         private readonly Crypto crypto;
-
+        
         private readonly int redisExpired = 1;
+
 
         public TransactionController(
             IAppSettings appSettings,
@@ -29,7 +31,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
-            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
+            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);            
         }
 
         [HttpPost("ce")]
@@ -39,6 +41,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 var redisKey = $"cookie:{data.SubscriberId}:{data.SessionKey}";
 
+
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
                     RedisAddAsync<string>(redisKey, data.Cookie);
@@ -47,8 +50,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     RedisUpdateExpiryAsync(redisKey);
                 }
-            }
-            AddHeaderToRedis(data.SubscriberId, data.SessionKey);
+
+                AddHeaderToRedis(data.SubscriberId, data.SessionKey);
+            }           
         }
 
 

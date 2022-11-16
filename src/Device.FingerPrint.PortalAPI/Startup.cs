@@ -12,7 +12,9 @@ using StackExchange.Redis.Extensions.Core.Abstractions;
 using StackExchange.Redis.Extensions.Core.Configuration;
 using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.MsgPack;
+using System;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -40,6 +42,8 @@ namespace Device.FingerPrint.PortalAPI
                     .AllowAnyHeader()
                     .AllowAnyMethod());
             });
+
+            services.AddResponseCaching();
 
             services.AddSwaggerGen(swagger =>
             {
@@ -70,6 +74,8 @@ namespace Device.FingerPrint.PortalAPI
                 });
             });
 
+            services.AddHttpContextAccessor();
+
             RegisterRedis(services);
 
             services.RegisterService();
@@ -87,6 +93,22 @@ namespace Device.FingerPrint.PortalAPI
             app.UseRouting();
 
             app.UseCors();
+
+            app.UseResponseCaching();
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.GetTypedHeaders().CacheControl =
+                    new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
+                    {
+                        Private = true,
+                        MaxAge = TimeSpan.FromSeconds(600)
+                    };
+                context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
+                    new string[] { "Accept-Encoding" };
+
+                await next();
+            });
 
             app.UseAuthorization();
 
