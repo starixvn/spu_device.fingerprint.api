@@ -69,6 +69,11 @@ namespace Device.FingerPrint.PortalAPI.Services
                 result.Platform = browserInfo.Platform;
             }
 
+            if (browserInfo != null)
+            {
+                result.Platform = browserInfo.Platform;
+            }
+
             result.BrowserInstanceCode = crypto.GetMD5Hash(result.BrowserInstanceJson);
 
             return result;
