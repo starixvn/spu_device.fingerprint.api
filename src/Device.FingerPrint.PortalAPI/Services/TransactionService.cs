@@ -29,12 +29,12 @@ namespace Device.FingerPrint.PortalAPI.Services
             var browserInfo = redisService.GetBrowserInfo(model.SubscriberId, model.SessionKey);
 
             model.CookieCode = cookie;
-            model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header);
+            model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, browserInfo);
 
             return model;
         }
 
-        private FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel model, HeaderModel headerModel)
+        private FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel model, HeaderModel headerModel, BrowserDetectModel browserInfo)
         {
             if (model == null) return new FingerprintAttributeModel();
 
@@ -53,6 +53,11 @@ namespace Device.FingerPrint.PortalAPI.Services
                 result.BrowserName = headerModel.BrowserName;
                 result.BrowserVersion = headerModel.BrowserVersion;
                 result.OSName = headerModel.OSName;
+            }
+
+            if (browserInfo != null)
+            {
+                result.Platform = browserInfo.Platform;
             }
 
             return result;
