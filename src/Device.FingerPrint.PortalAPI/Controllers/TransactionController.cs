@@ -97,7 +97,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
             if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
             {
-                RedisAddAsync<HeaderModel>(redisKey, headerModel);
+                RedisAddAsync(redisKey, headerModel);
             }
             else
             {
@@ -149,7 +149,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    RedisAddAsync<BrowserDetectModel>(redisKey, data.BrowserDetect);
+                    RedisAddAsync(redisKey, data.BrowserDetect);
                 }
                 else
                 {
@@ -168,7 +168,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    RedisAddAsync<FingerprintModel>(redisKey, data.fingerprint);
+                    RedisAddAsync(redisKey, data.fingerprint);
                 }
                 else
                 {
