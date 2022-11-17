@@ -6,7 +6,6 @@ using Device.FingerPrint.PortalAPI.Ultilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using Sentry;
 using Sentry.Protocol;
 using System;
