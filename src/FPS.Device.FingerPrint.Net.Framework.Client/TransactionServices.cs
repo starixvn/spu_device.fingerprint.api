@@ -13,13 +13,13 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
     {
         string Insert(string action, string loginName, DateTime loginTime);
 
-        string Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime);
+        //string Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime);
 
         string Insert(string action, string loginName, long loginTime);
 
         string Insert(string action, string loginName, long custId, long subAccId, long loginTime);
 
-        void Insert(string action, string loginName, long custId, long subAccId);
+        void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime);
     }
 
     public class TransactionServices : ITransactionServices
@@ -86,41 +86,41 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             return string.Empty;
         }
 
-        public string Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
-        {
-            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
-            {
-                var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
-                var clientIp = GetIP();
-                var sessionKey = GetSessionKey();
+        //public string Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
+        //{
+        //    if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
+        //    {
+        //        var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
+        //        var clientIp = GetIP();
+        //        var sessionKey = GetSessionKey();
 
-                if (string.IsNullOrEmpty(sessionKey))
-                {
-                    return string.Empty;
-                }
+        //        if (string.IsNullOrEmpty(sessionKey))
+        //        {
+        //            return string.Empty;
+        //        }
 
-                var transaction = new TransactionModel
-                {
-                    LoginName = loginName,
-                    SessionKey = sessionKey,
-                    SubscriberName = subscriberName,
-                    UserAgent = userAgent,
-                    ClientIp = clientIp,                    
-                    Url = HttpContext.Current.Request.Url.AbsoluteUri,
-                    Action = action,
-                    TransKey = loginName + "#" + loginTime.Ticks,
-                    CustId = custId,
-                    SubAccId = subAccId
-                };
-                var cancelToken = new CancellationToken();
+        //        var transaction = new TransactionModel
+        //        {
+        //            LoginName = loginName,
+        //            SessionKey = sessionKey,
+        //            SubscriberName = subscriberName,
+        //            UserAgent = userAgent,
+        //            ClientIp = clientIp,                    
+        //            Url = HttpContext.Current.Request.Url.AbsoluteUri,
+        //            Action = action,
+        //            TransKey = loginName + "#" + loginTime.Ticks,
+        //            CustId = custId,
+        //            SubAccId = subAccId
+        //        };
+        //        var cancelToken = new CancellationToken();
 
-                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
+        //        _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
 
-                return GetScriptUrl(sessionKey);
-            }
+        //        return GetScriptUrl(sessionKey);
+        //    }
 
-            return string.Empty;
-        }
+        //    return string.Empty;
+        //}
 
         public string Insert(string action, string loginName, long loginTime)
         {
@@ -253,28 +253,26 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
             return GetUrl(externalAPIUrl, $"api/scr/{sessionKey}/{subscriberName}");
         }
         
-        public void Insert(string action, string loginName, long custId, long subAccId)
+        public void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime)
         {
             if (string.IsNullOrWhiteSpace(loginName)) throw new ArgumentNullException(loginName, "Login Name cannot be null.");
-                        
+            if (string.IsNullOrWhiteSpace(subscriberName)) throw new ArgumentNullException(loginName, "Subscriber Name cannot be null.");
 
             var userAgent = HttpContext.Current.Request.Headers["User-Agent"].ToString();
             var clientIp = GetIP();
 
-            var gfp = HttpContext.Current.Request.Form["__fdi"].Split('-');
-            var sessionKey = gfp[1];
-            var subscriberId = gfp[0];
+            var sessionKey = HttpContext.Current.Request.Form["__fdi"];         
 
             var transaction = new TransactionModel
             {
                 LoginName = loginName,
-                SessionKey = sessionKey,
-                SubscriberId = Convert.ToInt32(subscriberId),
+                SessionKey = sessionKey,                
+                SubscriberName = subscriberName,
                 UserAgent = userAgent,
                 ClientIp = clientIp,
                 Url = HttpContext.Current.Request.Url.AbsoluteUri,
                 Action = action,
-                TransKey = loginName + "#" + sessionKey,
+                TransKey = loginName + "#" + loginTime.Ticks,
                 CustId = custId,
                 SubAccId = subAccId
             };

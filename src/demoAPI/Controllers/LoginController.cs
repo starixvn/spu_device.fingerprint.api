@@ -44,9 +44,7 @@ namespace demoAPI.Controllers
 
                 var fpsService = new TransactionServices(subscriberName, internalAPIUrl);
 
-                fpsService.Insert("Login", loginName, 0, 0);
-
-
+                fpsService.Insert("Login", loginName, 0, 0, DateTime.Now);
             }
             catch (Exception ex)
             {

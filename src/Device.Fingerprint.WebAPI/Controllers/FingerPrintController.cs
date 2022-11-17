@@ -366,16 +366,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return "No values";
-        }
-
-        private void Etag()
-        {
-            if (HttpContext.Request.Headers.Keys.Contains("If-None-Match") && !string.IsNullOrWhiteSpace(HttpContext.Request.Headers["If-None-Match"]))
-            {   
-                etagValue = HttpContext.Request.Headers["If-None-Match"];
-            }
-
-            HttpContext.Response.Headers.Add("ETag", new[] { etagValue });
-        }
+        }        
     }
 }

@@ -5,7 +5,6 @@ using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
