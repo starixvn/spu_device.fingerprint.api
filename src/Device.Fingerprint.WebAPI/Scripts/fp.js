@@ -42,79 +42,94 @@ var fp = {
             exception: exception,
         };
         fp.post(url + "/cle", data);
+    },
+    checkDomReady: function () {
+        var regex = new RegExp("loaded|complete|interactive");
+
+        if (regex.test(document.readyState)) {
+            fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
+                return fpCookie.storageHandler("gfp");
+            }).then(res => {
+                var data = {
+                    'Cookie': res,
+                    'SessionKey': sessionKey,
+                    'SubscriberId': subscriberId
+                };
+
+                fp.post(portalAPIUrl + '/ce', data);
+            });
+
+            fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
+                return fpHeadless.getHeadlessScore();
+            }).then(res => {
+                var data = {
+                    'HeadlessBrowser': {
+                        "Score": res.Score,
+                        "TestsRun": res.testsRun,
+                        "TestsDetail": res.testsDetail
+                    },
+                    'SessionKey': sessionKey,
+                    'SubscriberId': subscriberId
+                };
+
+                fp.post(portalAPIUrl + '/hl', data);
+            });
+
+            fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
+                return fpBrowserDetect.getBrowserInfo();
+            }).then(res => {
+                var data = {
+                    'BrowserDetect': {
+                        "OsName": res.OsName,
+                        "BrowserName": res.BrowserName,
+                        "Platform": res.Platform,
+                        "Vendor": res.Vendor,
+                        "IsMobileDevice": res.IsMobileDevice
+                    },
+                    'SessionKey': sessionKey,
+                    'SubscriberId': subscriberId
+                };
+
+                fp.post(portalAPIUrl + '/bi', data);
+            });
+
+            fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
+                return globalFP.getFP();
+            }).then(res => {
+                var data = {
+                    'fingerprint': {
+                        "Id": res.Id,
+                        "Attributes": res.Properties
+                    },
+                    'SessionKey': sessionKey,
+                    'SubscriberId': subscriberId
+                };
+
+                fp.post(portalAPIUrl + '/fp', data);
+            });
+
+            var gfpInput = document.getElementById("__fdi");
+            if (gfpInput === null) {
+                var container = document.forms[0] || document.body;
+                gfpInput = document.createElement("INPUT");
+                gfpInput.id = gfpInput.name = "__fdi";
+                gfpInput.setAttribute("type", "hidden");
+                gfpInput.setAttribute("value", sessionKey)
+                container.appendChild(gfpInput);
+            }
+        }
     }
 }
 
-fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
-    return fpCookie.storageHandler("gfp");
-}).then(res => {
-    var data = {
-        'Cookie': res,
-        'SessionKey': sessionKey,
-        'SubscriberId': subscriberId
-    };
+try {
+    if (document.addEventListener) {
+        document.addEventListener("DOMContentLoaded", e => {
+            fp.checkDomReady();
+        }, false);
+    }
+    else {
+        fp.checkDomReady();
+    }
+} catch (exception) {
 
-    fp.post(portalAPIUrl + '/ce', data);
-});
-
-fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
-    return fpHeadless.getHeadlessScore();
-}).then(res => {
-    var data = {
-        'HeadlessBrowser': {
-            "Score": res.Score,
-            "TestsRun": res.testsRun,
-            "TestsDetail": res.testsDetail
-        },
-        'SessionKey': sessionKey,
-        'SubscriberId': subscriberId
-    };
-
-    fp.post(portalAPIUrl + '/hl', data);
-});
-
-fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
-    return fpBrowserDetect.getBrowserInfo();
-}).then(res => {
-    var data = {
-        'BrowserDetect': {
-            "OsName": res.OsName,
-            "BrowserName": res.BrowserName,
-            "Platform": res.Platform,
-            "Vendor": res.Vendor,
-            "IsMobileDevice": res.IsMobileDevice
-        },
-        'SessionKey': sessionKey,
-        'SubscriberId': subscriberId
-    };
-
-    fp.post(portalAPIUrl + '/bi', data);
-});
-
-fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
-    return globalFP.getFP();
-}).then(res => {
-    var data = {
-        'fingerprint': {
-            "Id": res.Id,
-            "Attributes": res.Properties
-        },
-        'SessionKey': sessionKey,
-        'SubscriberId': subscriberId
-    };
-
-    fp.post(portalAPIUrl + '/fp', data);
-});
-
-var gfpInput = document.getElementById("__fdi");
-if (gfpInput === null) {
-    var container = document.forms[0] || document.body;
-    gfpInput = document.createElement("INPUT");
-    gfpInput.id = gfpInput.name = "__fdi";
-    gfpInput.setAttribute("type", "hidden");
-    gfpInput.setAttribute("value", sessionKey)
-    container.appendChild(gfpInput);
 }
-
-
-
