@@ -2,6 +2,7 @@
 using Device.FingerPrint.Queue;
 using EasyNetQ;
 using Microsoft.Extensions.Configuration;
+using System;
 
 namespace Device.Fingerprint.WebAPI.Services
 {
@@ -15,7 +16,7 @@ namespace Device.Fingerprint.WebAPI.Services
     {
         private EasyNetQConnector _easyNetQConnector;
         private readonly IConfiguration _configuration;
-
+        private bool IgnoreMessage;
         public EasyNetQService(IConfiguration _configuration)
         {
             this._configuration = _configuration;
@@ -37,13 +38,18 @@ namespace Device.Fingerprint.WebAPI.Services
                     .DeclareQueue(_configuration["RabbitMQ:Name"])
                     .DeclareRoutingKey(_configuration["RabbitMQ:RoutingKey"])
                     .Bind();
+
+            IgnoreMessage = Convert.ToBoolean(_configuration["RabbitMQ:IgnoreMessage"]);
         }
 
         public void PushData<T>(T model)
         {
-            var message = new Message<T>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
+            if(!IgnoreMessage)
+            {
+                var message = new Message<T>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
 
-            _easyNetQConnector.AdvanceBus.Publish(_easyNetQConnector.Exchange, _easyNetQConnector.RoutingKey, true, message);
+                _easyNetQConnector.AdvanceBus.Publish(_easyNetQConnector.Exchange, _easyNetQConnector.RoutingKey, true, message);
+            }           
         }
     }
 }
