@@ -22,7 +22,14 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly Crypto crypto;
         private readonly ISentryClient sentryClient;
         private readonly int redisExpired = 10;
-
+        enum RedisKey
+        {
+            Cookie,
+            Headless,
+            FingerPrint,
+            BrowserInfo,
+            Header
+        }
 
         public TransactionController(
             IAppSettings appSettings,
@@ -51,7 +58,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
 
-                        var redisKey = GetRedisKey("cookie", deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                        var redisKey = GetRedisKey(RedisKey.Cookie.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
@@ -85,7 +92,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
 
-                        var redisKey = GetRedisKey("headless", deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                        var redisKey = GetRedisKey(RedisKey.Headless.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
@@ -118,7 +125,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
 
-                        var redisKey = GetRedisKey("browserinfo", deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                        var redisKey = GetRedisKey(RedisKey.BrowserInfo.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
@@ -151,7 +158,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
 
-                        var redisKey = GetRedisKey("fingerprint", deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                        var redisKey = GetRedisKey(RedisKey.FingerPrint.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
@@ -232,15 +239,18 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         private void RedisRemoveAll(int subscriberId, string sessionKey)
         {
-            var arrKey = new List<string> { "cookie", "header", "headless", "browserinfo", "fingerprint" };
             var arrRedisKey = new List<string>();
-            foreach (var key in arrKey)
+
+            foreach (var key in Enum.GetNames(typeof(RedisKey)))
             {
-                arrRedisKey.Add(GetRedisKey(key, subscriberId, sessionKey));
+                var redisKey = GetRedisKey(key, subscriberId, sessionKey);
+
+                arrRedisKey.Add(redisKey);
             }
 
             redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
         }
+
         private void AddHeaderToRedis(int SubscriberId, string SessionKey)
         {
             var headerModel = new HeaderModel
@@ -254,11 +264,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
             };
 
-            var redisKey = GetRedisKey("header", SubscriberId, SessionKey);
+            var redisKey = GetRedisKey(RedisKey.Header.ToString(), SubscriberId, SessionKey);
 
             if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
             {
-                RedisAddAsync<HeaderModel>(redisKey, headerModel);
+                RedisAddAsync(redisKey, headerModel);
             }
             else
             {
