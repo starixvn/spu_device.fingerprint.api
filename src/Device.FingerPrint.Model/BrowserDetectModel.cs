@@ -2,7 +2,7 @@
 {
     public class BrowserDetectModel
     {
-        public string OsName { get; set; }
+        public string OSName { get; set; }
 
         public string BrowserName { get; set; }
 

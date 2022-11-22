@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Device.FingerPrint.Model;
+using System;
 
 namespace Device.FingerPrint.Features.ServerTransaction.Model
 {
@@ -11,8 +12,6 @@ namespace Device.FingerPrint.Features.ServerTransaction.Model
         public int SubscriberId { get; set; }
 
         public string SessionKey { get; set; }
-
-        public DateTime TransTime { get; set; }
 
         public string ClientIp { get; set; }
 
@@ -29,6 +28,18 @@ namespace Device.FingerPrint.Features.ServerTransaction.Model
         public long CustId { get; set; }
 
         public long SubAccId { get; set; }
+
+        public DateTime TransTime { get; set; }
+
+        public string CookieCode { get; set; }
+
+        public FingerprintAttributeModel FingerprintAttribute { get; set; }
+
+        public UserAgentInfoModel UserAgentInfo { get; set; }
+
+        public BrowserInfoModel BrowserInfo { get; set; }
+
+        public BrowserInfoAttributeModel BrowserInfoAttribute { get; set; }
 
     }
 }

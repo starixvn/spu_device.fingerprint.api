@@ -1,8 +1,6 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    using Device.FingerPrint.Features.BrowserInfo.Model;
     using Device.FingerPrint.Features.BrowserInfo.Services;
-    using Device.FingerPrint.Features.ClientTransaction.Model;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Features.Monitor.Model;
     using Device.FingerPrint.Features.Monitor.Services;
@@ -24,17 +22,10 @@
     public class Consumer : BackgroundService
     {
         private readonly IRawTransactionService rawTransactionService;
-        private readonly IClientTransactionService fingerPrintService;
         private readonly ITransactionReportServices transactionReportServices;
-        private readonly IBrowserInfoService browserInfoService;
         
 
-        private readonly List<TransactionModel> listTransactionInsertModel;
-        private readonly List<TransactionEntity> listServerTrans;
-        private readonly List<ClientTransactionEntity> listClientTrans;
-        private readonly List<ClientTransactionLogsEntity> listClientTransLogs;
-        private readonly List<FingerprintAttributesEntity> listFpAttributes;
-        private readonly List<BrowserInfoEntity> listBrowserInfo;
+        private readonly List<TransactionEntity> listTransactionInsertModel;
         private readonly IAppSettings appSettings;
 
         public Consumer(IAppSettings appSettings
@@ -44,18 +35,12 @@
                         , IBrowserInfoService browserInfoService)
         {
             this.rawTransactionService = rawTransactionService;
-            this.fingerPrintService = fingerPrintService;
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
-            this.browserInfoService = browserInfoService;           
 
-            listTransactionInsertModel = new List<TransactionModel>();
-            listServerTrans = new List<TransactionEntity>();
-            listClientTrans = new List<ClientTransactionEntity>();
-            listFpAttributes = new List<FingerprintAttributesEntity>();
-            listBrowserInfo = new List<BrowserInfoEntity>();
-            listClientTransLogs = new List<ClientTransactionLogsEntity>();
+            listTransactionInsertModel = new List<TransactionEntity>();
         }
+        
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
         {
@@ -72,64 +57,12 @@
                 Url = model.Url,
                 Action = model.Action,
                 CustId = model.CustId,
-                SubAccId = model.SubAccId
-            };
-        }
-
-        private static ClientTransactionEntity TranformClientTransactionEntity(ClientTransactionModel model)
-        {
-            return new ClientTransactionEntity
-            {
+                SubAccId = model.SubAccId,
                 CookieCode = model.CookieCode,
-                FingerPrintCode = model.FingerPrintCode,
-                SessionKey = model.SessionKey,
-                SubscriberId = model.SubscriberId,
-                Url = model.Url,
-                AddonCode = model.AddonCode,
-                TransTime = model.TransTime
-            };
-        }
-
-        private static ClientTransactionLogsEntity TranformClientTransactionLogsEntity(ClientTransactionLogsModel model)
-        {
-            return new ClientTransactionLogsEntity
-            {
-                SessionKey = model.SessionKey,
-                SubscriberId = model.SubscriberId,
-                Url = model.Url,
-                UserAgent = model.UserAgent,
-                TransTime = model.TransTime,
-                Information = model.Information
-            };
-        }
-
-        private static FingerprintAttributesEntity TranformFingerprintAttributesEntity(FingerprintAttributeModel model)
-        {
-            return new FingerprintAttributesEntity
-            {
-                FingerPrintCode = model.FingerPrintCode,
-                Attribute = model.Attribute,
-                Accept = model.Accept,
-                Encoding = model.Encoding,
-                Headers = model.Headers,
-                OSName = model.OSName,
-                BrowserName = model.BrowserName,
-                BrowserVersion = model.BrowserVersion,
-                UserAgent = model.UserAgent,
-                Platform = model.Platform,
-                BrowserInstanceCode = model.BrowserInstanceCode
-            };
-        }
-
-        private static BrowserInfoEntity TranformBrowserInfoEntityEntity(BrowserInfoModel model)
-        {
-            return new BrowserInfoEntity
-            {
-                SessionKey = model.SessionKey,
-                HeadlessScore = model.HeadlessScore,
+                FingerprintAttribute = model.FingerprintAttribute,
+                UserAgentInfo = model.UserAgentInfo,
                 BrowserInfo = model.BrowserInfo,
-                BrowserInfoAttribute = model.BrowserInfoAttribute,
-                BrowserInfoAttributeCode = model.BrowserInfoAttributeCode
+                BrowserInfoAttribute = model.BrowserInfoAttribute
             };
         }
 
@@ -145,7 +78,8 @@
                     {
                         try
                         {
-                            listTransactionInsertModel.Add(message.Body);
+                            var transaction = TranformTransactionEntity(message.Body);
+                            listTransactionInsertModel.Add(transaction);
 
                             if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
                             {

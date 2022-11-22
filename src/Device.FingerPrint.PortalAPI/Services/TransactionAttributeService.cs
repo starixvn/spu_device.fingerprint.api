@@ -1,9 +1,14 @@
-﻿using Device.FingerPrint.PortalAPI.Models;
+﻿using Device.FingerPrint.Model;
 using DeviceDetectorNET;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
-    public class TransactionAttributeService
+    public interface ITransactionAttributeService
+    {
+        UserAgentInfoModel GetUserAgentInfo(string userAgent);
+    }
+
+    public class TransactionAttributeService : ITransactionAttributeService
     {
         public UserAgentInfoModel GetUserAgentInfo(string userAgent)
         {
@@ -14,20 +19,42 @@ namespace Device.FingerPrint.PortalAPI.Services
 
             var userAgentInfo = new UserAgentInfoModel();
 
-            var osInfo = deviceDetector.GetOs();
-
-            if (osInfo != null && osInfo.Success)
+            if (deviceDetector.IsBot())
             {
-                userAgentInfo.OSName = osInfo.Match.Name;
+                var botInfo = deviceDetector.GetBot();
+                if (botInfo != null && botInfo.Success)
+                {
+                    userAgentInfo.BotName = botInfo.Match.Name;
+                    userAgentInfo.BotCategory = botInfo.Match.Category;
+                }
+                else
+                {
+                    userAgentInfo.BotName = "Not detected";
+                }
             }
 
             var clientInfo = deviceDetector.GetClient();
 
             if (clientInfo != null && clientInfo.Success)
             {
-                userAgentInfo.BrowserName = clientInfo.Match.Name;
-                userAgentInfo.BrowserVersion = clientInfo.Match.Version;
+                userAgentInfo.ClientType = clientInfo.Match.Type;
+                userAgentInfo.ClientName = clientInfo.Match.Name;
+                userAgentInfo.ClientVersion = clientInfo.Match.Version;
             }
+
+            var osInfo = deviceDetector.GetOs();
+
+            if (osInfo != null && osInfo.Success)
+            {
+                userAgentInfo.OSName = osInfo.Match.Name;
+                userAgentInfo.OSShortName = osInfo.Match.ShortName;
+                userAgentInfo.OSVersion = osInfo.Match.Version;
+                userAgentInfo.OSPlatform = osInfo.Match.Platform;
+            }
+
+            userAgentInfo.Device = deviceDetector.GetDeviceName();
+            userAgentInfo.Brand = deviceDetector.GetBrandName();
+            userAgentInfo.Model = deviceDetector.GetModel();
 
             return userAgentInfo;
         }

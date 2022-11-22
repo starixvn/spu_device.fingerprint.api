@@ -15,7 +15,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
 
         IEnumerable<ServerTransactionModel> GetServerTransactionN(int batchSize, int retry, int offsetId);
 
-        void InsertTransaction(IEnumerable<TransactionModel> transactions);
+        void InsertTransaction(IEnumerable<TransactionEntity> transactions);
 
         void InsertServerTransaction(IEnumerable<TransactionEntity> transactions);
 
@@ -124,7 +124,7 @@ namespace Device.FingerPrint.Features.ServerTransaction.Services
             rawTransactionDataAccess.InsertServerTransaction(JsonFingerPrint);
         }
 
-        public void InsertTransaction(IEnumerable<TransactionModel> transactions)
+        public void InsertTransaction(IEnumerable<TransactionEntity> transactions)
         {
             var transJson = JsonConvert.SerializeObject(transactions);
             rawTransactionDataAccess.InsertTransaction(transJson);

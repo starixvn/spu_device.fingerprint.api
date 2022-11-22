@@ -1,0 +1,17 @@
+﻿namespace Device.FingerPrint.Model
+{
+    public class BrowserInfoAttributeModel
+    {
+        public string BrowserInfoAttributeCode { get; set; }
+
+        public string SecChUa { get; set; }
+
+        public string SecChUaPlatform { get; set; }
+
+        public string SecChUaMobile { get; set; }
+
+        public string JsBrowserName { get; set; }
+
+        public string JsOSName { get; set; }
+    }
+}

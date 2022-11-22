@@ -33,5 +33,11 @@ namespace Device.FingerPrint.Model
         public string CookieCode { get; set; }
 
         public FingerprintAttributeModel FingerprintAttribute { get; set; }
+
+        public UserAgentInfoModel UserAgentInfo { get; set; }
+
+        public BrowserInfoModel BrowserInfo { get; set; }
+
+        public BrowserInfoAttributeModel BrowserInfoAttribute { get; set; }
     }
 }
