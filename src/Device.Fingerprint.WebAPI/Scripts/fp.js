@@ -44,6 +44,8 @@ var fp = {
         fp.post(url + "/cle", data);
     },
     checkDomReady: function () {
+
+        console.log(3);
         var regex = new RegExp("loaded|complete|interactive");
 
         if (regex.test(document.readyState)) {
@@ -80,7 +82,7 @@ var fp = {
             }).then(res => {
                 var data = {
                     'BrowserDetect': {
-                        "OsName": res.OsName,
+                        "OSName": res.OSName,
                         "BrowserName": res.BrowserName,
                         "Platform": res.Platform,
                         "Vendor": res.Vendor,
@@ -122,12 +124,15 @@ var fp = {
 }
 
 try {
+    console.log(1);
     if (document.addEventListener) {
+        console.log(2);
         document.addEventListener("DOMContentLoaded", e => {
             fp.checkDomReady();
         }, false);
     }
     else {
+        console.log(3);
         fp.checkDomReady();
     }
 } catch (exception) {

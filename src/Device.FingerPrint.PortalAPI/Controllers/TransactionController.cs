@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sentry;
 using Sentry.Protocol;
 using System;
+using System.Collections.Generic;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
 {
@@ -24,8 +25,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly ISubscriberServices subscriberServices;
 
         private readonly int redisExpired = 10;
-        
-        private readonly int redisExpired = 1;
+
+        private readonly int redisExpired = 10;
 
 
         public TransactionController(
@@ -39,7 +40,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
-            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);            
+            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.sentryClient = sentryClient;
             this.subscriberServices = subscriberServices;
         }
@@ -78,26 +79,22 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         private void AddHeaderToRedis(int SubscriberId, string SessionKey)
         {
-            var transactionAttributeService = new TransactionAttributeService();
-            var userAgent = Request.Headers["User-Agent"];
-            var userAgentInfo = transactionAttributeService.GetUserAgentInfo(userAgent);
-
             var headerModel = new HeaderModel
             {
                 Accept = HttpContext.Request.Headers["Accept"],
                 Encoding = HttpContext.Request.Headers["Accept-Encoding"],
-                UserAgent = userAgent,
+                UserAgent = Request.Headers["User-Agent"],
                 Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
-                BrowserName = userAgentInfo.BrowserName,
-                BrowserVersion = userAgentInfo.BrowserVersion,
-                OSName = userAgentInfo.OSName
+                secChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "Other",
+                secChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
+                secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
             };
 
-            var redisKey = $"header:{SubscriberId}:{SessionKey}";
+            var redisKey = GetRedisKey("header", SubscriberId, SessionKey);
 
             if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
             {
-                RedisAddAsync(redisKey, headerModel);
+                RedisAddAsync<HeaderModel>(redisKey, headerModel);
             }
             else
             {
@@ -145,11 +142,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"browserinfo:{data.SubscriberId}:{data.SessionKey}";
+                var redisKey = GetRedisKey("browserinfo", data.SubscriberId, data.SessionKey);
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    RedisAddAsync(redisKey, data.BrowserDetect);
+                    RedisAddAsync<BrowserDetectModel>(redisKey, data.BrowserDetect);
                 }
                 else
                 {
@@ -164,11 +161,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (data != null)
             {
-                var redisKey = $"fingerprint:{data.SubscriberId}:{data.SessionKey}";
+                var redisKey = GetRedisKey("fingerprint", data.SubscriberId, data.SessionKey);
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
-                    RedisAddAsync(redisKey, data.fingerprint);
+                    RedisAddAsync<FingerprintModel>(redisKey, data.fingerprint);
                 }
                 else
                 {
@@ -266,10 +263,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             RedisRemoveAll(SubscriberId, SessionKey);
         }
 
+        [HttpPost("removeRedis")]
+        public void RemoveRedis([FromForm] int SubscriberId, [FromForm] string SessionKey)
+        {
+            RedisRemoveAll(SubscriberId, SessionKey);
+        }
+
         [HttpPost("transaction")]
         public void Transaction([FromBody] TransactionDTO data)
         {
-            // Header không lấy ở đây được
             try
             {
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
@@ -325,6 +327,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             // Method intentionally left empty.            
         }
 
+        private string GetRedisKey(string key, int subscriberId, string sessionKey)
+        {
+            return $"{key}:{subscriberId}:{sessionKey}";
+        }
+
         private void RedisAddAsync<T>(string redisKey, T value)
         {
             redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired), when: StackExchange.Redis.When.NotExists);
@@ -333,6 +340,18 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private void RedisUpdateExpiryAsync(string redisKey)
         {
             redisService.RedisDatabase.UpdateExpiryAsync(redisKey, DateTimeOffset.UtcNow.AddMinutes(redisExpired));
+        }
+
+        private void RedisRemoveAll(int subscriberId, string sessionKey)
+        {
+            var arrKey = new List<string> { "cookie", "header", "headless", "browserinfo", "fingerprint" };
+            var arrRedisKey = new List<string>();
+            foreach (var key in arrKey)
+            {
+                arrRedisKey.Add(GetRedisKey(key, subscriberId, sessionKey));
+            }
+
+            redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
         }
 
         private void RedisRemoveAll(int subscriberId, string sessionKey)

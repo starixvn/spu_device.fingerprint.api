@@ -31,6 +31,7 @@ namespace Device.FingerPrint.PortalAPI.Services
                 browserInfoModel.HeadlessScore = headless.Score;
                 browserInfoModel.HeadlessDetail = headless.TestsDetail;
             }
+            browserInfoModel.HeadlessDetail = headless.TestsDetail;
 
             var userAgentInfo = ParseUserAgentInfo(header);
             model.CookieCode = cookie;
