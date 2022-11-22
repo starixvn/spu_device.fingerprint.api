@@ -1,5 +1,4 @@
-﻿var apiUrl = '__apiUrl__';
-var subscriberId = '__subscriberId__';
+﻿var subscriberId = '__subscriberId__';
 var sessionKey = '__sessionKey__';
 var cdnAPIUrl = '__cdnAPIUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
@@ -23,7 +22,7 @@ var fp = {
                 document.head.appendChild(script);
             }
             catch (err) {
-                fp.log(apiUrl, "Load Script", err.message + '|' + sessionKey);
+                fp.log(portalAPIUrl, "Load Script", err.message + '|' + sessionKey);
             }
         });
     },
@@ -49,65 +48,75 @@ var fp = {
         var regex = new RegExp("loaded|complete|interactive");
 
         if (regex.test(document.readyState)) {
-            fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
-                return fpCookie.storageHandler("gfp");
-            }).then(res => {
-                var data = {
-                    'Cookie': res,
-                    'SessionKey': sessionKey,
-                    'SubscriberId': subscriberId
-                };
+            fp.requireJS(cdnAPIUrl + '/scr/cdn/crt').then(() => {
+                fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
+                    return fpCookie.storageHandler("gfp");
+                }).then(res => {
+                    var data = {
+                        'Cookie': res,
+                        'SessionKey': sessionKey,
+                        'SubscriberId': subscriberId
+                    };
+                    crypt.encryptingWithKey(data).then(res => {
+                        fp.post(portalAPIUrl + '/ce', res);
+                    });
 
-                fp.post(portalAPIUrl + '/ce', data);
-            });
+                });
 
-            fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
-                return fpHeadless.getHeadlessScore();
-            }).then(res => {
-                var data = {
-                    'HeadlessBrowser': {
-                        "Score": res.Score,
-                        "TestsRun": res.testsRun,
-                        "TestsDetail": res.testsDetail
-                    },
-                    'SessionKey': sessionKey,
-                    'SubscriberId': subscriberId
-                };
+                fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
+                    return fpHeadless.getHeadlessScore();
+                }).then(res => {
+                    var data = {
+                        'HeadlessBrowser': {
+                            "Score": res.Score,
+                            "TestsRun": res.testsRun,
+                            "TestsDetail": res.testsDetail
+                        },
+                        'SessionKey': sessionKey,
+                        'SubscriberId': subscriberId
+                    };
 
-                fp.post(portalAPIUrl + '/hl', data);
-            });
+                    crypt.encryptingWithKey(data).then(res => {
+                        fp.post(portalAPIUrl + '/hl', res);
+                    });                    
+                });
 
-            fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
-                return fpBrowserDetect.getBrowserInfo();
-            }).then(res => {
-                var data = {
-                    'BrowserDetect': {
+                fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
+                    return fpBrowserDetect.getBrowserInfo();
+                }).then(res => {
+                    var data = {
+                        'BrowserDetect': {
                         "OSName": res.OSName,
-                        "BrowserName": res.BrowserName,
-                        "Platform": res.Platform,
-                        "Vendor": res.Vendor,
-                        "IsMobileDevice": res.IsMobileDevice
-                    },
-                    'SessionKey': sessionKey,
-                    'SubscriberId': subscriberId
-                };
+                            "BrowserName": res.BrowserName,
+                            "Platform": res.Platform,
+                            "Vendor": res.Vendor,
+                            "IsMobileDevice": res.IsMobileDevice
+                        },
+                        'SessionKey': sessionKey,
+                        'SubscriberId': subscriberId
+                    };
 
-                fp.post(portalAPIUrl + '/bi', data);
-            });
+                    crypt.encryptingWithKey(data).then(res => {
+                        fp.post(portalAPIUrl + '/bi', res);
+                    });                    
+                });
 
-            fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
-                return globalFP.getFP();
-            }).then(res => {
-                var data = {
-                    'fingerprint': {
-                        "Id": res.Id,
-                        "Attributes": res.Properties
-                    },
-                    'SessionKey': sessionKey,
-                    'SubscriberId': subscriberId
-                };
+                fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
+                    return globalFP.getFP();
+                }).then(res => {
+                    var data = {
+                        'fingerprint': {
+                            "Id": res.Id,
+                            "Attributes": res.Properties
+                        },
+                        'SessionKey': sessionKey,
+                        'SubscriberId': subscriberId
+                    };
 
-                fp.post(portalAPIUrl + '/fp', data);
+                    crypt.encryptingWithKey(data).then(res => {
+                        fp.post(portalAPIUrl + '/fp', res);
+                    });                                        
+                });
             });
 
             var gfpInput = document.getElementById("__fdi");

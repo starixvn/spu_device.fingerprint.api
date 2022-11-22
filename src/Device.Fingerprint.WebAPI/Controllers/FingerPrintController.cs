@@ -240,6 +240,43 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("scr/cdn/crt")]
+        [ETagFilter(200)]
+        public ActionResult CryptScript()
+        {
+            try
+            {
+                var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.js";
+
+                if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+                {
+                    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.min.js";
+                }
+
+                var bundleFile = new BundleFile(scriptPath);
+
+                if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+                {
+                    var newContent = bundleFile.Content
+                        .Replace("__keyIV__", appSettings.CryptoIV)
+                        .Replace("__keySalt__", appSettings.CryptoSalt)
+                        .Replace("__keyPass__", appSettings.CryptoPassword);
+
+                    return new JavascriptResult(newContent);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                sentryClient.CaptureException(ex);
+            }
+
+            return new EmptyResult();
+        }
+
+
+
+
 
         [HttpGet("conf/{sessionKey}")]
         [ResponseCache(NoStore = true, Duration = 0)]

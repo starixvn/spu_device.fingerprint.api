@@ -5,6 +5,8 @@ using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using Sentry;
 using System;
 using System.Collections.Generic;
 
@@ -18,7 +20,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly IEasyNetQService easyNetQService;
         private readonly ITransactionService transactionService;
         private readonly Crypto crypto;
-
+        private readonly ISentryClient sentryClient;
         private readonly int redisExpired = 10;
 
 
@@ -26,113 +28,153 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             IAppSettings appSettings,
             IRedisService redisService,
             ITransactionService transactionService,
-            IEasyNetQService easyNetQService)
+            IEasyNetQService easyNetQService,
+             ISentryClient sentryClient)
         {
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
+            this.sentryClient = sentryClient;
         }
 
         [HttpPost("ce")]
-        public void Cookie([FromBody] CookieParameter data)
+        public void Cookie([FromBody] string data)
         {
-            if (data != null)
+            if (!string.IsNullOrWhiteSpace(data))
             {
-                var redisKey = GetRedisKey("cookie", data.SubscriberId, data.SessionKey);
-
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                var redisKey = $"cookie:{data.SubscriberId}:{data.SessionKey}";
                 {
-                    RedisAddAsync<string>(redisKey, data.Cookie);
+                    var descryptData = crypto.Decrypt(data);
+
+                    if(!string.IsNullOrWhiteSpace(descryptData))
+                    {
+                        var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
+                        var redisKey = $"cookie:{deserilizeData.SubscriberId}:{deserilizeData.SessionKey}";
+
+                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                        {
+                            RedisAddAsync(redisKey, deserilizeData.Cookie);
+                        }
+                        else
+                        {
+                            RedisUpdateExpiryAsync(redisKey);
+                        }
+
+                        AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                    }
                 }
-                else
+                catch(Exception ex)
                 {
-                    RedisUpdateExpiryAsync(redisKey);
-                }
-
-                AddHeaderToRedis(data.SubscriberId, data.SessionKey);
-            }
-        }
-
-
-        private void AddHeaderToRedis(int SubscriberId, string SessionKey)
-        {
-            var headerModel = new HeaderModel
-            {
-                Accept = HttpContext.Request.Headers["Accept"],
-                Encoding = HttpContext.Request.Headers["Accept-Encoding"],
-                UserAgent = Request.Headers["User-Agent"],
-                Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
-                secChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "Other",
-                secChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
-                secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
-            };
-
-            var redisKey = GetRedisKey("header", SubscriberId, SessionKey);
-
-            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-            {
-                RedisAddAsync<HeaderModel>(redisKey, headerModel);
-            }
-            else
-            {
-                RedisUpdateExpiryAsync(redisKey);
+                    sentryClient.CaptureException(ex);
+                } 
             }
         }
 
         [HttpPost("hl")]
-        public void Headless([FromBody] HeadlessParameter data)
+        public void Headless([FromBody] string data)
         {
-            if (data != null)
+            if (!string.IsNullOrWhiteSpace(data))
             {
+                try
+                {
+                    var descryptData = crypto.Decrypt(data);
+                    if (!string.IsNullOrWhiteSpace(descryptData))
+                    {
+                        var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
+                UserAgent = Request.Headers["User-Agent"],
+                secChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "Other",
+                secChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
+                secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
+
+            var redisKey = GetRedisKey("header", SubscriberId, SessionKey);
+
+                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                        {
+                RedisAddAsync<HeaderModel>(redisKey, headerModel);
+                        }
+                        else
+                        {
+                            RedisUpdateExpiryAsync(redisKey);
+                        }
+                    }
                 var redisKey = GetRedisKey("headless", data.SubscriberId, data.SessionKey);
 
                 if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                 {
                     RedisAddAsync<HeadlessBrowserModel>(redisKey, data.HeadlessBrowser);
                 }
-                else
+                catch (Exception ex)
                 {
-                    RedisUpdateExpiryAsync(redisKey);
+                    sentryClient.CaptureException(ex);
                 }
-            }
+            }           
         }
 
         [HttpPost("bi")]
-        public void BrowserInfo([FromBody] BrowserDetectParameter data)
+        public void BrowserInfo([FromBody] string data)
         {
-            if (data != null)
+            if (!string.IsNullOrWhiteSpace(data))
             {
                 var redisKey = GetRedisKey("browserinfo", data.SubscriberId, data.SessionKey);
+                try
+                {
+                    var descryptData = crypto.Decrypt(data);
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
+                    if (!string.IsNullOrWhiteSpace(descryptData))
+                    {
+                        var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
+
+                        var redisKey = $"browserinfo:{deserilizeData.SubscriberId}:{deserilizeData.SessionKey}";
+
+                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                        {
                     RedisAddAsync<BrowserDetectModel>(redisKey, data.BrowserDetect);
+                        }
+                        else
+                        {
+                            RedisUpdateExpiryAsync(redisKey);
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    RedisUpdateExpiryAsync(redisKey);
+                    sentryClient.CaptureException(ex);
                 }
             }
-
         }
 
         [HttpPost("fp")]
-        public void FingerPrint([FromBody] FingerprintParameter data)
+        public void FingerPrint([FromBody] string data)
         {
-            if (data != null)
+            if (!string.IsNullOrWhiteSpace(data))
             {
                 var redisKey = GetRedisKey("fingerprint", data.SubscriberId, data.SessionKey);
+                try
+                {
+                    var descryptData = crypto.Decrypt(data);
 
-                if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                {
+                    if (!string.IsNullOrWhiteSpace(descryptData))
+                    {
+                        var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
+
+                        var redisKey = $"fingerprint:{deserilizeData.SubscriberId}:{deserilizeData.SessionKey}";
+
+                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+                        {
                     RedisAddAsync<FingerprintModel>(redisKey, data.fingerprint);
+                        }
+                        else
+                        {
+                            RedisUpdateExpiryAsync(redisKey);
+                        }
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    RedisUpdateExpiryAsync(redisKey);
+                    sentryClient.CaptureException(ex);
                 }
-            }
+            }           
         }
 
         [HttpPost("removeRedis")]
@@ -175,7 +217,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
             catch (Exception ex)
             {
-                LogService.Error("PortalAPI Transaction", ex);
+                sentryClient.CaptureException(ex);
             }
         }
 
@@ -205,6 +247,22 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
 
             redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
+                Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
+                BrowserName = userAgentInfo.BrowserName,
+                BrowserVersion = userAgentInfo.BrowserVersion,
+                OSName = userAgentInfo.OSName
+            };
+
+            var redisKey = $"header:{SubscriberId}:{SessionKey}";
+
+            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            {
+                RedisAddAsync(redisKey, headerModel);
+            }
+            else
+            {
+                RedisUpdateExpiryAsync(redisKey);
+            }
         }
     }
 }
