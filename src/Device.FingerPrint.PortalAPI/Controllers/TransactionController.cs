@@ -71,10 +71,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
                     }
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     sentryClient.CaptureException(ex);
-                } 
+                }
                     }
                 }
                 catch (Exception ex)
@@ -89,19 +89,16 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 try
                 {
                     var descryptData = crypto.Decrypt(data);
+
                     if (!string.IsNullOrWhiteSpace(descryptData))
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
-                UserAgent = Request.Headers["User-Agent"],
-                secChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "Other",
-                secChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
-                secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
 
-            var redisKey = GetRedisKey("header", SubscriberId, SessionKey);
+                        var redisKey = GetRedisKey("headless", deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
-                RedisAddAsync<HeaderModel>(redisKey, headerModel);
+                            RedisAddAsync<HeadlessBrowserModel>(redisKey, deserilizeData.HeadlessBrowser);
                         }
                         else
                         {
@@ -119,7 +116,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
 
                         var redisKey = redisService.GetRedisKey(RedisKey.Headless.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
                             RedisAddAsync<HeadlessBrowserModel>(redisKey, deserilizeData.HeadlessBrowser);
@@ -145,7 +141,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var redisKey = GetRedisKey("browserinfo", data.SubscriberId, data.SessionKey);
+
                 try
                 {
                     var descryptData = crypto.Decrypt(data);
@@ -154,11 +150,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
 
-                        var redisKey = $"browserinfo:{deserilizeData.SubscriberId}:{deserilizeData.SessionKey}";
+                        var redisKey = GetRedisKey("browserinfo", deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
-                    RedisAddAsync<BrowserDetectModel>(redisKey, data.BrowserDetect);
+                            RedisAddAsync<BrowserDetectModel>(redisKey, deserilizeData.BrowserDetect);
                         }
                         else
                         {
@@ -178,7 +174,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var redisKey = GetRedisKey("fingerprint", data.SubscriberId, data.SessionKey);
+
                 try
                 {
                     var descryptData = crypto.Decrypt(data);
@@ -187,11 +183,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     {
                         var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
 
-                        var redisKey = $"fingerprint:{deserilizeData.SubscriberId}:{deserilizeData.SessionKey}";
+                        var redisKey = GetRedisKey("fingerprint", deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
                         if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                         {
-                    RedisAddAsync<FingerprintModel>(redisKey, data.fingerprint);
+                            RedisAddAsync<FingerprintModel>(redisKey, deserilizeData.fingerprint);
                         }
                         else
                         {
@@ -292,7 +288,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     sentryClient.CaptureException(ex);
                 }
-            }           
+            }
         }
 
         [HttpPost("removeRedis")]
@@ -384,17 +380,25 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
 
             redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
+        }
+        private void AddHeaderToRedis(int SubscriberId, string SessionKey)
+        {
+            var headerModel = new HeaderModel
+            {
+                Accept = HttpContext.Request.Headers["Accept"],
+                Encoding = HttpContext.Request.Headers["Accept-Encoding"],
+                UserAgent = Request.Headers["User-Agent"],
                 Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
-                BrowserName = userAgentInfo.BrowserName,
-                BrowserVersion = userAgentInfo.BrowserVersion,
-                OSName = userAgentInfo.OSName
+                secChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "Other",
+                secChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
+                secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
             };
 
-            var redisKey = $"header:{SubscriberId}:{SessionKey}";
+            var redisKey = GetRedisKey("header", SubscriberId, SessionKey);
 
             if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
             {
-                RedisAddAsync(redisKey, headerModel);
+                RedisAddAsync<HeaderModel>(redisKey, headerModel);
             }
             else
             {
