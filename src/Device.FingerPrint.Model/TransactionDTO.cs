@@ -4,7 +4,7 @@ namespace Device.FingerPrint.Model
 {
     public class TransactionDTO
     {
-        public int SubscriberId { get; set; }
+        public string SubscriberName { get; set; }
 
         public string LoginName { get; set; }
 

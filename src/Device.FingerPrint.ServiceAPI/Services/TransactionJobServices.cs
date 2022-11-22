@@ -168,7 +168,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 if (mergeTrans != null && mergeTrans.Any())
                 {
-                    var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
+                    var mergeTransGroup = mergeTrans.Chunk2(batchSize);
                     var tasks = new List<Task>();
 
                     foreach (var trans in mergeTransGroup)
@@ -209,7 +209,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
                 if (mergeTrans != null && mergeTrans.Any())
                 {
-                    var mergeTransGroup = mergeTrans.Chunk2(numberOfBatch);
+                    var mergeTransGroup = mergeTrans.Chunk2(batchSize);
                     var tasks = new List<Task>();
 
                     foreach (var trans in mergeTransGroup)

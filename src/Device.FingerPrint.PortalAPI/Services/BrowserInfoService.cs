@@ -18,55 +18,79 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
         {
+
             var browsers = new List<string> { "Safari", "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
-            var secChUa = headerModel.secChUa;
-            var secChUaPlatform = headerModel.secChUaPlatform;
-            var secChUaMobile = headerModel.secChUaMobile;
+            string secChUa, secChUaPlatform, secChUaMobile, jsBrowserName, jsOSName, browserName, osName;
+            secChUa = secChUaPlatform = secChUaMobile = jsBrowserName = jsOSName = browserName = osName = string.Empty;
 
-            var browserName = secChUa;
-            var osName = secChUaPlatform;
-
-            if (browserName == "Other" || String.IsNullOrEmpty(browserName))
+            if (headerModel != null && browserDetectModel != null)
             {
-                if (browserDetectModel != null)
+                secChUa = headerModel.secChUa;
+                secChUaPlatform = headerModel.secChUaPlatform;
+                secChUaMobile = headerModel.secChUaMobile;
+
+                jsBrowserName = browserDetectModel.BrowserName;
+                jsOSName = browserDetectModel.OSName;
+
+                browserName = secChUa;
+                osName = secChUaPlatform;
+
+                if (String.IsNullOrEmpty(secChUa))
                 {
-                    browserName = browserDetectModel.BrowserName;
-                    osName = browserDetectModel.OSName;
+                    browserName = jsBrowserName;
+                    osName = jsOSName;
                 }
-            }
-            else
-            {
-                foreach (var browser in browsers)
+                else
                 {
-                    if (secChUa.Contains(browser))
+                    foreach (var browser in browsers)
                     {
-                        browserName = browser;
-                        break;
+                        if (secChUa.Contains(browser))
+                        {
+                            browserName = browser;
+                            break;
+                        }
                     }
                 }
+            }
+            else if (headerModel != null)
+            {
+                browserName = headerModel.secChUa;
+                osName = headerModel.secChUaPlatform;
+
+                if (!String.IsNullOrEmpty(secChUa))
+                {
+                    foreach (var browser in browsers)
+                    {
+                        if (secChUa.Contains(browser))
+                        {
+                            browserName = browser;
+                            break;
+                        }
+                    }
+                }
+            }
+            else if (browserDetectModel != null)
+            {
+                browserName = jsBrowserName;
+                osName = jsOSName;
             }
 
             var browserInfoModel = new BrowserInfoModel
             {
                 BrowserName = browserName,
-                OSName = ReplaceOSName(osName)
+                OSName = string.IsNullOrEmpty(osName) ? "" : osName.Replace("macOS", "Mac")
             };
 
             var browserInfoAttributeModel = new BrowserInfoAttributeModel
             {
                 SecChUa = secChUa,
                 SecChUaPlatform = secChUaPlatform,
-                SecChUaMobile = secChUaMobile.Replace("?", ""),
-                JsBrowserName = browserDetectModel.BrowserName,
-                JsOSName = browserDetectModel.OSName,
+                SecChUaMobile = string.IsNullOrEmpty(secChUaMobile) ? "" : secChUaMobile.Replace("?", ""),
+                JsBrowserName = jsBrowserName,
+                JsOSName = jsOSName
             };
 
             return (browserInfoModel, browserInfoAttributeModel);
-        }
-
-        private string ReplaceOSName(string osName)
-        {
-            return string.IsNullOrEmpty(osName) ? "" : osName.Replace("macOS", "Mac");
         }
     }
 }

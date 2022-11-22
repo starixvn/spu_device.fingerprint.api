@@ -43,8 +43,7 @@ var fp = {
         fp.post(url + "/cle", data);
     },
     checkDomReady: function () {
-
-        console.log(3);
+        console.log(5);
         var regex = new RegExp("loaded|complete|interactive");
 
         if (regex.test(document.readyState)) {
@@ -137,6 +136,7 @@ try {
     if (document.addEventListener) {
         console.log(2);
         document.addEventListener("DOMContentLoaded", e => {
+            console.log(4);
             fp.checkDomReady();
         }, false);
     }
@@ -145,5 +145,5 @@ try {
         fp.checkDomReady();
     }
 } catch (exception) {
-
+    console.log('exception', exception);
 }

@@ -1,47 +1,43 @@
 ﻿using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Ultilities;
-using Newtonsoft.Json;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
     public interface ITransactionService
     {
-        TransactionModel MergeData(TransactionModel model, string sessionKey);
+        TransactionModel MergeData(TransactionModel model, BrowserDetectModel browserInfo, string cookie, FingerprintModel fingerPrint, HeaderModel header, HeadlessBrowserModel headless);
     }
 
     public class TransactionService : ITransactionService
     {
-        private readonly IRedisService redisService;
         private readonly IBrowserInfoService browserInfoService;
+        private readonly ITransactionAttributeService transactionAttributeService;
         private readonly Crypto crypto;
 
-        public TransactionService(IAppSettings appSettings, IRedisService redisService, IBrowserInfoService browserInfoService)
+        public TransactionService(IAppSettings appSettings, IBrowserInfoService browserInfoService, ITransactionAttributeService transactionAttributeService)
         {
-            this.redisService = redisService;
             this.browserInfoService = browserInfoService;
+            this.transactionAttributeService = transactionAttributeService;
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
         }
 
-        public TransactionModel MergeData(TransactionModel model, string sessionKey)
+        public TransactionModel MergeData(TransactionModel model, BrowserDetectModel browserInfo, string cookie, FingerprintModel fingerPrint, HeaderModel header, HeadlessBrowserModel headless)
         {
-            var cookie = redisService.GetCookie(model.SubscriberId, sessionKey);
-            var fingerPrint = redisService.GetFingerPrint(model.SubscriberId, sessionKey);
-            var header = redisService.GetHeader(model.SubscriberId, sessionKey);
-
-            var headless = redisService.GetHeadless(model.SubscriberId, sessionKey);
-            var browserInfo = redisService.GetBrowserInfo(model.SubscriberId, sessionKey);
-
             var (browserInfoModel, browserInfoAttributeModel) = browserInfoService.GetBrowserInfo(header, browserInfo);
-            browserInfoModel.HeadlessScore = headless.Score;
-            browserInfoModel.HeadlessDetail = headless.TestsDetail;
 
-            var userAgentInfo = ParseUserAgentInfo(header.UserAgent);
+            if (headless != null)
+            {
+                browserInfoModel.HeadlessScore = headless.Score;
+                browserInfoModel.HeadlessDetail = headless.TestsDetail;
+            }
+
+            var userAgentInfo = ParseUserAgentInfo(header);
             model.CookieCode = cookie;
             model.UserAgentInfo = userAgentInfo;
-            model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
             model.BrowserInfo = browserInfoModel;
             model.BrowserInfoAttribute = browserInfoAttributeModel;
+            model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
 
             return model;
         }
@@ -73,15 +69,16 @@ namespace Device.FingerPrint.PortalAPI.Services
                 result.Platform = browserInfo.Platform;
             }
 
+            result.BrowserInstanceCode = crypto.GetMD5Hash(result.BrowserInstanceJson);
+
             return result;
         }
 
-        private UserAgentInfoModel ParseUserAgentInfo(string userAgent)
+        private UserAgentInfoModel ParseUserAgentInfo(HeaderModel headerModel)
         {
-            if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
+            if (headerModel == null) return new UserAgentInfoModel();
 
-            var transactionAttributeService = new TransactionAttributeService();
-            return transactionAttributeService.GetUserAgentInfo(userAgent);
+            return transactionAttributeService.GetUserAgentInfo(headerModel.UserAgent);
         }
     }
 }

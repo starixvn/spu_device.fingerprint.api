@@ -13,6 +13,8 @@ namespace Device.FingerPrint.PortalAPI
         string CryptoSalt { get; }
 
         string SPName { get; }
+
+        string SentryDsn { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -23,6 +25,7 @@ namespace Device.FingerPrint.PortalAPI
         private readonly string cryptoIV;
         private readonly string cryptoSalt;
         private readonly string spName;
+        private readonly string sentryDsn;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -35,6 +38,8 @@ namespace Device.FingerPrint.PortalAPI
             cryptoSalt = GetValue<string>("AppConfig:Crypto:Salt");
 
             spName = GetValue<string>("AppConfig:SPName");
+
+            sentryDsn = GetValue<string>("Sentry:Dsn");
         }
 
         public string CryptoPassword => cryptoPassword;
@@ -44,6 +49,8 @@ namespace Device.FingerPrint.PortalAPI
         public string CryptoSalt => cryptoSalt;
 
         public string SPName => spName;
+
+        public string SentryDsn => sentryDsn;
 
         public T GetValue<T>(string key)
         {

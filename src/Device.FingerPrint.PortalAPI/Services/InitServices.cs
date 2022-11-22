@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Device.FingerPrint.Features.Subscriber.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
@@ -8,6 +9,7 @@ namespace Device.FingerPrint.PortalAPI.Services
         {
             InitService(services);
             RegisterQueueService(services);
+            RegisterSubscriberService(services);
         }
 
         private static void InitService(this IServiceCollection services)
@@ -20,6 +22,12 @@ namespace Device.FingerPrint.PortalAPI.Services
         private static void RegisterQueueService(this IServiceCollection services)
         {
             services.AddSingleton<IEasyNetQService, EasyNetQService>();
+        }
+
+        private static void RegisterSubscriberService(this IServiceCollection services)
+        {
+            services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
+            services.AddSingleton<ISubscriberServices, SubscriberServices>();
         }
     }
 }
