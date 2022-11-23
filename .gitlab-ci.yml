@@ -26,3 +26,7 @@ include:
   - project: "ci/repos-ci/spu_fps_fp_api_evolution_service"
     ref: master
     file: "gitlab-ci-mixing.yml"
+    
+  - project: "ci/repos-ci/spu_fps_fps_portal_web_api_job_service"
+    ref: master
+    file: "gitlab-ci-mixing.yml"
