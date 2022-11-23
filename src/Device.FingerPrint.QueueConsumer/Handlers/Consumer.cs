@@ -199,9 +199,9 @@
                         }
                     })
                     .Add<FingerprintAttributesModel>((message, info) =>
-                    {                        
+                    {
                         try
-                        {                            
+                        {
                             listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
 
                             if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
@@ -213,7 +213,7 @@
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureMessage(ex + "\n" + JsonConvert.SerializeObject(listFpAttributes), SentryLevel.Error);
+                            sentryClient.CaptureMessage(ex + "\n" + JsonConvert.SerializeObject(listFpAttributes.Select(x => x.Attribute)), SentryLevel.Error);
                         }
                     })
                     .Add<BrowserInfoModel>((message, info) =>
@@ -223,14 +223,14 @@
                             listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
 
                             if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
-                            {                               
+                            {
                                 try
                                 {
                                     browserInfoService.InsertBrowserInfo(listBrowserInfo);
                                 }
                                 catch (Exception ex)
                                 {
-                                    sentryClient.CaptureException(ex);                                    
+                                    sentryClient.CaptureException(ex);
                                 }
 
                                 listBrowserInfo.Clear();
@@ -238,7 +238,7 @@
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureException(ex);                            
+                            sentryClient.CaptureException(ex);
                         }
                     })
                     .Add<ClientTransactionLogsModel>((message, info) =>
