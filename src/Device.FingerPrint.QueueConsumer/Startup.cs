@@ -8,6 +8,9 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Data;
     using Fanex.Data.MySql;
     using Fanex.Logging;
+    using Fanex.Logging.Extensions;
+    using Fanex.Logging.Extensions.AspNetCore;
+    using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -47,9 +50,25 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<IBrowserInfoDataAccess, BrowserInfoDataAccess>();
             services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
 
+            services.AddSingleton<ILogger, Logger>();
+
             services.AddHealthChecks();
 
             FanexDataConfig(appSettings);
+
+            LogManager
+           .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+           .Use(new List<ILogEngine>
+           {
+                    new SentryLogging(new SentryEngineOptions
+                    {
+                        Dsn = new Dsn(appSettings.SentryDsn)
+                    })
+           });
+
+            ExceptionHandler
+                .UseConfig(new LoggingConfiguration())
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
             services.AddHostedService<Consumer>();
         }
@@ -79,6 +98,8 @@ namespace Device.FingerPrint.QueueConsumer
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {

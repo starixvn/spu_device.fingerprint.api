@@ -12,14 +12,10 @@
     using Device.FingerPrint.Queue;
     using EasyNetQ;
     using EasyNetQ.Consumer;
+    using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-    using Newtonsoft.Json.Schema;
-    using Sentry;
-    using Sentry.Protocol;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
@@ -31,7 +27,7 @@
         private readonly IClientTransactionService fingerPrintService;
         private readonly ITransactionReportServices transactionReportServices;
         private readonly IBrowserInfoService browserInfoService;
-        private readonly ISentryClient sentryClient;
+        
 
         private readonly List<TransactionEntity> listServerTrans;
         private readonly List<ClientTransactionEntity> listClientTrans;
@@ -44,15 +40,13 @@
                         , IRawTransactionService rawTransactionService
                         , IClientTransactionService fingerPrintService
                         , ITransactionReportServices transactionReportServices
-                        , IBrowserInfoService browserInfoService
-                        , ISentryClient sentryClient)
+                        , IBrowserInfoService browserInfoService)
         {
             this.rawTransactionService = rawTransactionService;
             this.fingerPrintService = fingerPrintService;
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
-            this.browserInfoService = browserInfoService;
-            this.sentryClient = sentryClient;
+            this.browserInfoService = browserInfoService;           
 
             listServerTrans = new List<TransactionEntity>();
             listClientTrans = new List<ClientTransactionEntity>();
@@ -136,150 +130,91 @@
         }
 
         private void StartConsuming()
-        {
-            try
-            {
-                var easyNetQConnector = RabbitMQBus();
+        {            
+            var easyNetQConnector = RabbitMQBus();
 
-                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+            easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+            {
+                x.Add<TransactionModel>((message, info) =>
                 {
-                    x.Add<TransactionModel>((message, info) =>
+                    var serverTransaction = TranformTransactionEntity(message.Body);
+
+                    listServerTrans.Add(serverTransaction);
+
+                    if (listServerTrans.Count >= appSettings.ServerTransBatchSize)
                     {
-                        try
-                        {
-                            var serverTransaction = TranformTransactionEntity(message.Body);
+                        rawTransactionService.InsertServerTransaction(listServerTrans);
 
-                            listServerTrans.Add(serverTransaction);
+                        var groupTrans = listServerTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
+                                        .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
+                                        .ToList();
 
-                            if (listServerTrans.Count >= appSettings.ServerTransBatchSize)
-                            {
-                                rawTransactionService.InsertServerTransaction(listServerTrans);
+                        Task.Run(() => InsertServerTransactionDailySum(groupTrans));
 
-                                var groupTrans = listServerTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
-                                                .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
-                                                .ToList();
+                        listServerTrans.Clear();
+                    }
+                })
+                .Add<ClientTransactionModel>((message, info) =>
+                {
+                    var clientTrans = TranformClientTransactionEntity(message.Body);
 
-                                Task.Run(() => InsertServerTransactionDailySum(groupTrans));
-
-                                listServerTrans.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
-                        }
-                    })
-                    .Add<ClientTransactionModel>((message, info) =>
+                    if (!listClientTrans.Exists(x => x.SessionKey == clientTrans.SessionKey))
                     {
-                        try
-                        {
-                            var clientTrans = TranformClientTransactionEntity(message.Body);
+                        listClientTrans.Add(clientTrans);
+                    }
 
-                            if (!listClientTrans.Exists(x => x.SessionKey == clientTrans.SessionKey))
-                            {
-                                listClientTrans.Add(clientTrans);
-                            }
-
-                            if (listClientTrans.Count >= appSettings.ClientTransBatchSize)
-                            {
-                                fingerPrintService.InsertClientTransaction(listClientTrans);
-
-                                var groupTrans = listClientTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
-                                                .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
-                                                .ToList();
-
-                                Task.Run(() => InsertClientTransactionDailySum(groupTrans));
-
-                                listClientTrans.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
-                        }
-                    })
-                    .Add<FingerprintAttributesModel>((message, info) =>
+                    if (listClientTrans.Count >= appSettings.ClientTransBatchSize)
                     {
-                        try
-                        {
-                            listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
+                        fingerPrintService.InsertClientTransaction(listClientTrans);
 
-                            if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
-                            {
-                                fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
+                        var groupTrans = listClientTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
+                                        .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
+                                        .ToList();
 
-                                listFpAttributes.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            var logs = new List<ClientTransactionLogsEntity>();
-                            logs.Add(new ClientTransactionLogsEntity {
-                                SessionKey = "Error",
-                                SubscriberId = 0,
-                                TransTime = DateTime.Now,
-                                UserAgent = string.Empty,
-                                Information = JsonConvert.SerializeObject(listFpAttributes.Select(x => x.Attribute))
-                            });
-                            fingerPrintService.InsertClientTransactionLogs(logs);
+                        Task.Run(() => InsertClientTransactionDailySum(groupTrans));
 
-                            sentryClient.CaptureMessage(ex + "\n" + JsonConvert.SerializeObject(listFpAttributes.Select(x => x.Attribute)), SentryLevel.Error);
-                        }
-                    })
-                    .Add<BrowserInfoModel>((message, info) =>
+                        listClientTrans.Clear();
+                    }
+                })
+                .Add<FingerprintAttributesModel>((message, info) =>
+                {
+                    listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
+
+                    if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
                     {
-                        try
-                        {
-                            listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
+                        fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
 
-                            if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
-                            {
-                                try
-                                {
-                                    browserInfoService.InsertBrowserInfo(listBrowserInfo);
-                                }
-                                catch (Exception ex)
-                                {
-                                    sentryClient.CaptureException(ex);
-                                }
+                        listFpAttributes.Clear();
+                    }
+                })
+                .Add<BrowserInfoModel>((message, info) =>
+                {
+                    listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
 
-                                listBrowserInfo.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureException(ex);
-                        }
-                    })
-                    .Add<ClientTransactionLogsModel>((message, info) =>
+                    if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
                     {
-                        try
-                        {
-                            var clientTrans = TranformClientTransactionLogsEntity(message.Body);
+                        browserInfoService.InsertBrowserInfo(listBrowserInfo);
 
-                            if (!listClientTransLogs.Exists(x => x.SessionKey == clientTrans.SessionKey))
-                            {
-                                listClientTransLogs.Add(clientTrans);
-                            }
+                        listBrowserInfo.Clear();
+                    }
+                })
+                .Add<ClientTransactionLogsModel>((message, info) =>
+                {
+                    var clientTrans = TranformClientTransactionLogsEntity(message.Body);
 
-                            if (listClientTransLogs.Count >= appSettings.ClientTransLogsBatchSize)
-                            {
-                                fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
+                    if (!listClientTransLogs.Exists(x => x.SessionKey == clientTrans.SessionKey))
+                    {
+                        listClientTransLogs.Add(clientTrans);
+                    }
 
-                                listClientTransLogs.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
-                        }
-                    });
+                    if (listClientTransLogs.Count >= appSettings.ClientTransLogsBatchSize)
+                    {
+                        fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
+
+                        listClientTransLogs.Clear();
+                    }
                 });
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
+            });
         }
 
         private EasyNetQConnector RabbitMQBus()
@@ -302,33 +237,19 @@
 
         private void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
         {
-            try
+            if (groupTrans != null && groupTrans.Any())
             {
-                if (groupTrans != null && groupTrans.Any())
-                {
-                    var json = JsonConvert.SerializeObject(groupTrans);
-                    transactionReportServices.InsertServerTransactionDailySum(json);
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
+                var json = JsonConvert.SerializeObject(groupTrans);
+                transactionReportServices.InsertServerTransactionDailySum(json);
             }
         }
 
         private void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
         {
-            try
+            if (groupTrans != null && groupTrans.Any())
             {
-                if (groupTrans != null && groupTrans.Any())
-                {
-                    var json = JsonConvert.SerializeObject(groupTrans);
-                    transactionReportServices.InsertClientTransactionDailySum(json);
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
+                var json = JsonConvert.SerializeObject(groupTrans);
+                transactionReportServices.InsertClientTransactionDailySum(json);
             }
         }
 
