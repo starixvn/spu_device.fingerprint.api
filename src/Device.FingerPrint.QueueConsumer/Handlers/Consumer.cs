@@ -213,6 +213,16 @@
                         }
                         catch (Exception ex)
                         {
+                            var logs = new List<ClientTransactionLogsEntity>();
+                            logs.Add(new ClientTransactionLogsEntity {
+                                SessionKey = "Error",
+                                SubscriberId = 0,
+                                TransTime = DateTime.Now,
+                                UserAgent = string.Empty,
+                                Information = JsonConvert.SerializeObject(listFpAttributes.Select(x => x.Attribute))
+                            });
+                            fingerPrintService.InsertClientTransactionLogs(logs);
+
                             sentryClient.CaptureMessage(ex + "\n" + JsonConvert.SerializeObject(listFpAttributes.Select(x => x.Attribute)), SentryLevel.Error);
                         }
                     })
