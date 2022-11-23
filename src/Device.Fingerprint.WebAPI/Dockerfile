@@ -4,9 +4,9 @@ WORKDIR /src
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
-COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
-
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
+
+COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.Fingerprint.WebAPI/Device.Fingerprint.WebAPI.csproj", "Device.Fingerprint.WebAPI/"]
 
