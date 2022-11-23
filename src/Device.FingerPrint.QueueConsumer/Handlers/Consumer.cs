@@ -15,6 +15,8 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using Newtonsoft.Json.Schema;
     using Sentry;
     using Sentry.Protocol;
     using System;
@@ -197,9 +199,9 @@
                         }
                     })
                     .Add<FingerprintAttributesModel>((message, info) =>
-                    {
+                    {                        
                         try
-                        {
+                        {                            
                             listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
 
                             if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
@@ -211,7 +213,7 @@
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
+                            sentryClient.CaptureMessage(ex + "\n" + JsonConvert.SerializeObject(listFpAttributes), SentryLevel.Error);
                         }
                     })
                     .Add<BrowserInfoModel>((message, info) =>

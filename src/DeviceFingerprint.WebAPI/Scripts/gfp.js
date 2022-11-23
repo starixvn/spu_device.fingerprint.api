@@ -5975,15 +5975,17 @@ var globalFP = (function (exports) {
     }
     function getWebGLRenderer(webgl) {
         const start = Date.now();
-        if (webgl && webgl.value == 'unstable') {
-            return { value: 'unstable', duration: Date.now() - start };
+        if (webgl && webgl.value == "unstable") {
+            return { value: "unstable", duration: Date.now() - start };
         }
         return { value: getGLRenderer(), duration: Date.now() - start };
     }
     function getGLRenderer() {
         const canvas = document.createElement("canvas");
         const gl = canvas.getContext("webgl");
-        if (gl && typeof gl.getExtension === "function" && gl.getExtension("WEBGL_debug_renderer_info") != null) {
+        if (gl &&
+            typeof gl.getExtension === "function" &&
+            gl.getExtension("WEBGL_debug_renderer_info") != null) {
             return gl.getParameter(gl.getExtension("WEBGL_debug_renderer_info").UNMASKED_RENDERER_WEBGL);
         }
         return "";
@@ -5993,7 +5995,11 @@ var globalFP = (function (exports) {
         let err;
         for (const componentKey of Object.keys(components).sort()) {
             const component = components[componentKey];
-            let value = component.error ? "error" : JSON.stringify(component.value == undefined ? `undefined` : component.value);
+            let value = JSON.stringify(component.error
+                ? "error"
+                : component.value == undefined
+                    ? `undefined`
+                    : component.value);
             if (listAttributeHash.indexOf(componentKey) > -1) {
                 value = JSON.stringify(hashMD5(value));
             }
