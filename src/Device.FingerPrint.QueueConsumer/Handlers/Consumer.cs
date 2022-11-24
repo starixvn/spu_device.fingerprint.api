@@ -1,7 +1,5 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    using Device.FingerPrint.Features.BrowserInfo.Services;
-    using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Features.Monitor.Model;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.ServerTransaction.Model;
@@ -10,7 +8,6 @@
     using Device.FingerPrint.Queue;
     using EasyNetQ;
     using EasyNetQ.Consumer;
-    using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
@@ -23,16 +20,13 @@
     {
         private readonly IRawTransactionService rawTransactionService;
         private readonly ITransactionReportServices transactionReportServices;
-        
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
         private readonly IAppSettings appSettings;
 
         public Consumer(IAppSettings appSettings
                         , IRawTransactionService rawTransactionService
-                        , IClientTransactionService fingerPrintService
-                        , ITransactionReportServices transactionReportServices
-                        , IBrowserInfoService browserInfoService)
+                        , ITransactionReportServices transactionReportServices)
         {
             this.rawTransactionService = rawTransactionService;
             this.appSettings = appSettings;
@@ -61,8 +55,6 @@
                 CookieCode = model.CookieCode,
                 FingerprintAttribute = model.FingerprintAttribute,
                 UserAgentInfo = model.UserAgentInfo,
-                Platform = model.Platform,
-                BrowserInstanceCode = model.BrowserInstanceCode
                 BrowserInfo = model.BrowserInfo,
                 BrowserInfoAttribute = model.BrowserInfoAttribute
             };
