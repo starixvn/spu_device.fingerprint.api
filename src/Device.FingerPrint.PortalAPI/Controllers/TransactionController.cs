@@ -48,6 +48,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
+                sentryClient.CaptureMessage("Cookie");
                 try
                 {
                     var descryptData = crypto.Decrypt(data);
@@ -301,6 +302,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             try
             {
+                var json = JsonConvert.SerializeObject(data);
+                sentryClient.CaptureMessage("transaction" + json);
                 if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
                 {
                     var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
@@ -330,8 +333,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         var header = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
                         var headless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
 
+                        sentryClient.CaptureMessage("transaction 1");
                         var transactionInsertModel = transactionService.MergeData(transaction, browserInfo, cookie, fingerPrint, header, headless);
 
+                        sentryClient.CaptureMessage("PushData");
                         easyNetQService.PushData(transactionInsertModel);
 
                         RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);

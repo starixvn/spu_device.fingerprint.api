@@ -42,5 +42,4 @@
     </div>
 </div>
 
-<script async defer src="http://localhost:5007/api/scr/demo" type="text/javascript"></script>
-@*<script async defer src="http://spu-fps-api-base.nexdev.net/api/scr/Alpha" type="text/javascript"></script>*@
+<script async defer src="@System.Configuration.ConfigurationManager.AppSettings["externalAPIUrl"].ToString()/api/scr/demo" type="text/javascript"></script>
