@@ -353,6 +353,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             // Method intentionally left empty.            
         }
+
         private void RedisAddAsync<T>(string redisKey, T value)
         {
             redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired), when: StackExchange.Redis.When.NotExists);

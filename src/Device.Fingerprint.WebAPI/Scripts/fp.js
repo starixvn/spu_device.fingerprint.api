@@ -47,7 +47,9 @@ var fp = {
         var regex = new RegExp("loaded|complete|interactive");
 
         if (regex.test(document.readyState)) {
+            console.log(6, cdnAPIUrl + '/scr/cdn/crt');
             fp.requireJS(cdnAPIUrl + '/scr/cdn/crt').then(() => {
+                console.log(7, cdnAPIUrl + '/scr/cdn/ce');
                 fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
                     return fpCookie.storageHandler("gfp");
                 }).then(res => {
