@@ -8,7 +8,7 @@ var fp = {
         return new Promise(function (resolve, reject) {
             try {
                 var script = document.createElement('script');
-                script.type = 'text/javascript';
+                //script.type = 'text/javascript';
                 script.src = _url;
                 script.async = true;
                 script.defer = true;
