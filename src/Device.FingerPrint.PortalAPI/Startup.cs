@@ -15,6 +15,7 @@ using StackExchange.Redis.Extensions.MsgPack;
 using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -76,6 +77,8 @@ namespace Device.FingerPrint.PortalAPI
 
             services.AddHttpContextAccessor();
 
+            services.AddHealthChecks();
+
             RegisterRedis(services);
 
             services.RegisterService();
@@ -115,6 +118,11 @@ namespace Device.FingerPrint.PortalAPI
             app.UseSwagger();
 
             app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.PortalAPI v1"));
+
+            app.UseHealthChecks("/healthz", new HealthCheckOptions
+            {
+                Predicate = _ => true
+            });
 
             app.UseEndpoints(endpoints =>
             {
