@@ -16,6 +16,13 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
+using System.Collections.Generic;
+using Fanex.Logging.Sentry;
+using Sentry;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -33,6 +40,7 @@ namespace Device.FingerPrint.PortalAPI
         {
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
+            services.AddSingleton<ILogger, Logger>();
 
             services.AddControllers();
 
@@ -83,6 +91,20 @@ namespace Device.FingerPrint.PortalAPI
 
             services.RegisterService();
             FanexDataConfig(appSettings);
+
+            LogManager
+           .SetDefaultLogCategory("Device.FingerPrint.PortalAPI")
+           .Use(new List<ILogEngine>
+           {
+                    new SentryLogging(new SentryEngineOptions
+                    {
+                        Dsn = new Dsn(appSettings.SentryDsn)
+                    })
+           });
+
+            ExceptionHandler
+                .UseConfig(new LoggingConfiguration())
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -92,6 +114,8 @@ namespace Device.FingerPrint.PortalAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseRouting();
 

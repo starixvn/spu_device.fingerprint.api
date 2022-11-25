@@ -6,8 +6,6 @@ using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Sentry;
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 
@@ -21,8 +19,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly IEasyNetQService easyNetQService;
         private readonly ITransactionService transactionService;
         private readonly Crypto crypto;
-        private readonly ISentryClient sentryClient;
         private readonly ISubscriberServices subscriberServices;
+        private readonly ILogger _logger;
 
         private readonly int redisExpired = 10;
         private readonly int redisExpired = 10;
@@ -32,15 +30,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             IRedisService redisService,
             ITransactionService transactionService,
             IEasyNetQService easyNetQService,
-            ISentryClient sentryClient,
-            ISubscriberServices subscriberServices)
+            ISubscriberServices subscriberServices,
+            ILogger logger)
         {
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
-            this.sentryClient = sentryClient;
             this.subscriberServices = subscriberServices;
+            _logger = logger;
         }
 
         [HttpPost("ce")]
@@ -48,63 +46,50 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                sentryClient.CaptureMessage("Cookie");
-                try
-                {
-                    var descryptData = crypto.Decrypt(data);
+                var descryptData = crypto.Decrypt(data);
 
-                    if (!string.IsNullOrWhiteSpace(descryptData))
+                if (!string.IsNullOrWhiteSpace(descryptData))
+                {
+                    var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
+
+                    var redisKey = redisService.GetRedisKey(RedisKey.Cookie.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+
+                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
-                }
-                        var redisKey = redisService.GetRedisKey(RedisKey.Cookie.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                        {
-                            RedisAddAsync(redisKey, deserilizeData.Cookie);
-                        }
-                        else
-                        {
-                            RedisUpdateExpiryAsync(redisKey);
-                        }
-
-                        AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                        RedisAddAsync(redisKey, deserilizeData.Cookie);
                     }
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-                }
+                    else
+                    {
+                        RedisUpdateExpiryAsync(redisKey);
                     }
+
+                    AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
                 }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
+            }
+        }
 
         [HttpPost("hl")]
         public void Headless([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                try
+                var descryptData = crypto.Decrypt(data);
+
+                if (!string.IsNullOrWhiteSpace(descryptData))
                 {
-                    var descryptData = crypto.Decrypt(data);
+                    var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
 
-                    if (!string.IsNullOrWhiteSpace(descryptData))
+                    var redisKey = redisService.GetRedisKey(RedisKey.Headless.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+
+                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
-
-                        var redisKey = redisService.GetRedisKey(RedisKey.Headless.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                        {
-                            RedisAddAsync<HeadlessBrowserModel>(redisKey, deserilizeData.HeadlessBrowser);
-                        }
-                        else
-                        {
-                            RedisUpdateExpiryAsync(redisKey);
-                        }
+                        RedisAddAsync<HeadlessBrowserModel>(redisKey, deserilizeData.HeadlessBrowser);
                     }
+                    else
+                    {
+                        RedisUpdateExpiryAsync(redisKey);
+                    }
+                }
         public void Headless([FromBody] string data)
             if (!string.IsNullOrWhiteSpace(data))
                 try
@@ -129,10 +114,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                             RedisUpdateExpiryAsync(redisKey);
                         }
                     }
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
             }
         }
 
@@ -141,30 +122,22 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
+                var descryptData = crypto.Decrypt(data);
 
-                try
+                if (!string.IsNullOrWhiteSpace(descryptData))
                 {
-                    var descryptData = crypto.Decrypt(data);
+                    var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
 
-                    if (!string.IsNullOrWhiteSpace(descryptData))
+                    var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+
+                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
-
-                        var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                        {
-                            RedisAddAsync<BrowserDetectModel>(redisKey, deserilizeData.BrowserDetect);
-                        }
-                        else
-                        {
-                            RedisUpdateExpiryAsync(redisKey);
-                        }
+                        RedisAddAsync<BrowserDetectModel>(redisKey, deserilizeData.BrowserDetect);
                     }
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
+                    else
+                    {
+                        RedisUpdateExpiryAsync(redisKey);
+                    }
                 }
             }
         }
@@ -174,26 +147,23 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
+                var descryptData = crypto.Decrypt(data);
 
-                try
+                if (!string.IsNullOrWhiteSpace(descryptData))
                 {
-                    var descryptData = crypto.Decrypt(data);
+                    var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
 
-                    if (!string.IsNullOrWhiteSpace(descryptData))
+                    var redisKey = redisService.GetRedisKey(RedisKey.FingerPrint.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+
+                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
-
-                        var redisKey = redisService.GetRedisKey(RedisKey.FingerPrint.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                        if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                        {
-                            RedisAddAsync<FingerprintModel>(redisKey, deserilizeData.fingerprint);
-                        }
-                        else
-                        {
-                            RedisUpdateExpiryAsync(redisKey);
-                        }
+                        RedisAddAsync<FingerprintModel>(redisKey, deserilizeData.fingerprint);
                     }
+                    else
+                    {
+                        RedisUpdateExpiryAsync(redisKey);
+                    }
+                }
         [HttpPost("bi")]
         public void BrowserInfo([FromBody] string data)
             if (!string.IsNullOrWhiteSpace(data))
@@ -283,11 +253,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         public void RemoveRedis([FromForm] int SubscriberId, [FromForm] string SessionKey)
         {
             RedisRemoveAll(SubscriberId, SessionKey);
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-                }
             }
         }
 
@@ -300,56 +265,45 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         [HttpPost("transaction")]
         public void Transaction([FromBody] TransactionDTO data)
         {
-            try
+            if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
-                var json = JsonConvert.SerializeObject(data);
-                sentryClient.CaptureMessage("transaction" + json);
-                if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
+                var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
+                if (subscriber != null)
                 {
-                    var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
-                    if (subscriber != null)
+                    var urlAddress = new Uri(data.Url);
+                    var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+
+                    var transaction = new TransactionModel
                     {
-                        var urlAddress = new Uri(data.Url);
-                        var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+                        SubscriberId = subscriber.SubscriberId,
+                        ClientIp = data.ClientIp,
+                        LoginName = data.LoginName,
+                        UserAgent = data.UserAgent,
+                        UserAgentCode = userAgentCode,
+                        TransTime = DateTime.Now,
+                        Url = urlAddress.GetLeftPart(UriPartial.Path),
+                        Action = data.Action,
+                        TransKey = data.TransKey,
+                        CustId = data.CustId,
+                        SubAccId = data.SubAccId
+                    };
 
-                        var transaction = new TransactionModel
-                        {
-                            SubscriberId = subscriber.SubscriberId,
-                            ClientIp = data.ClientIp,
-                            LoginName = data.LoginName,
-                            UserAgent = data.UserAgent,
-                            UserAgentCode = userAgentCode,
-                            TransTime = DateTime.Now,
-                            Url = urlAddress.GetLeftPart(UriPartial.Path),
-                            Action = data.Action,
-                            TransKey = data.TransKey,
-                            CustId = data.CustId,
-                            SubAccId = data.SubAccId
-                        };
+                    var browserInfo = redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
+                    var cookie = redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
+                    var fingerPrint = redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
+                    var header = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
+                    var headless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
 
-                        var browserInfo = redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
-                        var cookie = redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
-                        var fingerPrint = redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
-                        var header = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
-                        var headless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
+                    var transactionInsertModel = transactionService.MergeData(transaction, browserInfo, cookie, fingerPrint, header, headless);
 
-                        sentryClient.CaptureMessage("transaction 1");
-                        var transactionInsertModel = transactionService.MergeData(transaction, browserInfo, cookie, fingerPrint, header, headless);
+                    easyNetQService.PushData(transactionInsertModel);
 
-                        sentryClient.CaptureMessage("PushData");
-                        easyNetQService.PushData(transactionInsertModel);
-
-                        RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
-                    }
-                    else
-                    {
-                        sentryClient.CaptureMessage($"{data.SubscriberName} does not exists.", SentryLevel.Info);
-                    }
+                    RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
                 }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
+                else
+                {
+                    _logger.Info($"{data.SubscriberName} does not exists.");
+                }
             }
         }
 

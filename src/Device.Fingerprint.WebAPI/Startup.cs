@@ -3,6 +3,9 @@ using Device.Fingerprint.WebAPI.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -42,6 +45,7 @@ namespace Device.Fingerprint.WebAPI
             var JWTService = new JWT(appSettings);
 
             services.AddSingleton<IAppSettings>(appSettings);
+            services.AddSingleton<ILogger, Logger>();
 
             services.AddCors(opt =>
             {
@@ -120,6 +124,20 @@ namespace Device.Fingerprint.WebAPI
 
             services.RegisterService();
             FanexDataConfig(appSettings);
+
+            LogManager
+           .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+           .Use(new List<ILogEngine>
+           {
+                    new SentryLogging(new SentryEngineOptions
+                    {
+                        Dsn = new Dsn(appSettings.SentryDsn)
+                    })
+           });
+
+            ExceptionHandler
+                .UseConfig(new LoggingConfiguration())
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -131,9 +149,11 @@ namespace Device.Fingerprint.WebAPI
 
             }
 
+            app.UseMiddleware<ExceptionMiddleware>();
+
             app.UseSwagger();
 
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));            
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
 
             app.UseStaticFiles();
 

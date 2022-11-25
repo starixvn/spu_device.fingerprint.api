@@ -8,6 +8,7 @@
     using Device.FingerPrint.Queue;
     using EasyNetQ;
     using EasyNetQ.Consumer;
+    using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
@@ -23,14 +24,17 @@
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
         private readonly IAppSettings appSettings;
+        private readonly ILogger _logger;
 
         public Consumer(IAppSettings appSettings
                         , IRawTransactionService rawTransactionService
-                        , ITransactionReportServices transactionReportServices)
+                        , ITransactionReportServices transactionReportServicess
+                        , ILogger logger)
         {
             this.rawTransactionService = rawTransactionService;
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
+            this._logger = logger;
 
             listTransactionInsertModel = new List<TransactionEntity>();
         }
@@ -65,6 +69,7 @@
             try
             {
                 var easyNetQConnector = RabbitMQBus();
+            _logger.Info("Start Consuming!");
 
                 easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
