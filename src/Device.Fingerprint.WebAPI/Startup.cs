@@ -126,7 +126,7 @@ namespace Device.Fingerprint.WebAPI
             FanexDataConfig(appSettings);
 
             LogManager
-           .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+           .SetDefaultLogCategory("Device.Fingerprint.WebAPI")
            .Use(new List<ILogEngine>
            {
                     new SentryLogging(new SentryEngineOptions
@@ -183,8 +183,6 @@ namespace Device.Fingerprint.WebAPI
             });
 
             app.UseAuthorization();
-
-            app.UseMiddleware<JWTMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

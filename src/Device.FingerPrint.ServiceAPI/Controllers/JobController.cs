@@ -163,12 +163,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             monitorJobServices.TestSentryCaptureMessage(message);
         }
 
-        [HttpPost("testSentryCaptureException")]
-        public void TestSentryCaptureException()
-        {
-            monitorJobServices.TestSentryCaptureException();
-        }
-
         [HttpPost("testNotificationTelegram")]
         public void TestNotificationTelegram([FromForm] string message)
         {

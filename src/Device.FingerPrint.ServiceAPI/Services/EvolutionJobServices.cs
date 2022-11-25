@@ -1,17 +1,12 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
-using Device.FingerPrint.ServiceAPI.Ultilities;
 using Newtonsoft.Json;
-using Sentry;
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Web;
 
 namespace Device.FingerPrint.ServiceAPI.Services
 {
@@ -29,35 +24,24 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class EvolutionJobServices : IEvolutionJobServices
     {
         private readonly ITransactionService transactionService;
-        private readonly ISentryClient sentryClient;
         private readonly IAppSettings appSetting;
 
         private readonly int maxChangesRule5 = 2;
         private readonly int maxChangesRule6 = 1;
 
-        public EvolutionJobServices(ITransactionService transactionService, ISentryClient sentryClient, IAppSettings appSetting)
+        public EvolutionJobServices(ITransactionService transactionService, IAppSettings appSetting)
         {
             this.transactionService = transactionService;
-            this.sentryClient = sentryClient;
             this.appSetting = appSetting;
         }
 
         public Task<bool> Evolution(int batchSize, int numberOfBatch)
         {
-            try
-            {
-                var rawTrans = transactionService.GetTransactionEvolution(batchSize * numberOfBatch);
+            var rawTrans = transactionService.GetTransactionEvolution(batchSize * numberOfBatch);
 
-                if (rawTrans != null && rawTrans.Any())
-                {
-                    ProcessEvolution(rawTrans, batchSize);
-                }
-            }
-            catch (Exception ex)
+            if (rawTrans != null && rawTrans.Any())
             {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
+                ProcessEvolution(rawTrans, batchSize);
             }
 
             return Task.FromResult(true);
@@ -74,28 +58,20 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 {
                     var task = Task.Run(() =>
                     {
-                        try
+                        var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
+
+                        // NewDevice
+                        if (newDeviceTransIds != null && newDeviceTransIds.Any())
                         {
-
-                            var (newDeviceTransIds, evolutionModel) = ClassifyRecoverTrans(item);
-
-                            // NewDevice
-                            if (newDeviceTransIds != null && newDeviceTransIds.Any())
-                            {
-                                var transIds = string.Join(",", newDeviceTransIds);
-                                transactionService.EvolutionNewDevice(transIds);
-                            }
-
-                            // FPS Evolution
-                            if (evolutionModel != null && evolutionModel.Any())
-                            {
-                                var transJson = JsonConvert.SerializeObject(evolutionModel);
-                                transactionService.EvolutionRecoverDevice(transJson);
-                            }
+                            var transIds = string.Join(",", newDeviceTransIds);
+                            transactionService.EvolutionNewDevice(transIds);
                         }
-                        catch (Exception ex)
+
+                        // FPS Evolution
+                        if (evolutionModel != null && evolutionModel.Any())
                         {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + item, SentryLevel.Error);
+                            var transJson = JsonConvert.SerializeObject(evolutionModel);
+                            transactionService.EvolutionRecoverDevice(transJson);
                         }
                     });
 
@@ -182,27 +158,19 @@ namespace Device.FingerPrint.ServiceAPI.Services
         #region "Evolution"
         private bool CheckVersion(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
-            try
+            var version1 = GetVersion(source.BrowserVersion);
+            var version2 = GetVersion(destination.BrowserVersion);
+
+            if (version1 != null && version2 != null)
             {
-                var version1 = GetVersion(source.BrowserVersion);
-                var version2 = GetVersion(destination.BrowserVersion);
+                var resultVersion = version1.CompareTo(version2);
 
-                if (version1 != null && version2 != null)
-                {
-                    var resultVersion = version1.CompareTo(version2);
-
-                    if (resultVersion < 0) // new < old
-                        return false;
-                    return true;
-                }
-
-                return false;
+                if (resultVersion < 0) // new < old
+                    return false;
+                return true;
             }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureMessage(ex.Message + "\nSource EvolutionId: " + source.Id.ToString() + "\nDestination RawFingerPrintId: " + destination.Id.ToString());
-                return false;
-            }
+
+            return false;
         }
 
         private Version GetVersion(string version)
@@ -335,13 +303,13 @@ namespace Device.FingerPrint.ServiceAPI.Services
         }
 
         private async Task<bool> CheckRatio(string source, string destination)
-        {            
+        {
             var param = new { source, destination };
             var content = new StringContent(JsonConvert.SerializeObject(param), System.Text.Encoding.UTF8, "application/json");
             var client = new HttpClient();
             var response = await client.PostAsync(this.appSetting.RatioUrl, content);
 
-            if(response.Content != null)
+            if (response.Content != null)
             {
                 var responseContent = await response.Content.ReadAsStringAsync();
 

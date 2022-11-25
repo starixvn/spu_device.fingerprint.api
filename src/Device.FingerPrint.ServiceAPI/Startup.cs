@@ -2,6 +2,9 @@ using Device.FingerPrint.ServiceAPI.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -30,6 +33,7 @@ namespace Device.FingerPrint.ServiceAPI
         {
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
+            services.AddSingleton<ILogger, Logger>();
 
             services.AddControllers();
 
@@ -43,7 +47,21 @@ namespace Device.FingerPrint.ServiceAPI
             services.RegisterService(Configuration);
 
             FanexDataConfig(appSettings);
-           // RegisterLogging(appSettings);
+            // RegisterLogging(appSettings);
+
+            LogManager
+           .SetDefaultLogCategory("Device.FingerPrint.ServiceAPI")
+           .Use(new List<ILogEngine>
+           {
+                    new SentryLogging(new SentryEngineOptions
+                    {
+                        Dsn = new Dsn(appSettings.SentryDsn)
+                    })
+           });
+
+            ExceptionHandler
+                .UseConfig(new LoggingConfiguration())
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -53,6 +71,8 @@ namespace Device.FingerPrint.ServiceAPI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UsePathBase("/jobapi");
             app.UseSwagger();

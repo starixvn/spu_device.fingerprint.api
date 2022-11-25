@@ -1,9 +1,8 @@
 ﻿using Device.FingerPrint.Features.BrowserInfo.Model;
 using Device.FingerPrint.Features.BrowserInfo.Services;
 using Device.FingerPrint.Model;
+using Fanex.Logging;
 using Newtonsoft.Json;
-using Sentry;
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,37 +19,28 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class BrowserInfoJobServices : IBrowserInfoJobServices
     {
         private readonly IBrowserInfoService browserInfoService;
-        private readonly ISentryClient sentryClient;
+        private readonly ILogger _logger;
 
-        public BrowserInfoJobServices(IBrowserInfoService browserInfoService, ISentryClient sentryClient)
+        public BrowserInfoJobServices(IBrowserInfoService browserInfoService, ILogger logger)
         {
             this.browserInfoService = browserInfoService;
-            this.sentryClient = sentryClient;
+            _logger = logger;
         }
 
         public Task<bool> DetectBots(int batchSize, int detectionLevel)
         {
-            try
-            {
-                var browserInfos = browserInfoService.GetBrowserInfo(batchSize);
+            var browserInfos = browserInfoService.GetBrowserInfo(batchSize);
 
-                if (browserInfos != null && browserInfos.Any())
+            if (browserInfos != null && browserInfos.Any())
+            {
+                var browserInfoModel = TransformBrowserInfo(browserInfos);
+
+                if (browserInfoModel != null && browserInfoModel.Any())
                 {
-                    var browserInfoModel = TransformBrowserInfo(browserInfos);
+                    var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
 
-                    if (browserInfoModel != null && browserInfoModel.Any())
-                    {
-                        var browserInfoExecuted = ExecuteRules(browserInfoModel, detectionLevel);
-
-                        UpdateFlagged(browserInfoExecuted, batchSize);
-                    }
+                    UpdateFlagged(browserInfoExecuted, batchSize);
                 }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
             }
 
             return Task.FromResult(true);
@@ -209,7 +199,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(item), SentryLevel.Error);
+                            _logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(item));
                         }
                     });
 

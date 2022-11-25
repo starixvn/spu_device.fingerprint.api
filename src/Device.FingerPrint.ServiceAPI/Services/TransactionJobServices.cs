@@ -1,9 +1,8 @@
 ﻿using Device.FingerPrint.Features.ServerTransaction.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
+using Fanex.Logging;
 using Newtonsoft.Json;
-using Sentry;
-using Sentry.Protocol;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,31 +27,22 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         private readonly ITransactionService transactionService;
         private readonly IRawTransactionService rawTransactionServices;
-        private readonly ISentryClient sentryClient;
+        private readonly ILogger _logger;
 
-        public TransactionJobServices(ITransactionService transactionService, IRawTransactionService rawTransactionServices, ISentryClient sentryClient)
+        public TransactionJobServices(ITransactionService transactionService, IRawTransactionService rawTransactionServices, ILogger logger)
         {
             this.transactionService = transactionService;
             this.rawTransactionServices = rawTransactionServices;
-            this.sentryClient = sentryClient;
+            _logger = logger;
         }
 
         public Task<bool> UpdateTransaction(int batchSize, int numberOfBatch, int retry)
         {
-            try
-            {
-                var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransaction);
+            var rawTrans = rawTransactionServices.GetServerTransaction(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransaction);
 
-                if (rawTrans != null && rawTrans.Any())
-                {
-                    ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransaction);
-                }
-            }
-            catch (Exception ex)
+            if (rawTrans != null && rawTrans.Any())
             {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
+                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransaction);
             }
 
             return Task.FromResult(true);
@@ -60,20 +50,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public Task<bool> UpdateTransactionRetry(int batchSize, int numberOfBatch, int retry)
         {
-            try
-            {
-                var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
+            var rawTrans = rawTransactionServices.GetServerTransactionRetry(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionRetry);
 
-                if (rawTrans != null && rawTrans.Any())
-                {
-                    ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
-                }
-            }
-            catch (Exception ex)
+            if (rawTrans != null && rawTrans.Any())
             {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
+                ProcessUpdateTransaction(rawTrans, batchSize, retry, (int)Offset.UpdateServerTransactionRetry);
             }
 
             return Task.FromResult(true);
@@ -98,7 +79,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + rawTransJson, SentryLevel.Error);
+                            _logger.Error(ex.Message + "\n" + rawTransJson);
                         }
                     });
 
@@ -111,20 +92,11 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public Task<bool> UpdateTransactionN(int batchSize, int numberOfBatch, int retry)
         {
-            try
-            {
-                var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionN);
+            var rawTrans = rawTransactionServices.GetServerTransactionN(batchSize * numberOfBatch, retry, (int)Offset.UpdateServerTransactionN);
 
-                if (rawTrans != null && rawTrans.Any())
-                {
-                    ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
-                }
-            }
-            catch (Exception ex)
+            if (rawTrans != null && rawTrans.Any())
             {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
+                ProcessUpdateTransactionN(rawTrans, batchSize, (int)Offset.UpdateServerTransactionN);
             }
 
             return Task.FromResult(true);
@@ -149,7 +121,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + rawTransJson, SentryLevel.Error);
+                            _logger.Error(ex.Message + "\n" + rawTransJson);
                         }
                     });
 
@@ -162,40 +134,31 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public Task<bool> MergeTrans(int batchSize, int numberOfBatch, int retry)
         {
-            try
-            {
-                var mergeTrans = transactionService.GetMergeTransaction(batchSize * numberOfBatch, retry);
+            var mergeTrans = transactionService.GetMergeTransaction(batchSize * numberOfBatch, retry);
 
-                if (mergeTrans != null && mergeTrans.Any())
+            if (mergeTrans != null && mergeTrans.Any())
+            {
+                var mergeTransGroup = mergeTrans.Chunk2(batchSize);
+                var tasks = new List<Task>();
+
+                foreach (var trans in mergeTransGroup)
                 {
-                    var mergeTransGroup = mergeTrans.Chunk2(batchSize);
-                    var tasks = new List<Task>();
-
-                    foreach (var trans in mergeTransGroup)
+                    tasks.Add(Task.Run(() =>
                     {
-                        tasks.Add(Task.Run(() =>
+                        var mergeTransJson = JsonConvert.SerializeObject(trans);
+
+                        try
                         {
-                            var mergeTransJson = JsonConvert.SerializeObject(trans);
-
-                            try
-                            {
-                                transactionService.MergeTransaction(mergeTransJson);
-                            }
-                            catch (Exception ex)
-                            {
-                                sentryClient.CaptureMessage(ex.Message + "\n" + mergeTransJson, SentryLevel.Error);
-                            }
-                        }));
-                    }
-
-                    Task.WaitAll(tasks.ToArray());
+                            transactionService.MergeTransaction(mergeTransJson);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex.Message + "\n" + mergeTransJson);
+                        }
+                    }));
                 }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
 
-                return Task.FromResult(false);
+                Task.WaitAll(tasks.ToArray());
             }
 
             return Task.FromResult(true);
@@ -203,39 +166,30 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public Task<bool> ForceMergeTrans(int batchSize, int numberOfBatch, int retry)
         {
-            try
-            {
-                var mergeTrans = transactionService.GetForceMergeTransaction(batchSize * numberOfBatch, retry);
+            var mergeTrans = transactionService.GetForceMergeTransaction(batchSize * numberOfBatch, retry);
 
-                if (mergeTrans != null && mergeTrans.Any())
+            if (mergeTrans != null && mergeTrans.Any())
+            {
+                var mergeTransGroup = mergeTrans.Chunk2(batchSize);
+                var tasks = new List<Task>();
+
+                foreach (var trans in mergeTransGroup)
                 {
-                    var mergeTransGroup = mergeTrans.Chunk2(batchSize);
-                    var tasks = new List<Task>();
-
-                    foreach (var trans in mergeTransGroup)
+                    tasks.Add(Task.Run(() =>
                     {
-                        tasks.Add(Task.Run(() =>
+                        var mergeTransJson = JsonConvert.SerializeObject(trans);
+                        try
                         {
-                            var mergeTransJson = JsonConvert.SerializeObject(trans);
-                            try
-                            {
-                                transactionService.ForceMergeTransaction(mergeTransJson);
-                            }
-                            catch (Exception ex)
-                            {
-                                sentryClient.CaptureMessage(ex.Message + "\n" + mergeTransJson, SentryLevel.Error);
-                            }
-                        }));
-                    }
-
-                    Task.WaitAll(tasks.ToArray());
+                            transactionService.ForceMergeTransaction(mergeTransJson);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.Error(ex.Message + "\n" + mergeTransJson);
+                        }
+                    }));
                 }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
 
-                return Task.FromResult(false);
+                Task.WaitAll(tasks.ToArray());
             }
 
             return Task.FromResult(true);

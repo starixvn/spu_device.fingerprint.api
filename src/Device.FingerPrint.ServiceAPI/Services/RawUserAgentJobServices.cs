@@ -3,8 +3,6 @@ using Device.FingerPrint.Model;
 using DeviceDetectorNET;
 using DeviceDetectorNET.Parser;
 using Newtonsoft.Json;
-using Sentry;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -19,32 +17,21 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class RawUserAgentJobServices : IRawUserAgentJobServices
     {
         private readonly IRawUserAgentService rawUserAgentService;
-        private readonly ISentryClient sentryClient;
 
-        public RawUserAgentJobServices(IRawUserAgentService rawUserAgentService, ISentryClient sentryClient)
+        public RawUserAgentJobServices(IRawUserAgentService rawUserAgentService)
         {
             this.rawUserAgentService = rawUserAgentService;
-            this.sentryClient = sentryClient;
         }
 
         public Task<bool> UpdateRawUserAgent(int batchSize)
         {
-            try
+            var rawUserAgents = rawUserAgentService.GetRawUserAgents(batchSize);
+
+            if (rawUserAgents != null && rawUserAgents.Any())
             {
-                var rawUserAgents = rawUserAgentService.GetRawUserAgents(batchSize);
+                var userAgentInfoList = DeviceDetection(rawUserAgents);
 
-                if (rawUserAgents != null && rawUserAgents.Any())
-                {
-                    var userAgentInfoList = DeviceDetection(rawUserAgents);
-
-                    ProcessUpdateUserAgent(userAgentInfoList);
-                }
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
+                ProcessUpdateUserAgent(userAgentInfoList);
             }
 
             return Task.FromResult(true);

@@ -31,7 +31,6 @@ namespace Device.FingerPrint.ServiceAPI
 #endif
 
                     webBuilder
-                    .UseSentry()
                     .UseStartup<Startup>();
                 });
     }

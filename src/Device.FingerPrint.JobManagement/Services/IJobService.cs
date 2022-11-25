@@ -21,9 +21,16 @@
                 Timeout = TimeSpan.FromDays(1)
             };
 
-            var jobServiceAPI = RestService.For<IJobServiceApi>(httpClient);            
-
-            return await jobServiceAPI.Execute(jobName, methodName, controller, data);
+            var jobServiceAPI = RestService.For<IJobServiceApi>(httpClient);
+            try
+            {
+                var responce = await jobServiceAPI.Execute(jobName, methodName, controller, data);
+                return responce;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
