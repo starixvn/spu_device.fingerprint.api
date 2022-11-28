@@ -25,8 +25,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IClientTransactionService clientTransactionService;
         private readonly ILogger _logger;
 
-        private string etagValue;
-
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -42,9 +40,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.easyNetQService = easyNetQService;
             this.redisService = redisService;
             this.clientTransactionService = clientTransactionService;
-            _logger = logger;
-
-            etagValue = etagValue ?? Guid.NewGuid().ToString("N");
+            _logger = logger;        
         }
 
         [HttpGet("scr/{subscriberName}")]
