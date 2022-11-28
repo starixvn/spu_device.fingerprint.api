@@ -2,8 +2,6 @@
 {
     public class BrowserInfoAttributeModel
     {
-        public string BrowserInfoAttributeCode { get; set; }
-
         public string SecChUa { get; set; }
 
         public string SecChUaPlatform { get; set; }

@@ -1,6 +1,4 @@
-﻿using Device.FingerPrint.Features.ClientTransaction.Services;
-using Device.FingerPrint.Features.ServerTransaction.Services;
-using Device.FingerPrint.Features.Subscriber.Services;
+﻿using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,29 +8,16 @@ namespace Device.Fingerprint.WebAPI.Services
     {
         public static void RegisterService(this IServiceCollection services)
         {
-            RegisterFingerPrintService(services);
             RegisterTransactionService(services);
-            RegisterRawTransactionService(services);
-            RegisterSubscriberService(services);            
-            RegisterQueueService(services);                       
-        }
-
-        private static void RegisterFingerPrintService(this IServiceCollection services)
-        {
-            services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
-            services.AddSingleton<IClientTransactionService, ClientTransactionService>();
+            RegisterSubscriberService(services);
+            RegisterQueueService(services);
+            RegisterExceptionService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
         {
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
-        }
-
-        private static void RegisterRawTransactionService(this IServiceCollection services)
-        {
-            services.AddSingleton<IRawTransactionDataAccess, RawTransactionDataAccess>();
-            services.AddSingleton<IRawTransactionService, RawTransactionService>();
         }
 
         private static void RegisterSubscriberService(this IServiceCollection services)
@@ -44,6 +29,12 @@ namespace Device.Fingerprint.WebAPI.Services
         private static void RegisterQueueService(this IServiceCollection services)
         {
             services.AddSingleton<IEasyNetQService, EasyNetQService>();
+        }
+
+        private static void RegisterExceptionService(this IServiceCollection services)
+        {
+            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
+            services.AddSingleton<ITransactionService, TransactionService>();
         }
     }
 }

@@ -72,34 +72,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var moreInfo = new StringBuilder("");
             var transactionSumList = transactionReportServices.GetTransactionSumList(fromDate, toDate);
 
-            // Server summary
-            moreInfo.Append("\n\r");
-            moreInfo.Append("ServerTransaction:");
-            var serverTransDaily = TranformData(transactionSumList.Item1);
-            foreach (var item in serverTransDaily)
-            {
-                moreInfo.Append("\n\r");
-                moreInfo.Append(" - " + item.SubscriberName);
-                moreInfo.Append(": " + item.TotalTrans.ToString());
-                moreInfo.Append(" (" + item.TotalValidTrans.ToString() + ")");
-            }
-
-            // Client summary
-            moreInfo.Append("\n\r");
-            moreInfo.Append("ClientTransaction:");
-            var clientTransDaily = TranformData(transactionSumList.Item2);
-            foreach (var item in clientTransDaily)
-            {
-                moreInfo.Append("\n\r");
-                moreInfo.Append(" - " + item.SubscriberName);
-                moreInfo.Append(": " + item.TotalTrans.ToString());
-                moreInfo.Append(" (" + item.TotalValidTrans.ToString() + ")");
-            }
-
             // Transaction summary
             moreInfo.Append("\n\r");
             moreInfo.Append("Transaction:");
-            var transaction = TranformData(transactionSumList.Item3);
+            var transaction = TranformData(transactionSumList);
             foreach (var item in transaction)
             {
                 moreInfo.Append("\n\r");

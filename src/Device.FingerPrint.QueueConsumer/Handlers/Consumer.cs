@@ -1,9 +1,7 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    using Device.FingerPrint.Features.Monitor.Model;
-    using Device.FingerPrint.Features.Monitor.Services;
-    using Device.FingerPrint.Features.ServerTransaction.Model;
-    using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Features.Transaction.Model;
+    using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
     using EasyNetQ;
@@ -11,29 +9,24 @@
     using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
-    using Newtonsoft.Json;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     public class Consumer : BackgroundService
     {
-        private readonly IRawTransactionService rawTransactionService;
-        private readonly ITransactionReportServices transactionReportServices;
-
-        private readonly List<TransactionEntity> listTransactionInsertModel;
+        private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
         private readonly ILogger _logger;
 
+        private readonly List<TransactionEntity> listTransactionInsertModel;
+
         public Consumer(IAppSettings appSettings
-                        , IRawTransactionService rawTransactionService
-                        , ITransactionReportServices transactionReportServicess
+                        , ITransactionService transactionService
                         , ILogger logger)
         {
-            this.rawTransactionService = rawTransactionService;
+            this.transactionService = transactionService;
             this.appSettings = appSettings;
-            this.transactionReportServices = transactionReportServices;
             this._logger = logger;
 
             listTransactionInsertModel = new List<TransactionEntity>();
@@ -82,7 +75,7 @@
 
                             if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
                             {
-                                rawTransactionService.InsertTransaction(listTransactionInsertModel);
+                        transactionService.InsertTransaction(listTransactionInsertModel);
 
                                 listTransactionInsertModel.Clear();
                             }
@@ -116,24 +109,6 @@
                     .Bind();
 
             return easyNetQConnector;
-        }
-
-        private void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
-        {
-            if (groupTrans != null && groupTrans.Any())
-            {
-                var json = JsonConvert.SerializeObject(groupTrans);
-                transactionReportServices.InsertServerTransactionDailySum(json);
-            }
-        }
-
-        private void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
-        {
-            if (groupTrans != null && groupTrans.Any())
-            {
-                var json = JsonConvert.SerializeObject(groupTrans);
-                transactionReportServices.InsertClientTransactionDailySum(json);
-            }
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)

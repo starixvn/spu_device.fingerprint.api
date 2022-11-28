@@ -20,9 +20,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
-        private readonly IClientTransactionService clientTransactionService;
         private readonly IEasyNetQService easyNetQService;
         private readonly IRedisService redisService;
+        private readonly IClientTransactionService clientTransactionService;
         private readonly ILogger _logger;
 
         private string etagValue;
@@ -241,17 +241,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return Ok(string.Empty);
-        }
-
-        [HttpPost("ctl")]
-        public void ClientTransLog([FromBody] ClientTransactionLogsModel data)
-        {
-            if (!appSettings.IgnoreClientTransLogs)
-            {
-                data.TransTime = DateTime.Now;
-
-                easyNetQService.PushData(data);
-            }
         }
 
         [HttpPost("cle")]

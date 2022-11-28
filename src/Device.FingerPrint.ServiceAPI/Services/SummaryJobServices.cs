@@ -5,10 +5,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
 {
     public interface ISummaryJobServices
     {
-        Task<bool> SummaryServerTransactionDaily(int batchSize);
-
-        Task<bool> SummaryClientTransactionDaily(int batchSize);
-
         Task<bool> SummaryTransactionDaily(int batchSize);
 
         Task<bool> SummaryRecoverTypeDaily(int batchSize);
@@ -21,20 +17,6 @@ namespace Device.FingerPrint.ServiceAPI.Services
         public SummaryJobServices(ISummaryTransactionService summaryTransactionService)
         {
             this.summaryTransactionService = summaryTransactionService;
-        }
-
-        public Task<bool> SummaryServerTransactionDaily(int batchSize)
-        {
-            summaryTransactionService.SummaryServerTransactionDaily(batchSize);
-
-            return Task.FromResult(true);
-        }
-
-        public Task<bool> SummaryClientTransactionDaily(int batchSize)
-        {
-            summaryTransactionService.SummaryClientTransactionDaily(batchSize);
-
-            return Task.FromResult(true);
         }
 
         public Task<bool> SummaryTransactionDaily(int batchSize)

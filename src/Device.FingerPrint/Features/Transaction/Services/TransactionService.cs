@@ -1,11 +1,13 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
-       
+        void InsertTransaction(IEnumerable<TransactionEntity> transactions);
+
         void DeviceIdentify(string transJson, int groupType);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
@@ -36,6 +38,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionService(ITransactionDataAccess transactionDataAccess)
         {
             this.transactionDataAccess = transactionDataAccess;
+        }
+
+        public void InsertTransaction(IEnumerable<TransactionEntity> transactions)
+        {
+            var transJson = JsonConvert.SerializeObject(transactions);
+            transactionDataAccess.InsertTransaction(transJson);
         }
 
         public void DeviceIdentify(string transJson, int groupType)

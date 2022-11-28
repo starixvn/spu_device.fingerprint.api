@@ -5,12 +5,6 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
 {
     public interface IClientTransactionDataAccess
     {
-        void InsertClientTransaction(string jsonFingerPrint);
-
-        void InsertClientTransactionLogs(string jsonFingerPrint);
-
-        void InsertFingerprintAttributes(string jsonFpAttributes);
-
         void InsertClientTransactionException(string function, string exception, string userAgent);
     }
 
@@ -23,16 +17,6 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
             repository = new DynamicRepository();
         }
 
-        public void InsertClientTransaction(string jsonFingerPrint)
-        {
-            var criteria = new InsertClientTransactionCriteria
-            {
-                FingerPrint = jsonFingerPrint
-            };
-
-            repository.Execute(criteria);
-        }
-
         public void InsertClientTransactionException(string function, string exception, string userAgent)
         {
             var criteria = new InsertClientTransactionExceptionCriteria
@@ -40,26 +24,6 @@ namespace Device.FingerPrint.Features.ClientTransaction.Services
                 Function = function,
                 Exception = exception,
                 UserAgent = userAgent
-            };
-
-            repository.Execute(criteria);
-        }
-
-        public void InsertClientTransactionLogs(string jsonFingerPrint)
-        {
-            var criteria = new InsertClientTransactionLogsCriteria
-            {
-                FingerPrint = jsonFingerPrint
-            };
-
-            repository.Execute(criteria);
-        }
-
-        public void InsertFingerprintAttributes(string jsonFpAttributes)
-        {
-            var criteria = new InsertFingerprintAttributesCriteria
-            {
-                FingerprintAttributes = jsonFpAttributes
             };
 
             repository.Execute(criteria);

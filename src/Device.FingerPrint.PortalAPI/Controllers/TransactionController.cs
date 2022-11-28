@@ -256,12 +256,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
         }
 
-        [HttpPost("removeRedis")]
-        public void RemoveRedis([FromForm] int SubscriberId, [FromForm] string SessionKey)
-        {
-            RedisRemoveAll(SubscriberId, SessionKey);
-        }
-
         [HttpPost("transaction")]
         public void Transaction([FromBody] TransactionDTO data)
         {
@@ -305,6 +299,12 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     _logger.Info($"{data.SubscriberName} does not exists.");
                 }
             }
+        }
+
+        [HttpPost("removeRedis")]
+        public void RemoveRedis([FromForm] int SubscriberId, [FromForm] string SessionKey)
+        {
+            RedisRemoveAll(SubscriberId, SessionKey);
         }
 
         [HttpGet("hc")]

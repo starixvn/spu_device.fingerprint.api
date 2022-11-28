@@ -51,10 +51,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.PortalAP
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.WebAPI", "src\Device.Fingerprint.WebAPI\Device.Fingerprint.WebAPI.csproj", "{3C095581-8665-4168-BD07-94412A7166D4}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{D00F27ED-D949-401E-8F85-FC642AD153D0}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.Core", "src\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj", "{E34F6D12-FF33-43E4-99B1-168E3E707020}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -141,10 +137,6 @@ Global
 		{3C095581-8665-4168-BD07-94412A7166D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3C095581-8665-4168-BD07-94412A7166D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3C095581-8665-4168-BD07-94412A7166D4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E34F6D12-FF33-43E4-99B1-168E3E707020}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E34F6D12-FF33-43E4-99B1-168E3E707020}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E34F6D12-FF33-43E4-99B1-168E3E707020}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E34F6D12-FF33-43E4-99B1-168E3E707020}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -170,7 +162,6 @@ Global
 		{9529136D-9AA3-4260-9CFE-C70C02E12574} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 		{36E08106-09B3-48E5-973A-D1EC3CBAB0B1} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
 		{3C095581-8665-4168-BD07-94412A7166D4} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
-		{E34F6D12-FF33-43E4-99B1-168E3E707020} = {D00F27ED-D949-401E-8F85-FC642AD153D0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}

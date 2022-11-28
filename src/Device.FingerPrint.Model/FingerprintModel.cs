@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Device.FingerPrint.Model
+﻿namespace Device.FingerPrint.Model
 {
-   public class FingerprintModel
+    public class FingerprintModel
     {
         public string Id { get; set; }
 

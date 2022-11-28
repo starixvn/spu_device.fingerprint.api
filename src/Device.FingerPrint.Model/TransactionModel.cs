@@ -4,8 +4,6 @@ namespace Device.FingerPrint.Model
 {
     public class TransactionModel
     {
-        public ulong AccountId { get; set; }
-
         public int SubscriberId { get; set; }
 
         public string LoginName { get; set; }        

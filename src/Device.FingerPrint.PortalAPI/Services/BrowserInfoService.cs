@@ -12,10 +12,6 @@ namespace Device.FingerPrint.PortalAPI.Services
 
     public class BrowserInfoService : IBrowserInfoService
     {
-        public BrowserInfoService()
-        {
-        }
-
         public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
         {
 

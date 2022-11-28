@@ -10,7 +10,5 @@
         public decimal HeadlessScore { get; set; }
 
         public string HeadlessDetail { get; set; }
-
-        public string BrowserInfoCode { get; set; }
     }
 }

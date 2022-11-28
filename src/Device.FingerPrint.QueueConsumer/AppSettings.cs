@@ -16,16 +16,6 @@ namespace Device.FingerPrint.QueueConsumer
 
         int TransBatchSize { get; }
 
-        int ClientTransBatchSize { get; }
-
-        int ClientTransLogsBatchSize { get; }
-
-        int ServerTransBatchSize { get; }
-
-        int FPAttributeBatchSize { get; }
-
-        int BrowserInfoBatchSize { get; }
-
         IConfiguration Configuration { get; }
 
     }
@@ -37,11 +27,6 @@ namespace Device.FingerPrint.QueueConsumer
         private readonly string sentryDsn;
         private readonly string environment;
         private readonly int transBatchSize;
-        private readonly int clientTransBatchSize;
-        private readonly int clientTransLogsBatchSize;
-        private readonly int serverTransBatchSize;
-        private readonly int fpAttributeBatchSize;
-        private readonly int browserInfoBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -56,16 +41,6 @@ namespace Device.FingerPrint.QueueConsumer
             environment = GetValue<string>("AppConfig:Environment");
 
             transBatchSize = GetValue<int>("Consumer:TransBatchSize");
-
-            clientTransBatchSize = GetValue<int>("Consumer:ClientTrans");
-
-            clientTransLogsBatchSize = GetValue<int>("Consumer:ClientTransLogs");
-
-            serverTransBatchSize = GetValue<int>("Consumer:ServerTrans");
-
-            fpAttributeBatchSize = GetValue<int>("Consumer:FPAttribute");
-
-            browserInfoBatchSize = GetValue<int>("Consumer:BrowserInfo");
         }
 
         public string ApiUrl => apiUrl;
@@ -78,17 +53,7 @@ namespace Device.FingerPrint.QueueConsumer
 
         public int TransBatchSize => transBatchSize;
 
-        public int ClientTransBatchSize => clientTransBatchSize;
-
         public IConfiguration Configuration => configuration;
-
-        public int ServerTransBatchSize => serverTransBatchSize;
-
-        public int FPAttributeBatchSize => fpAttributeBatchSize;
-
-        public int BrowserInfoBatchSize => browserInfoBatchSize;
-
-        public int ClientTransLogsBatchSize => clientTransLogsBatchSize;
 
         public T GetValue<T>(string key)
         {

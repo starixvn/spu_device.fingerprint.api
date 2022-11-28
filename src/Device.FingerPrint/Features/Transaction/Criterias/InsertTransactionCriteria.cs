@@ -1,16 +1,16 @@
 ﻿using Fanex.Data;
 using Fanex.Data.Repository;
 
-namespace Device.FingerPrint.Features.ServerTransaction.Criterias
+namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class InsertServerTransactionCriteria : NonQueryCommand
+    public class InsertTransactionCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_Transaction")]
         public string Transaction { get; set; }
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_Transform_ServerTransaction_Insert";
+            return "FPS_FP_Transform_Transaction_Insert";
         }
 
         public override bool IsValid()
