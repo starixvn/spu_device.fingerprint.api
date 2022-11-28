@@ -36,8 +36,11 @@ namespace Device.FingerPrint.PortalAPI.Services
             var userAgentInfo = ParseUserAgentInfo(header);
             model.CookieCode = cookie;
             model.UserAgentInfo = userAgentInfo;
-            model.BrowserInfo = browserInfoModel;
+
+            browserInfoAttributeModel.BrowserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeModel.BrowserInfoAttributeJson);
             model.BrowserInfoAttribute = browserInfoAttributeModel;
+
+            model.BrowserInfo = browserInfoModel;
             model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
 
             return model;
@@ -76,6 +79,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             }
 
             result.BrowserInstanceCode = crypto.GetMD5Hash(result.BrowserInstanceJson);
+            result.BrowserFamilyCode = crypto.GetMD5Hash(result.BrowserFamilyJson);
 
             return result;
         }

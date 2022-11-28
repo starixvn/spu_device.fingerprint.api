@@ -1,6 +1,5 @@
 namespace Device.FingerPrint.QueueConsumer
 {
-    using Device.FingerPrint.Features.BrowserInfo.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.QueueConsumer.Handlers;
@@ -42,13 +41,10 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
             services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
 
-            services.AddSingleton<IBrowserInfoDataAccess, BrowserInfoDataAccess>();
-            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
-
             services.AddSingleton<ILogger, Logger>();
 
             services.AddHealthChecks();
-
+             
             FanexDataConfig(appSettings);
 
             LogManager

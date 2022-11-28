@@ -24,6 +24,7 @@ namespace Device.FingerPrint.Model
 
         public string Platform { get; set; }
 
+
         public string BrowserInstanceCode { get; set; }
 
         public string BrowserInstanceJson { 
@@ -38,6 +39,22 @@ namespace Device.FingerPrint.Model
                     Encoding = this.Encoding,
                     Headers = this.Headers,
                     UserAgent = this.UserAgent,
+                    Platform = this.Platform
+                });
+            }
+        }
+
+
+        public string BrowserFamilyCode { get; set; }
+
+        public string BrowserFamilyJson
+        { 
+            get
+            {
+                return JsonConvert.SerializeObject(new BrowserFamilyModel
+                {
+                    OSName = this.OSName,
+                    BrowserName = this.BrowserName,
                     Platform = this.Platform
                 });
             }
@@ -60,6 +77,15 @@ namespace Device.FingerPrint.Model
         public string BrowserVersion { get; set; }
 
         public string UserAgent { get; set; }
+
+        public string Platform { get; set; }
+    }
+
+    public class BrowserFamilyModel
+    {
+        public string OSName { get; set; }
+
+        public string BrowserName { get; set; }
 
         public string Platform { get; set; }
     }

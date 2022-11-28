@@ -70,6 +70,10 @@ namespace Device.FingerPrint.PortalAPI.Services
                 browserName = jsBrowserName;
                 osName = jsOSName;
             }
+            else
+            {
+                return (new BrowserInfoModel(), new BrowserInfoAttributeModel());
+            }
 
             var browserInfoModel = new BrowserInfoModel
             {
