@@ -18,8 +18,6 @@ namespace Device.FingerPrint.PortalAPI.Services
     {
         public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
         {
-            return (new BrowserInfoModel(), new BrowserInfoAttributeModel());
-
             var browsers = new List<string> { "Safari", "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
             string secChUa, secChUaPlatform, secChUaMobile, jsBrowserName, jsOSName, browserName, osName;
             secChUa = secChUaPlatform = secChUaMobile = jsBrowserName = jsOSName = browserName = osName = string.Empty;

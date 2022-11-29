@@ -1,7 +1,14 @@
-﻿namespace Device.FingerPrint.Model
+﻿using Newtonsoft.Json;
+
+namespace Device.FingerPrint.Model
 {
 
-    public class BrowserInfoModel
+    public class BrowserInfoModel : BrowserInfoProp
+    {
+        public string BrowserInfoCode { get; set; }
+    }
+
+    public class BrowserInfoProp
     {
         public string OSName { get; set; }
 

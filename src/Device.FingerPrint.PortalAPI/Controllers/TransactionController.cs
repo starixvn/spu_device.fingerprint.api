@@ -292,7 +292,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                     easyNetQService.PushData(transactionInsertModel);
 
-                    RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
+                    // RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
                 }
                 else
                 {

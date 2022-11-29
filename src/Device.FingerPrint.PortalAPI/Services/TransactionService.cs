@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Ultilities;
+using Newtonsoft.Json;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
@@ -30,18 +31,19 @@ namespace Device.FingerPrint.PortalAPI.Services
             {
                 browserInfoModel.HeadlessScore = headless.Score;
                 browserInfoModel.HeadlessDetail = headless.TestsDetail;
-                browserInfoModel.Flagged = browserInfoService.GetFlagged(browserInfoModel);
             }
-            browserInfoModel.HeadlessDetail = headless.TestsDetail;
+            browserInfoModel.Flagged = browserInfoService.GetFlagged(browserInfoModel);
 
             var userAgentInfo = ParseUserAgentInfo(header);
             model.CookieCode = cookie;
             model.UserAgentInfo = userAgentInfo;
 
-            browserInfoAttributeModel.BrowserInfoAttributeCode = crypto.GetMD5Hash(browserInfoAttributeModel.BrowserInfoAttributeJson);
+            browserInfoAttributeModel.BrowserInfoAttributeCode = HashBrowserInfoAttributeCode(browserInfoAttributeModel);
             model.BrowserInfoAttribute = browserInfoAttributeModel;
 
+            browserInfoModel.BrowserInfoCode = HashBrowserInfoCode(browserInfoModel);
             model.BrowserInfo = browserInfoModel;
+
             model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
 
             return model;
@@ -90,6 +92,34 @@ namespace Device.FingerPrint.PortalAPI.Services
             if (headerModel == null) return new UserAgentInfoModel();
 
             return transactionAttributeService.GetUserAgentInfo(headerModel.UserAgent);
+        }
+
+        private string HashBrowserInfoCode(BrowserInfoModel model)
+        {
+            var json = JsonConvert.SerializeObject(new BrowserInfoProp
+            {
+                OSName = model.OSName,
+                BrowserName = model.BrowserName,
+                HeadlessScore = model.HeadlessScore,
+                HeadlessDetail = model.HeadlessDetail,
+                Flagged = model.Flagged
+            });
+
+            return crypto.GetMD5Hash(json);
+        }
+
+        private string HashBrowserInfoAttributeCode(BrowserInfoAttributeModel model)
+        {
+            var json = JsonConvert.SerializeObject(new BrowserInfoAttributeProp
+            {
+                SecChUa = model.SecChUa,
+                SecChUaPlatform = model.SecChUaPlatform,
+                SecChUaMobile = model.SecChUaMobile,
+                JsBrowserName = model.JsBrowserName,
+                JsOSName = model.JsOSName
+            });
+
+            return crypto.GetMD5Hash(json);
         }
     }
 }
