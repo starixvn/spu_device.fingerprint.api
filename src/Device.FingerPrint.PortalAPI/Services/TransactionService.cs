@@ -30,6 +30,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             {
                 browserInfoModel.HeadlessScore = headless.Score;
                 browserInfoModel.HeadlessDetail = headless.TestsDetail;
+                browserInfoModel.Flagged = browserInfoService.GetFlagged(browserInfoModel);
             }
             browserInfoModel.HeadlessDetail = headless.TestsDetail;
 

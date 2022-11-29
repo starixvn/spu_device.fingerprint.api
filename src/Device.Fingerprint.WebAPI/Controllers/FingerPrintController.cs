@@ -20,7 +20,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
-        private readonly IEasyNetQService easyNetQService;
         private readonly IRedisService redisService;
         private readonly IClientTransactionService clientTransactionService;
         private readonly ILogger _logger;
@@ -29,7 +28,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,
-            IEasyNetQService easyNetQService,
             IRedisService redisService,
             IClientTransactionService clientTransactionService,
             ILogger logger)
@@ -37,7 +35,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
-            this.easyNetQService = easyNetQService;
             this.redisService = redisService;
             this.clientTransactionService = clientTransactionService;
             _logger = logger;        

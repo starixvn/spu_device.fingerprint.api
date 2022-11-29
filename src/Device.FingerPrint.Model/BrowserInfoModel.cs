@@ -10,5 +10,7 @@
         public decimal HeadlessScore { get; set; }
 
         public string HeadlessDetail { get; set; }
+
+        public int Flagged { get; set; }
     }
 }

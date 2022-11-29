@@ -129,10 +129,10 @@ namespace Device.Fingerprint.WebAPI
            .SetDefaultLogCategory("Device.Fingerprint.WebAPI")
            .Use(new List<ILogEngine>
            {
-                    new SentryLogging(new SentryEngineOptions
-                    {
-                        Dsn = new Dsn(appSettings.SentryDsn)
-                    })
+                     new SentryLogging(new SentryEngineOptions
+                     {
+                         Dsn = new Dsn(appSettings.SentryDsn)
+                     })
            });
 
             ExceptionHandler
@@ -148,8 +148,6 @@ namespace Device.Fingerprint.WebAPI
                 app.UseDeveloperExceptionPage();
 
             }
-
-            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseSwagger();
 
@@ -183,6 +181,8 @@ namespace Device.Fingerprint.WebAPI
             });
 
             app.UseAuthorization();
+
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
