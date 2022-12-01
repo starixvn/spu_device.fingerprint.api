@@ -276,7 +276,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     var transaction = new TransactionModel
                     {
                         SubscriberId = subscriber.SubscriberId,
-                        ClientIp = data.ClientIp,
+                        ClientIP = data.ClientIp,
                         LoginName = data.LoginName,
                         UserAgent = data.UserAgent,
                         UserAgentCode = userAgentCode,
@@ -351,9 +351,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 Encoding = HttpContext.Request.Headers["Accept-Encoding"],
                 UserAgent = Request.Headers["User-Agent"],
                 Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
-                secChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
-                secChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
-                secChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
+                SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
+                SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
+                SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
             };
 
             var redisKey = redisService.GetRedisKey(RedisKey.Header.ToString(), SubscriberId, SessionKey);

@@ -24,9 +24,9 @@ namespace Device.FingerPrint.PortalAPI.Services
 
             if (headerModel != null && browserDetectModel != null)
             {
-                secChUa = headerModel.secChUa;
-                secChUaPlatform = headerModel.secChUaPlatform;
-                secChUaMobile = headerModel.secChUaMobile;
+                secChUa = headerModel.SecChUa;
+                secChUaPlatform = headerModel.SecChUaPlatform;
+                secChUaMobile = headerModel.SecChUaMobile;
 
                 jsBrowserName = browserDetectModel.BrowserName;
                 jsOSName = browserDetectModel.OSName;
@@ -53,8 +53,8 @@ namespace Device.FingerPrint.PortalAPI.Services
             }
             else if (headerModel != null)
             {
-                browserName = headerModel.secChUa;
-                osName = headerModel.secChUaPlatform;
+                browserName = headerModel.SecChUa;
+                osName = headerModel.SecChUaPlatform;
 
                 if (!String.IsNullOrEmpty(secChUa))
                 {

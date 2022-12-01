@@ -38,7 +38,7 @@
             return new TransactionEntity
             {
                 LoginName = model.LoginName,
-                ClientIp = model.ClientIp,
+                ClientIP = model.ClientIP,
                 UserAgent = model.UserAgent,
                 UserAgentCode = model.UserAgentCode,
                 SessionKey = model.SessionKey,

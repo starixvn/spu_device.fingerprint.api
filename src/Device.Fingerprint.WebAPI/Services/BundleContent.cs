@@ -26,7 +26,8 @@ namespace Device.Fingerprint.WebAPI.Services
                     .Replace("__subscriberId__", subscriberId.ToString())
                     .Replace("__sessionKey__", sessionKey)
                     .Replace("__apiUrl__", $"{appSettings.ApiUrl}")
-                    .Replace("__portalAPIUrl__", $"{appSettings.PortalApiUrl}");
+                    .Replace("__portalAPIUrl__", $"{appSettings.PortalApiUrl}")
+                    .Replace("__version__", "1.3");
 
                 return script;
             }

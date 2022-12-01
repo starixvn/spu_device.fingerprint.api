@@ -2,6 +2,7 @@
 var sessionKey = '__sessionKey__';
 var cdnAPIUrl = '__cdnAPIUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
+var version = '__version__';
 
 var fp = {
     requireJS: function (_url) {
@@ -144,7 +145,7 @@ var fp = {
 }
 
 try {
-    console.log('1');
+    console.log('1.....');
     if (document.readyState == 'loading') {
         console.log('2');
         // still loading, wait for the event

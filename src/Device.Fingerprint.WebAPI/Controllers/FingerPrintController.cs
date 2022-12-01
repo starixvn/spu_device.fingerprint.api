@@ -214,6 +214,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/gjt")]
+        [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult<string> GetJWT()
         {
             var JWTService = new JWTService(appSettings);

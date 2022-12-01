@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Model
 
         public string SessionKey { get; set; }
 
-        public string ClientIp { get; set; }
+        public string ClientIP { get; set; }
 
         public string UserAgent { get; set; }
 

@@ -10,11 +10,11 @@
 
         public string UserAgent { get; set; }
 
-        public string secChUa { get; set; }
+        public string SecChUa { get; set; }
 
-        public string secChUaPlatform { get; set; }
+        public string SecChUaPlatform { get; set; }
 
-        public string secChUaMobile { get; set; }
+        public string SecChUaMobile { get; set; }
     }
 
     public class ParseUserAgentModel
