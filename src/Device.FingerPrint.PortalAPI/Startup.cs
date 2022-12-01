@@ -23,6 +23,11 @@ using Fanex.Logging.Extensions.Database;
 using System.Collections.Generic;
 using Fanex.Logging.Sentry;
 using Sentry;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Core.Middleware;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -39,6 +44,8 @@ namespace Device.FingerPrint.PortalAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+            var JWTService = new JWTService(appSettings);
+
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
 
@@ -87,6 +94,26 @@ namespace Device.FingerPrint.PortalAPI
 
             services.AddHealthChecks();
 
+
+            #region Authentication
+            services.AddAuthentication(option =>
+            {
+                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = false,
+                    IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
+                };
+            });
+            #endregion
+
             RegisterRedis(services);
 
             services.RegisterService();
@@ -115,7 +142,6 @@ namespace Device.FingerPrint.PortalAPI
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseRouting();
 
@@ -154,6 +180,9 @@ namespace Device.FingerPrint.PortalAPI
             });
 
             app.UseAuthorization();
+
+            app.UseMiddleware<JWTMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseSwagger();
 

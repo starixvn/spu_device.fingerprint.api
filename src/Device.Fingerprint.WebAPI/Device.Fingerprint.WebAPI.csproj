@@ -90,6 +90,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
+    <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>

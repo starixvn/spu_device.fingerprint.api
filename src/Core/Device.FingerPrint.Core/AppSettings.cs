@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Device.Fingerprint.WebAPI
+namespace Device.FingerPrint.Core
 {
     public interface IAppSettings
     {
@@ -22,8 +22,8 @@ namespace Device.Fingerprint.WebAPI
 
         string SentryDsn { get; }
 
-        string Environment { get; }       
-        
+        string Environment { get; }
+
         bool IgnoreClientTransLogs { get; }
 
     }
@@ -49,29 +49,28 @@ namespace Device.Fingerprint.WebAPI
         {
             this.configuration = configuration;
 
-            apiUrl = GetValue<string>("AppConfig:ApiUrl");
+            apiUrl = GetValue<string>("AppConfig:ApiUrl") ?? string.Empty;
 
-            cdnApiUrl = GetValue<string>("AppConfig:CDNApiUrl");
+            cdnApiUrl = GetValue<string>("AppConfig:CDNApiUrl") ?? string.Empty;
 
-            portalApiUrl = GetValue<string>("AppConfig:PortalApiUrl");
+            portalApiUrl = GetValue<string>("AppConfig:PortalApiUrl") ?? string.Empty;
 
-            cryptoPassword = GetValue<string>("AppConfig:Crypto:Password");
+            cryptoPassword = GetValue<string>("AppConfig:Crypto:Password") ?? string.Empty;
 
-            cryptoIV = GetValue<string>("AppConfig:Crypto:IV");
+            cryptoIV = GetValue<string>("AppConfig:Crypto:IV") ?? string.Empty;
 
-            cryptoSalt = GetValue<string>("AppConfig:Crypto:Salt");
+            cryptoSalt = GetValue<string>("AppConfig:Crypto:Salt") ?? string.Empty;
 
-            spName = GetValue<string>("AppConfig:SPName");
+            spName = GetValue<string>("AppConfig:SPName") ?? string.Empty;
 
-            sentryDsn = GetValue<string>("Sentry:Dsn");
+            sentryDsn = GetValue<string>("Sentry:Dsn") ?? string.Empty;
 
-            environment = GetValue<string>("AppConfig:Environment");
+            environment = GetValue<string>("AppConfig:Environment") ?? string.Empty;
 
-            ignoreClientTransLogs = GetValue<bool>("IgnoreClientTransLog");
-
+            ignoreClientTransLogs = !string.IsNullOrEmpty(GetValue<string>("IgnoreClientTransLog")) && Convert.ToBoolean(GetValue<string>("IgnoreClientTransLog"));
         }
 
-        public string ApiUrl => apiUrl;        
+        public string ApiUrl => apiUrl;
 
         public string CryptoPassword => cryptoPassword;
 

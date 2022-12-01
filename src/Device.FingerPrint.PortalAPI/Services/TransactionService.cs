@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.Model;
+﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Ultilities;
 using Newtonsoft.Json;

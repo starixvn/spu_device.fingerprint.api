@@ -1,12 +1,14 @@
-﻿using Device.Fingerprint.WebAPI.Services;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using Device.FingerPrint.Core.Services;
 
-namespace Device.Fingerprint.WebAPI.Middleware
+namespace Device.FingerPrint.Core.Middleware
 {
     public class JWTMiddleware
     {
@@ -21,7 +23,7 @@ namespace Device.Fingerprint.WebAPI.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ').Last();
 
             if (token != null && !ValidateToken(token))
             {
@@ -47,7 +49,7 @@ namespace Device.Fingerprint.WebAPI.Middleware
             try
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var JWTService = new JWT(appSettings);
+                var JWTService = new JWTService(appSettings);
 
                 tokenHandler.ValidateToken(token, new TokenValidationParameters
                 {

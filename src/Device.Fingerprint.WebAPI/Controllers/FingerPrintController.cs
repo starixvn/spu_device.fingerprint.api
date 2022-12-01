@@ -1,5 +1,7 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
 using Device.Fingerprint.WebAPI.Ultilities;
+using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
@@ -211,13 +213,20 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("scr/gjt")]
+        public ActionResult<string> GetJWT()
+        {
+            var JWTService = new JWTService(appSettings);
+            return Ok(JWTService.GenerateJwtToken());
+        }
+
         [HttpGet("conf/{sessionKey}")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult<ScriptConfigModel> AppConfig(string sessionKey)
         {
             if (Validation.SessionKey(sessionKey))
             {
-                var JWTService = new JWT(appSettings);
+                var JWTService = new JWTService(appSettings);
 
                 string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
                 {

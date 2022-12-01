@@ -4,14 +4,14 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Device.Fingerprint.WebAPI.Services
+namespace Device.FingerPrint.Core.Services
 {
-    public class JWT
+    public class JWTService
     {
         private readonly IAppSettings appSettings;
         public readonly byte[] keyJWT;
 
-        public JWT(IAppSettings appSettings)
+        public JWTService(IAppSettings appSettings)
         {
             this.appSettings = appSettings;
             keyJWT = Encoding.ASCII.GetBytes(appSettings.CryptoPassword);

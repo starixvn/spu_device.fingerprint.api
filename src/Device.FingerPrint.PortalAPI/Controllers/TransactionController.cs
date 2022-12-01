@@ -1,9 +1,11 @@
-﻿using Device.FingerPrint.Features.Subscriber.Services;
+﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -41,6 +43,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             _logger = logger;
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
         public void Cookie([FromBody] string data)
         {
@@ -68,6 +71,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hl")]
         public void Headless([FromBody] string data)
         {
@@ -117,6 +121,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("bi")]
         public void BrowserInfo([FromBody] string data)
         {
@@ -142,6 +147,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
         }
 
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] string data)
         {
@@ -292,7 +298,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                     easyNetQService.PushData(transactionInsertModel);
 
-                    // RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
+                    RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
                 }
                 else
                 {
