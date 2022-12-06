@@ -82,8 +82,8 @@ namespace Device.FingerPrint.PortalAPI.Services
                 result.Platform = browserInfo.Platform;
             }
 
-            result.BrowserInstanceCode = crypto.GetMD5Hash(result.BrowserInstanceJson);
-            result.BrowserFamilyCode = crypto.GetMD5Hash(result.BrowserFamilyJson);
+            result.BrowserInstanceCode = HashBrowserInstanceCode(result);
+            result.BrowserFamilyCode = HashBrowserFamilyCode(result);
 
             return result;
         }
@@ -95,8 +95,43 @@ namespace Device.FingerPrint.PortalAPI.Services
             return transactionAttributeService.GetUserAgentInfo(headerModel.UserAgent);
         }
 
+        private string HashBrowserInstanceCode(FingerprintAttributeModel model)
+        {
+            if (model == null) return string.Empty;
+
+            var json = JsonConvert.SerializeObject(new BrowserInstanceModel
+            {
+                OSName = model.OSName,
+                BrowserName = model.BrowserName,
+                BrowserVersion = model.BrowserVersion,
+                Accept = model.Accept,
+                Encoding = model.Encoding,
+                Headers = model.Headers,
+                UserAgent = model.UserAgent,
+                Platform = model.Platform
+            });
+
+            return crypto.GetMD5Hash(json);
+        }
+
+        private string HashBrowserFamilyCode(FingerprintAttributeModel model)
+        {
+            if (model == null) return string.Empty;
+
+            var json = JsonConvert.SerializeObject(new BrowserFamilyModel
+            {
+                OSName = model.OSName,
+                BrowserName = model.BrowserName,
+                Platform = model.Platform
+            });
+
+            return crypto.GetMD5Hash(json);
+        }
+
         private string HashBrowserInfoCode(BrowserInfoModel model)
         {
+            if (model == null) return string.Empty;
+
             var json = JsonConvert.SerializeObject(new BrowserInfoProp
             {
                 OSName = model.OSName,
@@ -111,6 +146,8 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         private string HashBrowserInfoAttributeCode(BrowserInfoAttributeModel model)
         {
+            if (model == null) return string.Empty;
+
             var json = JsonConvert.SerializeObject(new BrowserInfoAttributeProp
             {
                 SecChUa = model.SecChUa,
