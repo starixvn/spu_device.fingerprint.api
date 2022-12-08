@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
 {
@@ -307,10 +308,24 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
         }
 
+        [HttpPost("removeRedisByTag")]
+        public void RemoveRedisByTag([FromForm] string tag)
+        {
+            redisService.RedisDatabase.RemoveByTagAsync(tag);
+        }
+
         [HttpPost("removeRedis")]
         public void RemoveRedis([FromForm] int SubscriberId, [FromForm] string SessionKey)
         {
             RedisRemoveAll(SubscriberId, SessionKey);
+        }
+
+        [HttpPost("removeRedisBySubcriberId")]
+        public void SearchKeys([FromForm] string SubcriberId)
+        {
+            string pattern = "*:" + SubcriberId + ":*";
+            var keys = redisService.RedisDatabase.SearchKeysAsync(pattern).Result;
+            _ = redisService.RedisDatabase.RemoveAllAsync(keys.ToArray()).Result;
         }
 
         [HttpGet("hc")]
