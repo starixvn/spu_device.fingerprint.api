@@ -2953,7 +2953,7 @@ var fpCookie = (function (exports) {
             drivers.forEach((drive) => {
                 var storageDriver = localForage.createInstance({
                     driver: drive,
-                    name: "LS",
+                    name: drive + "LS",
                     storeName: "ls",
                 });
                 storageDriver.setItem(name, value, () => { });
@@ -2975,6 +2975,7 @@ var fpCookie = (function (exports) {
                         return yield storageDriver.getItem(name, () => { });
                     }
                     catch (_a) {
+                        console.log('error: ', _a);
                         return Promise.resolve(null);
                     }
                 }
