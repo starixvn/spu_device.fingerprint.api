@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
@@ -21,8 +22,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly IRedisService redisService;
         private readonly IEasyNetQService easyNetQService;
         private readonly ITransactionService transactionService;
-        private readonly Crypto crypto;
         private readonly ISubscriberServices subscriberServices;
+        private readonly IClientTransactionService clientTransactionService;
+        private readonly Crypto crypto;
         private readonly ILogger _logger;
 
         private readonly int redisExpired = 10;
@@ -34,13 +36,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             ITransactionService transactionService,
             IEasyNetQService easyNetQService,
             ISubscriberServices subscriberServices,
+            IClientTransactionService clientTransactionService,
             ILogger logger)
         {
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
-            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             this.subscriberServices = subscriberServices;
+            this.clientTransactionService = clientTransactionService;
+            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             _logger = logger;
         }
 
@@ -326,6 +330,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             string pattern = "*:" + SubcriberId + ":*";
             var keys = redisService.RedisDatabase.SearchKeysAsync(pattern).Result;
             _ = redisService.RedisDatabase.RemoveAllAsync(keys.ToArray()).Result;
+        }
+
+
+        [HttpPost("cle")]
+        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
+        {
+            logsData.UserAgent = Request.Headers["User-Agent"];
+
+            clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
         }
 
         [HttpGet("hc")]

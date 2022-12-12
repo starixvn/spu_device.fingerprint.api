@@ -1,5 +1,4 @@
-﻿using Device.FingerPrint.Features.ClientTransaction.Services;
-using Device.FingerPrint.Features.Subscriber.Services;
+﻿using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,8 +18,6 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
             services.AddSingleton<ITransactionService, TransactionService>();
-            services.AddSingleton<IClientTransactionService, ClientTransactionService>();
-            services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
         }
 
         private static void RegisterSubscriberService(this IServiceCollection services)

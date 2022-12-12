@@ -23,7 +23,7 @@ var fp = {
                 document.head.appendChild(script);
             }
             catch (err) {
-                //fp.log(portalAPIUrl, "Load Script", err.message + '|' + sessionKey);
+                fp.log(portalAPIUrl, "Load Script", err.message + '|' + sessionKey);
             }
         });
     },
@@ -47,7 +47,16 @@ var fp = {
             container.appendChild(gfpInput);
         }
     },
-    post: function (url, data, gjt) {
+    post: function (url, data) {
+        return fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data),
+        });
+    },
+    postAuthor: function (url, data, gjt) {
         return fetch(url, {
             method: "POST",
             headers: {
@@ -65,7 +74,7 @@ var fp = {
         fp.post(url + "/cle", data);
     },
     checkDomReady: function () {
-        console.log('4');
+        console.log('checkDomReady');
         fp.inject(sessionKey);
         fp.get(cdnAPIUrl + '/scr/gjt')
             .then(response => response.text())
@@ -80,9 +89,11 @@ var fp = {
                             'SubscriberId': subscriberId
                         };
                         crypt.encryptingWithKey(data).then(res => {
-                            fp.post(portalAPIUrl + '/ce', res, gjt);
+                            fp.postAuthor(portalAPIUrl + '/ce', res, gjt);
                         });
 
+                    }).catch((err) => {
+                        fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
                     });
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
@@ -99,8 +110,10 @@ var fp = {
                         };
 
                         crypt.encryptingWithKey(data).then(res => {
-                            fp.post(portalAPIUrl + '/hl', res, gjt);
+                            fp.postAuthor(portalAPIUrl + '/hl', res, gjt);
                         });
+                    }).catch((err) => {
+                        fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
                     });
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
@@ -119,8 +132,10 @@ var fp = {
                         };
 
                         crypt.encryptingWithKey(data).then(res => {
-                            fp.post(portalAPIUrl + '/bi', res, gjt);
+                            fp.postAuthor(portalAPIUrl + '/bi', res, gjt);
                         });
+                    }).catch((err) => {
+                        fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
                     });
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
@@ -136,24 +151,27 @@ var fp = {
                         };
 
                         crypt.encryptingWithKey(data).then(res => {
-                            fp.post(portalAPIUrl + '/fp', res, gjt);
+                            fp.postAuthor(portalAPIUrl + '/fp', res, gjt);
                         });
+                    }).catch((err) => {
+                        fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
                     });
+                }).catch((err) => {
+                    fp.log(portalAPIUrl, "Load Script crt", err.message + '|' + sessionKey);
                 });
+            }).catch((err) => {
+                fp.log(portalAPIUrl, "Load Script gjt", err.message + '|' + sessionKey);
             });
     }
 }
 
 try {
-    console.log('1.....');
     if (document.readyState == 'loading') {
-        console.log('2');
         // still loading, wait for the event
         document.addEventListener('DOMContentLoaded', fp.checkDomReady);
         
     } else {
         // DOM is ready!
-        console.log('3');
         fp.checkDomReady();
     }    
 } catch (exception) {

@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.Features.Subscriber.Services;
+﻿using Device.FingerPrint.Features.ClientTransaction.Services;
+using Device.FingerPrint.Features.Subscriber.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Device.FingerPrint.PortalAPI.Services
@@ -10,6 +11,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             InitService(services);
             RegisterQueueService(services);
             RegisterSubscriberService(services);
+            RegisterLogExeption(services);
         }
 
         private static void InitService(this IServiceCollection services)
@@ -28,6 +30,12 @@ namespace Device.FingerPrint.PortalAPI.Services
         {
             services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
             services.AddSingleton<ISubscriberServices, SubscriberServices>();
+        }
+
+        private static void RegisterLogExeption(this IServiceCollection services)
+        {
+            services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
+            services.AddSingleton<IClientTransactionService, ClientTransactionService>();
         }
     }
 }

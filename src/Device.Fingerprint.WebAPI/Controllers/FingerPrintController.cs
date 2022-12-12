@@ -2,7 +2,6 @@
 using Device.Fingerprint.WebAPI.Ultilities;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Services;
-using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
 using Fanex.Logging;
@@ -23,7 +22,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
         private readonly IRedisService redisService;
-        private readonly IClientTransactionService clientTransactionService;
         private readonly ILogger _logger;
 
         public FingerPrintController(
@@ -31,15 +29,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,
             IRedisService redisService,
-            IClientTransactionService clientTransactionService,
             ILogger logger)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.redisService = redisService;
-            this.clientTransactionService = clientTransactionService;
-            _logger = logger;        
+            _logger = logger;
         }
 
         [HttpGet("scr/{subscriberName}")]
@@ -246,14 +242,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return Ok(string.Empty);
         }
 
-        [HttpPost("cle")]
-        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
-        {
-            logsData.UserAgent = Request.Headers["User-Agent"];
-
-            clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
-        }
-
         [HttpGet("getsubscriber/{subscriberName}")]
         public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)
         {
@@ -295,12 +283,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public ActionResult<bool> ValidateSessionKey(string sessionKey)
         {
             return Validation.SessionKey(sessionKey);
-        }
-
-        [HttpPost("PostRedis")]
-        public void PostRedis(string key, string value)
-        {
-            redisService.RedisDatabase.AddAsync(key, value);
         }
 
         [HttpGet("GetRedis")]
