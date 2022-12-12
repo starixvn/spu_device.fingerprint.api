@@ -68,7 +68,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     }
                     else
                     {
-                        RedisUpdateExpiryAsync(redisKey);
+                        RedisReplaceAsync(redisKey, deserilizeData.Cookie);
                     }
 
                     AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
@@ -92,11 +92,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                     if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        RedisAddAsync<HeadlessBrowserModel>(redisKey, deserilizeData.HeadlessBrowser);
+                        RedisAddAsync(redisKey, deserilizeData.HeadlessBrowser);
                     }
                     else
                     {
-                        RedisUpdateExpiryAsync(redisKey);
+                        RedisReplaceAsync(redisKey, deserilizeData.HeadlessBrowser);
                     }
                 }
         public void Headless([FromBody] string data)
@@ -142,11 +142,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                     if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        RedisAddAsync<BrowserDetectModel>(redisKey, deserilizeData.BrowserDetect);
+                        RedisAddAsync(redisKey, deserilizeData.BrowserDetect);
                     }
                     else
                     {
-                        RedisUpdateExpiryAsync(redisKey);
+                        RedisReplaceAsync(redisKey, deserilizeData.BrowserDetect);
                     }
                 }
             }
@@ -168,11 +168,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
                     if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
                     {
-                        RedisAddAsync<FingerprintModel>(redisKey, deserilizeData.fingerprint);
+                        RedisAddAsync(redisKey, deserilizeData.fingerprint);
                     }
                     else
                     {
-                        RedisUpdateExpiryAsync(redisKey);
+                        RedisReplaceAsync(redisKey, deserilizeData.fingerprint);
                     }
                 }
         [HttpPost("bi")]
@@ -352,9 +352,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired), when: StackExchange.Redis.When.NotExists);
         }
 
-        private void RedisUpdateExpiryAsync(string redisKey)
+        private void RedisReplaceAsync<T>(string redisKey, T value)
         {
-            redisService.RedisDatabase.UpdateExpiryAsync(redisKey, DateTimeOffset.UtcNow.AddMinutes(redisExpired));
+            redisService.RedisDatabase.ReplaceAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired));
         }
 
         private void RedisRemoveAll(int subscriberId, string sessionKey)
@@ -392,7 +392,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
             else
             {
-                RedisUpdateExpiryAsync(redisKey);
+                RedisReplaceAsync(redisKey, headerModel);
             }
         }
 

@@ -33,11 +33,6 @@
     <Setting Key="FPS_FP_Archive_ModifiedDate_Update" SpName="FPS_FP_Archive_ModifiedDate_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
   </Function>
 
-  <Function Name="BrowserInfo">
-    <Setting Key="FPS_FP_Transform_BrowserInfo_Get" SpName="FPS_FP_Transform_BrowserInfo_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-    <Setting Key="FPS_FP_Transform_BrowserInfo_Update" SpName="FPS_FP_Transform_BrowserInfo_Update" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-  </Function>
-
   <Function Name="Evolution">
     <Setting Key="FPS_FP_Recover_TransactionEvolution_Get" SpName="FPS_FP_Recover_TransactionEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
     <Setting Key="FPS_FP_Recover_TransactionEvolutionAttributes_Get" SpName="FPS_FP_Recover_TransactionEvolutionAttributes_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
