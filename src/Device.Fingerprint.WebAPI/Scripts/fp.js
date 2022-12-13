@@ -101,7 +101,7 @@ var fp = {
                     }).then(res => {
                         var data = {
                             'HeadlessBrowser': {
-                                "Score": res.Score,
+                                "Score": res.score,
                                 "TestsRun": res.testsRun,
                                 "TestsDetail": res.testsDetail
                             },

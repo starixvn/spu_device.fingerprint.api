@@ -27,7 +27,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly Crypto crypto;
         private readonly ILogger _logger;
 
-        private readonly int redisExpired = 10;
+        private readonly int redisExpired = 1440;
         private readonly int redisExpired = 10;
 
         public TransactionController(
