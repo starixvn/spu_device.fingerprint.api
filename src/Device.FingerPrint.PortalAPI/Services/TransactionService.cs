@@ -35,7 +35,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             }
             browserInfoModel.Flagged = browserInfoService.GetFlagged(browserInfoModel);
 
-            var userAgentInfo = ParseUserAgentInfo(header);
+            var userAgentInfo = ParseUserAgentInfo(model.UserAgent);
             model.CookieCode = cookie;
             model.UserAgentInfo = userAgentInfo;
 
@@ -50,14 +50,14 @@ namespace Device.FingerPrint.PortalAPI.Services
             return model;
         }
 
-        private FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel model, HeaderModel headerModel, BrowserDetectModel browserInfo, UserAgentInfoModel userAgentInfo)
+        private FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, BrowserDetectModel browserInfo, UserAgentInfoModel userAgentInfo)
         {
-            if (model == null) return new FingerprintAttributeModel();
+            if (fpModel == null) return new FingerprintAttributeModel();
 
             var result = new FingerprintAttributeModel
             {
-                FingerPrintCode = model.Id,
-                Attribute = model.Attributes,
+                FingerPrintCode = fpModel.Id,
+                Attribute = fpModel.Attributes,
             };
 
             if (headerModel != null)
@@ -65,8 +65,8 @@ namespace Device.FingerPrint.PortalAPI.Services
                 result.Accept = headerModel.Accept;
                 result.Encoding = headerModel.Encoding;
                 result.Headers = headerModel.Headers;
-                result.UserAgent = headerModel.UserAgent;
 
+                result.UserAgent = userAgentInfo.UserAgent;
                 result.BrowserName = userAgentInfo.ClientName;
                 result.BrowserVersion = userAgentInfo.ClientVersion;
                 result.OSName = userAgentInfo.OSName;
@@ -88,11 +88,11 @@ namespace Device.FingerPrint.PortalAPI.Services
             return result;
         }
 
-        private UserAgentInfoModel ParseUserAgentInfo(HeaderModel headerModel)
+        private UserAgentInfoModel ParseUserAgentInfo(string userAgent)
         {
-            if (headerModel == null) return new UserAgentInfoModel();
+            if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
 
-            return transactionAttributeService.GetUserAgentInfo(headerModel.UserAgent);
+            return transactionAttributeService.GetUserAgentInfo(userAgent);
         }
 
         private string HashBrowserInstanceCode(FingerprintAttributeModel model)

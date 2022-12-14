@@ -199,7 +199,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         UserAgent = data.UserAgent,
                         UserAgentCode = userAgentCode,
                         TransTime = DateTime.Now,
-                        Url = urlAddress.GetLeftPart(UriPartial.Path),
+                        Url = data.Url,
                         Action = data.Action,
                         TransKey = data.TransKey,
                         CustId = data.CustId,
@@ -377,7 +377,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             {
                 Accept = HttpContext.Request.Headers["Accept"],
                 Encoding = HttpContext.Request.Headers["Accept-Encoding"],
-                UserAgent = Request.Headers["User-Agent"],
                 Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
                 SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
                 SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",

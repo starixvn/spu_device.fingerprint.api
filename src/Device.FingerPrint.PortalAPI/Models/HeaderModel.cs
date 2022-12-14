@@ -8,8 +8,6 @@
 
         public string Headers { get; set; }
 
-        public string UserAgent { get; set; }
-
         public string SecChUa { get; set; }
 
         public string SecChUaPlatform { get; set; }

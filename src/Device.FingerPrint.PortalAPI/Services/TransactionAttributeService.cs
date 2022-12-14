@@ -17,7 +17,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             deviceDetector.SkipBotDetection();
             deviceDetector.Parse();
 
-            var userAgentInfo = new UserAgentInfoModel();
+            var userAgentInfo = new UserAgentInfoModel { UserAgent = userAgent };
 
             if (deviceDetector.IsBot())
             {

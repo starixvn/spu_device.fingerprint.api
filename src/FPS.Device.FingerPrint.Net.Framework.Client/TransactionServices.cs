@@ -84,7 +84,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client
                 SubscriberName = subscriberName,
                 UserAgent = userAgent,
                 ClientIp = clientIp,
-                Url = HttpContext.Current.Request.Url.AbsoluteUri,
+                Url = HttpContext.Current.Request.Url.Scheme,
                 Action = action,
                 TransKey = loginName + "#" + loginTime.Ticks,
                 CustId = custId,
