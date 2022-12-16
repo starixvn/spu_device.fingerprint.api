@@ -7,7 +7,7 @@ using System.Web.Mvc;
 namespace demoAPI.Controllers
 {
     public class LoginController : Controller
-    {       
+    {
         // GET: Login
         public ActionResult Index()
         {
@@ -25,10 +25,13 @@ namespace demoAPI.Controllers
             {
                 Session["Username"] = loginModel.Username;
 
+                ViewBag.UrlContext = Request.Url;
+                ViewBag.UrlReferrerContext = Request.UrlReferrer;
 
                 FpsIntegration(loginModel.Username);
+                return View("Index");
 
-                return RedirectToAction("index", "home");
+                // return RedirectToAction("index", "home");
             }
 
             return View("Index");
@@ -57,7 +60,7 @@ namespace demoAPI.Controllers
         public ActionResult Logout()
         {
             Session.Clear();
-            
+
             return RedirectToAction("");
         }
     }

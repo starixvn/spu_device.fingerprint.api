@@ -1,5 +1,4 @@
-﻿
-namespace demoAPI.Models
+﻿namespace demoAPI.Models
 {
     public class LoginModel
     {

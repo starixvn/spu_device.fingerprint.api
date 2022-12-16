@@ -1,9 +1,29 @@
 ﻿@model demoAPI.Models.LoginModel
 @{
     ViewBag.Title = "demoAPI - Simple Login Page";
+    var UrlContext = ViewBag.UrlContext;
+    var Host = UrlContext == null ? "" : UrlContext.Host;
+    var Port = UrlContext == null ? "" : UrlContext.Port;
+    var AbsolutePath = UrlContext == null ? "" : UrlContext.AbsolutePath;
+    var AbsoluteUri = UrlContext == null ? "" : UrlContext.AbsoluteUri;
+    var OriginalString = UrlContext == null ? "" : UrlContext.OriginalString;
+    var Scheme = UrlContext == null ? "" : UrlContext.Scheme;
+
+
+    var UrlReferrerContext = ViewBag.UrlReferrerContext;
+    var SchemeR = UrlReferrerContext == null ? "" : UrlReferrerContext.Scheme;
+    var AbsoluteUriR = UrlReferrerContext == null ? "" : UrlReferrerContext.AbsoluteUri;
+    var OriginalStringR = UrlReferrerContext == null ? "" : UrlReferrerContext.OriginalString;
 }
 
 <h2>@ViewBag.Title.</h2>
+<h2>AbsoluteUri: @AbsoluteUri</h2>
+<h2>OriginalString: @OriginalString</h2>
+<h2>Scheme: @Scheme</h2>
+<h1>UrlReferrer:</h1>
+<h2>SchemeR: @SchemeR</h2>
+<h2>AbsoluteUriR: @AbsoluteUriR</h2>
+<h2>OriginalStringR: @OriginalStringR</h2>
 
 <div class="row">
     <div class="col-md-8">

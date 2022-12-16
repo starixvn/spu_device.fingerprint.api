@@ -13,6 +13,8 @@
         public string SecChUaPlatform { get; set; }
 
         public string SecChUaMobile { get; set; }
+
+        public string Url { get; set; }
     }
 
     public class ParseUserAgentModel

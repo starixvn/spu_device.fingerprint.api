@@ -275,7 +275,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
                 if (subscriber != null)
                 {
-                    var urlAddress = new Uri(data.Url);
+                    // var urlAddress = new Uri(data.Url);
                     var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                     var transaction = new TransactionModel
@@ -304,11 +304,27 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     easyNetQService.PushData(transactionInsertModel);
 
                     RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
+
+                    TestUrl(subscriber.SubscriberId, data.SessionKey, data.Url);
                 }
                 else
                 {
                     _logger.Info($"{data.SubscriberName} does not exists.");
                 }
+            }
+        }
+
+        private void TestUrl(int SubscriberId, string SessionKey, string value)
+        {
+            var redisKey = redisService.GetRedisKey("url", SubscriberId, SessionKey);
+
+            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            {
+                RedisAddAsync(redisKey, value);
+            }
+            else
+            {
+                RedisReplaceAsync(redisKey, value);
             }
         }
 
@@ -373,6 +389,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         private void AddHeaderToRedis(int SubscriberId, string SessionKey)
         {
+            var url = HttpContext.Request.Headers["Origin"].ToString();
             var headerModel = new HeaderModel
             {
                 Accept = HttpContext.Request.Headers["Accept"],
@@ -380,7 +397,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 Headers = String.Join(" ", HttpContext.Request.Headers.Keys),
                 SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
                 SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
-                SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : ""
+                SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : "",
+                Url = url
             };
 
             var redisKey = redisService.GetRedisKey(RedisKey.Header.ToString(), SubscriberId, SessionKey);
