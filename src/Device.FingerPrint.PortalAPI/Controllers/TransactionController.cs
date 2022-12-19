@@ -199,7 +199,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         UserAgent = data.UserAgent,
                         UserAgentCode = userAgentCode,
                         TransTime = DateTime.Now,
-                        Url = data.Url,
+                        Url = urlAddress.GetLeftPart(UriPartial.Path),
                         Action = data.Action,
                         TransKey = data.TransKey,
                         CustId = data.CustId,
@@ -275,7 +275,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
                 if (subscriber != null)
                 {
-                    // var urlAddress = new Uri(data.Url);
+                    var urlAddress = new Uri(data.Url);
                     var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
                     var transaction = new TransactionModel
