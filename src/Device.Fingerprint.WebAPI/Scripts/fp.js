@@ -74,15 +74,23 @@ var fp = {
         fp.post(url + "/cle", data);
     },
     checkDomReady: function () {
+        let date = new Date();
         console.log('checkDomReady');
+
         fp.inject(sessionKey);
         fp.get(cdnAPIUrl + '/scr/gjt')
             .then(response => response.text())
             .then((gjt) => {
                 fp.requireJS(cdnAPIUrl + '/scr/cdn/crt').then(() => {
+                    date = new Date();
+                    console.log('start ce: ', date, date.getMilliseconds());
+
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
                         return fpCookie.storageHandler("gfp");
                     }).then(res => {
+                        date = new Date();
+                        console.log('ce getdata Done: ', date, date.getMilliseconds());
+
                         var data = {
                             'Cookie': res,
                             'SessionKey': sessionKey,
@@ -138,9 +146,13 @@ var fp = {
                         fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
                     });
 
+                    date = new Date();
+                    console.log('start fp: ', date, date.getMilliseconds());
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
                         return globalFP.getFP();
                     }).then(res => {
+                        date = new Date();
+                        console.log('fp getdata Done: ', date, date.getMilliseconds());
                         var data = {
                             'fingerprint': {
                                 "Id": res.Id,

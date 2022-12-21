@@ -956,7 +956,6 @@ var fpCookie = (function (exports) {
 
     function getItem(key, callback) {
         var self = this;
-
         key = normalizeKey(key);
 
         var promise = new Promise$1(function (resolve, reject) {
@@ -1781,7 +1780,6 @@ var fpCookie = (function (exports) {
 
     function getItem$1(key, callback) {
         var self = this;
-
         key = normalizeKey(key);
 
         var promise = new Promise$1(function (resolve, reject) {
@@ -2229,10 +2227,9 @@ var fpCookie = (function (exports) {
     // is `undefined`, we pass that value to the callback function.
     function getItem$2(key, callback) {
         var self = this;
-
         key = normalizeKey(key);
 
-        var promise = self.ready().then(function () {
+        var promise = new Promise$1(function (resolve, reject) {
             var dbInfo = self._dbInfo;
             var result = localStorage.getItem(dbInfo.keyPrefix + key);
 
@@ -2242,9 +2239,9 @@ var fpCookie = (function (exports) {
             // callback.
             if (result) {
                 result = dbInfo.serializer.deserialize(result);
+                resolve(result);
             }
-
-            return result;
+            reject(null);
         });
 
         executeCallback(promise, callback);
@@ -2902,8 +2899,7 @@ var fpCookie = (function (exports) {
             date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
             expires = "; expires=" + date.toUTCString();
         }
-        document.cookie =
-            name + "=" + (value || "") + expires + "; SameSite=None; Secure; path=/";
+        document.cookie = name + "=" + (value || "") + expires + "; SameSite=None; Secure; path=/";
     }
     function getCookie(name) {
         var nameEQ = name + "=";
@@ -2912,10 +2908,20 @@ var fpCookie = (function (exports) {
             var c = ca[i];
             while (c.charAt(0) == " ")
                 c = c.substring(1, c.length);
-            if (c.indexOf(nameEQ) == 0)
-                return c.substring(nameEQ.length, c.length);
+            if (c.indexOf(nameEQ) == 0) {
+                var cookie = c.substring(nameEQ.length, c.length);
+                return new Promise((resolve, reject) => {
+                    if (cookie)
+                        resolve(cookie);
+                    else 
+                        reject(null);
+                });
+            }
         }
-        return null;
+
+        return new Promise((resolve, reject) => {
+            reject(null);
+        });
     }
     function cookieHandler(cookieCode) {
         return new Promise((resolve) => {
@@ -2962,42 +2968,38 @@ var fpCookie = (function (exports) {
         });
     }
     function storageHandler(name) {
+        let date = new Date();
+
         return initStorage()
             .then((driver) => {
-            var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
-                if (drive != null) {
-                    try {
-                        var storageDriver = localForage.createInstance({
-                            driver: drive,
-                            name: drive + "LS",
-                            storeName: "ls",
-                        });
-                        return yield storageDriver.getItem(name, () => { });
+                var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
+                    if (drive != null) {
+                        try {
+                            var storageDriver = localForage.createInstance({
+                                driver: drive,
+                                name: drive + "LS",
+                                storeName: "ls",
+                            });
+                            return yield storageDriver.getItem(name, () => { });
+                        }
+                        catch (_a) {
+                            console.log('error: ', _a);
+                            return Promise.reject(null);
+                        }
                     }
-                    catch (_a) {
-                        console.log('error: ', _a);
-                        return Promise.resolve(null);
-                    }
-                }
-            }));
-            cookies.push(Promise.resolve(getCookie(name)));
-            return cookies;
-        })
+                }));
+                cookies.push(Promise.resolve(getCookie(name)));
+
+                return cookies;
+            })
             .then((res) => {
-            return Promise.all(res).then((cookies) => {
-                var latestCookie = null;
-                for (const cookie of cookies) {
-                    if (cookie != null) {
-                        latestCookie = cookie;
-                        break;
-                    }
-                }
-                return cookieHandler(latestCookie).then((cookieValue) => {
-                    setStorage(name, cookieValue);
-                    return cookieValue;
+                return Promise.any(res).then((latestCookie) => {
+                    return cookieHandler(latestCookie).then((cookieValue) => {
+                        setStorage(name, cookieValue);
+                        return cookieValue;
+                    });
                 });
             });
-        });
     }
 
     exports.storageHandler = storageHandler;
