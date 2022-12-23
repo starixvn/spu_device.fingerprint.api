@@ -75,21 +75,59 @@ var fp = {
     },
     checkDomReady: function () {
         let date = new Date();
+        let startDate = date;
         console.log('checkDomReady');
 
         fp.inject(sessionKey);
         fp.get(cdnAPIUrl + '/scr/gjt')
-            .then(response => response.text())
+            .then(response => {
+                date = new Date();
+                console.log('gjt Response: ', date - startDate);
+
+                return response.text();
+            })
             .then((gjt) => {
+                date = new Date();
+                console.log('gjt Done: ', date - startDate);
+
                 fp.requireJS(cdnAPIUrl + '/scr/cdn/crt').then(() => {
                     date = new Date();
-                    console.log('start ce: ', date, date.getMilliseconds());
+                    console.log('crt Done: ', date - startDate);
+
+                    fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
+                        date = new Date();
+                        console.log('fp executeScript Start: ', date - startDate);
+
+                        return globalFP.getFP();
+                    }).then(res => {
+                        date = new Date();
+                        console.log('fp executeScript Done: ', date - startDate);
+
+                        var data = {
+                            'fingerprint': {
+                                "Id": res.Id,
+                                "Attributes": res.Properties
+                            },
+                            'SessionKey': sessionKey,
+                            'SubscriberId': subscriberId
+                        };
+
+                        crypt.encryptingWithKey(data).then(res => {
+                            fp.postAuthor(portalAPIUrl + '/fp', res, gjt);
+                        });
+                    }).catch((err) => {
+                        fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
+                    });
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
+
+                        date = new Date();
+                        console.log('ce executeScript Start: ', date - startDate);
+
                         return fpCookie.storageHandler("gfp");
                     }).then(res => {
                         date = new Date();
-                        console.log('ce getdata Done: ', date, date.getMilliseconds());
+                        console.log('ce executeScript Done: ', date - startDate);
 
                         var data = {
                             'Cookie': res,
@@ -105,8 +143,15 @@ var fp = {
                     });
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
+                        date = new Date();
+                        console.log('hl executeScript Start: ', date - startDate);
+
                         return fpHeadless.getHeadlessScore();
                     }).then(res => {
+
+                        date = new Date();
+                        console.log('hl executeScript Done: ', date - startDate);
+
                         var data = {
                             'HeadlessBrowser': {
                                 "Score": res.score,
@@ -125,8 +170,15 @@ var fp = {
                     });
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
+                        date = new Date();
+                        console.log('bi executeScript Start: ', date - startDate);
+
                         return fpBrowserDetect.getBrowserInfo();
                     }).then(res => {
+
+                        date = new Date();
+                        console.log('bi executeScript Done: ', date - startDate);
+
                         var data = {
                             'BrowserDetect': {
                                 "OSName": res.OSName,
@@ -145,29 +197,6 @@ var fp = {
                     }).catch((err) => {
                         fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
                     });
-
-                    date = new Date();
-                    console.log('start fp: ', date, date.getMilliseconds());
-                    fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
-                        return globalFP.getFP();
-                    }).then(res => {
-                        date = new Date();
-                        console.log('fp getdata Done: ', date, date.getMilliseconds());
-                        var data = {
-                            'fingerprint': {
-                                "Id": res.Id,
-                                "Attributes": res.Properties
-                            },
-                            'SessionKey': sessionKey,
-                            'SubscriberId': subscriberId
-                        };
-
-                        crypt.encryptingWithKey(data).then(res => {
-                            fp.postAuthor(portalAPIUrl + '/fp', res, gjt);
-                        });
-                    }).catch((err) => {
-                        fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
-                    });
                 }).catch((err) => {
                     fp.log(portalAPIUrl, "Load Script crt", err.message + '|' + sessionKey);
                 });
@@ -181,11 +210,11 @@ try {
     if (document.readyState == 'loading') {
         // still loading, wait for the event
         document.addEventListener('DOMContentLoaded', fp.checkDomReady);
-        
+
     } else {
         // DOM is ready!
         fp.checkDomReady();
-    }    
+    }
 } catch (exception) {
     console.log('exception', exception);
 }

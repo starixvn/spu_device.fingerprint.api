@@ -26,6 +26,26 @@ var fpCookie = (function (exports) {
         });
     }
 
+    function __values(o) {
+        var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
+        if (m) return m.call(o);
+        if (o && typeof o.length === "number") return {
+            next: function () {
+                if (o && i >= o.length) o = void 0;
+                return { value: o && o[i++], done: !o };
+            }
+        };
+        throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
+    }
+
+    function __asyncValues(o) {
+        if (!Symbol.asyncIterator) throw new TypeError("Symbol.asyncIterator is not defined.");
+        var m = o[Symbol.asyncIterator], i;
+        return m ? m.call(o) : (o = typeof __values === "function" ? __values(o) : o[Symbol.iterator](), i = {}, verb("next"), verb("throw"), verb("return"), i[Symbol.asyncIterator] = function () { return this; }, i);
+        function verb(n) { i[n] = o[n] && function (v) { return new Promise(function (resolve, reject) { v = o[n](v), settle(resolve, reject, v.done, v.value); }); }; }
+        function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
+    }
+
     var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
     function commonjsRequire (path) {
@@ -956,6 +976,7 @@ var fpCookie = (function (exports) {
 
     function getItem(key, callback) {
         var self = this;
+
         key = normalizeKey(key);
 
         var promise = new Promise$1(function (resolve, reject) {
@@ -1780,6 +1801,7 @@ var fpCookie = (function (exports) {
 
     function getItem$1(key, callback) {
         var self = this;
+
         key = normalizeKey(key);
 
         var promise = new Promise$1(function (resolve, reject) {
@@ -2227,9 +2249,10 @@ var fpCookie = (function (exports) {
     // is `undefined`, we pass that value to the callback function.
     function getItem$2(key, callback) {
         var self = this;
+
         key = normalizeKey(key);
 
-        var promise = new Promise$1(function (resolve, reject) {
+        var promise = self.ready().then(function () {
             var dbInfo = self._dbInfo;
             var result = localStorage.getItem(dbInfo.keyPrefix + key);
 
@@ -2239,9 +2262,9 @@ var fpCookie = (function (exports) {
             // callback.
             if (result) {
                 result = dbInfo.serializer.deserialize(result);
-                resolve(result);
             }
-            reject(null);
+
+            return result;
         });
 
         executeCallback(promise, callback);
@@ -2851,14 +2874,14 @@ var fpCookie = (function (exports) {
 
     function initStorage() {
         let localForageDrives = [];
+        if (isLocalStorage()) {
+            localForageDrives.push(localForage.LOCALSTORAGE);
+        }
         if (isIndexDB()) {
             localForageDrives.push(localForage.INDEXEDDB);
         }
         if (isWebSQL()) {
             localForageDrives.push(localForage.WEBSQL);
-        }
-        if (isLocalStorage()) {
-            localForageDrives.push(localForage.LOCALSTORAGE);
         }
         return Promise.resolve(localForageDrives);
     }
@@ -2899,7 +2922,8 @@ var fpCookie = (function (exports) {
             date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
             expires = "; expires=" + date.toUTCString();
         }
-        document.cookie = name + "=" + (value || "") + expires + "; SameSite=None; Secure; path=/";
+        document.cookie =
+            name + "=" + (value || "") + expires + "; SameSite=None; Secure; path=/";
     }
     function getCookie(name) {
         var nameEQ = name + "=";
@@ -2910,18 +2934,10 @@ var fpCookie = (function (exports) {
                 c = c.substring(1, c.length);
             if (c.indexOf(nameEQ) == 0) {
                 var cookie = c.substring(nameEQ.length, c.length);
-                return new Promise((resolve, reject) => {
-                    if (cookie)
-                        resolve(cookie);
-                    else 
-                        reject(null);
-                });
+                return Promise.resolve(cookie);
             }
         }
-
-        return new Promise((resolve, reject) => {
-            reject(null);
-        });
+        return Promise.resolve(null);
     }
     function cookieHandler(cookieCode) {
         return new Promise((resolve) => {
@@ -2968,38 +2984,53 @@ var fpCookie = (function (exports) {
         });
     }
     function storageHandler(name) {
-        let date = new Date();
-
         return initStorage()
             .then((driver) => {
-                var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
-                    if (drive != null) {
-                        try {
-                            var storageDriver = localForage.createInstance({
-                                driver: drive,
-                                name: drive + "LS",
-                                storeName: "ls",
-                            });
-                            return yield storageDriver.getItem(name, () => { });
-                        }
-                        catch (_a) {
-                            console.log('error: ', _a);
-                            return Promise.reject(null);
-                        }
+            var cookies = driver.map((drive) => __awaiter(this, void 0, void 0, function* () {
+                if (drive != null) {
+                    try {
+                        var storageDriver = localForage.createInstance({
+                            driver: drive,
+                            name: drive + "LS",
+                            storeName: "ls",
+                        });
+                        return yield storageDriver.getItem(name, () => { });
                     }
-                }));
-                cookies.push(Promise.resolve(getCookie(name)));
-
-                return cookies;
-            })
-            .then((res) => {
-                return Promise.any(res).then((latestCookie) => {
-                    return cookieHandler(latestCookie).then((cookieValue) => {
-                        setStorage(name, cookieValue);
-                        return cookieValue;
-                    });
-                });
-            });
+                    catch (_a) {
+                        return Promise.resolve(null);
+                    }
+                }
+            }));
+            cookies = [getCookie(name), ...cookies];
+            return cookies;
+        })
+            .then((promises) => { var promises_1, promises_1_1; return __awaiter(this, void 0, void 0, function* () {
+            var e_1, _a;
+            var latestCookie = null;
+            try {
+                for (promises_1 = __asyncValues(promises); promises_1_1 = yield promises_1.next(), !promises_1_1.done;) {
+                    const promise = promises_1_1.value;
+                    latestCookie = yield promise;
+                    if (latestCookie) {
+                        return storeCookie(latestCookie, name);
+                    }
+                }
+            }
+            catch (e_1_1) { e_1 = { error: e_1_1 }; }
+            finally {
+                try {
+                    if (promises_1_1 && !promises_1_1.done && (_a = promises_1.return)) yield _a.call(promises_1);
+                }
+                finally { if (e_1) throw e_1.error; }
+            }
+            return storeCookie(latestCookie, name);
+        }); });
+    }
+    function storeCookie(latestCookie, name) {
+        return cookieHandler(latestCookie).then((cookieValue) => {
+            setStorage(name, cookieValue);
+            return cookieValue;
+        });
     }
 
     exports.storageHandler = storageHandler;
