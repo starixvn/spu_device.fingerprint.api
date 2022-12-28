@@ -10,11 +10,11 @@
 
         public string BrowserVersion { get; set; }
 
-        public bool LocalStorage { get; set; }
+        public string LocalStorage { get; set; }
 
         public string DoNotTrack { get; set; }
 
-        public bool Cookies { get; set; }
+        public string Cookies { get; set; }
 
         public string Canvas { get; set; }
 

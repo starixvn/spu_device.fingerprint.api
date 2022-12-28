@@ -219,6 +219,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private bool CheckFonts(TransactionEvolutionAttributesEntity source, TransactionEvolutionAttributesEntity destination)
         {
+            if((string.IsNullOrEmpty(source.Fonts) || string.IsNullOrEmpty(destination.Fonts)) && source.Fonts != destination.Fonts)
+                return false;
+
             var arr1 = JsonConvert.DeserializeObject<string[]>(source.Fonts);
             var arr2 = JsonConvert.DeserializeObject<string[]>(destination.Fonts);
 
@@ -304,6 +307,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private async Task<bool> CheckRatio(string source, string destination)
         {
+            if ((string.IsNullOrEmpty(source) || string.IsNullOrEmpty(destination)) && source != destination) return false;
+
             var param = new { source, destination };
             var content = new StringContent(JsonConvert.SerializeObject(param), System.Text.Encoding.UTF8, "application/json");
             var client = new HttpClient();
