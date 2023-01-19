@@ -17,7 +17,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         Task<bool> MonthlyReport();
 
-        void TestSentryCaptureMessage(string message);
+        Task<bool> TestSentryCaptureMessage(string message);
 
         void TestNotificationTelegram(string message);
     }
@@ -112,9 +112,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
                       .SendWithDelay(1, true);
         }
 
-        public void TestSentryCaptureMessage(string message)
+        public Task<bool> TestSentryCaptureMessage(string message)
         {
             _logger.Info(message);
+            return Task.FromResult(true);
         }
 
         public void TestNotificationTelegram(string message)

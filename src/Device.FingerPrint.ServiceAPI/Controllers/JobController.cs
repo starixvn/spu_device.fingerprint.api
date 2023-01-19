@@ -103,9 +103,9 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("testSentryCaptureMessage")]
-        public void TestSentryCaptureMessage([FromForm] string message)
+        public async Task<bool> TestSentryCaptureMessage([FromForm] string message)
         {
-            monitorJobServices.TestSentryCaptureMessage(message);
+            return await monitorJobServices.TestSentryCaptureMessage(message);
         }
 
         [HttpPost("testNotificationTelegram")]
