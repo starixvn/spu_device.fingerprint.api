@@ -8,15 +8,15 @@ COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
 
-COPY ["./src/DeviceFingerprint.WebAPI/Device.Fingerprint.WebAPI.csproj", "DeviceFingerprint.WebAPI/"]
+COPY ["./src/Device.Fingerprint.WebAPI/Device.Fingerprint.WebAPI.csproj", "Device.Fingerprint.WebAPI/"]
 
-WORKDIR "/src/DeviceFingerprint.WebAPI"
+WORKDIR "/src/Device.Fingerprint.WebAPI"
 
 RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
 
 RUN dotnet restore -v n
 
-COPY ./src/DeviceFingerprint.WebAPI .
+COPY ./src/Device.Fingerprint.WebAPI .
 
 RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 

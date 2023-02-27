@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.WebAPI", "src\DeviceFingerprint.WebAPI\Device.Fingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.WebAPI", "src\Device.Fingerprint.WebAPI\Device.Fingerprint.WebAPI.csproj", "{2CBC104C-FFD8-4929-8069-069D7C40F391}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint", "src\Device.FingerPrint\Device.FingerPrint.csproj", "{85AD9E4B-646E-486F-8257-BB8852A8947D}"
 EndProject
