@@ -26,8 +26,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly IClientTransactionService clientTransactionService;
         private readonly Crypto crypto;
         private readonly ILogger _logger;
-
-        private readonly int redisExpired = 1440;
+        private readonly IAppSettings appSettings;
         private readonly int redisExpired = 10;
 
         public TransactionController(
@@ -44,6 +43,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             this.easyNetQService = easyNetQService;
             this.subscriberServices = subscriberServices;
             this.clientTransactionService = clientTransactionService;
+            this.appSettings = appSettings;
             crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
             _logger = logger;
         }
@@ -349,12 +349,12 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         private void RedisAddAsync<T>(string redisKey, T value)
         {
-            redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired), when: StackExchange.Redis.When.NotExists);
+            redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), when: StackExchange.Redis.When.NotExists);
         }
 
         private void RedisReplaceAsync<T>(string redisKey, T value)
         {
-            redisService.RedisDatabase.ReplaceAsync(redisKey, value, DateTimeOffset.UtcNow.AddMinutes(redisExpired));
+            redisService.RedisDatabase.ReplaceAsync(redisKey, value, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
         }
 
         private void RedisRemoveAll(int subscriberId, string sessionKey)
