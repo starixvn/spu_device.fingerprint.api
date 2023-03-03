@@ -118,6 +118,27 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("scr/cdn/ce1")]
+        [ETagFilter(200)]
+        public ActionResult Cookie1Script()
+        {
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie1.js";
+
+            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            {
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie1.min.js";
+            }
+
+            var bundleFile = new BundleFile(scriptPath);
+
+            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+            {
+                return new JavascriptResult(bundleFile.Content);
+            }
+
+            return new EmptyResult();
+        }
+
         [HttpGet("scr/cdn/hl")]
         [ETagFilter(200)]
         public ActionResult HeadlessBrowserScript()
