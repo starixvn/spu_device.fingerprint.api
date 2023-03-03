@@ -11,7 +11,7 @@ namespace DemoNetCore.Controllers
         {
             if (HttpContext.Session.GetString("Username") == null)
             {
-                return View();
+                return View(new LoginModel());
             }
             return Redirect("Home");
         }

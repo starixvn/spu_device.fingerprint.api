@@ -13,7 +13,7 @@ namespace demoAPI.Controllers
         {
             if (Session["Username"] == null)
             {
-                return View();
+                return View(new LoginModel());
             }
             return Redirect("Home");
         }

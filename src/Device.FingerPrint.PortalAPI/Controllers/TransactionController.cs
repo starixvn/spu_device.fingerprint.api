@@ -304,27 +304,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     easyNetQService.PushData(transactionInsertModel);
 
                     RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
-
-                    TestUrl(subscriber.SubscriberId, data.SessionKey, data.Url);
                 }
                 else
                 {
                     _logger.Info($"{data.SubscriberName} does not exists.");
                 }
-            }
-        }
-
-        private void TestUrl(int SubscriberId, string SessionKey, string value)
-        {
-            var redisKey = redisService.GetRedisKey("url", SubscriberId, SessionKey);
-
-            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-            {
-                RedisAddAsync(redisKey, value);
-            }
-            else
-            {
-                RedisReplaceAsync(redisKey, value);
             }
         }
 
