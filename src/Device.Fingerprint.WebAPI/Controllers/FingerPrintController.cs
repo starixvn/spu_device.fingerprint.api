@@ -101,11 +101,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [ETagFilter(200)]
         public ActionResult CookieScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
