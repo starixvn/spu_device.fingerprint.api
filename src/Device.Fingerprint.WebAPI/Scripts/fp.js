@@ -3,6 +3,7 @@ var sessionKey = '__sessionKey__';
 var cdnAPIUrl = '__cdnAPIUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
 var version = '__version__';
+let startDate = new Date();
 
 var fp = {
     requireJS: function (_url) {
@@ -75,48 +76,25 @@ var fp = {
     },
     checkDomReady: function () {
         let date = new Date();
-        let startDate = date;
-        console.log('checkDomReady');
+        console.log('checkDomReady', date - startDate);
 
         fp.inject(sessionKey);
+        date = new Date();
+        console.log('inject sessionKey Done: ', date - startDate);
         fp.get(cdnAPIUrl + '/scr/gjt')
             .then(response => {
                 date = new Date();
                 console.log('gjt Response: ', date - startDate);
 
-                var gjt = response.text();
-
+                return response.text();
+            })
+            .then((gjt) => {
                 date = new Date();
-                console.log('gjt Done: ', date - startDate);
+                console.log('gjt Done: ', date - startDate, gjt);
 
                 fp.requireJS(cdnAPIUrl + '/scr/cdn/crt').then(() => {
                     date = new Date();
                     console.log('crt Done: ', date - startDate);
-
-                    fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
-
-                        date = new Date();
-                        console.log('ce executeScript Start: ', date - startDate);
-
-                        fpNewCookie.getStorage().then((cookie) => {
-                            date = new Date();
-
-                            console.log('ce executeScript Done: ', date - startDate, cookie);
-
-                            var data = {
-                                'Cookie': cookie,
-                                'SessionKey': sessionKey,
-                                'SubscriberId': subscriberId
-                            };
-                            crypt.encryptingWithKey(data).then(res => {
-                                fp.postAuthor(portalAPIUrl + '/ce', res, gjt);
-                            });
-
-                            fpNewCookie.setStorage(cookie);
-                        });
-                    }).catch((err) => {
-                        fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
-                    });
 
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
@@ -144,28 +122,31 @@ var fp = {
                         fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
                     });
 
-                    //fp.requireJS(cdnAPIUrl + '/scr/cdn/ce1').then(() => {
 
-                    //    date = new Date();
-                    //    console.log('ce1 executeScript Start: ', date - startDate);
+                    fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
 
-                    //    return fpCookie.storageHandler("gfp");
-                    //}).then(res => {
-                    //    date = new Date();
-                    //    console.log('ce1 executeScript Done: ', date - startDate, res);
+                        date = new Date();
+                        console.log('ce executeScript Start: ', date - startDate);
 
-                    //    var data = {
-                    //        'Cookie': res,
-                    //        'SessionKey': sessionKey,
-                    //        'SubscriberId': subscriberId
-                    //    };
-                    //    //crypt.encryptingWithKey(data).then(res => {
-                    //    //    fp.postAuthor(portalAPIUrl + '/ce', res, gjt);
-                    //    //});
+                        fpNewCookie.getStorage().then((cookie) => {
+                            date = new Date();
 
-                    //}).catch((err) => {
-                    //    fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
-                    //});
+                            console.log('ce executeScript Done: ', date - startDate, cookie);
+
+                            var data = {
+                                'Cookie': cookie,
+                                'SessionKey': sessionKey,
+                                'SubscriberId': subscriberId
+                            };
+                            crypt.encryptingWithKey(data).then(res => {
+                                fp.postAuthor(portalAPIUrl + '/ce', res, gjt);
+                            });
+
+                            fpNewCookie.setStorage(cookie);
+                        });
+                    }).catch((err) => {
+                        fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
+                    });
 
 
                     fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {

@@ -1,71 +1,97 @@
 var fpNewCookie = (function (exports) {
     'use strict';
 
-    const fnStorages = (function () {
-        const LS = function (name, value) {
-            var result = gsLS(name, value);
-            return result;
-        };
-        const gsLS = function (name, value) {
-            try {
-                var lsObj = window.localStorage;
-                if (lsObj) {
-                    if (isSet) {
-                        lsObj.setItem(name, value);
-                    }
-                    else {
-                        value = lsObj.getItem(name);
-                        return Promise.resolve(value);
-                    }
+    var cookieKey = 'gfp';
+    var storageHandlers = [localStorage, indexedDb, cookie, windowName];
+    var isSet = false;
+    var timeout = 200;
+    function localStorage(key, value) {
+        const result = getSetLocalStorage(key, value);
+        return result;
+    }
+    function getSetLocalStorage(key, value) {
+        try {
+            const localStorageObj = window.localStorage;
+            if (localStorageObj) {
+                if (isSet) {
+                    localStorageObj.setItem(key, value);
+                    return Promise.resolve(null);
+                }
+                else {
+                    value = localStorageObj.getItem(key);
+                    return Promise.resolve(value);
                 }
             }
-            catch (exception) {
-                console.log("gsLS: ", exception);
-            }
-        };
-        const IDB = function (name, value) {
-            var result = gsIDB("indexedDB_ec", "ec", name, value, isSet);
-            return result;
-        };
-        const gsIDB = function (dbName, storeName, key, value, isSet) {
-            return new Promise(function (resolve, reject) {
-                var IDBObj = window.indexedDB ||
-                    window.mozIndexedDB ||
-                    window.webkitIndexedDB ||
-                    window.msIndexedDB ||
-                    window.shimIndexedDB;
-                if (IDBObj) {
-                    var request = IDBObj.open(dbName);
-                    request.onerror = function () {
-                        reject("Failed to open database");
-                    };
-                    request.onupgradeneeded = function (event) {
-                        var db = event.target.result;
-                        if (db.objectStoreNames.contains(storeName)) {
-                            db.deleteObjectStore(storeName);
-                        }
-                        db.createObjectStore(storeName, {
-                            keyPath: "name",
-                        });
-                    };
-                    request.onsuccess = function (event) {
-                        var db = event.target.result;
-                        if (db) {
-                            var transaction = db.transaction([storeName], "readwrite");
-                            if (transaction.db.objectStoreNames.contains(storeName)) {
-                                var store = transaction.objectStore(storeName);
-                                store.get(dbName).onsuccess = function (innerEvent) {
-                                    var data = innerEvent.target
-                                        .result;
+        }
+        catch (exception) {
+            console.log('getSetLocalStorage: ', exception);
+        }
+    }
+    function indexedDb(key, value) {
+        const result = getSetIndexedDb('indexedDB_ls', 'ls', key, value, isSet);
+        return result;
+    }
+    function getSetIndexedDb(dbName, storeName, key, value, isSet) {
+        return new Promise(function (resolve, reject) {
+            const indexedDbObj = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+            if (indexedDbObj) {
+                const request = indexedDbObj.open(dbName);
+                request.onerror = function () {
+                    console.log('Failed to open database');
+                    resolve(null);
+                };
+                request.onupgradeneeded = function (event) {
+                    var db = event.target.result;
+                    if (db.objectStoreNames.contains(storeName)) {
+                        db.deleteObjectStore(storeName);
+                    }
+                    db.createObjectStore(storeName);
+                };
+                request.onsuccess = function (event) {
+                    const db = event.target.result;
+                    if (db) {
+                        if (!db.objectStoreNames.contains(storeName)) {
+                            db.close();
+                            indexedDB.deleteDatabase(dbName);
+                            const request2 = indexedDB.open(dbName, 1);
+                            request2.onupgradeneeded = function (event) {
+                                const db2 = event.target.result;
+                                db2.createObjectStore(storeName);
+                            };
+                            request2.onsuccess = function (event) {
+                                const db2 = event.target.result;
+                                const transaction = db2.transaction(storeName, "readwrite");
+                                const store = transaction.objectStore(storeName);
+                                store.get(key).onsuccess = function (innerEvent) {
                                     if (isSet) {
-                                        store.put({
-                                            name: dbName,
-                                            value: value,
-                                        });
+                                        store.put(value, key);
+                                        resolve(null);
                                     }
                                     else {
+                                        const data = innerEvent.target.result;
                                         if (data) {
-                                            resolve(data.value);
+                                            resolve(data);
+                                        }
+                                        else {
+                                            resolve(null);
+                                        }
+                                    }
+                                };
+                            };
+                        }
+                        else {
+                            const transaction = db.transaction(storeName, 'readwrite');
+                            if (transaction.db.objectStoreNames.contains(storeName)) {
+                                const store = transaction.objectStore(storeName);
+                                store.get(key).onsuccess = function (innerEvent) {
+                                    if (isSet) {
+                                        store.put(value, key);
+                                        resolve(null);
+                                    }
+                                    else {
+                                        const data = innerEvent.target.result;
+                                        if (data) {
+                                            resolve(data);
                                         }
                                         else {
                                             resolve(null);
@@ -74,95 +100,86 @@ var fpNewCookie = (function (exports) {
                                 };
                             }
                         }
-                    };
-                }
-            });
-        };
-        const CK = function (name, value) {
-            var result = gsCK(name, value);
-            return result;
-        };
-        function gsCK(name, value) {
-            return new Promise(function (resolve, reject) {
-                try {
-                    if (isSet) {
-                        var expires = "";
-                        var days = 30;
-                        if (days) {
-                            var date = new Date();
-                            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-                            expires = "; expires=" + date.toUTCString();
-                        }
-                        document.cookie =
-                            name +
-                                "=" +
-                                (value || "") +
-                                expires +
-                                "; SameSite=None; Secure; path=/";
                     }
-                    else {
-                        var cookie = null;
-                        var cookieArr = document.cookie.split(";");
-                        for (var i = 0; i < cookieArr.length; i++) {
-                            var cookiePair = cookieArr[i].split("=");
-                            if (name == cookiePair[0].trim()) {
-                                cookie = decodeURIComponent(cookiePair[1]);
-                            }
-                        }
-                        resolve(cookie);
+                };
+            }
+        });
+    }
+    function cookie(key, value) {
+        const result = getSetCookie(key, value);
+        return result;
+    }
+    function getSetCookie(key, value) {
+        return new Promise(function (resolve, reject) {
+            try {
+                if (isSet) {
+                    let expires = '';
+                    const days = 30;
+                    if (days) {
+                        const date = new Date();
+                        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+                        expires = '; expires=' + date.toUTCString();
                     }
+                    const setValue = key + '=' + (value || '') + expires + '; SameSite=None; Secure; path=/';
+                    document.cookie = setValue;
+                    resolve(null);
                 }
-                catch (exception) {
-                    console.log("gsCK: ", exception);
-                }
-            });
-        }
-        const WN = function (name, value) {
-            var result = gsWN(name, value);
-            return result;
-        };
-        const gsWN = function (name, value) {
-            return new Promise(function (resolve, reject) {
-                try {
-                    if (isSet) {
-                        var currentValue = window.name;
-                        if (!isValidObject(currentValue) ||
-                            validateUUID(currentValue)) {
-                            window.name = value;
+                else {
+                    let cookie = null;
+                    const cookieArr = document.cookie.split(';');
+                    for (let i = 0; i < cookieArr.length; i++) {
+                        const cookiePair = cookieArr[i].split('=');
+                        if (key == cookiePair[0].trim()) {
+                            cookie = decodeURIComponent(cookiePair[1]);
                         }
                     }
-                    else {
-                        value = window.name;
-                        if (!validateUUID(value)) {
-                            value = null;
-                        }
-                        resolve(value);
+                    resolve(cookie);
+                }
+            }
+            catch (exception) {
+                console.log('getSetCookie: ', exception);
+            }
+        });
+    }
+    function windowName(key, value) {
+        const result = getSetWindowName(key, value);
+        return result;
+    }
+    function getSetWindowName(key, value) {
+        return new Promise(function (resolve, reject) {
+            try {
+                if (isSet) {
+                    var currentValue = window.name;
+                    if (!isValidObject(currentValue) || validateUUID(currentValue)) {
+                        window.name = value;
                     }
+                    resolve(null);
                 }
-                catch (exception) {
-                    console.log("gsWN: ", exception);
+                else {
+                    value = window.name;
+                    if (!validateUUID(value)) {
+                        value = null;
+                    }
+                    resolve(value);
                 }
-            });
-        };
-        return {
-            LS: LS,
-            IDB: IDB,
-            CK: CK,
-            WN: WN,
-        };
-    })();
-    const isValidObject = function (obj) {
-        return typeof obj !== "undefined" && !!obj;
-    };
-    const generateUUIDv4 = function () {
-        let uuid = "";
+            }
+            catch (exception) {
+                console.log('getSetWindowName: ', exception);
+            }
+        });
+    }
+    function isValidObject(obj) {
+        return typeof obj !== 'undefined' && !!obj;
+    }
+    function generateUUIDv4() {
+        let uuid = '';
         for (let i = 0; i < 32; i++) {
             if (i === 8 || i === 12 || i === 16 || i === 20) {
-                uuid += "-";
+                uuid += '-';
             }
             const random = (Math.random() * 16) | 0;
             if (i === 12) {
-                uuid += "4";
+                uuid += '4';
             }
             else if (i === 16) {
                 uuid += ((random & 3) | 8).toString(16);
@@ -172,8 +189,8 @@ var fpNewCookie = (function (exports) {
             }
         }
         return uuid;
-    };
-    const validateUUID = function (uuid) {
+    }
+    function validateUUID(uuid) {
         const uuidRegex = /^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[8|9|aA|bB][a-f\d]{3}-[a-f\d]{12}$/i;
         if (!uuidRegex.test(uuid)) {
             return false;
@@ -188,18 +205,14 @@ var fpNewCookie = (function (exports) {
             return false;
         }
         return true;
-    };
-    var cookieStorage = "(global.c3)";
-    var storageHandlers = [fnStorages.LS, fnStorages.IDB, fnStorages.CK, fnStorages.WN];
-    var isSet = false;
-    var timeout = 200;
-    const waitAllWithTimeout = function (promises) {
+    }
+    function waitAllWithTimeout(promises) {
         const timeoutPromise = new Promise((resolve, reject) => {
             setTimeout(() => resolve(), timeout);
         });
         return Promise.all(promises.map((p) => Promise.race([p, timeoutPromise])));
-    };
-    const getFirstMaxCountValue = function (arr) {
+    }
+    function getFirstMaxCountValue(arr) {
         let count = {};
         let maxCount = 0;
         let maxValue = null;
@@ -220,39 +233,37 @@ var fpNewCookie = (function (exports) {
         return new Promise((resolve) => {
             resolve(validateUUID(maxValue) ? maxValue : generateUUIDv4());
         });
-    };
-    const get = function () {
+    }
+    function get() {
         try {
             isSet = false;
             const promises = storageHandlers.map((handler) => {
                 return new Promise((resolve) => {
-                    resolve(handler(cookieStorage, null));
+                    resolve(handler(cookieKey, null));
                 });
             });
-            console.log("promises", promises);
+            console.log('get', promises);
             return waitAllWithTimeout(promises).then((cookies) => {
-                console.log("cookies", cookies);
                 return getFirstMaxCountValue(cookies).then((cookieValue) => {
-                    console.log("cookieValue", cookieValue);
                     return Promise.resolve(cookieValue);
                 });
             });
         }
         catch (exception) {
-            console.log("Get error: ", exception);
+            console.log('Get error: ', exception);
         }
-    };
-    const set = function (value) {
+    }
+    function set(value) {
         try {
             isSet = true;
             storageHandlers.forEach(function (handler) {
-                handler(cookieStorage, value);
+                handler(cookieKey, value);
             });
         }
         catch (exception) {
-            console.log("Set error: ", exception);
+            console.log('Set error: ', exception);
         }
-    };
+    }
     function getStorage() {
         return get();
     }
