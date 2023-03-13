@@ -1,4 +1,5 @@
 ﻿using FPS.Device.FingerPrint.Net.Standard.Client.Model;
+using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Net.Http;
@@ -10,34 +11,20 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
 {
     public interface ITransactionServices
     {
-        void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl);
-        void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl);
-        string GetScriptUrl();
+        void CheckTransaction(TransactionModel transactionModel);   
     }
     public class TransactionServices : ITransactionServices
-    {
-        private readonly string subscriberName;
-        private readonly string externalAPIUrl;
-        private readonly string sessionKey;
+    {        
         private readonly string transactionUrl;
 
-        public TransactionServices(string subscriberName, string externalAPIUrl)
+        private readonly string subscriberName;
+
+        public TransactionServices(string portalAPIUrl, string subscriberName)
         {
+            this.transactionUrl = "http:" + GetUrl(portalAPIUrl, "api/transaction");
+
             this.subscriberName = subscriberName;
-            this.externalAPIUrl = externalAPIUrl;
-            this.sessionKey = Guid.NewGuid().ToString("N");
-
-            transactionUrl = "http:" + GetUrl(externalAPIUrl, "api/transaction");
-        }
-
-        public TransactionServices(string subscriberName, string externalAPIUrl, string internalAPIUrl)
-        {
-            this.subscriberName = subscriberName;
-            this.externalAPIUrl = externalAPIUrl;
-            this.sessionKey = Guid.NewGuid().ToString("N");
-
-            transactionUrl = "http:" + GetUrl(string.IsNullOrWhiteSpace(internalAPIUrl) ? externalAPIUrl : internalAPIUrl, "api/transaction");
-        }
+        }        
 
         private string GetUrl(string baseUrl, string relativeUrl)
         {
@@ -46,81 +33,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
             return url + relativeUrl;
         }
 
-        private async Task<string> GetIPAsync()
-        {
-            var hostName = System.Net.Dns.GetHostName();
-            var ips = await System.Net.Dns.GetHostAddressesAsync(hostName);
-
-            return ips[2].ToString();
-        }
-
-        /// <summary>
-        /// Insert transaction
-        /// </summary>
-        /// <param name="action">User action</param>
-        /// <param name="loginName">User name</param>
-        /// <param name="loginTime">Login time</param>
-        /// <param name="userAgent">UserAgent from httpcontext</param>
-        /// <param name="hostUrl">Url from httpcontext</param>
-        public void Insert(string action, string loginName, DateTime loginTime, string userAgent, string hostUrl)
-        {
-            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
-            {
-                var clientIp = GetIPAsync().Result;
-                var transaction = new TransactionModel
-                {
-                    LoginName = loginName,
-                    SessionKey = sessionKey,
-                    SubscriberName = subscriberName,
-                    UserAgent = userAgent,
-                    ClientIp = clientIp.ToString(),
-                    Url = hostUrl,
-                    Action = action,
-                    TransKey = loginName + "#" + loginTime.Ticks,
-                    CustId = 0,
-                    SubAccId = 0
-                };
-                var cancelToken = new CancellationToken();
-
-                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
-            }
-        }
-
-        /// <summary>
-        /// Insert transaction
-        /// </summary>
-        /// <param name="action">User action</param>
-        /// <param name="loginName">User name</param>
-        /// <param name="custId">Cust Id</param>
-        /// <param name="subAccId">Sub Account Id</param>
-        /// <param name="loginTime">Login time</param>
-        /// <param name="userAgent">UserAgent from httpcontext</param>
-        /// <param name="hostUrl">Url from httpcontext</param>
-        public void Insert(string action, string loginName, long custId, long subAccId, DateTime loginTime, string userAgent, string hostUrl)
-        {
-            if (!string.IsNullOrWhiteSpace(loginName) && !string.IsNullOrWhiteSpace(subscriberName))
-            {
-                var clientIp = GetIPAsync().Result;
-                var transaction = new TransactionModel
-                {
-                    LoginName = loginName,
-                    SessionKey = sessionKey,
-                    SubscriberName = subscriberName,
-                    UserAgent = userAgent,
-                    ClientIp = clientIp.ToString(),
-                    Url = hostUrl,
-                    Action = action,
-                    TransKey = loginName + "#" + loginTime.Ticks,
-                    CustId = custId,
-                    SubAccId = subAccId
-                };
-                var cancelToken = new CancellationToken();
-
-                _ = PostBasicAsync(transactionUrl, transaction, cancelToken);
-            }
-        }
-
-        private async Task PostBasicAsync(string url, object content, CancellationToken cancellationToken)
+        private async Task PostBasicAsync<T>(string url, T content, CancellationToken cancellationToken)
         {
             using (var client = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Post, url))
@@ -140,9 +53,14 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
             }
         }
 
-        public string GetScriptUrl()
+        public void CheckTransaction(TransactionModel transactionModel)
         {
-            return GetUrl(externalAPIUrl, $"api/scr/{sessionKey}/{subscriberName}");
+            transactionModel.TransKey = transactionModel.LoginName + "#" + transactionModel.LoginTime.Ticks;            
+            transactionModel.SubscriberName = this.subscriberName;
+
+            var cancelToken = new CancellationToken();
+
+            _ = PostBasicAsync<TransactionModel>(this.transactionUrl, transactionModel, cancelToken);
         }
     }
 }

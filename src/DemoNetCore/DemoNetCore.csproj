@@ -9,7 +9,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model.csproj" />
     <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client.csproj" />
   </ItemGroup>
 

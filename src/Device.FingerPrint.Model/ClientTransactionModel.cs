@@ -2,7 +2,7 @@
 
 namespace Device.FingerPrint.Model
 {
-    public class TransactionDTO
+    public class ClientTransactionModel
     {
         public string SubscriberName { get; set; }
 
@@ -24,6 +24,6 @@ namespace Device.FingerPrint.Model
 
         public long SubAccId { get; set; }
 
-        public DateTime TransTime { get; set; }
+        public DateTime LoginTime { get; set; }
     }
 }

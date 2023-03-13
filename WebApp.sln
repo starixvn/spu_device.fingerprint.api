@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31729.503
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33403.182
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint", "src\Device.FingerPrint\Device.FingerPrint.csproj", "{85AD9E4B-646E-486F-8257-BB8852A8947D}"
 EndProject
@@ -28,8 +28,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Net Standard", "Net Standard", "{C43090E7-0405-43CE-9A36-AF2AE4033C1A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Net.Standard.Client", "src\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client.csproj", "{A31C9770-538A-4F3E-A3DF-EE9EB720B968}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Device.FingerPrint.Net.Standard.Client.Model", "src\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model\FPS.Device.FingerPrint.Net.Standard.Client.Model.csproj", "{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DemoNetCore", "src\DemoNetCore\DemoNetCore.csproj", "{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}"
 EndProject
@@ -97,10 +95,6 @@ Global
 		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A31C9770-538A-4F3E-A3DF-EE9EB720B968}.Release|Any CPU.Build.0 = Release|Any CPU
-		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -159,7 +153,6 @@ Global
 		{554DDB77-B15B-434A-A1DE-9A737343A103} = {BB6F1568-7665-4D03-9B5A-E55BF88C3441}
 		{11BE7AD5-D158-476C-AFA5-BC8CC4237E2F} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
 		{A31C9770-538A-4F3E-A3DF-EE9EB720B968} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
-		{28E10BD4-E712-4BEC-B3DE-D4CFCE6C8639} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{AA4CF4FD-C5D1-4122-9A36-0A74008CA913} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{01740610-56C4-4052-8B53-10B4CED06BCB} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 		{E11BD1D0-29F1-4E23-A92E-1E29B5DA3E82} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
