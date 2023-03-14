@@ -1,7 +1,5 @@
 ﻿using FPS.Device.FingerPrint.Net.Standard.Client.Model;
-using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -11,20 +9,20 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
 {
     public interface ITransactionServices
     {
-        void CheckTransaction(TransactionModel transactionModel);   
+        void CheckTransaction(TransactionModel transactionModel);
     }
     public class TransactionServices : ITransactionServices
-    {        
+    {
         private readonly string transactionUrl;
 
         private readonly string subscriberName;
 
-        public TransactionServices(string portalAPIUrl, string subscriberName)
+        public TransactionServices(string subscriberName, string portalAPIUrl)
         {
             this.transactionUrl = "http:" + GetUrl(portalAPIUrl, "api/transaction");
 
             this.subscriberName = subscriberName;
-        }        
+        }
 
         private string GetUrl(string baseUrl, string relativeUrl)
         {
@@ -55,7 +53,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
 
         public void CheckTransaction(TransactionModel transactionModel)
         {
-            transactionModel.TransKey = transactionModel.LoginName + "#" + transactionModel.LoginTime.Ticks;            
+            transactionModel.TransKey = transactionModel.LoginName + "#" + transactionModel.LoginTime.Ticks;
             transactionModel.SubscriberName = this.subscriberName;
 
             var cancelToken = new CancellationToken();

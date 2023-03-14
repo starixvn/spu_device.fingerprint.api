@@ -12,14 +12,23 @@ namespace DemoNetCore.Controllers
     public class LoginController : Controller
     {
         private readonly IConfiguration configuration;
+        private readonly string subscriberName;
+        private readonly string getAPIUrl;
+        private readonly string postAPIUrl;
 
         public LoginController(IConfiguration configuration)
         {
             this.configuration = configuration;
+
+            subscriberName = configuration.GetSection("SubscriberName").Value ?? string.Empty;
+            getAPIUrl = configuration.GetSection("GetAPIUrl").Value ?? string.Empty;
+            postAPIUrl = configuration.GetSection("PostAPIUrl").Value ?? string.Empty;
         }
         // GET: Login
         public ActionResult Index()
         {
+            ViewBag.GetAPIUrl = String.Format("{0}/api/scr/{1}", string.IsNullOrEmpty(getAPIUrl) ? string.Empty : getAPIUrl, subscriberName);
+
             if (HttpContext.Session.GetString("Username") == null)
             {
                 return View(new LoginModel());
@@ -34,16 +43,13 @@ namespace DemoNetCore.Controllers
             {
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
-
-                var apiUrl = configuration.GetSection("PortalApiUrl").Value.ToString();
-
-                var fpsService = new TransactionServices(apiUrl, "Alpha");
+                var fpsService = new TransactionServices(subscriberName, postAPIUrl);
 
                 fpsService.CheckTransaction(new TransactionModel
                 {
                     SessionKey = HttpContext.Request.Form["__fdi"].ToString(),
                     Action = "Login",
-                    CustId = 123,
+                    CustId = 0,
                     LoginName = loginModel.Username,
                     LoginTime = DateTime.Now,
                     SubAccId = 0,
