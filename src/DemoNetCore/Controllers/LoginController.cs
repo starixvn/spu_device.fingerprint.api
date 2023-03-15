@@ -43,20 +43,29 @@ namespace DemoNetCore.Controllers
             {
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
-                var fpsService = new TransactionServices(subscriberName, postAPIUrl);
 
-                fpsService.CheckTransaction(new TransactionModel
+                try
                 {
-                    SessionKey = HttpContext.Request.Form["__fdi"].ToString(),
-                    Action = "Login",
-                    CustId = 0,
-                    LoginName = loginModel.Username,
-                    LoginTime = DateTime.Now,
-                    SubAccId = 0,
-                    UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
-                    Url = HttpContext.Request.GetDisplayUrl(),
-                    ClientIp = HttpContext.Connection.RemoteIpAddress.ToString()
-                });
+                    var fpsService = new TransactionServices(subscriberName, postAPIUrl);
+
+                    fpsService.CheckTransaction(new TransactionModel
+                    {
+                        SessionKey = HttpContext.Request.Form["__fdi"].ToString(),
+                        Action = "Login",
+                        CustId = 0,
+                        LoginName = loginModel.Username,
+                        LoginTime = DateTime.Now,
+                        SubAccId = 0,
+                        UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
+                        Url = HttpContext.Request.GetDisplayUrl(),
+                        ClientIp = HttpContext.Connection.RemoteIpAddress.ToString()
+                    });
+                }
+                catch (Exception ex)
+                {
+
+                    throw;
+                }
 
                 return RedirectToAction("index", "home");
             }

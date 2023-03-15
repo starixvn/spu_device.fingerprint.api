@@ -269,9 +269,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [HttpPost("transaction")]
         public void Transaction([FromBody] ClientTransactionModel data)
-        {
-            _logger.Info($"{data.SubscriberName} - {data.LoginName}");
-
+        {           
             if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);

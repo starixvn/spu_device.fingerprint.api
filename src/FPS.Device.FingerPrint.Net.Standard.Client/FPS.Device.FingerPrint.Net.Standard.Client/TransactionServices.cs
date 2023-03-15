@@ -1,6 +1,8 @@
 ﻿using FPS.Device.FingerPrint.Net.Standard.Client.Model;
 using Newtonsoft.Json;
+using System;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,16 +15,19 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
     }
     public class TransactionServices : ITransactionServices
     {
-        private readonly string transactionUrl;
-
         private readonly string subscriberName;
+        private readonly string portalAPIUrl;
+        private readonly string transactionUrl;
 
         public TransactionServices(string subscriberName, string portalAPIUrl)
         {
-            this.transactionUrl = "http:" + GetUrl(portalAPIUrl, "api/transaction");
+
+            this.portalAPIUrl = portalAPIUrl;
 
             this.subscriberName = subscriberName;
-        }
+
+            this.transactionUrl = "http:" + GetUrl(this.portalAPIUrl, "api/transaction");
+        }        
 
         private string GetUrl(string baseUrl, string relativeUrl)
         {
@@ -41,6 +46,8 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
                 {
                     request.Content = stringContent;
 
+                    client.Timeout = TimeSpan.FromSeconds(10);
+
                     using (var response = await client
                         .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
                         .ConfigureAwait(false))
@@ -53,12 +60,21 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client
 
         public void CheckTransaction(TransactionModel transactionModel)
         {
+
             transactionModel.TransKey = transactionModel.LoginName + "#" + transactionModel.LoginTime.Ticks;
             transactionModel.SubscriberName = this.subscriberName;
 
-            var cancelToken = new CancellationToken();
+            try
+            {
+                var cancelToken = new CancellationToken();
 
-            _ = PostBasicAsync<TransactionModel>(this.transactionUrl, transactionModel, cancelToken);
+                _ = PostBasicAsync(this.transactionUrl, transactionModel, cancelToken);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            
         }
     }
 }
