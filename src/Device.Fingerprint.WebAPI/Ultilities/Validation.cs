@@ -1,4 +1,5 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,18 +33,19 @@ namespace Device.Fingerprint.WebAPI.Ultilities
             return false;
         }
 
-        public static bool DuplicateSessionKey(IRedisService redisService, string sessionKey, int subscriberId)
+
+        public static async Task<bool> CheckExistingSessionKey(IRedisService redisService, string sessionKey, int subscriberId)
         {
             var redisKey = string.Format("{0}:{1}", subscriberId, sessionKey);
 
-            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-            {
-                redisService.RedisDatabase.AddAsync<string>(redisKey, sessionKey, DateTimeOffset.UtcNow.AddMinutes(1), StackExchange.Redis.When.NotExists);
+            return await redisService.RedisDatabase.ExistsAsync(redisKey);
+        }
 
-                return false;
-            }
+        public static void AddSessionKey(IRedisService redisService, string sessionKey, int subscriberId)
+        {
+            var redisKey = string.Format("{0}:{1}", subscriberId, sessionKey);
 
-            return true;
+            redisService.RedisDatabase.AddAsync(redisKey, sessionKey, DateTimeOffset.UtcNow.AddMinutes(1), StackExchange.Redis.When.NotExists);
         }
     }
 }

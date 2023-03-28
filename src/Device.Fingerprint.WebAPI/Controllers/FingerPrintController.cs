@@ -152,7 +152,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]        
         [HttpPost("fp")]
-        public void FingerPrint([FromBody] string data)
+        public async void FingerPrint([FromBody] string data)
         {
             try
             {                
@@ -161,8 +161,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 var fingerPrint = JsonConvert.DeserializeObject<Models.FingerPrintModel>(decryptedData);
                 if (fingerPrint != null && !string.IsNullOrWhiteSpace(fingerPrint.FingerPrintCode))
                 {
-                    if (!Validation.DuplicateSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId))
+                    var isExistingSessionKey = await Validation.CheckExistingSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId);
+
+                    if (!isExistingSessionKey)
                     {
+                        Validation.AddSessionKey(redisService, fingerPrint.SessionKey, fingerPrint.SubscriberId);
+
                         var defenderAttributesService = new DefenderAttributesService();                   
 
                         var clientTransactionModel = new ClientTransactionModel
