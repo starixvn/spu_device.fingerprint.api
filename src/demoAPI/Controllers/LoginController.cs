@@ -49,7 +49,6 @@ namespace demoAPI.Controllers
             {
                 ViewBag.fpsScript = ex.Message;
             }
-            }
         }
 
         [HttpGet]

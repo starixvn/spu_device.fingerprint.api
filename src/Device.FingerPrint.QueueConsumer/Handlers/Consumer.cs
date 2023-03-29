@@ -31,7 +31,6 @@
 
             listTransactionInsertModel = new List<TransactionEntity>();
         }
-        
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
         {
@@ -59,38 +58,24 @@
 
         private void StartConsuming()
         {
-            try
-            {
-                var easyNetQConnector = RabbitMQBus();
+            var easyNetQConnector = RabbitMQBus();
             _logger.Info("Start Consuming!");
 
-                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+            easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+            {
+                x.Add<TransactionModel>((message, info) =>
                 {
-                    x.Add<TransactionModel>((message, info) =>
-                    {
-                        try
-                        {
-                            var transaction = TranformTransactionEntity(message.Body);
-                            listTransactionInsertModel.Add(transaction);
+                    var transaction = TranformTransactionEntity(message.Body);
+                    listTransactionInsertModel.Add(transaction);
 
-                            if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
-                            {
+                    if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                    {
                         transactionService.InsertTransaction(listTransactionInsertModel);
 
-                                listTransactionInsertModel.Clear();
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            sentryClient.CaptureMessage(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body), SentryLevel.Error);
-                        }
-                    });
+                        listTransactionInsertModel.Clear();
+                    }
                 });
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
+            });
         }
 
         private EasyNetQConnector RabbitMQBus()

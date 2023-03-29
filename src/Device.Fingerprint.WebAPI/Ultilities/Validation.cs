@@ -1,6 +1,6 @@
 ﻿using Device.Fingerprint.WebAPI.Services;
-using StackExchange.Redis;
 using System;
+using System.Threading.Tasks;
 
 namespace Device.Fingerprint.WebAPI.Ultilities
 {
@@ -30,7 +30,6 @@ namespace Device.Fingerprint.WebAPI.Ultilities
             return false;
         }
 
-
         public static async Task<bool> CheckExistingSessionKey(IRedisService redisService, string sessionKey, int subscriberId)
         {
             var redisKey = string.Format("{0}:{1}", subscriberId, sessionKey);
@@ -44,5 +43,7 @@ namespace Device.Fingerprint.WebAPI.Ultilities
 
             redisService.RedisDatabase.AddAsync(redisKey, sessionKey, DateTimeOffset.UtcNow.AddMinutes(1), StackExchange.Redis.When.NotExists);
         }
+
+
     }
 }
