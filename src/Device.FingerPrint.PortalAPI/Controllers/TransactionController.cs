@@ -157,8 +157,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         [HttpPost("transaction")]
         public void Transaction([FromBody] ClientTransactionModel data)
         {
+            _logger.Info("Log TransactionAPI begin!");
             if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
+                _logger.Info("Log TransactionAPI: " + JsonConvert.SerializeObject(data));
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
                 if (subscriber != null)
                 {
