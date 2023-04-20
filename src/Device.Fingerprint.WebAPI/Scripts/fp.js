@@ -1,6 +1,6 @@
 ﻿var subscriberId = '__subscriberId__';
 var sessionKey = '__sessionKey__';
-var cdnAPIUrl = '__cdnAPIUrl__';
+var apiUrl = '__apiUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
 var version = '__version__';
 let startDate = new Date();
@@ -81,7 +81,7 @@ var fp = {
         fp.inject(sessionKey);
         date = new Date();
         console.log('inject sessionKey Done: ', date - startDate);
-        fp.get(cdnAPIUrl + '/scr/gjt')
+        fp.get(apiUrl + '/scr/gjt')
             .then(response => {
                 date = new Date();
                 console.log('gjt Response: ', date - startDate);
@@ -92,12 +92,12 @@ var fp = {
                 date = new Date();
                 console.log('gjt Done: ', date - startDate, gjt);
 
-                fp.requireJS(cdnAPIUrl + '/scr/cdn/crt').then(() => {
+                fp.requireJS(apiUrl + '/scr/cdn/crt').then(() => {
                     date = new Date();
                     console.log('crt Done: ', date - startDate);
 
 
-                    fp.requireJS(cdnAPIUrl + '/scr/cdn/fp').then(() => {
+                    fp.requireJS(apiUrl + '/scr/cdn/fp').then(() => {
                         date = new Date();
                         console.log('fp executeScript Start: ', date - startDate);
 
@@ -123,7 +123,7 @@ var fp = {
                     });
 
 
-                    fp.requireJS(cdnAPIUrl + '/scr/cdn/ce').then(() => {
+                    fp.requireJS(apiUrl + '/scr/cdn/ce').then(() => {
 
                         date = new Date();
                         console.log('ce executeScript Start: ', date - startDate);
@@ -149,7 +149,7 @@ var fp = {
                     });
 
 
-                    fp.requireJS(cdnAPIUrl + '/scr/cdn/hl').then(() => {
+                    fp.requireJS(apiUrl + '/scr/cdn/hl').then(() => {
                         date = new Date();
                         console.log('hl executeScript Start: ', date - startDate);
 
@@ -176,7 +176,7 @@ var fp = {
                         fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
                     });
 
-                    fp.requireJS(cdnAPIUrl + '/scr/cdn/bi').then(() => {
+                    fp.requireJS(apiUrl + '/scr/cdn/bi').then(() => {
                         date = new Date();
                         console.log('bi executeScript Start: ', date - startDate);
 

@@ -21,8 +21,7 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             get
             {
-                var script = this.scriptContent
-                    .Replace("__cdnAPIUrl__", appSettings.CDNApiUrl)
+                var script = this.scriptContent                    
                     .Replace("__subscriberId__", subscriberId.ToString())
                     .Replace("__sessionKey__", sessionKey)
                     .Replace("__apiUrl__", $"{appSettings.ApiUrl}")

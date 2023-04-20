@@ -10,8 +10,6 @@ namespace Device.FingerPrint.Core
 
         string PortalApiUrl { get; }
 
-        string CDNApiUrl { get; }
-
         string CryptoPassword { get; }
 
         string CryptoIV { get; }
