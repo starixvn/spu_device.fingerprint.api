@@ -157,13 +157,15 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         [HttpPost("transaction")]
         public void Transaction([FromBody] ClientTransactionModel data)
         {
-            //_logger.Info("Log TransactionAPI begin!");
+            _logger.Info("Log TransactionAPI begin!");
             if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
-                //_logger.Info("Log TransactionAPI: " + JsonConvert.SerializeObject(data));
+                _logger.Info("Log TransactionAPI: " + JsonConvert.SerializeObject(data));
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
                 if (subscriber != null)
                 {
+                    _logger.Info("Subscriber: " + JsonConvert.SerializeObject(subscriber));
+
                     var urlAddress = new Uri(data.Url);
                     var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
 
@@ -193,6 +195,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     easyNetQService.PushData(transactionInsertModel);
 
                     RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
+
+                    _logger.Info("Push data: " + JsonConvert.SerializeObject(transactionInsertModel));
                 }
                 else
                 {
