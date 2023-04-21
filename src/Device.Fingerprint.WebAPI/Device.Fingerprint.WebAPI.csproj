@@ -9,6 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Scripts\DetecasUtility\**" />
+    <Content Remove="Scripts\DetecasUtility\**" />
+    <EmbeddedResource Remove="Scripts\DetecasUtility\**" />
+    <None Remove="Scripts\DetecasUtility\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="bundleconfig.json" />
   </ItemGroup>
 
@@ -115,10 +122,6 @@
     <None Update="App_Data\PROD\SPNames.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Scripts\DetecasUtility\" />
   </ItemGroup>
 
 </Project>

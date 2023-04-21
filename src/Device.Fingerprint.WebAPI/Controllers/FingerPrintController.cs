@@ -22,7 +22,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
         private readonly IRedisService redisService;
-        private readonly ILogger _logger;
+        private readonly ILogger logger;        
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
@@ -35,7 +35,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.redisService = redisService;
-            _logger = logger;
+            this.logger = logger;
         }
 
         [HttpGet("scr/{subscriberName}")]
@@ -60,14 +60,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (subscribers != null)
                     {
                         var sessionKey = Session.Generate();
-
-                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey);
+                        var scheme = HttpContext.Request.IsHttps ? "https" : "http";
+                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
 
                         return new JavascriptResult(bundleContent.Content);
                     }
                     else
                     {
-                        _logger.Info("Subscriber " + subscriberName + " does not exists");
+                        logger.Info("Subscriber " + subscriberName + " does not exists");
                     }
                 }
             }
@@ -273,7 +273,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
             else
             {
-                _logger.Info("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
+                logger.Info("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
 
                 return Ok(null);
             }
