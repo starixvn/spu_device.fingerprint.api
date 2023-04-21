@@ -7,6 +7,7 @@ using Device.FingerPrint.Model;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
@@ -60,7 +61,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     if (subscribers != null)
                     {
                         var sessionKey = Session.Generate();
-                        var scheme = HttpContext.Request.IsHttps ? "https" : "http";
+                        var refererUrl = HttpContext.Request.GetTypedHeaders().Referer.ToString();
+                        var scheme = new Uri(refererUrl).Scheme;
+
+                        logger.Info("scheme:" + scheme + "- refererUrl:" + refererUrl);
+
                         var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
 
                         return new JavascriptResult(bundleContent.Content);
