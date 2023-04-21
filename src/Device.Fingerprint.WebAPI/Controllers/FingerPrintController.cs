@@ -63,9 +63,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         var sessionKey = Session.Generate();
                         var refererUrl = HttpContext.Request.GetTypedHeaders().Referer.ToString();
                         var scheme = new Uri(refererUrl).Scheme;
-
-                        logger.Info("scheme:" + scheme + "- refererUrl:" + refererUrl);
-
                         var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
 
                         return new JavascriptResult(bundleContent.Content);
