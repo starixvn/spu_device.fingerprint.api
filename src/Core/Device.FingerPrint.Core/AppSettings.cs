@@ -26,6 +26,8 @@ namespace Device.FingerPrint.Core
 
         long RedisExpired { get; }
 
+        string JWTPassword { get; }
+
     }
 
     public class AppSettings : IAppSettings
@@ -45,6 +47,8 @@ namespace Device.FingerPrint.Core
 
         private readonly bool ignoreClientTransLogs;
         private readonly long redisExpired;
+
+        private readonly string jWTPassword;    
 
         public AppSettings(IConfiguration configuration)
         {
@@ -71,6 +75,8 @@ namespace Device.FingerPrint.Core
             ignoreClientTransLogs = !string.IsNullOrEmpty(GetValue<string>("IgnoreClientTransLog")) && Convert.ToBoolean(GetValue<string>("IgnoreClientTransLog"));
 
             redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
+
+            jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
         }
 
         public string ApiUrl => apiUrl;
@@ -94,6 +100,8 @@ namespace Device.FingerPrint.Core
         public bool IgnoreClientTransLogs => ignoreClientTransLogs;
 
         public long RedisExpired => redisExpired;
+
+        public string JWTPassword => jWTPassword;
 
         public T GetValue<T>(string key)
         {
