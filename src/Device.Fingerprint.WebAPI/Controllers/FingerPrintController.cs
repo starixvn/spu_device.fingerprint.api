@@ -237,33 +237,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public ActionResult<string> GetJWT()
         {
             var JWTService = new JWTService(appSettings);
-            return Ok(JWTService.GenerateJwtToken());
-        }
 
-        [HttpGet("conf/{sessionKey}")]
-        [ResponseCache(NoStore = true, Duration = 0)]
-        public ActionResult<ScriptConfigModel> AppConfig(string sessionKey)
-        {
-            if (Validation.SessionKey(sessionKey))
-            {
-                var JWTService = new JWTService(appSettings);
-
-                string jsonString = JsonConvert.SerializeObject(new ScriptConfigModel
-                {
-                    EncryptedKey = appSettings.CryptoPassword,
-                    Token = JWTService.GenerateJwtToken(),
-                    IV = appSettings.CryptoIV,
-                    Salt = appSettings.CryptoSalt,
-                    Accept = HttpContext.Request.Headers["Accept"],
-                    Encoding = HttpContext.Request.Headers["Accept-Encoding"],
-                    HeaderKeys = String.Join(" ", HttpContext.Request.Headers.Keys)
-                });
-
-                return Ok(jsonString);
-            }
-
-            return Ok(string.Empty);
-        }
+            return Ok(JWTService.GenerateJwtToken());            
+        }        
 
         [HttpGet("getsubscriber/{subscriberName}")]
         public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)
