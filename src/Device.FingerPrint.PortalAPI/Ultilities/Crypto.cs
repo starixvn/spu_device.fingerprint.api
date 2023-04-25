@@ -1,26 +1,37 @@
-﻿using System;
+﻿using Device.FingerPrint.Core;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Device.FingerPrint.PortalAPI.Ultilities
 {
-    public class Crypto
+    public interface ICrypto
+    {
+        string Encrypt(string strPlainText);
+
+        string Decrypt(string encryptedText);
+
+        string GetMD5Hash(string str);
+    }
+
+    public class Crypto: ICrypto
     {
         private readonly RijndaelManaged myRijndael = new();
         private readonly int iterations;
         private readonly byte[] salt;
+        private IAppSettings appSettings;
 
-        public Crypto(string strPassword, string ivHexString = null, string saltString = null)
+        public Crypto(IAppSettings appSettings)
         {
             myRijndael.BlockSize = 128;
             myRijndael.KeySize = 128;
-            myRijndael.IV = HexStringToByteArray(ivHexString ?? "c3eef06037e837f4ee390bda69c05023");
+            myRijndael.IV = HexStringToByteArray(appSettings.CryptoIV ?? "c3eef06037e837f4ee390bda69c05023");
 
             myRijndael.Padding = PaddingMode.PKCS7;
             myRijndael.Mode = CipherMode.CBC;
             iterations = 1000;
-            salt = Encoding.UTF8.GetBytes(saltString ?? "234292a9fce031f2");
-            myRijndael.Key = GenerateKey(strPassword);
+            salt = Encoding.UTF8.GetBytes(appSettings.CryptoSalt ?? "234292a9fce031f2");
+            myRijndael.Key = GenerateKey(appSettings.CryptoPassword);
         }
 
         public string Encrypt(string strPlainText)

@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using StackExchange.Redis.Extensions.Core.Abstractions;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
@@ -10,15 +11,17 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         T GetResult<T>(string RedisKey);
 
-        BrowserDetectModel GetBrowserInfo(int SubscriberId, string SessionKey);
+        Task<BrowserDetectModel>  GetBrowserInfo(int SubscriberId, string SessionKey);
 
-        string GetCookie(int SubscriberId, string SessionKey);
+        Task<string> GetCookie(int SubscriberId, string SessionKey);
 
-        FingerprintModel GetFingerPrint(int SubscriberId, string SessionKey);
+        Task<FingerprintModel> GetFingerPrint(int SubscriberId, string SessionKey);
 
-        HeaderModel GetHeader(int SubscriberId, string SessionKey);
+        Task<HeaderModel> GetHeader(int SubscriberId, string SessionKey);
 
-        HeadlessBrowserModel GetHeadless(int SubscriberId, string SessionKey);
+        Task<HeadlessBrowserModel>  GetHeadless(int SubscriberId, string SessionKey);
+
+        string GetRedisKey(RedisKey Key, int SubscriberId, string SessionKey);
 
         string GetRedisKey(string Key, int SubscriberId, string SessionKey);
     }
@@ -35,34 +38,44 @@ namespace Device.FingerPrint.PortalAPI.Services
         public IRedisDatabase RedisDatabase => redisDatabase;
 
 
-        public BrowserDetectModel GetBrowserInfo(int SubscriberId, string SessionKey)
+        public Task<BrowserDetectModel>  GetBrowserInfo(int SubscriberId, string SessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.BrowserInfo.ToString(), SubscriberId, SessionKey);
-            return RedisDatabase.GetAsync<BrowserDetectModel>(redisKey).Result;
+            var redisKey = GetRedisKey(RedisKey.BrowserInfo, SubscriberId, SessionKey);
+
+            return RedisDatabase.GetAsync<BrowserDetectModel>(redisKey);
         }
 
-        public string GetCookie(int SubscriberId, string SessionKey)
+        public Task<string> GetCookie(int SubscriberId, string SessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.Cookie.ToString(), SubscriberId, SessionKey);
-            return RedisDatabase.GetAsync<string>(redisKey).Result;
+            var redisKey = GetRedisKey(RedisKey.Cookie, SubscriberId, SessionKey);
+
+            return RedisDatabase.GetAsync<string>(redisKey);
         }
 
-        public FingerprintModel GetFingerPrint(int SubscriberId, string SessionKey)
+        public Task<FingerprintModel> GetFingerPrint(int SubscriberId, string SessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.FingerPrint.ToString(), SubscriberId, SessionKey);
-            return RedisDatabase.GetAsync<FingerprintModel>(redisKey).Result;
+            var redisKey = GetRedisKey(RedisKey.FingerPrint, SubscriberId, SessionKey);
+
+            return RedisDatabase.GetAsync<FingerprintModel>(redisKey);
         }
 
-        public HeaderModel GetHeader(int SubscriberId, string SessionKey)
+        public Task<HeaderModel> GetHeader(int SubscriberId, string SessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.Header.ToString(), SubscriberId, SessionKey);
-            return RedisDatabase.GetAsync<HeaderModel>(redisKey).Result;
+            var redisKey = GetRedisKey(RedisKey.Header, SubscriberId, SessionKey);
+
+            return RedisDatabase.GetAsync<HeaderModel>(redisKey);
         }
 
-        public HeadlessBrowserModel GetHeadless(int SubscriberId, string SessionKey)
+        public Task<HeadlessBrowserModel>  GetHeadless(int SubscriberId, string SessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.Headless.ToString(), SubscriberId, SessionKey);
-            return RedisDatabase.GetAsync<HeadlessBrowserModel>(redisKey).Result;
+            var redisKey = GetRedisKey(RedisKey.Headless, SubscriberId, SessionKey);
+
+            return RedisDatabase.GetAsync<HeadlessBrowserModel>(redisKey);
+        }
+        
+        public string GetRedisKey(RedisKey Key, int SubscriberId, string SessionKey)
+        {
+            return $"{Key}:{SubscriberId}:{SessionKey}";
         }
 
         public string GetRedisKey(string Key, int SubscriberId, string SessionKey)

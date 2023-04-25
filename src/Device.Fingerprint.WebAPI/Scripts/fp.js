@@ -2,8 +2,7 @@
 var sessionKey = '__sessionKey__';
 var apiUrl = '__apiUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
-var version = '__version__';
-let startDate = new Date();
+var version = '2023042703';
 
 var fp = {
     requireJS: function (_url) {
@@ -37,6 +36,15 @@ var fp = {
             }
         });
     },
+    getWithCache: function (url) {
+        return fetch(url, {
+            method: "GET",
+            headers: {
+                "Content-Type": "text/plain",
+                "Cache-Control": "max-age=31536000, immutable"
+            }
+        });
+    },
     inject: function (value) {
         var gfpInput = document.getElementById("__fdi");
         if (gfpInput === null) {
@@ -49,7 +57,7 @@ var fp = {
         }
     },
     post: function (url, data) {
-        return fetch(url, {
+        fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -58,7 +66,7 @@ var fp = {
         });
     },
     postAuthor: function (url, data, gjt) {
-        return fetch(url, {
+        fetch(url, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -75,37 +83,19 @@ var fp = {
         fp.post(url + "/cle", data);
     },
     checkDomReady: function () {
-        let date = new Date();
-        console.log('checkDomReady', date - startDate);
 
         fp.inject(sessionKey);
-        date = new Date();
-        console.log('inject sessionKey Done: ', date - startDate);
+
         fp.get(apiUrl + '/scr/gjt')
             .then(response => {
-                date = new Date();
-                console.log('gjt Response: ', date - startDate);
-
                 return response.text();
             })
             .then((gjt) => {
-                date = new Date();
-                console.log('gjt Done: ', date - startDate, gjt);
 
-                fp.requireJS(apiUrl + '/scr/cdn/crt').then(() => {
-                    date = new Date();
-                    console.log('crt Done: ', date - startDate);
-
-
-                    fp.requireJS(apiUrl + '/scr/cdn/fp').then(() => {
-                        date = new Date();
-                        console.log('fp executeScript Start: ', date - startDate);
-
-                        return globalFP.getFP();
+                fp.requireJS(apiUrl + '/scr/' + version + '/crt').then(() => {
+                    fp.requireJS(apiUrl + '/scr/' + version + '/fp').then(() => {
+                        return globalFP.getFP(crypt.hashMD5);
                     }).then(res => {
-                        date = new Date();
-                        console.log('fp executeScript Done: ', date - startDate);
-
                         var data = {
                             'fingerprint': {
                                 "Id": res.Id,
@@ -122,17 +112,8 @@ var fp = {
                         fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
                     });
 
-
-                    fp.requireJS(apiUrl + '/scr/cdn/ce').then(() => {
-
-                        date = new Date();
-                        console.log('ce executeScript Start: ', date - startDate);
-
+                    fp.requireJS(apiUrl + '/scr/' + version + '/ce').then(() => {
                         fpNewCookie.getStorage().then((cookie) => {
-                            date = new Date();
-
-                            console.log('ce executeScript Done: ', date - startDate, cookie);
-
                             var data = {
                                 'Cookie': cookie,
                                 'SessionKey': sessionKey,
@@ -143,22 +124,16 @@ var fp = {
                             });
 
                             fpNewCookie.setStorage(cookie);
+
+                            fp.getWithCache(portalAPIUrl + "/etg/" + subscriberId + "/" + sessionKey + "/" + cookie);
                         });
                     }).catch((err) => {
                         fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
                     });
 
-
-                    fp.requireJS(apiUrl + '/scr/cdn/hl').then(() => {
-                        date = new Date();
-                        console.log('hl executeScript Start: ', date - startDate);
-
+                    fp.requireJS(apiUrl + '/scr/' + version + '/hl').then(() => {
                         return fpHeadless.getHeadlessScore();
                     }).then(res => {
-
-                        date = new Date();
-                        console.log('hl executeScript Done: ', date - startDate);
-
                         var data = {
                             'HeadlessBrowser': {
                                 "Score": res.score,
@@ -176,16 +151,9 @@ var fp = {
                         fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
                     });
 
-                    fp.requireJS(apiUrl + '/scr/cdn/bi').then(() => {
-                        date = new Date();
-                        console.log('bi executeScript Start: ', date - startDate);
-
+                    fp.requireJS(apiUrl + '/scr/' + version + '/bi').then(() => {
                         return fpBrowserDetect.getBrowserInfo();
                     }).then(res => {
-
-                        date = new Date();
-                        console.log('bi executeScript Done: ', date - startDate);
-
                         var data = {
                             'BrowserDetect': {
                                 "OSName": res.OSName,

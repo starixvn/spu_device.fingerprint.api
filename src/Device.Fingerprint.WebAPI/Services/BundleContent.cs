@@ -27,12 +27,11 @@ namespace Device.Fingerprint.WebAPI.Services
                 var apiUrl = scheme + ":" + appSettings.ApiUrl;
                 var portalApiUrl = scheme + ":" + appSettings.PortalApiUrl;
 
-                var script = this.scriptContent                    
+                var script = this.scriptContent
                     .Replace("__subscriberId__", subscriberId.ToString())
                     .Replace("__sessionKey__", sessionKey)
                     .Replace("__apiUrl__", $"{apiUrl}")
-                    .Replace("__portalAPIUrl__", $"{portalApiUrl}")
-                    .Replace("__version__", "1.3");
+                    .Replace("__portalAPIUrl__", $"{portalApiUrl}");
 
                 return script;
             }

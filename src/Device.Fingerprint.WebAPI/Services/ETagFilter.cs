@@ -18,10 +18,10 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             _statusCodes = statusCodes;
             if (statusCodes.Length == 0) _statusCodes = new[] { 200 };
-        }
+        }        
 
         public void OnActionExecuting(ActionExecutingContext context)
-        {
+         {
             
         }
 

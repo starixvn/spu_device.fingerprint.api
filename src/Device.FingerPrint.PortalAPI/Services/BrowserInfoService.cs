@@ -1,82 +1,56 @@
-﻿using Device.FingerPrint.Model;
+﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
+using Device.FingerPrint.PortalAPI.Ultilities;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
     public interface IBrowserInfoService
     {
-        (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel);
+        BrowserInfoModel GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel);
 
         int GetFlagged(BrowserInfoModel model);
+
+        BrowserInfoAttributeModel GetBrowserInfoAttribute(HeaderModel headerModel, BrowserDetectModel browserDetectModel);
     }
 
     public class BrowserInfoService : IBrowserInfoService
     {
-        public (BrowserInfoModel, BrowserInfoAttributeModel) GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
+        private readonly ICrypto crypto;        
+        public BrowserInfoService(ICrypto crypto)
+        {
+            this.crypto = crypto;
+        }
+
+        public BrowserInfoModel GetBrowserInfo(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
         {
             var browsers = new List<string> { "Safari", "CocCoc", "Opera", "Microsoft Edge", "Chrome", "Other" };
-            string secChUa, secChUaPlatform, secChUaMobile, jsBrowserName, jsOSName, browserName, osName;
-            secChUa = secChUaPlatform = secChUaMobile = jsBrowserName = jsOSName = browserName = osName = string.Empty;
 
-            if (headerModel != null && browserDetectModel != null)
+            var browserName = string.Empty;
+            var osName = string.Empty;
+
+            if (headerModel != null)
             {
-                secChUa = headerModel.SecChUa;
-                secChUaPlatform = headerModel.SecChUaPlatform;
-                secChUaMobile = headerModel.SecChUaMobile;
-
-                jsBrowserName = browserDetectModel.BrowserName;
-                jsOSName = browserDetectModel.OSName;
-
-                browserName = secChUa;
-                osName = secChUaPlatform;
-
-                if (String.IsNullOrEmpty(secChUa))
-                {
-                    browserName = jsBrowserName;
-                    osName = jsOSName;
-                }
-                else
-                {
-                    foreach (var browser in browsers)
-                    {
-                        if (secChUa.Contains(browser))
-                        {
-                            browserName = browser;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if (headerModel != null)
-            {
-                browserName = headerModel.SecChUa;
                 osName = headerModel.SecChUaPlatform;
-
-                if (!String.IsNullOrEmpty(secChUa))
+                browserName = browsers.Select(x =>
                 {
-                    foreach (var browser in browsers)
-                    {
-                        if (secChUa.Contains(browser))
-                        {
-                            browserName = browser;
-                            break;
-                        }
-                    }
-                }
-            }
-            else if (browserDetectModel != null)
-            {
-                browserName = jsBrowserName;
-                osName = jsOSName;
+                    if (headerModel.SecChUa.Contains(x)) return x;
+                    return headerModel.SecChUa;
+                }).FirstOrDefault();
             }
             else
             {
-                return (new BrowserInfoModel(), new BrowserInfoAttributeModel());
-            }
+                if (browserDetectModel != null)
+                {
+                    browserName = browserDetectModel.BrowserName;
+                    osName = browserDetectModel.OSName;
+                }
+            }           
 
             var browserInfoModel = new BrowserInfoModel
             {
@@ -84,18 +58,11 @@ namespace Device.FingerPrint.PortalAPI.Services
                 OSName = string.IsNullOrEmpty(osName) ? "" : osName.Replace("macOS", "Mac")
             };
 
-            var browserInfoAttributeModel = new BrowserInfoAttributeModel
-            {
-                SecChUa = secChUa,
-                SecChUaPlatform = secChUaPlatform,
-                SecChUaMobile = string.IsNullOrEmpty(secChUaMobile) ? "" : secChUaMobile.Replace("?", ""),
-                JsBrowserName = jsBrowserName,
-                JsOSName = jsOSName
-            };
+            browserInfoModel.BrowserInfoCode = HashBrowserInfoCode(browserInfoModel);
 
-            return (browserInfoModel, browserInfoAttributeModel);
+            return browserInfoModel;
         }
-        
+
         public int GetFlagged(BrowserInfoModel browserInfo)
         {
             if (browserInfo.HeadlessScore > (Decimal)0.5)
@@ -209,5 +176,55 @@ namespace Device.FingerPrint.PortalAPI.Services
             return browserName.Replace(" Mobile", "");
         }
 
+        public BrowserInfoAttributeModel GetBrowserInfoAttribute(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
+        {
+            var browserInfoAttributeModel =  new BrowserInfoAttributeModel
+            {
+                SecChUa = headerModel.SecChUa,
+                SecChUaPlatform = headerModel.SecChUaPlatform,
+                SecChUaMobile = string.IsNullOrEmpty(headerModel.SecChUaMobile) ? "" : headerModel.SecChUaMobile.Replace("?", ""),
+                JsBrowserName = browserDetectModel.BrowserName,
+                JsOSName = browserDetectModel.OSName
+            };
+
+            browserInfoAttributeModel.BrowserInfoAttributeCode = HashBrowserInfoAttributeCode(browserInfoAttributeModel);
+
+
+            return browserInfoAttributeModel;
+        }
+
+        private string HashBrowserInfoCode(BrowserInfoModel model)
+        {
+            if (model == null) return string.Empty;
+
+            var json = JsonConvert.SerializeObject(new BrowserInfoProp
+            {
+                OSName = model.OSName,
+                BrowserName = model.BrowserName,
+                HeadlessScore = model.HeadlessScore,
+                HeadlessDetail = model.HeadlessDetail,
+                Flagged = model.Flagged
+            });
+
+            return crypto.GetMD5Hash(json);
+        }
+
+        private string HashBrowserInfoAttributeCode(BrowserInfoAttributeModel model)
+        {
+            if (model == null) return string.Empty;
+
+            var json = JsonConvert.SerializeObject(new BrowserInfoAttributeProp
+            {
+                SecChUa = model.SecChUa,
+                SecChUaPlatform = model.SecChUaPlatform,
+                SecChUaMobile = model.SecChUaMobile,
+                JsBrowserName = model.JsBrowserName,
+                JsOSName = model.JsOSName
+            });
+
+            return crypto.GetMD5Hash(json);
+        }
+
+        
     }
 }

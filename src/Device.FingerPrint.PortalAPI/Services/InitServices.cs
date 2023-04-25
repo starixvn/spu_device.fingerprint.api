@@ -1,5 +1,6 @@
 ﻿using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
+using Device.FingerPrint.PortalAPI.Ultilities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Device.FingerPrint.PortalAPI.Services
@@ -19,6 +20,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             services.AddSingleton<ITransactionService, TransactionService>();
             services.AddSingleton<ITransactionAttributeService, TransactionAttributeService>();
             services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
+            services.AddSingleton<ICrypto, Crypto>();
         }
 
         private static void RegisterQueueService(this IServiceCollection services)

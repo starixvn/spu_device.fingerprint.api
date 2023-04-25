@@ -24,7 +24,6 @@ var fpNewCookie = (function (exports) {
             }
         }
         catch (exception) {
-            console.log('getSetLocalStorage: ', exception);
         }
     }
     function indexedDb(key, value) {
@@ -137,7 +136,6 @@ var fpNewCookie = (function (exports) {
                 }
             }
             catch (exception) {
-                console.log('getSetCookie: ', exception);
             }
         });
     }
@@ -164,7 +162,6 @@ var fpNewCookie = (function (exports) {
                 }
             }
             catch (exception) {
-                console.log('getSetWindowName: ', exception);
             }
         });
     }
@@ -242,7 +239,6 @@ var fpNewCookie = (function (exports) {
                     resolve(handler(cookieKey, null));
                 });
             });
-            console.log('get', promises);
             return waitAllWithTimeout(promises).then((cookies) => {
                 return getFirstMaxCountValue(cookies).then((cookieValue) => {
                     return Promise.resolve(cookieValue);
@@ -250,7 +246,6 @@ var fpNewCookie = (function (exports) {
             });
         }
         catch (exception) {
-            console.log('Get error: ', exception);
         }
     }
     function set(value) {
@@ -261,7 +256,6 @@ var fpNewCookie = (function (exports) {
             });
         }
         catch (exception) {
-            console.log('Set error: ', exception);
         }
     }
     function getStorage() {

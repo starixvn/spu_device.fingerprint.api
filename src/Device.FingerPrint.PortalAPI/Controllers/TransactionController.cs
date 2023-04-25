@@ -25,9 +25,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly ITransactionService transactionService;
         private readonly ISubscriberServices subscriberServices;
         private readonly IClientTransactionService clientTransactionService;
-        private readonly Crypto crypto;
-        private readonly ILogger _logger;
+        private readonly ICrypto crypto;
+        private readonly ILogger logger;
         private readonly IAppSettings appSettings;
+        private readonly IBrowserInfoService browserInfoService;
 
         public TransactionController(
             IAppSettings appSettings,
@@ -36,16 +37,19 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             IEasyNetQService easyNetQService,
             ISubscriberServices subscriberServices,
             IClientTransactionService clientTransactionService,
-            ILogger logger)
+            IBrowserInfoService browserInfoService,
+            ILogger logger,
+            ICrypto crypto)
         {
             this.redisService = redisService;
             this.transactionService = transactionService;
             this.easyNetQService = easyNetQService;
             this.subscriberServices = subscriberServices;
             this.clientTransactionService = clientTransactionService;
+            this.browserInfoService = browserInfoService;
             this.appSettings = appSettings;
-            crypto = new Crypto(appSettings.CryptoPassword, appSettings.CryptoIV, appSettings.CryptoSalt);
-            _logger = logger;
+            this.crypto = crypto;
+            this.logger = logger;
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
@@ -60,16 +64,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
 
-                    var redisKey = redisService.GetRedisKey(RedisKey.Cookie.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                    var redisKey = redisService.GetRedisKey(RedisKey.Cookie, deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
-                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                    {
-                        RedisAddAsync(redisKey, deserilizeData.Cookie);
-                    }
-                    else
-                    {
-                        RedisReplaceAsync(redisKey, deserilizeData.Cookie);
-                    }
+                    RedisUpdate(redisKey, deserilizeData.Cookie);
 
                     AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
                 }
@@ -88,16 +85,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
 
-                    var redisKey = redisService.GetRedisKey(RedisKey.Headless.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                    var redisKey = redisService.GetRedisKey(RedisKey.Headless, deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
-                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                    {
-                        RedisAddAsync(redisKey, deserilizeData.HeadlessBrowser);
-                    }
-                    else
-                    {
-                        RedisReplaceAsync(redisKey, deserilizeData.HeadlessBrowser);
-                    }
+                    RedisUpdate(redisKey, deserilizeData.HeadlessBrowser);
+
                 }
             }
         }
@@ -114,16 +105,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
 
-                    var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                    var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
-                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                    {
-                        RedisAddAsync(redisKey, deserilizeData.BrowserDetect);
-                    }
-                    else
-                    {
-                        RedisReplaceAsync(redisKey, deserilizeData.BrowserDetect);
-                    }
+                    RedisUpdate(redisKey, deserilizeData.BrowserDetect);
                 }
             }
         }
@@ -140,16 +124,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 {
                     var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
 
-                    var redisKey = redisService.GetRedisKey(RedisKey.FingerPrint.ToString(), deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                    var redisKey = redisService.GetRedisKey(RedisKey.FingerPrint, deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
-                    if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
-                    {
-                        RedisAddAsync(redisKey, deserilizeData.fingerprint);
-                    }
-                    else
-                    {
-                        RedisReplaceAsync(redisKey, deserilizeData.fingerprint);
-                    }
+                    RedisUpdate(redisKey, deserilizeData.fingerprint);
                 }
             }
         }
@@ -157,17 +134,30 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         [HttpPost("transaction")]
         public void Transaction([FromBody] ClientTransactionModel data)
         {
-           // _logger.Info("Log TransactionAPI begin!");
             if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
-               // _logger.Info("Log TransactionAPI: " + JsonConvert.SerializeObject(data));
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
+
                 if (subscriber != null)
                 {
-                   // _logger.Info("Subscriber: " + JsonConvert.SerializeObject(subscriber));
-
                     var urlAddress = new Uri(data.Url);
                     var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+
+                    var fingerPrint = redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
+                    var header = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
+                    var browserInfo = redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
+                    var cookie = redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
+                    var headless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
+
+                    var userAgentInfo = transactionService.ParseUserAgentInfo(data.UserAgent);                                        
+
+                    var browserInfoModel = browserInfoService.GetBrowserInfo(header.Result, browserInfo.Result);
+
+                    browserInfoModel.HeadlessScore = headless.Result.Score;
+                    browserInfoModel.HeadlessDetail = headless.Result.TestsDetail;
+
+                    var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header.Result, browserInfo.Result);
+                    
 
                     var transaction = new TransactionModel
                     {
@@ -181,26 +171,22 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         Action = data.Action,
                         TransKey = data.TransKey,
                         CustId = data.CustId,
-                        SubAccId = data.SubAccId
+                        SubAccId = data.SubAccId,
+                        UserAgentInfo = userAgentInfo,
+                        CookieCode = cookie.Result,
+                        BrowserInfo = browserInfoModel,
+                        BrowserInfoAttribute = browserInfoAttributeModel,
+                        FingerprintAttribute = transactionService.TransformFingerprintAttributes(fingerPrint.Result, header.Result, browserInfo.Result, userAgentInfo)
                     };
 
-                    var browserInfo = redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
-                    var cookie = redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
-                    var fingerPrint = redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
-                    var header = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
-                    var headless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
-
-                    var transactionInsertModel = transactionService.MergeData(transaction, browserInfo, cookie, fingerPrint, header, headless);
-
-                    easyNetQService.PushData(transactionInsertModel);
+                    easyNetQService.PushData(transaction);
 
                     RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
 
-                   // _logger.Info("Push data: " + JsonConvert.SerializeObject(transactionInsertModel));
                 }
                 else
                 {
-                    _logger.Info($"{data.SubscriberName} does not exists.");
+                    logger.Info($"{data.SubscriberName} does not exists.");
                 }
             }
         }
@@ -234,10 +220,31 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
         }
 
-        [HttpGet("hc")]
-        public void HealthCheck()
+        [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]
+        public void Etag(int subscriberId, string sessionKey, string cookie)
         {
-            // Method intentionally left empty.            
+            if (HttpContext.Request.Headers.Keys.Contains("If-None-Match") && HttpContext.Request.Headers["If-None-Match"].ToString() == cookie)
+            {
+                HttpContext.Response.StatusCode = 304;
+            }
+
+            HttpContext.Response.Headers.Add("ETag", new[] { cookie });
+
+            var redisKey = redisService.GetRedisKey(RedisKey.Cookie, subscriberId, sessionKey);
+
+            RedisUpdate(redisKey, cookie);
+        }
+
+        private void RedisUpdate<T>(string redisKey, T value)
+        {
+            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            {
+                RedisAddAsync(redisKey, value);
+            }
+            else
+            {
+                RedisReplaceAsync(redisKey, value);
+            }
         }
 
         private void RedisAddAsync<T>(string redisKey, T value)
@@ -278,7 +285,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 Url = url
             };
 
-            var redisKey = redisService.GetRedisKey(RedisKey.Header.ToString(), SubscriberId, SessionKey);
+            var redisKey = redisService.GetRedisKey(RedisKey.Header, SubscriberId, SessionKey);
 
             if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
             {

@@ -23,8 +23,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
         private readonly IRedisService redisService;
-        private readonly ILogger logger;        
-
+        private readonly ILogger logger;
+        private string sessionKey;
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -40,7 +40,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/{subscriberName}")]
-        [ETagFilter(200)]
+        [ETagFilter(200)]        
         public ActionResult Script(string subscriberName)
         {
             if (!string.IsNullOrWhiteSpace(subscriberName))
@@ -60,7 +60,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                     if (subscribers != null)
                     {
-                        var sessionKey = Session.Generate();
+                        sessionKey = Session.Generate();
                         var refererUrl = HttpContext.Request.GetTypedHeaders().Referer.ToString();
                         var scheme = new Uri(refererUrl).Scheme;
                         var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
@@ -75,33 +75,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return new EmptyResult();
-        }
+        }        
 
-        [HttpGet("scr/cdn/gfp")]
-        public ActionResult CDNScript()
-        {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.js";
-
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/gfp.min.js";
-            }
-
-            var bundleFile = new BundleFile(scriptPath);
-
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-            {
-
-                return new JavascriptResult(bundleFile.Content);
-
-            }
-
-            return new EmptyResult();
-        }
-
-        [HttpGet("scr/cdn/ce")]
-        [ETagFilter(200)]
-        public ActionResult CookieScript()
+        [HttpGet("scr/{version}/ce")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        public ActionResult CookieScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
@@ -119,31 +97,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return new EmptyResult();
         }
-
-        [HttpGet("scr/cdn/ce1")]
-        [ETagFilter(200)]
-        public ActionResult Cookie1Script()
-        {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie1.js";
-
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/cookie1.min.js";
-            }
-
-            var bundleFile = new BundleFile(scriptPath);
-
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-            {
-                return new JavascriptResult(bundleFile.Content);
-            }
-
-            return new EmptyResult();
-        }
-
-        [HttpGet("scr/cdn/hl")]
-        [ETagFilter(200)]
-        public ActionResult HeadlessBrowserScript()
+        
+        [HttpGet("scr/{version}/hl")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        public ActionResult HeadlessBrowserScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
 
@@ -164,9 +121,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/bi")]
-        [ETagFilter(200)]
-        public ActionResult BrowserInfoScript()
+        [HttpGet("scr/{version}/bi")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        public ActionResult BrowserInfoScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.js";
 
@@ -185,9 +142,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/fp")]
-        [ETagFilter(200)]
-        public ActionResult FingerPrintScript()
+        [HttpGet("scr/{version}/fp")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        public ActionResult FingerPrintScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
 
@@ -206,9 +163,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/cdn/crt")]
-        [ETagFilter(200)]
-        public ActionResult CryptScript()
+        [HttpGet("scr/{version}/crt")]
+        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        public ActionResult CryptScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.js";
 
@@ -258,42 +215,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("hc")]
+        [ETagFilter(200)]
         public void HealthCheck()
         {
             // Method intentionally left empty.            
-        }
-
-        [HttpGet("sessionkey")]
-        public ActionResult<string> SessionKey()
-        {
-            var guid = Guid.NewGuid().ToString("N");
-            var expiredTime = DateTime.UtcNow.AddMinutes(1);
-
-            return string.Format("{0}{1}{2}{3}{4}"
-                , Hashing.GetRandomHexNumber(8).ToLower()
-                , expiredTime.ToString("yyyyMMdd")
-                , guid
-                , expiredTime.ToString("hhmmss")
-                , Hashing.GetRandomHexNumber(8).ToLower());
-        }
-
-        [HttpGet("ValidateSessionKey")]
-        [ResponseCache(NoStore = true, Duration = 0)]
-        public ActionResult<bool> ValidateSessionKey(string sessionKey)
-        {
-            return Validation.SessionKey(sessionKey);
-        }
-
-        [HttpGet("GetRedis")]
-        public ActionResult<string> GetRedis(string key)
-        {
-
-            if (redisService.RedisDatabase.ExistsAsync(key).Result)
-            {
-                return redisService.RedisDatabase.GetAsync<string>(key).Result;
-            }
-
-            return "No values";
-        }
+        }        
     }
 }
