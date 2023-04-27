@@ -1,13 +1,7 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    using Device.FingerPrint.Features.BrowserInfo.Model;
-    using Device.FingerPrint.Features.BrowserInfo.Services;
-    using Device.FingerPrint.Features.ClientTransaction.Model;
-    using Device.FingerPrint.Features.ClientTransaction.Services;
-    using Device.FingerPrint.Features.Monitor.Model;
-    using Device.FingerPrint.Features.Monitor.Services;
-    using Device.FingerPrint.Features.ServerTransaction.Model;
-    using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Features.Transaction.Model;
+    using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
     using EasyNetQ;
@@ -15,44 +9,27 @@
     using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
-    using Newtonsoft.Json;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     public class Consumer : BackgroundService
     {
-        private readonly IRawTransactionService rawTransactionService;
-        private readonly IClientTransactionService fingerPrintService;
-        private readonly ITransactionReportServices transactionReportServices;
-        private readonly IBrowserInfoService browserInfoService;
-        
-
-        private readonly List<TransactionEntity> listServerTrans;
-        private readonly List<ClientTransactionEntity> listClientTrans;
-        private readonly List<ClientTransactionLogsEntity> listClientTransLogs;
-        private readonly List<FingerprintAttributesEntity> listFpAttributes;
-        private readonly List<BrowserInfoEntity> listBrowserInfo;
+        private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
+        private readonly ILogger _logger;
+
+        private readonly List<TransactionEntity> listTransactionInsertModel;
 
         public Consumer(IAppSettings appSettings
-                        , IRawTransactionService rawTransactionService
-                        , IClientTransactionService fingerPrintService
-                        , ITransactionReportServices transactionReportServices
-                        , IBrowserInfoService browserInfoService)
+                        , ITransactionService transactionService
+                        , ILogger logger)
         {
-            this.rawTransactionService = rawTransactionService;
-            this.fingerPrintService = fingerPrintService;
+            this.transactionService = transactionService;
             this.appSettings = appSettings;
-            this.transactionReportServices = transactionReportServices;
-            this.browserInfoService = browserInfoService;           
+            this._logger = logger;
 
-            listServerTrans = new List<TransactionEntity>();
-            listClientTrans = new List<ClientTransactionEntity>();
-            listFpAttributes = new List<FingerprintAttributesEntity>();
-            listBrowserInfo = new List<BrowserInfoEntity>();
-            listClientTransLogs = new List<ClientTransactionLogsEntity>();
+            listTransactionInsertModel = new List<TransactionEntity>();
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -60,7 +37,7 @@
             return new TransactionEntity
             {
                 LoginName = model.LoginName,
-                ClientIp = model.ClientIp,
+                ClientIP = model.ClientIP,
                 UserAgent = model.UserAgent,
                 UserAgentCode = model.UserAgentCode,
                 SessionKey = model.SessionKey,
@@ -70,148 +47,32 @@
                 Url = model.Url,
                 Action = model.Action,
                 CustId = model.CustId,
-                SubAccId = model.SubAccId
-            };
-        }
-
-        private static ClientTransactionEntity TranformClientTransactionEntity(ClientTransactionModel model)
-        {
-            return new ClientTransactionEntity
-            {
+                SubAccId = model.SubAccId,
                 CookieCode = model.CookieCode,
-                FingerPrintCode = model.FingerPrintCode,
-                SessionKey = model.SessionKey,
-                SubscriberId = model.SubscriberId,
-                Url = model.Url,
-                AddonCode = model.AddonCode,
-                TransTime = model.TransTime
-            };
-        }
-
-        private static ClientTransactionLogsEntity TranformClientTransactionLogsEntity(ClientTransactionLogsModel model)
-        {
-            return new ClientTransactionLogsEntity
-            {
-                SessionKey = model.SessionKey,
-                SubscriberId = model.SubscriberId,
-                Url = model.Url,
-                UserAgent = model.UserAgent,
-                TransTime = model.TransTime,
-                Information = model.Information
-            };
-        }
-
-        private static FingerprintAttributesEntity TranformFingerprintAttributesEntity(FingerprintAttributesModel model)
-        {
-            return new FingerprintAttributesEntity
-            {
-                FingerPrintCode = model.FingerPrintCode,
-                Attribute = model.Attribute,
-                Accept = model.Accept,
-                Encoding = model.Encoding,
-                Headers = model.Headers,
-                OSName = model.OSName,
-                BrowserName = model.BrowserName,
-                BrowserVersion = model.BrowserVersion,
-                UserAgent = model.UserAgent
-            };
-        }
-
-        private static BrowserInfoEntity TranformBrowserInfoEntityEntity(BrowserInfoModel model)
-        {
-            return new BrowserInfoEntity
-            {
-                SessionKey = model.SessionKey,
-                HeadlessScore = model.HeadlessScore,
+                FingerprintAttribute = model.FingerprintAttribute,
+                UserAgentInfo = model.UserAgentInfo,
                 BrowserInfo = model.BrowserInfo,
-                BrowserInfoAttribute = model.BrowserInfoAttribute,
-                BrowserInfoAttributeCode = model.BrowserInfoAttributeCode
+                BrowserInfoAttribute = model.BrowserInfoAttribute
             };
         }
 
         private void StartConsuming()
-        {            
+        {
             var easyNetQConnector = RabbitMQBus();
+            _logger.Info("Start Consuming!");
 
             easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
             {
                 x.Add<TransactionModel>((message, info) =>
                 {
-                    var serverTransaction = TranformTransactionEntity(message.Body);
+                    var transaction = TranformTransactionEntity(message.Body);
+                    listTransactionInsertModel.Add(transaction);
 
-                    listServerTrans.Add(serverTransaction);
-
-                    if (listServerTrans.Count >= appSettings.ServerTransBatchSize)
+                    if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
                     {
-                        rawTransactionService.InsertServerTransaction(listServerTrans);
+                        transactionService.InsertTransaction(listTransactionInsertModel);
 
-                        var groupTrans = listServerTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
-                                        .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
-                                        .ToList();
-
-                        Task.Run(() => InsertServerTransactionDailySum(groupTrans));
-
-                        listServerTrans.Clear();
-                    }
-                })
-                .Add<ClientTransactionModel>((message, info) =>
-                {
-                    var clientTrans = TranformClientTransactionEntity(message.Body);
-
-                    if (!listClientTrans.Exists(x => x.SessionKey == clientTrans.SessionKey))
-                    {
-                        listClientTrans.Add(clientTrans);
-                    }
-
-                    if (listClientTrans.Count >= appSettings.ClientTransBatchSize)
-                    {
-                        fingerPrintService.InsertClientTransaction(listClientTrans);
-
-                        var groupTrans = listClientTrans.GroupBy(x => new { mdyDate = x.TransTime.ToString("MM/dd/yyyy"), x.SubscriberId })
-                                        .Select(x => new TransactionSumEntity { mdyDate = x.Key.mdyDate, SubscriberId = x.Key.SubscriberId, CountTrans = x.Count() })
-                                        .ToList();
-
-                        Task.Run(() => InsertClientTransactionDailySum(groupTrans));
-
-                        listClientTrans.Clear();
-                    }
-                })
-                .Add<FingerprintAttributesModel>((message, info) =>
-                {
-                    listFpAttributes.Add(TranformFingerprintAttributesEntity(message.Body));
-
-                    if (listFpAttributes.Count >= appSettings.FPAttributeBatchSize)
-                    {
-                        fingerPrintService.InsertFingerprintAttributes(listFpAttributes);
-
-                        listFpAttributes.Clear();
-                    }
-                })
-                .Add<BrowserInfoModel>((message, info) =>
-                {
-                    listBrowserInfo.Add(TranformBrowserInfoEntityEntity(message.Body));
-
-                    if (listBrowserInfo.Count >= appSettings.BrowserInfoBatchSize)
-                    {
-                        browserInfoService.InsertBrowserInfo(listBrowserInfo);
-
-                        listBrowserInfo.Clear();
-                    }
-                })
-                .Add<ClientTransactionLogsModel>((message, info) =>
-                {
-                    var clientTrans = TranformClientTransactionLogsEntity(message.Body);
-
-                    if (!listClientTransLogs.Exists(x => x.SessionKey == clientTrans.SessionKey))
-                    {
-                        listClientTransLogs.Add(clientTrans);
-                    }
-
-                    if (listClientTransLogs.Count >= appSettings.ClientTransLogsBatchSize)
-                    {
-                        fingerPrintService.InsertClientTransactionLogs(listClientTransLogs);
-
-                        listClientTransLogs.Clear();
+                        listTransactionInsertModel.Clear();
                     }
                 });
             });
@@ -233,24 +94,6 @@
                     .Bind();
 
             return easyNetQConnector;
-        }
-
-        private void InsertServerTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
-        {
-            if (groupTrans != null && groupTrans.Any())
-            {
-                var json = JsonConvert.SerializeObject(groupTrans);
-                transactionReportServices.InsertServerTransactionDailySum(json);
-            }
-        }
-
-        private void InsertClientTransactionDailySum(IEnumerable<TransactionSumEntity> groupTrans)
-        {
-            if (groupTrans != null && groupTrans.Any())
-            {
-                var json = JsonConvert.SerializeObject(groupTrans);
-                transactionReportServices.InsertClientTransactionDailySum(json);
-            }
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)

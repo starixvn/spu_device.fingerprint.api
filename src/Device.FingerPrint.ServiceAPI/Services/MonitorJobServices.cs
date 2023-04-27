@@ -1,8 +1,8 @@
 ﻿using Device.FingerPrint.Features.Monitor.Model;
 using Device.FingerPrint.Features.Monitor.Services;
 using Device.FingerPrint.Model;
+using Fanex.Logging;
 using Fanex.NAP.SPU.Notification.Services;
-using Sentry;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +17,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         Task<bool> MonthlyReport();
 
-        void TestSentryCaptureMessage(string message);
-
-        void TestSentryCaptureException();
+        Task<bool> TestSentryCaptureMessage(string message);
 
         void TestNotificationTelegram(string message);
     }
@@ -28,63 +26,43 @@ namespace Device.FingerPrint.ServiceAPI.Services
     {
         private readonly IAppSettings appSettings;
         private readonly ITransactionReportServices transactionReportServices;
-        private readonly ISentryClient sentryClient;
+        private readonly ILogger _logger;
 
         public MonitorJobServices(IAppSettings appSettings
                                 , ITransactionReportServices transactionReportServices
-                                , ISentryClient sentryClient)
+                                , ILogger logger)
         {
             this.appSettings = appSettings;
             this.transactionReportServices = transactionReportServices;
-            this.sentryClient = sentryClient;
+            _logger = logger;
         }
 
         public Task<bool> DailyReport()
         {
-            try
-            {
-                var currentDate = DateTime.Now;
+            var currentDate = DateTime.Now;
 
-                // Get data of last day
-                var lastDay = currentDate.AddDays(-1);
-                var strDate = lastDay.ToString("MM/dd/yyyy");
+            // Get data of last day
+            var lastDay = currentDate.AddDays(-1);
+            var strDate = lastDay.ToString("MM/dd/yyyy");
 
-                sentryClient.CaptureMessage("Daily Summary Report " + lastDay.ToString());
-                var moreInfo = GetInfoReport(lastDay, lastDay);
-
-                Notification("Daily Summary Report", "Daily Summary Report " + strDate, moreInfo);
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
-            }
+            var moreInfo = GetInfoReport(lastDay, lastDay);
+            Notification("Daily Summary Report", "Daily Summary Report " + strDate, moreInfo);
 
             return Task.FromResult(true);
         }
 
         public Task<bool> MonthlyReport()
         {
-            try
-            {
-                var currentDate = DateTime.Now;
+            var currentDate = DateTime.Now;
 
-                // Get data of last month
-                var lastDayOfMonth = currentDate.AddDays(-1);
-                var firstDayOfMonth = new DateTime(lastDayOfMonth.Year, lastDayOfMonth.Month, 1);
+            // Get data of last month
+            var lastDayOfMonth = currentDate.AddDays(-1);
+            var firstDayOfMonth = new DateTime(lastDayOfMonth.Year, lastDayOfMonth.Month, 1);
 
-                var currentMonth = lastDayOfMonth.ToString("MM/yyyy");
-                var moreInfo = GetInfoReport(firstDayOfMonth, lastDayOfMonth);
+            var currentMonth = lastDayOfMonth.ToString("MM/yyyy");
+            var moreInfo = GetInfoReport(firstDayOfMonth, lastDayOfMonth);
 
-                Notification("Monthly Summary Report", "Monthly Summary Report " + currentMonth, moreInfo);
-            }
-            catch (Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
-            }
+            Notification("Monthly Summary Report", "Monthly Summary Report " + currentMonth, moreInfo);
 
             return Task.FromResult(true);
         }
@@ -94,34 +72,10 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var moreInfo = new StringBuilder("");
             var transactionSumList = transactionReportServices.GetTransactionSumList(fromDate, toDate);
 
-            // Server summary
-            moreInfo.Append("\n\r");
-            moreInfo.Append("ServerTransaction:");
-            var serverTransDaily = TranformData(transactionSumList.Item1);
-            foreach (var item in serverTransDaily)
-            {
-                moreInfo.Append("\n\r");
-                moreInfo.Append(" - " + item.SubscriberName);
-                moreInfo.Append(": " + item.TotalTrans.ToString());
-                moreInfo.Append(" (" + item.TotalValidTrans.ToString() + ")");
-            }
-
-            // Client summary
-            moreInfo.Append("\n\r");
-            moreInfo.Append("ClientTransaction:");
-            var clientTransDaily = TranformData(transactionSumList.Item2);
-            foreach (var item in clientTransDaily)
-            {
-                moreInfo.Append("\n\r");
-                moreInfo.Append(" - " + item.SubscriberName);
-                moreInfo.Append(": " + item.TotalTrans.ToString());
-                moreInfo.Append(" (" + item.TotalValidTrans.ToString() + ")");
-            }
-
             // Transaction summary
             moreInfo.Append("\n\r");
             moreInfo.Append("Transaction:");
-            var transaction = TranformData(transactionSumList.Item3);
+            var transaction = TranformData(transactionSumList);
             foreach (var item in transaction)
             {
                 moreInfo.Append("\n\r");
@@ -158,33 +112,16 @@ namespace Device.FingerPrint.ServiceAPI.Services
                       .SendWithDelay(1, true);
         }
 
-        public void TestSentryCaptureMessage(string message)
+        public Task<bool> TestSentryCaptureMessage(string message)
         {
-            sentryClient.CaptureMessage(message);
-        }
-
-        public void TestSentryCaptureException()
-        {
-            try
-            {
-                ThrowExeption();
-            } catch(Exception ex)
-            {
-                sentryClient.CaptureException(ex);
-            }
-            ThrowExeption();
-        }
-
-        private void ThrowExeption()
-        {
-            throw new NotImplementedException();
+            _logger.Info(message);
+            return Task.FromResult(true);
         }
 
         public void TestNotificationTelegram(string message)
         {
             var notification = new NotificationService();
             var moreInfo = new StringBuilder("TestNotificationTelegram! \nMessage: " + message);
-            sentryClient.CaptureMessage(moreInfo.ToString());
 
             notification
                       .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", appSettings.TelegramProxy)

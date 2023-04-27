@@ -9,11 +9,7 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
     public interface ITransactionReportServices
     {
-        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate);
-
-        void InsertClientTransactionDailySum(string json);
-
-        void InsertServerTransactionDailySum(string json);
+        IEnumerable<TransactionReportEntity> GetTransactionSumList(DateTime fromDate, DateTime toDate);
     }
 
     public class TransactionReportServices : ITransactionReportServices
@@ -26,19 +22,9 @@ namespace Device.FingerPrint.Features.Monitor.Services
             this.dataAccess = dataAccess;
         }
 
-        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate)
+        public IEnumerable<TransactionReportEntity> GetTransactionSumList(DateTime fromDate, DateTime toDate)
         {
             return dataAccess.GetTransactionSumList(fromDate, toDate);
-        }
-
-        public void InsertClientTransactionDailySum(string json)
-        {
-            dataAccess.InsertClientTransactionDailySum(json);
-        }
-
-        public void InsertServerTransactionDailySum(string json)
-        {
-            dataAccess.InsertServerTransactionDailySum(json);
         }
     }
 }

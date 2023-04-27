@@ -319,5 +319,8 @@ namespace Device.Fingerprint.WebAPI.Models
 
         [JsonProperty("hk")]
         public string HeaderKeys { get; set; }
+
+        [JsonProperty("pf")]
+        public string Platform { get; set; }
     }
 }

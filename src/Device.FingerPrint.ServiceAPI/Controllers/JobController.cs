@@ -1,8 +1,5 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Controllers
@@ -18,8 +15,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IFPDeviceJobService fpdeviceJobService;
         private readonly IFPTransactionJobService fPTransactionJobService;
         private readonly IArchiveJobServices archiveJobServices;
-        private readonly IBrowserInfoJobServices browserInfoJobServices;
-        private readonly IRawUserAgentJobServices rawUserAgentJobServices;
         private readonly IEvolutionJobServices evolutionJobServices;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
@@ -29,8 +24,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
-                            , IBrowserInfoJobServices browserInfoJobServices
-                            , IRawUserAgentJobServices rawUserAgentJobServices
                             , IEvolutionJobServices evolutionJobServices)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
@@ -40,8 +33,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.fpdeviceJobService = fpdeviceJobService;
             this.fPTransactionJobService = fPTransactionJobService;
             this.archiveJobServices = archiveJobServices;
-            this.browserInfoJobServices = browserInfoJobServices;
-            this.rawUserAgentJobServices = rawUserAgentJobServices;
             this.evolutionJobServices = evolutionJobServices;
         }
 
@@ -63,24 +54,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await transactionServices.ForceMergeTrans(batchSize, numberOfBatch, retry);
         }
 
-        [HttpPost("updatetransaction")]
-        public async Task<bool> UpdateTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
-        {
-            return await transactionServices.UpdateTransaction(batchSize, numberOfBatch, retry);
-        }
-
-        [HttpPost("updatetransactionretry")]
-        public async Task<bool> UpdateTransactionRetry([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
-        {
-            return await transactionServices.UpdateTransactionRetry(batchSize, numberOfBatch, retry);
-        }
-
-        [HttpPost("updatetransactionN")]
-        public async Task<bool> UpdateTransactionN([FromForm] int batchSize, [FromForm] int numberOfBatch, [FromForm] int retry)
-        {
-            return await transactionServices.UpdateTransactionN(batchSize, numberOfBatch, retry);
-        }
-
         [HttpPost("transformfpdevice")]
         public async Task<bool> TransformFPDevice([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
@@ -91,18 +64,6 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         public async Task<bool> TransformFPTransaction([FromForm] int batchSize, [FromForm] int numberOfBatch)
         {
             return await fPTransactionJobService.Execute(batchSize, numberOfBatch);
-        }
-
-        [HttpPost("summaryservertransactiondaily")]
-        public async Task<bool> SummaryServerTransactionDaily([FromForm] int batchSize)
-        {
-            return await summaryJobServices.SummaryServerTransactionDaily(batchSize);
-        }
-
-        [HttpPost("summaryclienttransactiondaily")]
-        public async Task<bool> SummaryClientTransactionDaily([FromForm] int batchSize)
-        {
-            return await summaryJobServices.SummaryClientTransactionDaily(batchSize);
         }
 
         [HttpPost("summarytransactiondaily")]
@@ -129,26 +90,10 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await monitorJobServices.MonthlyReport();
         }
 
-        [HttpPost("detectbots")]
-        public async Task<bool> DetectBots([FromForm] int batchSize, [FromForm] int detectionLevel)
-        {
-            /* detectionLevel: 
-             * 0 || 1 => Check Headless score
-             * 2 => Check BrowserName & OSName
-             */
-            return await browserInfoJobServices.DetectBots(batchSize, detectionLevel);
-        }
-
         [HttpPost("updatemodifieddate")]
         public async Task<bool> UpdateModifiedDate([FromForm] int batchSize)
         {
             return await archiveJobServices.Execute(batchSize);
-        }
-
-        [HttpPost("parseuseragent")]
-        public async Task<bool> ParseUserAgent([FromForm] int batchSize)
-        {
-            return await rawUserAgentJobServices.UpdateRawUserAgent(batchSize);
         }
 
         [HttpPost("evolution")]
@@ -157,28 +102,10 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             return await evolutionJobServices.Evolution(batchSize, numberOfBatch);
         }
 
-        [HttpPost("compareString")]
-        public void compareString([FromForm] string url, [FromForm] string strA, [FromForm] string strB)
-        {
-            var arr1 = JsonConvert.DeserializeObject<string[]>(strA);
-            var arr2 = JsonConvert.DeserializeObject<string[]>(strB);
-            bool isSubset1 = !arr1.Except(arr2).Any();
-            bool isSubset2 = !arr2.Except(arr1).Any();
-
-            var a1 = arr1.All(arr2.Contains);
-            var a2 = arr2.All(arr1.Contains);
-        }
-
         [HttpPost("testSentryCaptureMessage")]
-        public void TestSentryCaptureMessage([FromForm] string message)
+        public async Task<bool> TestSentryCaptureMessage([FromForm] string message)
         {
-            monitorJobServices.TestSentryCaptureMessage(message);
-        }
-
-        [HttpPost("testSentryCaptureException")]
-        public void TestSentryCaptureException()
-        {
-            monitorJobServices.TestSentryCaptureException();
+            return await monitorJobServices.TestSentryCaptureMessage(message);
         }
 
         [HttpPost("testNotificationTelegram")]

@@ -1,11 +1,13 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
-       
+        void InsertTransaction(IEnumerable<TransactionEntity> transactions);
+
         void DeviceIdentify(string transJson, int groupType);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
@@ -22,7 +24,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
 
-        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode);
 
         void EvolutionNewDevice(string transJson);
 
@@ -36,6 +38,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionService(ITransactionDataAccess transactionDataAccess)
         {
             this.transactionDataAccess = transactionDataAccess;
+        }
+
+        public void InsertTransaction(IEnumerable<TransactionEntity> transactions)
+        {
+            var transJson = JsonConvert.SerializeObject(transactions);
+            transactionDataAccess.InsertTransaction(transJson);
         }
 
         public void DeviceIdentify(string transJson, int groupType)
@@ -58,9 +66,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
         }
 
-        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode)
         {
-            return transactionDataAccess.GetTransactionEvolutionAttributes(fingerPrintIds, BrowserInstanceCode);
+            return transactionDataAccess.GetTransactionEvolutionAttributes(fingerPrintIds, BrowserFamilyCode);
         }
 
         public IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize)

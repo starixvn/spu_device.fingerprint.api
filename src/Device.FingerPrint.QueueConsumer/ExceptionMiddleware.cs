@@ -2,11 +2,7 @@
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
 using Microsoft.AspNetCore.Http;
-using Sentry;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.QueueConsumer
@@ -35,7 +31,7 @@ namespace Device.FingerPrint.QueueConsumer
                    .ToString();
 
                 await _logger.ErrorAsync(logMessage);
-                
+
             }
         }
     }

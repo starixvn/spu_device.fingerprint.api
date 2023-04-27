@@ -1,9 +1,7 @@
 namespace Device.FingerPrint.QueueConsumer
 {
-    using Device.FingerPrint.Features.BrowserInfo.Services;
-    using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Features.Monitor.Services;
-    using Device.FingerPrint.Features.ServerTransaction.Services;
+    using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.QueueConsumer.Handlers;
     using Fanex.Data;
     using Fanex.Data.MySql;
@@ -19,7 +17,6 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -38,22 +35,16 @@ namespace Device.FingerPrint.QueueConsumer
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
 
-            services.AddSingleton<IRawTransactionDataAccess, RawTransactionDataAccess>();
-            services.AddSingleton<IRawTransactionService, RawTransactionService>();
-
-            services.AddSingleton<IClientTransactionDataAccess, ClientTransactionDataAccess>();
-            services.AddSingleton<IClientTransactionService, ClientTransactionService>();
+            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
+            services.AddSingleton<ITransactionService, TransactionService>();
 
             services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
             services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
 
-            services.AddSingleton<IBrowserInfoDataAccess, BrowserInfoDataAccess>();
-            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
-
             services.AddSingleton<ILogger, Logger>();
 
             services.AddHealthChecks();
-
+             
             FanexDataConfig(appSettings);
 
             LogManager

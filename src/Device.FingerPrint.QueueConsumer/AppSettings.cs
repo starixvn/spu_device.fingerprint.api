@@ -14,15 +14,7 @@ namespace Device.FingerPrint.QueueConsumer
 
         string Environment { get; }
 
-        int ClientTransBatchSize { get; }
-
-        int ClientTransLogsBatchSize { get; }
-
-        int ServerTransBatchSize { get; }
-
-        int FPAttributeBatchSize { get; }
-
-        int BrowserInfoBatchSize { get; }
+        int TransBatchSize { get; }
 
         IConfiguration Configuration { get; }
 
@@ -34,11 +26,7 @@ namespace Device.FingerPrint.QueueConsumer
         private readonly string apiUrl;
         private readonly string sentryDsn;
         private readonly string environment;
-        private readonly int clientTransBatchSize;
-        private readonly int clientTransLogsBatchSize;
-        private readonly int serverTransBatchSize;
-        private readonly int fpAttributeBatchSize;
-        private readonly int browserInfoBatchSize;
+        private readonly int transBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -52,15 +40,7 @@ namespace Device.FingerPrint.QueueConsumer
 
             environment = GetValue<string>("AppConfig:Environment");
 
-            clientTransBatchSize = GetValue<int>("Consumer:ClientTrans");
-
-            clientTransLogsBatchSize = GetValue<int>("Consumer:ClientTransLogs");
-
-            serverTransBatchSize = GetValue<int>("Consumer:ServerTrans");
-
-            fpAttributeBatchSize = GetValue<int>("Consumer:FPAttribute");
-
-            browserInfoBatchSize = GetValue<int>("Consumer:BrowserInfo");
+            transBatchSize = GetValue<int>("Consumer:TransBatchSize");
         }
 
         public string ApiUrl => apiUrl;
@@ -71,17 +51,9 @@ namespace Device.FingerPrint.QueueConsumer
 
         public string Environment => environment;
 
-        public int ClientTransBatchSize => clientTransBatchSize;
+        public int TransBatchSize => transBatchSize;
 
         public IConfiguration Configuration => configuration;
-
-        public int ServerTransBatchSize => serverTransBatchSize;
-
-        public int FPAttributeBatchSize => fpAttributeBatchSize;
-
-        public int BrowserInfoBatchSize => browserInfoBatchSize;
-
-        public int ClientTransLogsBatchSize => clientTransLogsBatchSize;
 
         public T GetValue<T>(string key)
         {

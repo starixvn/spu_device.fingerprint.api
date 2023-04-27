@@ -13,14 +13,6 @@
 		<Setting Key="FPS_FP_Transform_ForceMergeTransaction_Update" SpName="FPS_FP_Transform_ForceMergeTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 	</Function>
 
-	<Function Name="RawTransaction">
-		<Setting Key="FPS_FP_Transform_ServerTransaction_Get" SpName="FPS_FP_Transform_ServerTransaction_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-		<Setting Key="FPS_FP_Transform_ServerTransactionRetry_Get" SpName="FPS_FP_Transform_ServerTransactionRetry_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-		<Setting Key="FPS_FP_Transform_ServerTransactionN_Get" SpName="FPS_FP_Transform_ServerTransactionN_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-		<Setting Key="FPS_FP_Transform_ServerTransaction_Update" SpName="FPS_FP_Transform_ServerTransaction_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-		<Setting Key="FPS_FP_Transform_ServerTransactionN_Update" SpName="FPS_FP_Transform_ServerTransactionN_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-	</Function>
-
 	<Function Name="Offset">
 		<Setting Key="FPS_FP_Core_Offset_Get" SpName="FPS_FP_Core_Offset_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Core_Offset_UpdateOffsetValue" SpName="FPS_FP_Core_Offset_UpdateOffsetValue" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
@@ -33,24 +25,11 @@
 	</Function>
 
 	<Function Name="Summary">
-		<Setting Key="FPS_FP_Summary_ServerTransaction_Daily" SpName="FPS_FP_Summary_ServerTransaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-		<Setting Key="FPS_FP_Summary_ClientTransaction_Daily" SpName="FPS_FP_Summary_ClientTransaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Summary_Transaction_Daily" SpName="FPS_FP_Summary_Transaction_Daily" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 		<Setting Key="FPS_FP_Summary_RecoverType_Daily" SpName="FPS_FP_Summary_RecoverType_Daily" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
 	</Function>
 
-  <Function Name="RawUserAgent">
-    <Setting Key="FPS_FP_Detect_RawUserAgent_Get" SpName="FPS_FP_Detect_RawUserAgent_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-    <Setting Key="FPS_FP_Detect_RawUserAgent_Update" SpName="FPS_FP_Detect_RawUserAgent_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-  </Function>
-
-
-  <Function Name="BrowserInfo">
-    <Setting Key="FPS_FP_Transform_BrowserInfo_Get" SpName="FPS_FP_Transform_BrowserInfo_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-    <Setting Key="FPS_FP_Transform_BrowserInfo_Update" SpName="FPS_FP_Transform_BrowserInfo_Update" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
-  </Function>
-
-  <Function Name="BrowserInfo">
+  <Function Name="Evolution">
     <Setting Key="FPS_FP_Recover_TransactionEvolution_Get" SpName="FPS_FP_Recover_TransactionEvolution_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
     <Setting Key="FPS_FP_Recover_TransactionEvolutionAttributes_Get" SpName="FPS_FP_Recover_TransactionEvolutionAttributes_Get" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
     <Setting Key="FPS_FP_Recover_TransactionEvolution_NewDevice" SpName="FPS_FP_Recover_TransactionEvolution_NewDevice" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>

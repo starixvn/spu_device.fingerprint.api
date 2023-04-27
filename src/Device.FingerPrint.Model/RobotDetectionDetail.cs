@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Device.FingerPrint.Model
 {
-   public class RobotDetectionDetail
+    public class RobotDetectionDetail
     {
         public float Score { get; set; }
 

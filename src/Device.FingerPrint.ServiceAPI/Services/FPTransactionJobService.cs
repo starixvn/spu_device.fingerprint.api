@@ -1,9 +1,8 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
     using Device.FingerPrint.Features.FPTransactions.Services;
+    using Fanex.Logging;
     using Newtonsoft.Json;
-    using Sentry;
-    using Sentry.Protocol;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
@@ -16,33 +15,19 @@
     public class FPTransactionJobService : IFPTransactionJobService
     {
         private readonly IFPTransactionServices transactionService;
-        private readonly IList<string> ignoreMessages;
-        private readonly ISentryClient sentryClient;
+        private readonly ILogger _logger;
 
-        public FPTransactionJobService(IFPTransactionServices transactionService, ISentryClient sentryClient)
+        public FPTransactionJobService(IFPTransactionServices transactionService, ILogger logger)
         {
             this.transactionService = transactionService;
-            this.sentryClient = sentryClient;
-
-            ignoreMessages = new List<string> {
-                "Deadlock found when trying to get lock; try restarting transaction"
-            };
+            _logger = logger;
         }
 
         public Task<bool> Execute(int numberOfTrans, int numberOfBatch)
         {
             if (numberOfTrans > 0 && numberOfBatch > 0)
             {
-                try
-                {
-                    JobRun(numberOfTrans, numberOfBatch);
-                }
-                catch (Exception ex)
-                {
-                    sentryClient.CaptureException(ex);
-
-                    return Task.FromResult(false);
-                }
+                JobRun(numberOfTrans, numberOfBatch);
             }
 
             return Task.FromResult(true);
@@ -67,11 +52,8 @@
                     }
                     catch (Exception ex)
                     {
-                        if (!ignoreMessages.Contains(ex.Message))
-                        {
-                            var transIdJson = JsonConvert.SerializeObject(trans);
-                            sentryClient.CaptureMessage(ex.Message + "\n" + transIdJson, SentryLevel.Error);
-                        }
+                        var transIdJson = JsonConvert.SerializeObject(trans);
+                        _logger.Error(ex.Message + "\n" + transIdJson);
                     }
                 });
 

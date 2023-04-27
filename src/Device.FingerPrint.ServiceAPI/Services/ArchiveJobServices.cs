@@ -1,6 +1,5 @@
 ﻿using Device.FingerPrint.Features.Archive.Services;
-using Sentry;
-using System;
+using Fanex.Logging;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.ServiceAPI.Services
@@ -13,32 +12,23 @@ namespace Device.FingerPrint.ServiceAPI.Services
     public class ArchiveJobServices : IArchiveJobServices
     {
         private readonly IArchiveService archiveService;
-        private readonly ISentryClient sentryClient;
+        private readonly ILogger _logger;
 
-        public ArchiveJobServices(IArchiveService archiveService, ISentryClient sentryClient)
+        public ArchiveJobServices(IArchiveService archiveService, ILogger logger)
         {
             this.archiveService = archiveService;
-            this.sentryClient = sentryClient;
+            _logger = logger;
         }
 
         public Task<bool> Execute(int batchSize)
         {
-            try
+            if (batchSize > 0)
             {
-                if (batchSize > 0)
-                {
-                    UpdateModifiedDate(batchSize);
-                }
-                else
-                {
-                    sentryClient.CaptureMessage("InValid Batch size");
-                }
+                UpdateModifiedDate(batchSize);
             }
-            catch (Exception ex)
+            else
             {
-                sentryClient.CaptureException(ex);
-
-                return Task.FromResult(false);
+                _logger.Info("InValid Batch size");
             }
 
             return Task.FromResult(true);

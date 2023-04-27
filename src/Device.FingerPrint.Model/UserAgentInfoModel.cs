@@ -2,9 +2,9 @@
 
 namespace Device.FingerPrint.Model
 {
-    public class UserAgentInfoModel : IEquatable<UserAgentInfoModel>
+    public class UserAgentInfoModel
     {
-        public long Id { get; set; }
+        public string UserAgent { get; set; }
 
         public string ClientType { get; set; }
 
@@ -29,17 +29,5 @@ namespace Device.FingerPrint.Model
         public string BotName { get; set; }
 
         public string BotCategory { get; set; }
-
-        public bool Equals(UserAgentInfoModel other)
-        {
-            if (Object.ReferenceEquals(other, null)) return false;
-            if (Object.ReferenceEquals(this, other)) return true;
-            return Id.Equals(other.Id);
-        }
-        public override int GetHashCode()
-        {
-            int hashProductCode = Id.GetHashCode();
-            return hashProductCode;
-        }
     }
 }

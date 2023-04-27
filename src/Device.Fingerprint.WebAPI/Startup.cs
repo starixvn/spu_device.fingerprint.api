@@ -1,8 +1,13 @@
 using Device.Fingerprint.WebAPI.Middleware;
 using Device.Fingerprint.WebAPI.Services;
+using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -39,16 +44,18 @@ namespace Device.Fingerprint.WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
-            var JWTService = new JWT(appSettings);
+            var JWTService = new JWTService(appSettings);
 
             services.AddSingleton<IAppSettings>(appSettings);
+            services.AddSingleton<ILogger, Logger>();
 
             services.AddCors(opt =>
             {
                 opt.AddDefaultPolicy(builder => builder
                     .WithOrigins("*")
                     .AllowAnyHeader()
-                    .AllowAnyMethod());
+                    .AllowAnyMethod()
+                    .SetPreflightMaxAge(TimeSpan.FromMinutes(30)));
             });
 
             services.AddResponseCaching();
@@ -60,6 +67,8 @@ namespace Device.Fingerprint.WebAPI
                     .Single();
                 jsonInputFormatter.SupportedMediaTypes.Add("application/json");
             });
+
+            services.AddHttpContextAccessor();
 
             services.AddHealthChecks();
 
@@ -118,6 +127,20 @@ namespace Device.Fingerprint.WebAPI
 
             services.RegisterService();
             FanexDataConfig(appSettings);
+
+            LogManager
+           .SetDefaultLogCategory("Device.Fingerprint.WebAPI")
+           .Use(new List<ILogEngine>
+           {
+                     new SentryLogging(new SentryEngineOptions
+                     {
+                         Dsn = new Dsn(appSettings.SentryDsn)
+                     })
+           });
+
+            ExceptionHandler
+                .UseConfig(new LoggingConfiguration())
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -131,7 +154,7 @@ namespace Device.Fingerprint.WebAPI
 
             app.UseSwagger();
 
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));            
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
 
             app.UseStaticFiles();
 
@@ -152,7 +175,7 @@ namespace Device.Fingerprint.WebAPI
                     new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
                     {
                         Private = true,
-                        MaxAge = TimeSpan.FromSeconds(600)
+                        MaxAge = TimeSpan.FromMinutes(30)
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
                     new string[] { "Accept-Encoding" };
@@ -162,7 +185,7 @@ namespace Device.Fingerprint.WebAPI
 
             app.UseAuthorization();
 
-            app.UseMiddleware<JWTMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {

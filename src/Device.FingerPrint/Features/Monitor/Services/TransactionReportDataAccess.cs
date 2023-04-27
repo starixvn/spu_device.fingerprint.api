@@ -9,11 +9,7 @@ namespace Device.FingerPrint.Features.Monitor.Services
 
     public interface ITransactionReportDataAccess
     {
-        (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate);
-
-        void InsertClientTransactionDailySum(string json);
-
-        void InsertServerTransactionDailySum(string json);
+        IEnumerable<TransactionReportEntity> GetTransactionSumList(DateTime fromDate, DateTime toDate);
     }
 
     public class TransactionReportDataAccess : ITransactionReportDataAccess
@@ -25,35 +21,14 @@ namespace Device.FingerPrint.Features.Monitor.Services
             repository = new DynamicRepository();
         }
 
-        public (IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>, IEnumerable<TransactionReportEntity>) GetTransactionSumList(DateTime fromDate, DateTime toDate)
+        public IEnumerable<TransactionReportEntity> GetTransactionSumList(DateTime fromDate, DateTime toDate)
         {
             var criteria = new GetTransactionSumCriteria
             {
                 FromDate = fromDate,
                 ToDate = toDate
             };
-
-            return repository.FetchMultiple<TransactionReportEntity, TransactionReportEntity, TransactionReportEntity>(criteria);
-        }
-
-        public void InsertClientTransactionDailySum(string json)
-        {
-            var criteria = new InsertClientTransactionDailySumCriteria
-            {
-                Data = json
-            };
-
-            repository.Execute(criteria);
-        }
-
-        public void InsertServerTransactionDailySum(string json)
-        {
-            var criteria = new InsertServerTransactionDailySumCriteria
-            {
-                Data = json
-            };
-
-            repository.Execute(criteria);
+            return repository.Fetch<TransactionReportEntity>(criteria);
         }
     }
 }

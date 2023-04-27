@@ -7,6 +7,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
+        void InsertTransaction(string transJson);
+
         void DeviceIdentify(string transJson, int groupType);
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
@@ -23,7 +25,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionEvolutionEntity> GetTransactionEvolution(int batchSize);
 
-        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode);
+        IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode);
 
         void EvolutionNewDevice(string transJson);
 
@@ -38,6 +40,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionDataAccess()
         {
             repository = new DynamicRepository();
+        }
+
+        public void InsertTransaction(string transJson)
+        {
+            var criteria = new InsertTransactionCriteria
+            {
+                Transaction = transJson
+            };
+
+            repository.Execute(criteria);
         }
 
         public void DeviceIdentify(string transJson, int groupType)
@@ -72,12 +84,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return repository.FetchMultiple<DeviceIdentifyEntity, DeviceIdentifyEntity, ulong>(criteria);
         }
 
-        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserInstanceCode)
+        public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode)
         {
             var criteria = new GetTransactionAttributesEvolutionCriteria
             {
                 FingerPrintIds = fingerPrintIds,
-                BrowserInstanceCode = BrowserInstanceCode
+                BrowserFamilyCode = BrowserFamilyCode
             };
 
             return repository.Fetch<TransactionEvolutionAttributesEntity>(criteria);

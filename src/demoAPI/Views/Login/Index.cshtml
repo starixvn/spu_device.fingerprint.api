@@ -1,9 +1,4 @@
 ﻿@model demoAPI.Models.LoginModel
-@{
-    ViewBag.Title = "demoAPI - Simple Login Page";
-}
-
-<h2>@ViewBag.Title.</h2>
 
 <div class="row">
     <div class="col-md-8">
@@ -41,3 +36,5 @@
         </section>
     </div>
 </div>
+
+<script async defer src="@System.Configuration.ConfigurationManager.AppSettings["externalAPIUrl"].ToString()/api/scr/demo" type="text/javascript"></script>

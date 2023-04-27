@@ -5,6 +5,8 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client.Model
     {
         public string SubscriberName { get; set; }
 
+        public int SubscriberId { get; set; }
+
         public string LoginName { get; set; }        
 
         public string SessionKey { get; set; }

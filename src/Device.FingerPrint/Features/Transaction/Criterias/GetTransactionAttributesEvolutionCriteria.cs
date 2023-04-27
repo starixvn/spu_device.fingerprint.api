@@ -8,8 +8,8 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_FingerPrintIds")]
         public string FingerPrintIds { get; set; }
 
-        [SpParam(SqlParamName = "ip_BrowserInstanceCode")]
-        public string BrowserInstanceCode { get; set; }
+        [SpParam(SqlParamName = "ip_BrowserFamilyCode")]
+        public string BrowserFamilyCode { get; set; }
 
         public override string GetSettingKey()
         {
