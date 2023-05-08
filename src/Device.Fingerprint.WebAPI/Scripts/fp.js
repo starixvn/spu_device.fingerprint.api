@@ -93,8 +93,9 @@ var fp = {
             .then((gjt) => {
 
                 fp.requireJS(apiUrl + '/scr/' + version + '/crt').then(() => {
+
                     fp.requireJS(apiUrl + '/scr/' + version + '/fp').then(() => {
-                        return globalFP.getFP(crypt.hashMD5);
+                        return globalFP.getFP(crypt.digestMessage);
                     }).then(res => {
                         var data = {
                             'fingerprint': {
@@ -104,8 +105,7 @@ var fp = {
                             'SessionKey': sessionKey,
                             'SubscriberId': subscriberId
                         };
-
-                        crypt.encryptingWithKey(data).then(res => {
+                        crypt.encryptData(data).then(res => {
                             fp.postAuthor(portalAPIUrl + '/fp', res, gjt);
                         });
                     }).catch((err) => {
@@ -119,7 +119,7 @@ var fp = {
                                 'SessionKey': sessionKey,
                                 'SubscriberId': subscriberId
                             };
-                            crypt.encryptingWithKey(data).then(res => {
+                            crypt.encryptData(data).then(res => {
                                 fp.postAuthor(portalAPIUrl + '/ce', res, gjt);
                             });
 
@@ -144,7 +144,7 @@ var fp = {
                             'SubscriberId': subscriberId
                         };
 
-                        crypt.encryptingWithKey(data).then(res => {
+                        crypt.encryptData(data).then(res => {
                             fp.postAuthor(portalAPIUrl + '/hl', res, gjt);
                         });
                     }).catch((err) => {

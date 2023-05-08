@@ -179,12 +179,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var newContent = bundleFile.Content
-                    .Replace("__keyIV__", appSettings.CryptoIV)
-                    .Replace("__keySalt__", appSettings.CryptoSalt)
-                    .Replace("__keyPass__", appSettings.CryptoPassword);
-
-                return new JavascriptResult(newContent);
+                return new JavascriptResult(bundleFile.Content);
             }
 
             return new EmptyResult();

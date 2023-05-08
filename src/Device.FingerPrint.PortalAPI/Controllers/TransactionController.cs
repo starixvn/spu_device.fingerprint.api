@@ -1,4 +1,7 @@
-﻿using Device.FingerPrint.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.ClientTransaction.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Model;
@@ -10,9 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
 {
@@ -29,6 +29,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         private readonly ILogger logger;
         private readonly IAppSettings appSettings;
         private readonly IBrowserInfoService browserInfoService;
+        private readonly ISubtleCryptService subtleCryptService;
 
         public TransactionController(
             IAppSettings appSettings,
@@ -39,7 +40,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             IClientTransactionService clientTransactionService,
             IBrowserInfoService browserInfoService,
             ILogger logger,
-            ICrypto crypto)
+            ICrypto crypto,
+            ISubtleCryptService subtleCryptService)
         {
             this.redisService = redisService;
             this.transactionService = transactionService;
@@ -49,6 +51,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             this.browserInfoService = browserInfoService;
             this.appSettings = appSettings;
             this.crypto = crypto;
+            this.subtleCryptService = subtleCryptService;
             this.logger = logger;
         }
 
@@ -58,7 +61,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var descryptData = crypto.Decrypt(data);
+                var descryptData = subtleCryptService.DecryptData(data);
 
                 if (!string.IsNullOrWhiteSpace(descryptData))
                 {
@@ -79,7 +82,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var descryptData = crypto.Decrypt(data);
+                var descryptData = subtleCryptService.DecryptData(data);
 
                 if (!string.IsNullOrWhiteSpace(descryptData))
                 {
@@ -99,11 +102,16 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(data);
+                var descryptData = subtleCryptService.DecryptData(data);
 
-                var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, deserilizeData.SubscriberId, deserilizeData.SessionKey);
+                if (!string.IsNullOrWhiteSpace(descryptData))
+                {
+                    var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
 
-                RedisUpdate(redisKey, deserilizeData.BrowserDetect);
+                    var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, deserilizeData.SubscriberId, deserilizeData.SessionKey);
+
+                    RedisUpdate(redisKey, deserilizeData.BrowserDetect);
+                }
             }
         }
 
@@ -113,7 +121,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var descryptData = crypto.Decrypt(data);
+                var descryptData = subtleCryptService.DecryptData(data);
 
                 if (!string.IsNullOrWhiteSpace(descryptData))
                 {

@@ -51,7 +51,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Core", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demoAPI", "src\demoAPI\demoAPI.csproj", "{D6F0CB37-2D04-470E-979A-976E75DADE19}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RSAKeyGenerator", "RSAKeyGenerator\RSAKeyGenerator.csproj", "{5000AFC8-BC87-44DC-A97C-30AA0981CF5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSAKeyGenerator", "RSAKeyGenerator\RSAKeyGenerator.csproj", "{5000AFC8-BC87-44DC-A97C-30AA0981CF5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestingSomething", "TestingSomething\TestingSomething.csproj", "{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +141,10 @@ Global
 		{5000AFC8-BC87-44DC-A97C-30AA0981CF5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5000AFC8-BC87-44DC-A97C-30AA0981CF5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5000AFC8-BC87-44DC-A97C-30AA0981CF5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,6 +170,7 @@ Global
 		{884087D5-DA40-4735-B5B8-5A9FA15D71AA} = {990BBD28-2AF3-4D7F-B833-83B1AE33559C}
 		{D6F0CB37-2D04-470E-979A-976E75DADE19} = {BB6F1568-7665-4D03-9B5A-E55BF88C3441}
 		{5000AFC8-BC87-44DC-A97C-30AA0981CF5E} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{D7F5AB2C-3DAD-46EA-B797-BCF2027F0820} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}
