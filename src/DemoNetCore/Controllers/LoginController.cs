@@ -1,4 +1,5 @@
 ﻿using DemoNetCore.Models;
+using FPS.Client.NetStandard.Models;
 using FPS.Device.FingerPrint.Net.Standard.Client;
 using FPS.Device.FingerPrint.Net.Standard.Client.Model;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
+using static System.Collections.Specialized.BitVector32;
 
 namespace DemoNetCore.Controllers
 {
@@ -46,18 +48,22 @@ namespace DemoNetCore.Controllers
 
                 var fpsService = new TransactionServices(subscriberName, postAPIUrl);
 
+                var loginTime = DateTime.Now;
                 fpsService.CheckTransaction(new TransactionModel
                 {
                     SessionKey = HttpContext.Request.Form["__fdi"].ToString(),
                     Action = "Login",
                     CustId = 0,
                     LoginName = loginModel.Username,
-                    LoginTime = DateTime.Now,
+                    LoginTime = loginTime,
                     SubAccId = 0,
                     UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
                     Url = HttpContext.Request.GetDisplayUrl(),
                     ClientIp = HttpContext.Connection.RemoteIpAddress.ToString()
                 });
+
+
+                FpsIntegration102(loginModel.Username, "Login", string.Empty, subscriberName, loginTime);
 
                 return RedirectToAction("index", "home");
             }
@@ -71,6 +77,33 @@ namespace DemoNetCore.Controllers
             HttpContext.Session.Clear();
 
             return RedirectToAction("");
+        }
+
+
+        private void FpsIntegration102(string account, string action, string actionResult, string subscriber, DateTime loginTime)
+        {
+            var fpsAPI = configuration.GetSection("FPS_API").Value;
+            var fpsService = new FPS.Client.NetStandard.Service(fpsAPI);
+
+            var ip = Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            var requestIP = ip.Equals("::1") ? "127.0.0.1" : ip.Split(',')[0];
+
+            TimeSpan diff = DateTime.UtcNow - DateTime.Now;
+
+            var httpRequestData = new HttpRequestData()
+            {
+                AcceptTypes = Request.Headers["Accept"].ToString() ?? string.Empty,
+                UserAgent = Request.Headers["User-Agent"].ToString() ?? string.Empty,
+                TotalMinutes = diff.TotalMinutes.ToString(),
+                RequestIP = requestIP,
+                Di = Request.Form["__di"].ToString(),
+                Token = Request.Form["__tk"].ToString(),
+                Url = Request.Scheme.ToString() + "://" + Request.Host.ToString(),
+                DebugInfo = Request.Form["detecas-analysis"].ToString(),
+                CaptchaResult = Request.Form["captcha_result"].ToString()
+            };
+
+            fpsService.CheckTransaction(httpRequestData, account, action, actionResult, subscriber, loginTime);
         }
     }
 }
