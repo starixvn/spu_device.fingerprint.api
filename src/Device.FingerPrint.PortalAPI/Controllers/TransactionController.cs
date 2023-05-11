@@ -132,10 +132,8 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         }
 
         [HttpPost("transaction")]
-        public void Transaction([FromBody] ClientTransactionModel data)
+        public async void Transaction([FromBody] ClientTransactionModel data)
         {
-            return;
-
             if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
@@ -143,23 +141,26 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 if (subscriber != null)
                 {
                     var urlAddress = new Uri(data.Url);
-                    var userAgentCode = crypto.GetMD5Hash(data.UserAgent);
+                    var userAgentCode = data.UserAgent != null ? crypto.GetMD5Hash(data.UserAgent) : string.Empty;
 
-                    var fingerPrint = redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
-                    var header = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
-                    var browserInfo = redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
-                    var cookie = redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
-                    var headless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
+                    var fingerPrint = await redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
+                    var header = await redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
+                    var browserInfo = await redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
+                    var cookie = await redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
+                    var headless = await redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
 
-                    var userAgentInfo = transactionService.ParseUserAgentInfo(data.UserAgent);                                        
+                    var userAgentInfo = transactionService.ParseUserAgentInfo(data.UserAgent);
 
-                    var browserInfoModel = browserInfoService.GetBrowserInfo(header.Result, browserInfo.Result);
+                    var browserInfoModel = browserInfoService.GetBrowserInfo(header, browserInfo);
 
-                    browserInfoModel.HeadlessScore = headless.Result.Score;
-                    browserInfoModel.HeadlessDetail = headless.Result.TestsDetail;
+                    if(headless!= null)
+                    {
+                        browserInfoModel.HeadlessScore = headless.Score;
+                        browserInfoModel.HeadlessDetail = headless.TestsDetail;
+                    }                    
 
-                    var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header.Result, browserInfo.Result);
-                    
+                    var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header, browserInfo);
+
 
                     var transaction = new TransactionModel
                     {
@@ -175,10 +176,10 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                         CustId = data.CustId,
                         SubAccId = data.SubAccId,
                         UserAgentInfo = userAgentInfo,
-                        CookieCode = cookie.Result,
+                        CookieCode = cookie,
                         BrowserInfo = browserInfoModel,
                         BrowserInfoAttribute = browserInfoAttributeModel,
-                        FingerprintAttribute = transactionService.TransformFingerprintAttributes(fingerPrint.Result, header.Result, browserInfo.Result, userAgentInfo)
+                        FingerprintAttribute = transactionService.TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo)
                     };
 
                     easyNetQService.PushData(transaction);

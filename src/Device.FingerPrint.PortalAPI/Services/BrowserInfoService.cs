@@ -178,13 +178,14 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         public BrowserInfoAttributeModel GetBrowserInfoAttribute(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
         {
+            
             var browserInfoAttributeModel =  new BrowserInfoAttributeModel
             {
-                SecChUa = headerModel.SecChUa,
-                SecChUaPlatform = headerModel.SecChUaPlatform,
-                SecChUaMobile = string.IsNullOrEmpty(headerModel.SecChUaMobile) ? "" : headerModel.SecChUaMobile.Replace("?", ""),
-                JsBrowserName = browserDetectModel.BrowserName,
-                JsOSName = browserDetectModel.OSName
+                SecChUa = headerModel != null ? headerModel.SecChUa : string.Empty,
+                SecChUaPlatform = headerModel != null ? headerModel.SecChUaPlatform: string.Empty,
+                SecChUaMobile = headerModel != null ? (string.IsNullOrEmpty(headerModel.SecChUaMobile) ? "" : headerModel.SecChUaMobile.Replace("?", "")) : string.Empty,
+                JsBrowserName = browserDetectModel != null ? browserDetectModel.BrowserName: string.Empty,
+                JsOSName = browserDetectModel != null ? browserDetectModel.OSName: string.Empty
             };
 
             browserInfoAttributeModel.BrowserInfoAttributeCode = HashBrowserInfoAttributeCode(browserInfoAttributeModel);
