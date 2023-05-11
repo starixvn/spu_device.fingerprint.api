@@ -54,7 +54,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
-        public void Cookie([FromBody] string data)
+        public async void Cookie([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -75,7 +75,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hl")]
-        public void Headless([FromBody] string data)
+        public async void Headless([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -95,7 +95,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("bi")]
-        public void BrowserInfo([FromBody] string data)
+        public async void BrowserInfo([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -114,7 +114,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
-        public void FingerPrint([FromBody] string data)
+        public async void FingerPrint([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -216,7 +216,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
 
         [HttpPost("cle")]
-        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
+        public async void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
 

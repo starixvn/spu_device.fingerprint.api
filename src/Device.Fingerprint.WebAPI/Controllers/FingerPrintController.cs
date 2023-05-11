@@ -24,7 +24,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISubscriberServices subscriberServices;
         private readonly IRedisService redisService;
         private readonly ILogger logger;
-        private string sessionKey;
+        
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -60,8 +60,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                     if (subscribers != null)
                     {
-                        sessionKey = Session.Generate();
-                        var refererUrl = HttpContext.Request.GetTypedHeaders().Referer.ToString();
+                        var sessionKey = Session.Generate();
+                        var referer = HttpContext.Request.GetTypedHeaders().Referer;
+
+                        var refererUrl = referer != null ? referer.ToString() : HttpContext.Request.GetDisplayUrl();
                         var scheme = new Uri(refererUrl).Scheme;
                         var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
 

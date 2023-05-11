@@ -28,6 +28,7 @@ using Microsoft.IdentityModel.Tokens;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Core.Middleware;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -160,6 +161,11 @@ namespace Device.FingerPrint.PortalAPI
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
                     new string[] { "Accept-Encoding" };
+
+                var httpMaxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
+
+                if (httpMaxRequestBodySizeFeature is not null)
+                    httpMaxRequestBodySizeFeature.MaxRequestBodySize = 10 * 1024;
 
                 await next();
             });
