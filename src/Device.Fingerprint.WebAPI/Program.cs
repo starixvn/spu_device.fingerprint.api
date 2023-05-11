@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace Device.Fingerprint.WebAPI
 {
@@ -24,14 +26,22 @@ namespace Device.Fingerprint.WebAPI
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-#if DEBUG
-                    webBuilder.UseUrls("http://*:5007");
-#else
-                    webBuilder.UseUrls("http://*:5000");
-#endif 
-
                     webBuilder
                     .UseStartup<Startup>();
+
+                    webBuilder.UseKestrel(options =>
+                    {
+
+#if DEBUG
+                        options.ListenAnyIP(5007);
+#else
+                        // HTTP 5000
+                        options.ListenAnyIP(5000);
+#endif
+                        options.Limits.MinRequestBodyDataRate =
+                                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(10));
+
+                    });
                 });
     }
 }

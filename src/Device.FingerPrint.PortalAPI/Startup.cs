@@ -160,12 +160,7 @@ namespace Device.FingerPrint.PortalAPI
                         MaxAge = TimeSpan.FromSeconds(600)
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
-                    new string[] { "Accept-Encoding" };
-
-                var httpMaxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
-
-                if (httpMaxRequestBodySizeFeature is not null)
-                    httpMaxRequestBodySizeFeature.MaxRequestBodySize = 10 * 1024;
+                    new string[] { "Accept-Encoding" };                
 
                 await next();
             });

@@ -181,11 +181,6 @@ namespace Device.Fingerprint.WebAPI
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
                     new string[] { "Accept-Encoding" };
 
-                var httpMaxRequestBodySizeFeature = context.Features.Get<IHttpMaxRequestBodySizeFeature>();
-
-                if (httpMaxRequestBodySizeFeature is not null)
-                    httpMaxRequestBodySizeFeature.MaxRequestBodySize = 10 * 1024;
-
                 await next();
             });
 
