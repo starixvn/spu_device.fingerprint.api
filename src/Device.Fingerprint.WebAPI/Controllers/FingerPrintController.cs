@@ -208,12 +208,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 return Ok(subscriber);
             }
-            else
-            {
-                logger.Info("Subscriber " + subscriberName + " does not exists. API get-subscriber-by-name");
 
-                return Ok(null);
-            }
+            return Ok(null);
         }
 
         [HttpGet("hc")]
