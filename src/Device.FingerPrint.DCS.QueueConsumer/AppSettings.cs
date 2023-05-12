@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Sentry;
 using System;
 using System.ComponentModel;
 
@@ -45,7 +46,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer
         private readonly int queueConsume;
         private readonly string ignoreSubs;
         private readonly string fpsWebAPI;
-
+        private readonly string sentryDsn;
         private readonly string rabitMQHost;
         private readonly string rabitMQPort;
         private readonly string rabitMQVirtualHost;
@@ -87,6 +88,8 @@ namespace Device.FingerPrint.DCS.QueueConsumer
             rabitMQName = GetValue<string>("RabbitMQ:Name");
 
             rabitMQRoutingKey = GetValue<string>("RabbitMQ:RoutingKey");
+
+            sentryDsn = GetValue<string>("Sentry:Dsn");
         }
 
         public IConfiguration Configuration => configuration;
@@ -118,6 +121,8 @@ namespace Device.FingerPrint.DCS.QueueConsumer
         public string RabitMQName => rabitMQName;
 
         public string RabitMQRoutingKey => rabitMQRoutingKey;
+
+        public string SentryDsn => sentryDsn;
 
         public T GetValue<T>(string key)
         {

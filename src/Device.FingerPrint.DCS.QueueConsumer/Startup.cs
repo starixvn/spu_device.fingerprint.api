@@ -2,13 +2,19 @@ using Device.FingerPrint.DCS.QueueConsumer.Handlers;
 using Device.FingerPrint.DCS.QueueConsumer.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
+using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Sentry;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Device.FingerPrint.DCS.QueueConsumer
@@ -31,9 +37,25 @@ namespace Device.FingerPrint.DCS.QueueConsumer
             services.AddSingleton<ICapturingService, CapturingService>();
             services.AddSingleton<IDeviceDetectorServices, DeviceDetectorServices>();
 
+            services.AddSingleton<ILogger, Logger>();
+
             services.AddHealthChecks();
 
             FanexDataConfig(appSettings);
+
+            LogManager
+              .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+              .Use(new List<ILogEngine>
+              {
+                        new SentryLogging(new SentryEngineOptions
+                        {
+                            Dsn = new Dsn(appSettings.SentryDsn)
+                        })
+              });
+
+            ExceptionHandler
+                .UseConfig(new LoggingConfiguration())
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
             services.AddHostedService<Consumer>();
         }

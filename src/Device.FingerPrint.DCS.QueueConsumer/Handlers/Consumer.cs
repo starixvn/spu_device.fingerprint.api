@@ -14,19 +14,20 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Fanex.Logging;
 
 namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
 {
     public class Consumer : BackgroundService
     {
         private readonly IAppSettings appSettings;
-        private readonly ISentryClient sentryClient;
+        private readonly ILogger _logger;
         private readonly ICapturingService _fpcapturingService;
 
-        public Consumer(IAppSettings appSettings, ISentryClient sentryClient, ICapturingService _fpcapturingService)
+        public Consumer(IAppSettings appSettings, ILogger logger, ICapturingService _fpcapturingService)
         {
             this.appSettings = appSettings;
-            this.sentryClient = sentryClient;
+            this._logger = logger;
             this._fpcapturingService = _fpcapturingService;
         }
 
@@ -43,6 +44,8 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
             {
                 if (appSettings.QueueConsume == 1)
                 {
+                    _logger.Info("Start Consuming!");
+
                     var easyNetQConnector = RabbitMQBus();
                     var trans = new List<RawTransactionModel>();
 
@@ -54,36 +57,30 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                             {
                                 var messageBody = message.Body;
 
-                                var ignoreSubs = appSettings.IgnoreSubs;
-
-                                if (!string.IsNullOrWhiteSpace(ignoreSubs))
+                                if(messageBody != null)
                                 {
-                                    var ignoreSubList = ignoreSubs.Split(';');
+                                    var tran = TransformRawTransaction(messageBody);
 
-                                    if (!ignoreSubList.Any(x => x.Equals(messageBody.Subscriber, StringComparison.CurrentCultureIgnoreCase)))
+                                    var url = appSettings.FPSWebAPI + "/getsubscriber/" + tran.SubscriberName;
+                                    var result = await ApiHelper.Get<SubscriberModel>(url);
+
+                                    if (result != null)
                                     {
-                                        var tran = TransformRawTransaction(messageBody);
+                                        trans.Add(tran);
 
-                                        var url = appSettings.FPSWebAPI + "/getsubscriber/" + tran.SubscriberName;
-                                        var result = await ApiHelper.Get<SubscriberModel>(url);
-                                        if (result != null)
+                                        if (trans.Count >= appSettings.TransBatch)
                                         {
-                                            trans.Add(tran);
+                                            InsertTransaction(trans);
 
-                                            if (trans.Count >= appSettings.TransBatch)
-                                            {
-                                                InsertTransaction(trans);
-
-                                                trans.Clear();
-                                            }
+                                            trans.Clear();
                                         }
-
                                     }
                                 }
+                                
                             }
                             catch (Exception ex)
                             {
-                                sentryClient.CaptureException(ex);
+                                _logger.Error(ex.ToString());
                             }
                         });
                     });
@@ -91,7 +88,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                _logger.Error(ex.ToString());
             }
         }
 
@@ -205,29 +202,29 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                 {
                     if (deviceNo != "N/A" && Utilities.IsGuidDeviceId(deviceNo))
                     {
-                        if (string.IsNullOrWhiteSpace(token))
-                        {
-                            return Flagged.EmptyToken;
-                        }
-                        else
-                        {
-                            if (!IsValidateToken(token))
-                            {
-                                return Flagged.InvalidToken;
-                            }
-                        }
+                        //if (string.IsNullOrWhiteSpace(token))
+                        //{
+                        //    return Flagged.EmptyToken;
+                        //}
+                        //else
+                        //{
+                        //    if (!IsValidateToken(token))
+                        //    {
+                        //        return Flagged.InvalidToken;
+                        //    }
+                        //}
 
-                        if (string.IsNullOrWhiteSpace(analysis))
-                        {
-                            return Flagged.EmptyAnalysis;
-                        }
-                        else
-                        {
-                            if (!IsValidAnalysisKey(analysis))
-                            {
-                                return Flagged.InvalidAnalysis;
-                            }
-                        }
+                        //if (string.IsNullOrWhiteSpace(analysis))
+                        //{
+                        //    return Flagged.EmptyAnalysis;
+                        //}
+                        //else
+                        //{
+                        //    if (!IsValidAnalysisKey(analysis))
+                        //    {
+                        //        return Flagged.InvalidAnalysis;
+                        //    }
+                        //}
 
                         if (string.IsNullOrWhiteSpace(userAgent))
                         {
@@ -249,7 +246,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
             }
             catch (Exception ex)
             {
-                sentryClient.CaptureException(ex);
+                _logger.Error(ex.ToString());
             }
 
             return Flagged.Human;
