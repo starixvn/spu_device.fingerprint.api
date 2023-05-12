@@ -67,8 +67,6 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
 
                                     if (result != null)
                                     {
-                                        _logger.Info("getsubscriber -" + result.SubscriberName);
-
                                         trans.Add(tran);
 
                                         if (trans.Count >= appSettings.TransBatch)
