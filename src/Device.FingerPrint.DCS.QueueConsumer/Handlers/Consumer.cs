@@ -59,16 +59,17 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
 
                                 if(messageBody != null)
                                 {
-                                    var tran = TransformRawTransaction(messageBody);
+                                    var tran = TransformRawTransaction(messageBody);                                                                      
 
                                     var url = appSettings.FPSWebAPI + "/getsubscriber/" + tran.SubscriberName;
-                                    var result = await ApiHelper.Get<SubscriberModel>(url);
 
-                                    _logger.Info("getsubscriber - " + result.SubscriberId + " - " + result.SubscriberName);
+                                    _logger.Info(url);
+
+                                    var result = await ApiHelper.Get<SubscriberModel>(url);
 
                                     if (result != null)
                                     {
-                                        _logger.Info("getsubscriber");
+                                        _logger.Info("getsubscriber -" + result.SubscriberName);
 
                                         trans.Add(tran);
 
