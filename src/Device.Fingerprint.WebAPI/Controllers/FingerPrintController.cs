@@ -80,7 +80,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }        
 
         [HttpGet("scr/{version}/ce")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]            
         public ActionResult CookieScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
@@ -101,7 +101,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
         
         [HttpGet("scr/{version}/hl")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
         public ActionResult HeadlessBrowserScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
@@ -124,7 +124,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/{version}/bi")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
         public ActionResult BrowserInfoScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.js";
@@ -145,7 +145,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/{version}/fp")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+       // [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
         public ActionResult FingerPrintScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
@@ -166,7 +166,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/{version}/crt")]
-        [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Client, VaryByQueryKeys = new string[] { "version" })]
+        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
         public ActionResult CryptScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.js";

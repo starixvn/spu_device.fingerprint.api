@@ -175,11 +175,11 @@ namespace Device.Fingerprint.WebAPI
                 context.Response.GetTypedHeaders().CacheControl =
                     new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
                     {
-                        Private = true,
+                        Public = true,
                         MaxAge = TimeSpan.FromMinutes(30)
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
-                    new string[] { "Accept-Encoding" };
+                    new string[] { "Accept-Encoding", "version" };
 
                 await next();
             });

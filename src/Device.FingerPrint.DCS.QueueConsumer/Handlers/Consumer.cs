@@ -63,8 +63,6 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
 
                                     var url = appSettings.FPSWebAPI + "/getsubscriber/" + tran.SubscriberName;
 
-                                    _logger.Info(url);
-
                                     var result = await ApiHelper.Get<SubscriberModel>(url);
 
                                     if (result != null)

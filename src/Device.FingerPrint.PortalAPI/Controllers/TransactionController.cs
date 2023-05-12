@@ -238,9 +238,9 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             RedisUpdate(redisKey, cookie);
         }
 
-        private void RedisUpdate<T>(string redisKey, T value)
+        private async void RedisUpdate<T>(string redisKey, T value)
         {
-            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            if (!await redisService.RedisDatabase.ExistsAsync(redisKey))
             {
                 RedisAddAsync(redisKey, value);
             }
