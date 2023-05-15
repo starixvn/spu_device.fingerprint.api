@@ -274,7 +274,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
         }
 
-        private void AddHeaderToRedis(int SubscriberId, string SessionKey)
+        private async void AddHeaderToRedis(int SubscriberId, string SessionKey)
         {
             var url = HttpContext.Request.Headers["Origin"].ToString();
             var headerModel = new HeaderModel
@@ -290,7 +290,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
             var redisKey = redisService.GetRedisKey(RedisKey.Header, SubscriberId, SessionKey);
 
-            if (!redisService.RedisDatabase.ExistsAsync(redisKey).Result)
+            if (!await redisService.RedisDatabase.ExistsAsync(redisKey))
             {
                 RedisAddAsync(redisKey, headerModel);
             }
