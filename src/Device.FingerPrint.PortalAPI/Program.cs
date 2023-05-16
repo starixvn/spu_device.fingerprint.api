@@ -42,6 +42,7 @@ namespace Device.FingerPrint.PortalAPI
                         options.Limits.MinRequestBodyDataRate =
                                 new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(10));
 
+                        options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5);
                     });
                 });
     }

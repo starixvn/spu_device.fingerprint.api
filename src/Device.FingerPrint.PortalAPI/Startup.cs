@@ -1,34 +1,34 @@
+using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Middleware;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
+using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Sentry;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Sentry;
 using StackExchange.Redis.Extensions.Core;
 using StackExchange.Redis.Extensions.Core.Abstractions;
 using StackExchange.Redis.Extensions.Core.Configuration;
 using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.MsgPack;
 using System;
-using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Fanex.Logging;
-using Fanex.Logging.Extensions;
-using Fanex.Logging.Extensions.AspNetCore;
-using Fanex.Logging.Extensions.Database;
 using System.Collections.Generic;
-using Fanex.Logging.Sentry;
-using Sentry;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Device.FingerPrint.Core;
-using Device.FingerPrint.Core.Services;
-using Device.FingerPrint.Core.Middleware;
-using Microsoft.AspNetCore.Http.Features;
+using System.Linq;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -133,7 +133,7 @@ namespace Device.FingerPrint.PortalAPI
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
-                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+                .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
