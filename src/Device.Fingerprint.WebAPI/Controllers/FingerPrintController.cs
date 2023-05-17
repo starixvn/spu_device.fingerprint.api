@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 
 namespace Device.Fingerprint.WebAPI.Controllers
@@ -22,20 +21,20 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
-        private readonly IRedisService redisService;
+        //private readonly IRedisService redisService;
         private readonly ILogger logger;
         
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
             ISubscriberServices subscriberServices,
-            IRedisService redisService,
+            //IRedisService redisService,
             ILogger logger)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
-            this.redisService = redisService;
+            //this.redisService = redisService;
             this.logger = logger;
         }
 
@@ -216,7 +215,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [ETagFilter(200)]
         public void HealthCheck()
         {
-            // Method intentionally left empty.            
+            // Method intentionally left empty.
+            // 
+            logger.Info("I'm good.");
         }        
     }
 }

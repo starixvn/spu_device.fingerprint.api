@@ -10,7 +10,7 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             RegisterTransactionService(services);
             RegisterSubscriberService(services);
-            RegisterQueueService(services);
+           // RegisterQueueService(services);
             RegisterExceptionService(services);
         }
 
