@@ -168,11 +168,14 @@ namespace Device.FingerPrint.PortalAPI
             app.UseAuthorization();
 
             app.UseMiddleware<JWTMiddleware>();
-            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<ExceptionMiddleware>();                       
 
-            app.UseSwagger();
+            if(env.IsDevelopment())
+            {
+                app.UseSwagger();
 
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.PortalAPI v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.PortalAPI v1"));
+            }            
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {

@@ -40,7 +40,7 @@ namespace Device.FingerPrint.PortalAPI
                         options.ListenAnyIP(5000);
 #endif
                         options.Limits.MinRequestBodyDataRate =
-                                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(10));
+                                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(15));
 
                         options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5);
                     });
