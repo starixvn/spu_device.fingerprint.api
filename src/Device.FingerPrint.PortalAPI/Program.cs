@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Threading;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -11,6 +12,8 @@ namespace Device.FingerPrint.PortalAPI
     {
         public static void Main(string[] args)
         {
+            ThreadPool.SetMinThreads(100, 100);
+
             CreateHostBuilder(args).Build().Run();
         }
 
@@ -42,7 +45,7 @@ namespace Device.FingerPrint.PortalAPI
                         options.Limits.MinRequestBodyDataRate =
                                 new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(15));
 
-                        options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(5);
+                        options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
                     });
                 });
     }

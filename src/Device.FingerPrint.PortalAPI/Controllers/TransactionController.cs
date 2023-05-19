@@ -250,17 +250,17 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             }
         }
 
-        private void RedisAddAsync<T>(string redisKey, T value)
+        private async void RedisAddAsync<T>(string redisKey, T value)
         {
-            redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), when: StackExchange.Redis.When.NotExists);
+           await redisService.RedisDatabase.AddAsync(redisKey, value, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), when: StackExchange.Redis.When.NotExists);
         }
 
-        private void RedisReplaceAsync<T>(string redisKey, T value)
+        private async void RedisReplaceAsync<T>(string redisKey, T value)
         {
-            redisService.RedisDatabase.ReplaceAsync(redisKey, value, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+           await redisService.RedisDatabase.ReplaceAsync(redisKey, value, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
         }
 
-        private void RedisRemoveAll(int subscriberId, string sessionKey)
+        private async void RedisRemoveAll(int subscriberId, string sessionKey)
         {
             var arrRedisKey = new List<string>();
 
@@ -271,7 +271,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                 arrRedisKey.Add(redisKey);
             }
 
-            redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
+           await redisService.RedisDatabase.RemoveAllAsync(arrRedisKey.ToArray());
         }
 
         private async void AddHeaderToRedis(int SubscriberId, string SessionKey)
