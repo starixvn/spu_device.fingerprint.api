@@ -1,16 +1,17 @@
-﻿using Device.FingerPrint.Model;
+﻿using System.Threading.Tasks;
+using Device.FingerPrint.Model;
 using DeviceDetectorNET;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
     public interface ITransactionAttributeService
     {
-        UserAgentInfoModel GetUserAgentInfo(string userAgent);
+        Task<UserAgentInfoModel> GetUserAgentInfo(string userAgent);
     }
 
     public class TransactionAttributeService : ITransactionAttributeService
     {
-        public UserAgentInfoModel GetUserAgentInfo(string userAgent)
+        public Task<UserAgentInfoModel> GetUserAgentInfo(string userAgent)
         {
             var deviceDetector = new DeviceDetector(userAgent);
 
@@ -56,7 +57,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             userAgentInfo.Brand = deviceDetector.GetBrandName();
             userAgentInfo.Model = deviceDetector.GetModel();
 
-            return userAgentInfo;
+            return Task.FromResult(userAgentInfo);
         }
     }
 }

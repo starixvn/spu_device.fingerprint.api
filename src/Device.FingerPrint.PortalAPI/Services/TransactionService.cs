@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.Core;
+﻿using System.Threading.Tasks;
+using Device.FingerPrint.Core;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Ultilities;
@@ -9,7 +10,7 @@ namespace Device.FingerPrint.PortalAPI.Services
     public interface ITransactionService
     {
 
-        UserAgentInfoModel ParseUserAgentInfo(string userAgent);
+        Task<UserAgentInfoModel> ParseUserAgentInfo(string userAgent);
 
         FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, BrowserDetectModel browserInfo, UserAgentInfoModel userAgentInfo);
 
@@ -59,11 +60,11 @@ namespace Device.FingerPrint.PortalAPI.Services
             return result;
         }
 
-        public UserAgentInfoModel ParseUserAgentInfo(string userAgent)
+        public async Task<UserAgentInfoModel> ParseUserAgentInfo(string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
 
-            return transactionAttributeService.GetUserAgentInfo(userAgent);
+            return await transactionAttributeService.GetUserAgentInfo(userAgent);
         }
 
         private string HashBrowserInstanceCode(FingerprintAttributeModel model)

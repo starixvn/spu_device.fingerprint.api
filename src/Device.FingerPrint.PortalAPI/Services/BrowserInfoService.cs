@@ -1,12 +1,10 @@
-﻿using Device.FingerPrint.Core;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Ultilities;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Xml.Linq;
 
 namespace Device.FingerPrint.PortalAPI.Services
 {
@@ -21,7 +19,7 @@ namespace Device.FingerPrint.PortalAPI.Services
 
     public class BrowserInfoService : IBrowserInfoService
     {
-        private readonly ICrypto crypto;        
+        private readonly ICrypto crypto;
         public BrowserInfoService(ICrypto crypto)
         {
             this.crypto = crypto;
@@ -50,7 +48,7 @@ namespace Device.FingerPrint.PortalAPI.Services
                     browserName = browserDetectModel.BrowserName;
                     osName = browserDetectModel.OSName;
                 }
-            }           
+            }
 
             var browserInfoModel = new BrowserInfoModel
             {
@@ -178,14 +176,14 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         public BrowserInfoAttributeModel GetBrowserInfoAttribute(HeaderModel headerModel, BrowserDetectModel browserDetectModel)
         {
-            
-            var browserInfoAttributeModel =  new BrowserInfoAttributeModel
+
+            var browserInfoAttributeModel = new BrowserInfoAttributeModel
             {
                 SecChUa = headerModel != null ? headerModel.SecChUa : string.Empty,
-                SecChUaPlatform = headerModel != null ? headerModel.SecChUaPlatform: string.Empty,
+                SecChUaPlatform = headerModel != null ? headerModel.SecChUaPlatform : string.Empty,
                 SecChUaMobile = headerModel != null ? (string.IsNullOrEmpty(headerModel.SecChUaMobile) ? "" : headerModel.SecChUaMobile.Replace("?", "")) : string.Empty,
-                JsBrowserName = browserDetectModel != null ? browserDetectModel.BrowserName: string.Empty,
-                JsOSName = browserDetectModel != null ? browserDetectModel.OSName: string.Empty
+                JsBrowserName = browserDetectModel != null ? browserDetectModel.BrowserName : string.Empty,
+                JsOSName = browserDetectModel != null ? browserDetectModel.OSName : string.Empty
             };
 
             browserInfoAttributeModel.BrowserInfoAttributeCode = HashBrowserInfoAttributeCode(browserInfoAttributeModel);
@@ -226,6 +224,6 @@ namespace Device.FingerPrint.PortalAPI.Services
             return crypto.GetMD5Hash(json);
         }
 
-        
+
     }
 }

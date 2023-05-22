@@ -54,7 +54,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
-        public async void Cookie([FromBody] string data)
+        public void Cookie([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -75,7 +75,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hl")]
-        public async void Headless([FromBody] string data)
+        public void Headless([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -95,7 +95,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("bi")]
-        public async void BrowserInfo([FromBody] string data)
+        public void BrowserInfo([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -109,7 +109,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
-        public async void FingerPrint([FromBody] string data)
+        public void FingerPrint([FromBody] string data)
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
@@ -138,25 +138,28 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     var urlAddress = new Uri(data.Url);
                     var userAgentCode = data.UserAgent != null ? crypto.GetMD5Hash(data.UserAgent) : string.Empty;
 
-                    var fingerPrint = await redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
-                    var header = await redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
-                    var browserInfo = await redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
-                    var cookie = await redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
-                    var headless = await redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
+                    var taskHeader = redisService.GetHeader(subscriber.SubscriberId, data.SessionKey);
+                    var taskBrowserInfo = redisService.GetBrowserInfo(subscriber.SubscriberId, data.SessionKey);
+                    var taskHeadless = redisService.GetHeadless(subscriber.SubscriberId, data.SessionKey);
+                    var taskFingerPrint = redisService.GetFingerPrint(subscriber.SubscriberId, data.SessionKey);
+                    var taskCookie = redisService.GetCookie(subscriber.SubscriberId, data.SessionKey);
+                    var taskUserAgentInfo = transactionService.ParseUserAgentInfo(data.UserAgent);
 
-                    var userAgentInfo = transactionService.ParseUserAgentInfo(data.UserAgent);
-
+                    var header = await taskHeader;
+                    var browserInfo = await taskBrowserInfo;
                     var browserInfoModel = browserInfoService.GetBrowserInfo(header, browserInfo);
 
-                    if(headless!= null)
+                    var headless = await taskHeadless;
+                    if (headless != null && browserInfoModel != null)
                     {
                         browserInfoModel.HeadlessScore = headless.Score;
                         browserInfoModel.HeadlessDetail = headless.TestsDetail;
-                    }                    
-
+                    }
                     var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header, browserInfo);
 
-
+                    var cookie = await taskCookie;
+                    var fingerPrint = await taskFingerPrint;
+                    var userAgentInfo = await taskUserAgentInfo;
                     var transaction = new TransactionModel
                     {
                         SubscriberId = subscriber.SubscriberId,
@@ -180,7 +183,6 @@ namespace Device.FingerPrint.PortalAPI.Controllers
                     easyNetQService.PushData(transaction);
 
                     RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
-
                 }
                 else
                 {
@@ -211,7 +213,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
 
         [HttpPost("cle")]
-        public async void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
+        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
 
