@@ -166,9 +166,8 @@ var fp = {
                             'SubscriberId': subscriberId
                         };
 
-                        crypt.encryptingWithKey(data).then(res => {
-                            fp.postAuthor(portalAPIUrl + '/bi', res, gjt);
-                        });
+                        fp.postAuthor(portalAPIUrl + '/bi', data, gjt);
+
                     }).catch((err) => {
                         fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
                     });

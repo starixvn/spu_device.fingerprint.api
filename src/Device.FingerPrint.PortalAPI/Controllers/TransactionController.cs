@@ -99,16 +99,11 @@ namespace Device.FingerPrint.PortalAPI.Controllers
         {
             if (!string.IsNullOrWhiteSpace(data))
             {
-                var descryptData = crypto.Decrypt(data);
+                var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(data);
 
-                if (!string.IsNullOrWhiteSpace(descryptData))
-                {
-                    var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(descryptData);
+                var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, deserilizeData.SubscriberId, deserilizeData.SessionKey);
 
-                    var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                    RedisUpdate(redisKey, deserilizeData.BrowserDetect);
-                }
+                RedisUpdate(redisKey, deserilizeData.BrowserDetect);
             }
         }
 
