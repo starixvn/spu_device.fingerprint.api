@@ -60,11 +60,11 @@ namespace Device.FingerPrint.PortalAPI.Services
             return result;
         }
 
-        public async Task<UserAgentInfoModel> ParseUserAgentInfo(string userAgent)
+        public Task<UserAgentInfoModel> ParseUserAgentInfo(string userAgent)
         {
-            if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
+            if (string.IsNullOrEmpty(userAgent)) return null;
 
-            return await transactionAttributeService.GetUserAgentInfo(userAgent);
+            return transactionAttributeService.GetUserAgentInfo(userAgent);
         }
 
         private string HashBrowserInstanceCode(FingerprintAttributeModel model)
