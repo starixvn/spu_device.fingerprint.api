@@ -11,7 +11,7 @@ namespace Device.FingerPrint.PortalAPI.Services
 
     public class TransactionAttributeService : ITransactionAttributeService
     {
-        public Task<UserAgentInfoModel> GetUserAgentInfo(string userAgent)
+        public async Task<UserAgentInfoModel> GetUserAgentInfo(string userAgent)
         {
             var deviceDetector = new DeviceDetector(userAgent);
 
@@ -57,7 +57,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             userAgentInfo.Brand = deviceDetector.GetBrandName();
             userAgentInfo.Model = deviceDetector.GetModel();
 
-            return Task.FromResult(userAgentInfo);
+            return await Task.Run(() => userAgentInfo);
         }
     }
 }

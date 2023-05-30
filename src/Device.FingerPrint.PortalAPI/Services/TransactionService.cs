@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using Device.FingerPrint.Core;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.PortalAPI.Models;
 using Device.FingerPrint.PortalAPI.Ultilities;
@@ -25,7 +24,7 @@ namespace Device.FingerPrint.PortalAPI.Services
         {
             this.transactionAttributeService = transactionAttributeService;
             this.crypto = crypto;
-        }        
+        }
 
         public FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, BrowserDetectModel browserInfo, UserAgentInfoModel userAgentInfo)
         {
@@ -52,7 +51,7 @@ namespace Device.FingerPrint.PortalAPI.Services
             if (browserInfo != null)
             {
                 result.Platform = browserInfo.Platform;
-            }                        
+            }
 
             result.BrowserInstanceCode = HashBrowserInstanceCode(result);
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);
@@ -60,11 +59,11 @@ namespace Device.FingerPrint.PortalAPI.Services
             return result;
         }
 
-        public Task<UserAgentInfoModel> ParseUserAgentInfo(string userAgent)
+        public async Task<UserAgentInfoModel> ParseUserAgentInfo(string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent)) return null;
-
-            return transactionAttributeService.GetUserAgentInfo(userAgent);
+            await Task.Delay(1000);
+            return await transactionAttributeService.GetUserAgentInfo(userAgent);
         }
 
         private string HashBrowserInstanceCode(FingerprintAttributeModel model)
