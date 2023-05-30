@@ -2,7 +2,7 @@
 var sessionKey = '__sessionKey__';
 var apiUrl = '__apiUrl__';
 var portalAPIUrl = '__portalAPIUrl__';
-var version = '2023042703';
+var version = '2023042704';
 
 var fp = {
     requireJS: function (_url) {
@@ -105,9 +105,7 @@ var fp = {
                             'SubscriberId': subscriberId
                         };
 
-                        crypt.encryptingWithKey(data).then(res => {
-                            fp.postAuthor(portalAPIUrl + '/fp', res, gjt);
-                        });
+                        fp.postAuthor(portalAPIUrl + '/fp', data, gjt);
                     }).catch((err) => {
                         fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
                     });
@@ -119,12 +117,9 @@ var fp = {
                                 'SessionKey': sessionKey,
                                 'SubscriberId': subscriberId
                             };
-                            crypt.encryptingWithKey(data).then(res => {
-                                fp.postAuthor(portalAPIUrl + '/ce', res, gjt);
-                            });
 
+                            fp.postAuthor(portalAPIUrl + '/ce', data, gjt);
                             fpNewCookie.setStorage(cookie);
-
                             fp.getWithCache(portalAPIUrl + "/etg/" + subscriberId + "/" + sessionKey + "/" + cookie);
                         });
                     }).catch((err) => {
@@ -144,9 +139,7 @@ var fp = {
                             'SubscriberId': subscriberId
                         };
 
-                        crypt.encryptingWithKey(data).then(res => {
-                            fp.postAuthor(portalAPIUrl + '/hl', res, gjt);
-                        });
+                        fp.postAuthor(portalAPIUrl + '/hl', data, gjt);
                     }).catch((err) => {
                         fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
                     });
