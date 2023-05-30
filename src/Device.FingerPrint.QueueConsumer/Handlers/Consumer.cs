@@ -9,6 +9,8 @@
     using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
+    using Newtonsoft.Json;
+    using System;
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
@@ -61,21 +63,35 @@
             var easyNetQConnector = RabbitMQBus();
             _logger.Info("Start Consuming!");
 
-            easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+            try
             {
-                x.Add<TransactionModel>((message, info) =>
+                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
-                    var transaction = TranformTransactionEntity(message.Body);
-                    listTransactionInsertModel.Add(transaction);
-
-                    if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                    x.Add<TransactionModel>((message, info) =>
                     {
-                        transactionService.InsertTransaction(listTransactionInsertModel);
+                        var transaction = TranformTransactionEntity(message.Body);
+                        listTransactionInsertModel.Add(transaction);
 
-                        listTransactionInsertModel.Clear();
-                    }
+                        if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                        {
+                            try
+                            {
+                                transactionService.InsertTransaction(listTransactionInsertModel);
+
+                                listTransactionInsertModel.Clear();
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
+                            }
+                        }
+                    });
                 });
-            });
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex.Message);
+            }
         }
 
         private EasyNetQConnector RabbitMQBus()
