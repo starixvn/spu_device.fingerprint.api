@@ -29,23 +29,18 @@ namespace Device.FingerPrint.PortalAPI
                      config.AddEnvironmentVariables();
                  })
                 .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder
-                    .UseStartup<Startup>();
-
-                    webBuilder.UseKestrel(options =>
-                    {
+                {                   
 
 #if DEBUG
-                        options.ListenAnyIP(5009);
+                    webBuilder.UseUrls("http://*:5009");
 #else
-                        // HTTP 5000
-                        options.ListenAnyIP(5000);
+                    webBuilder.UseUrls("http://*:5000");
 #endif
-                        options.Limits.MinRequestBodyDataRate =
-                                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(15));
-
-                        options.Limits.KeepAliveTimeout = TimeSpan.FromMinutes(10);
+                    webBuilder
+                    .UseStartup<Startup>().UseKestrel(opt =>
+                    {
+                        opt.Limits.MaxRequestBodySize= 737280000;
+                        opt.Limits.KeepAliveTimeout= TimeSpan.FromMinutes(10);
                     });
                 });
     }
