@@ -73,12 +73,12 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var transactionSumList = transactionReportServices.GetTransactionSumList(fromDate, toDate);
 
             // Transaction summary
-            moreInfo.Append("\n\r");
+            moreInfo.Append("\n");
             moreInfo.Append("Transaction:");
             var transaction = TranformData(transactionSumList);
             foreach (var item in transaction)
             {
-                moreInfo.Append("\n\r");
+                moreInfo.Append("\n");
                 moreInfo.Append(" - " + item.SubscriberName);
                 moreInfo.Append(": " + item.TotalTrans.ToString());
             }
@@ -107,8 +107,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
             var notification = new NotificationService();
 
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", appSettings.TelegramProxy)
-                      .Message(new MessageModel(jobName, DateTime.Now, appSettings.Environment, message, moreInfo.ToString()))
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-1001586405982", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", appSettings.TelegramProxy)
+                      .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), appSettings.Environment, message, moreInfo.ToString()))
                       .SendWithDelay(1, true);
         }
 
@@ -120,14 +120,9 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         public void TestNotificationTelegram(string message)
         {
-            var notification = new NotificationService();
-            var moreInfo = new StringBuilder("TestNotificationTelegram! \nMessage: " + message);
+            var moreInfo = new StringBuilder("TestNotificationTelegram! Message: " + message);
 
-            notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", appSettings.TelegramProxy)
-                      .Message(new MessageModel("TestNotificationTelegram", DateTime.Now, appSettings.Environment, message, moreInfo.ToString()))
-                      .SendWithDelay(1, true);
-
+            Notification("TestNotificationTelegram", message, moreInfo);
         }
     }
 }

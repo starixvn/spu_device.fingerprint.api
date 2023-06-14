@@ -50,9 +50,9 @@
 
                     if (result.Any())
                     {
-                        var jobName = string.Join("", result.OrderBy(x => x.ToString()).Select(x => "\n\r - " + x));
+                        var jobName = string.Join("", result.OrderBy(x => x.ToString()).Select(x => "\n - " + x));
 
-                        Notification("Jobs Monitoring", "The JOBS are PAUSED.", "The List of jobs. \n\r" + jobName);
+                        Notification("Jobs Monitoring", "The JOBS are PAUSED.", "The List of jobs. \n" + jobName);
                     }
                 }
             }
@@ -67,7 +67,7 @@
             var notification = new NotificationService();
 
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-506613866", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", _appSettings.TelegramProxy)
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-1001586405982", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", _appSettings.TelegramProxy)
                       .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), _appSettings.Environment, message, moreInfo))
                       .SendWithDelay(300);
         }
