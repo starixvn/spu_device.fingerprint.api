@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.ServiceAPI.Services;
+using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
@@ -16,6 +17,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IFPTransactionJobService fPTransactionJobService;
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IEvolutionJobServices evolutionJobServices;
+        private readonly ILogger logger;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -24,7 +26,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPDeviceJobService fpdeviceJobService
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
-                            , IEvolutionJobServices evolutionJobServices)
+                            , IEvolutionJobServices evolutionJobServices
+                            , ILogger logger)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -34,6 +37,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.fPTransactionJobService = fPTransactionJobService;
             this.archiveJobServices = archiveJobServices;
             this.evolutionJobServices = evolutionJobServices;
+            this.logger = logger;
         }
 
         [HttpPost("deviceidentify")]
@@ -112,6 +116,14 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         public void TestNotificationTelegram([FromForm] string message)
         {
             monitorJobServices.TestNotificationTelegram(message);
+        }
+
+        [HttpGet("hc")]
+        public void HealthCheck()
+        {
+            // Method intentionally left empty.
+            // 
+            logger.Info("I'm good!");
         }
     }
 }
