@@ -209,7 +209,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             RedisUpdate(redisKey, cookie);
         }
 
-        [HttpGet]
+        [HttpGet("hz")]
         public string Health()
         {
             return "Good";
