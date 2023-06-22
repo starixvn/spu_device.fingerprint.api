@@ -233,6 +233,12 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             RedisUpdate(redisKey, cookie);
         }
 
+        [HttpGet]
+        public string Health()
+        {
+            return "Good";
+        }
+
         private async void RedisUpdate<T>(string redisKey, T value)
         {
             if (!await redisService.RedisDatabase.ExistsAsync(redisKey))
