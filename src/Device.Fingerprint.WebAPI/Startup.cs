@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -64,6 +65,12 @@ namespace Device.Fingerprint.WebAPI
                     .OfType<Microsoft.AspNetCore.Mvc.Formatters.SystemTextJsonInputFormatter>()
                     .Single();
                 jsonInputFormatter.SupportedMediaTypes.Add("application/json");
+            });
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders =
+                    ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
             });
 
             services.AddHttpContextAccessor();
@@ -138,6 +145,8 @@ namespace Device.Fingerprint.WebAPI
                 Predicate = _ => true
             });
 
+            app.UseForwardedHeaders();
+
             app.UseRouting();
 
             app.UseCors();
@@ -185,18 +194,6 @@ namespace Device.Fingerprint.WebAPI
               .WithMySql()
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
-        }
-
-        private void RegisterRedis(IServiceCollection services)
-        {
-            var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
-
-            services.AddSingleton(redisConfiguration);
-
-            services.AddSingleton<IRedisClient, RedisClient>();
-            services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
-            services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
-            services.AddSingleton<IRedisService, RedisService>();
-        }
+        }        
     }
 }
