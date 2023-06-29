@@ -54,75 +54,51 @@ namespace Device.FingerPrint.PortalAPI.Controllers
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
-        public async void Cookie([FromBody] string data)
+        public async void Cookie([FromBody] CookieParameter data)
         {
-            if (!string.IsNullOrWhiteSpace(data))
+            if (data != null)
             {
-                var descryptData = crypto.Decrypt(data);
+                var redisKey = redisService.GetRedisKey(RedisKey.Cookie, data.SubscriberId, data.SessionKey);
 
-                if (!string.IsNullOrWhiteSpace(descryptData))
-                {
-                    var deserilizeData = JsonConvert.DeserializeObject<CookieParameter>(descryptData);
+                RedisUpdate(redisKey, data.Cookie);
 
-                    var redisKey = redisService.GetRedisKey(RedisKey.Cookie, deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                    RedisUpdate(redisKey, deserilizeData.Cookie);
-
-                    AddHeaderToRedis(deserilizeData.SubscriberId, deserilizeData.SessionKey);
-                }
+                AddHeaderToRedis(data.SubscriberId, data.SessionKey);
             }
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hl")]
-        public async void Headless([FromBody] string data)
+        public async void Headless([FromBody] HeadlessParameter data)
         {
-            if (!string.IsNullOrWhiteSpace(data))
+            if (data != null)
             {
-                var descryptData = crypto.Decrypt(data);
+                var redisKey = redisService.GetRedisKey(RedisKey.Headless, data.SubscriberId, data.SessionKey);
 
-                if (!string.IsNullOrWhiteSpace(descryptData))
-                {
-                    var deserilizeData = JsonConvert.DeserializeObject<HeadlessParameter>(descryptData);
-
-                    var redisKey = redisService.GetRedisKey(RedisKey.Headless, deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                    RedisUpdate(redisKey, deserilizeData.HeadlessBrowser);
-
-                }
+                RedisUpdate(redisKey, data.HeadlessBrowser);
             }
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("bi")]
-        public async void BrowserInfo([FromBody] string data)
+        public async void BrowserInfo([FromBody] BrowserDetectParameter data)
         {
-            if (!string.IsNullOrWhiteSpace(data))
+            if (data != null)
             {
-                var deserilizeData = JsonConvert.DeserializeObject<BrowserDetectParameter>(data);
+                var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, data.SubscriberId, data.SessionKey);
 
-                var redisKey = redisService.GetRedisKey(RedisKey.BrowserInfo, deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                RedisUpdate(redisKey, deserilizeData.BrowserDetect);
+                RedisUpdate(redisKey, data.BrowserDetect);
             }
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
-        public async void FingerPrint([FromBody] string data)
+        public async void FingerPrint([FromBody] FingerprintParameter data)
         {
-            if (!string.IsNullOrWhiteSpace(data))
+            if (data != null)
             {
-                var descryptData = crypto.Decrypt(data);
+                var redisKey = redisService.GetRedisKey(RedisKey.FingerPrint, data.SubscriberId, data.SessionKey);
 
-                if (!string.IsNullOrWhiteSpace(descryptData))
-                {
-                    var deserilizeData = JsonConvert.DeserializeObject<FingerprintParameter>(descryptData);
-
-                    var redisKey = redisService.GetRedisKey(RedisKey.FingerPrint, deserilizeData.SubscriberId, deserilizeData.SessionKey);
-
-                    RedisUpdate(redisKey, deserilizeData.fingerprint);
-                }
+                RedisUpdate(redisKey, data.fingerprint);
             }
         }
 
@@ -233,7 +209,7 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             RedisUpdate(redisKey, cookie);
         }
 
-        [HttpGet]
+        [HttpGet("hz")]
         public string Health()
         {
             return "Good";

@@ -39,7 +39,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("scr/{subscriberName}")]
-        [ETagFilter(200)]        
+        [ETagFilter(200)]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public ActionResult Script(string subscriberName)
         {
             if (!string.IsNullOrWhiteSpace(subscriberName))

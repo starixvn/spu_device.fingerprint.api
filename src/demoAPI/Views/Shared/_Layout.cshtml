@@ -31,13 +31,59 @@
             </div>
         </div>
     }
-    <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
+<div class="container body-content">
+    @RenderBody()
+    <hr />
+
+    <div>
+        Web Name:
+        @Request.ServerVariables["Server_Name"]
     </div>
+    <div class="port">
+        Port:
+        @Request.Url.Port
+    </div>
+    <div class="backend">
+        Server IP:
+        @Request.ServerVariables["LOCAL_ADDR"]
+    </div>
+    <div class="servertime">
+        Server Time:
+        @DateTime.Now
+    </div>
+    <div class="haproxy">
+        Client IP:
+        @Request.UserHostAddress
+    </div>
+    <div>
+        HTTP_X_FORWARDED_FOR:
+        @Request.ServerVariables["HTTP_X_FORWARDED_FOR"]
+    </div>
+    <div>
+        X-FORWARDED-FOR:
+        @Request.ServerVariables["X-Forwarded-For"]
+    </div>
+    <div>
+        PROXY-CLIENT-IP:
+        @Request.ServerVariables["Proxy-Client-IP"]
+    </div>
+    <div>
+        WL-PROXY-CLIENT-IP:
+        @Request.ServerVariables["WL-Proxy-Client-IP"]
+    </div>
+    <div>
+        HTTP_CLIENT_IP:
+        @Request.ServerVariables["HTTP_CLIENT_IP"]
+    </div>
+    <div>
+        REMOTE_ADDR:
+        @Request.ServerVariables["REMOTE_ADDR"]
+    </div>
+    <hr />
+    <footer>
+        <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+    </footer>
+</div>
 
     @Scripts.Render("~/bundles/jquery")
     @Scripts.Render("~/bundles/bootstrap")
