@@ -20,7 +20,7 @@ COPY ./src/Device.FingerPrint.ServiceAPI .
 
 RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 
-FROM hub.nexdev.net/base/dotnet/core/aspnet:5.0-buster-slim AS base
+FROM hub.nexdev.net/base/dotnet/core/aspnet:5.0-alpine AS base
 
 WORKDIR /app
 
