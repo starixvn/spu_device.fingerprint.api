@@ -42,6 +42,9 @@
                 var methodName = dataMap.GetString("methodName");
                 var controller = dataMap.GetString("controller");
 
+                var flagError = false;
+                var messageError = string.Empty;
+
                 if (count >= 5)
                 {
                     var e = new JobExecutionException("Retries exceeded");
@@ -50,7 +53,7 @@
 
                     dataMap.PutAsString("count", 0);
 
-                    sentryClient.CaptureMessage($"{jobName} is STOPPED. Cause of RETRIED EXECEEDED.", SentryLevel.Error);
+                    sentryClient.CaptureMessage($"{_appSettings.Environment} - {jobName} is STOPPED. Cause of RETRIED EXECEEDED.", SentryLevel.Error);
 
                     throw e;
                 }
@@ -65,12 +68,8 @@
 
                     if (!result)
                     {
-                        count++;
-
-                        dataMap.PutAsString("count", count);
-                        var errorMessage = $"{jobName} is failed at {DateTime.Now}.";
-
-                        throw JobHelper.JobExecuteFailed(errorMessage, sentryClient);
+                        flagError = true;
+                        messageError = $"{_appSettings.Environment} - {jobName} is failed at {DateTime.Now}.";
                     }
                     else
                     {
@@ -79,11 +78,15 @@
                 }
                 catch (Exception ex)
                 {
+                    flagError = true;
+                    messageError = $"{_appSettings.Environment} - " + ex.Message;
+                }
+
+                if (flagError)
+                {
                     count++;
-
                     dataMap.PutAsString("count", count);
-
-                    throw JobHelper.JobExecuteFailed(ex.Message, sentryClient);
+                    throw JobHelper.JobExecuteFailed(messageError, sentryClient);
                 }
             }
         }
