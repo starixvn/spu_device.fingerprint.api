@@ -13,16 +13,19 @@ namespace Device.FingerPrint.JobManagement
 
         string TelegramProxy { get; }
 
+        string TelegramGroupID { get; }
+
         Scheduler Schedulers { get; }
     }
 
-    public class AppSettings: IAppSettings
+    public class AppSettings : IAppSettings
     {
-        private readonly IConfiguration configuration;       
-                
+        private readonly IConfiguration configuration;
+
         private readonly string sentryDsn;
         private readonly string environment;
         private readonly string telegramProxy;
+        private readonly string telegramGroupID;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -32,16 +35,20 @@ namespace Device.FingerPrint.JobManagement
 
             environment = GetValue<string>("Environment");
 
-            telegramProxy = GetValue<string>("TelegramProxy");
+            telegramProxy = GetValue<string>("Telegram:Proxy");
+
+            telegramGroupID = GetValue<string>("Telegram:GroupID");
 
             Schedulers = GetSection<Scheduler>(nameof(Schedulers));
-        }                
+        }
 
         public string SentryDsn => sentryDsn;
 
         public string Environment => environment;
 
         public string TelegramProxy => telegramProxy;
+
+        public string TelegramGroupID => telegramGroupID;
 
         public Scheduler Schedulers { get; }
 

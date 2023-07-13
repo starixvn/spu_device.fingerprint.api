@@ -84,6 +84,7 @@
                 .Create()
                 .WithIdentity(trigger.TriggerName, groupName)
                 .WithDescription(trigger.TriggerName)
+                .UsingJobData("ignoreMonitoring", trigger.IgnoreMonitoring)
                 .StartNow();
 
             if (trigger.TriggerType != "Cron")

@@ -10,7 +10,9 @@
 
         public int IntervalInSecond { get; set; }
 
-        public string TimeZone { get; set; }        
+        public string TimeZone { get; set; }
+
+        public bool IgnoreMonitoring { get; set; }
     }
 
 }

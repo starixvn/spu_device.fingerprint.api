@@ -1,5 +1,6 @@
 ﻿namespace Device.FingerPrint.JobManagement.Services
 {
+    using Device.FingerPrint.JobManagement.Models;
     using Fanex.NAP.SPU.Notification.Services;
     using ONEbook.UM.Services;
     using Quartz;
@@ -9,6 +10,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using static Quartz.Logging.OperationName;
 
     [DisallowConcurrentExecution, PersistJobDataAfterExecution]
     public class JobMonitoring : IJob
@@ -34,17 +36,23 @@
 
                 if (!isUM)
                 {
+
+                    var allJobs = _scheduler.GetJobKeys(GroupMatcher<JobKey>.AnyGroup());
+
                     var allTriggerKeys = _scheduler.GetTriggerKeys(GroupMatcher<TriggerKey>.AnyGroup());
                     var result = new List<string>();
 
                     foreach (var triggerKey in allTriggerKeys.Result)
                     {
+
                         var triggerdetails = await _scheduler.GetTrigger(triggerKey);
                         var state = await _scheduler.GetTriggerState(triggerdetails.Key);
 
                         if (state == TriggerState.Paused)
                         {
-                            result.Add(triggerdetails.JobKey.Name);
+                            var ignoreMonitoring = triggerdetails.JobDataMap.GetBoolean("ignoreMonitoring");
+                            if (!ignoreMonitoring)
+                                result.Add(triggerdetails.JobKey.Name);
                         }
                     }
 
@@ -67,7 +75,7 @@
             var notification = new NotificationService();
 
             notification
-                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", "-1001586405982", "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", _appSettings.TelegramProxy)
+                      .Config("0A40aOc7CtpzjbBSJu8KNWQRoXyjRvf9", _appSettings.TelegramGroupID, "https://bot.nexdev.net/skynex/api/messages/forwardwithtoken", _appSettings.TelegramProxy)
                       .Message(new MessageModel(jobName, DateTime.UtcNow.AddHours(7), _appSettings.Environment, message, moreInfo))
                       .SendWithDelay(300);
         }
