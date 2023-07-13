@@ -37,6 +37,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_ContentIncludedByDefault Remove="appsettings.UAT.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="Scripts\fp.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
