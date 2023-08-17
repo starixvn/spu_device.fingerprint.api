@@ -39,6 +39,7 @@ namespace DemoNetCore.Controllers
             }
             return Redirect("Home");
         }
+        
 
         [HttpPost]
         public ActionResult OnPost(LoginModel loginModel)
@@ -82,27 +83,25 @@ namespace DemoNetCore.Controllers
         private void FpsIntegrationVer105(string account, string action, string actionResult, string subscriber, DateTime loginTime)
         {
             var fpsAPI = configuration.GetSection("FPS_API").Value;
-            var fpsService = new FPS.Client.NetStandard.Service(fpsAPI);
-
-            var ip = Request.HttpContext.Connection.RemoteIpAddress.ToString();
-            var requestIP = ip.Equals("::1") ? "127.0.0.1" : ip.Split(',')[0];
-
-            TimeSpan diff = DateTime.UtcNow - DateTime.Now;
-
+            var fpsService = new FPS.Client.NetStandard.Service(fpsAPI, HttpContext.Request);
             var httpRequestData = new HttpRequestModel()
             {
                 AcceptTypes = Request.Headers["Accept"].ToString() ?? string.Empty,
-                UserAgent = Request.Headers["User-Agent"].ToString() ?? string.Empty,
-                TotalMinutes = diff.TotalMinutes.ToString(),
-                RequestIP = requestIP,
+                UserAgent = Request.Headers["User-Agent"].ToString() ?? string.Empty,              
                 Di = Request.Form["__di"].ToString(),
                 Token = Request.Form["__tk"].ToString(),
                 Url = Request.Scheme.ToString() + "://" + Request.Host.ToString(),
                 DebugInfo = Request.Form["detecas-analysis"].ToString(),
-                CaptchaResult = Request.Form["captcha_result"].ToString()
+                CaptchaResult = Request.Form["captcha_result"].ToString(),
+                Account = account,
+                Action = action,
+                ActionResult= actionResult,
+                Bi = Request.Form["__bi"].ToString(),
+                LoginTime= loginTime,
+                Subscriber= subscriber                
             };
 
-            fpsService.CheckTransaction(httpRequestData, account, action, actionResult, subscriber, loginTime, out var resultMessage, out var deviceCode);
+            fpsService.CheckTransaction(httpRequestData);
         }
     }
 }

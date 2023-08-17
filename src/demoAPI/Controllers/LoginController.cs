@@ -2,18 +2,112 @@
 using FPS.Device.FingerPrint.Net.Framework.Client;
 using System;
 using System.Configuration;
+using System.Web;
 using System.Web.Mvc;
 
 namespace demoAPI.Controllers
 {
     public class LoginController : Controller
     {
+        private string GetHeaderIP(string param)
+        {
+            var headerVal = Request.Headers[param]?.ToString();
+            if (!string.IsNullOrEmpty(headerVal))
+            {
+                return headerVal;
+            }
+
+            return string.Empty;
+        }
+
+        private string GetXForWarded()
+        {
+            var proxyIP = GetHeaderIP("X-Forwarded-For");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Originating-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-Addr");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = Request.UserHostAddress.ToString();
+            }
+
+            return proxyIP;
+        }
+
+        private string GetRealIp()
+        {
+            var proxyIP = GetHeaderIP("X-Actual-IP");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                var clientIps = GetXForWarded();
+
+                if (!string.IsNullOrEmpty(clientIps))
+                {
+                    var ips = clientIps.Split(new char[] { ',' });
+
+                    if (ips.Length > 1)
+                    {
+                        return ips[1];
+                    }
+
+                    return ips[0];
+                }
+                else
+                {
+                    return Request.UserHostAddress.ToString();
+                }
+            }
+            else
+            {
+                return proxyIP.Split(new char[] { ',' })[0];
+            }
+        }
+
+        private string GetFakeIp()
+        {
+            var proxyIP = GetXForWarded();
+
+            if (!string.IsNullOrEmpty(proxyIP))
+            {
+                var ips = proxyIP.Split(new char[] { ',' });
+
+                if (ips[0] != GetRealIp())
+                {
+                    return ips[0];
+                }
+            }
+
+            return string.Empty;
+        }
+
         // GET: Login
         public ActionResult Index()
         {
             if (Session["Username"] == null)
             {
-                return View(new LoginModel());
+                var model = new LoginModel {
+                    RealIP = GetRealIp(),
+                    FakeIP= GetFakeIp(),
+                    XForwarded= GetXForWarded(),
+                    XActualIP = GetHeaderIP("X-Actual-IP"),
+                    Username = "test",
+                    Password = "1234aa",
+                };
+                return View(model);
             }
             return Redirect("Home");
         }
