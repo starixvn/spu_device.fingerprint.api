@@ -1,32 +1,4 @@
 include:
-  - project: "ci/repos-ci/spu_fps_fps_web_api_job_service"
-    ref: master
-    file: "gitlab-ci.yml"
-
-  - project: "ci/repos-ci/spu_fps_fp_trans_consumer_service"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
-    
-  - project: "ci/repos-ci/spu_fps_dcs_trans_consumer_service"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
-
-  - project: "ci/repos-ci/spu_fps_fp_api_job_service"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
-
-  - project: "ci/repos-ci/spu_fps_fp_job_management_service"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
-
-  - project: "ci/repos-ci/spu_fps_fp_demo_net_standard"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
-    
-  - project: "ci/repos-ci/spu_fps_fp_api_evolution_service"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
-    
-  - project: "ci/repos-ci/spu_fps_fps_portal_web_api_job_service"
-    ref: master
-    file: "gitlab-ci-mixing.yml"
+  - project: "ci/core-cicd"
+    ref: main
+    file: "nexcel.gitlab-ci.yml"
