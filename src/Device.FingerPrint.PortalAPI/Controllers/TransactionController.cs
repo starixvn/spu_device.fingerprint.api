@@ -8,11 +8,13 @@ using Device.FingerPrint.PortalAPI.Ultilities;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 
 namespace Device.FingerPrint.PortalAPI.Controllers
 {
@@ -209,10 +211,19 @@ namespace Device.FingerPrint.PortalAPI.Controllers
             RedisUpdate(redisKey, cookie);
         }
 
-        [HttpGet("hz")]
-        public string Health()
+        [HttpGet("whoami")]
+        public WhoAmIModel WhoAmI()
         {
-            return "Good";
+            var httpConnectionFeature = HttpContext.Features.Get<IHttpConnectionFeature>();
+            var localIpAddress = httpConnectionFeature?.LocalIpAddress;
+
+            return new WhoAmIModel
+            {
+                LocalIP = localIpAddress.ToString(),
+                ServerName = Environment.MachineName,
+                ServerTime = DateTime.Now
+
+            };
         }
 
         private async void RedisUpdate<T>(string redisKey, T value)
