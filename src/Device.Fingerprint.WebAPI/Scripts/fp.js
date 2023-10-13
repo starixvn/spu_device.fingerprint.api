@@ -82,94 +82,110 @@ var fp = {
         };
         fp.post(url + "/cle", data);
     },
+    postFpData: function (gjt) {
+        fp.requireJS(apiUrl + '/scr/' + version + '/fp').then(() => {
+            return globalFP.getFP(crypt.hashMD5);
+        }).then(res => {
+            var data = {
+                'fingerprint': {
+                    "Id": res.Id,
+                    "Attributes": res.Properties
+                },
+                'SessionKey': sessionKey,
+                'SubscriberId': subscriberId
+            };
+
+            fp.postAuthor(portalAPIUrl + '/fp', data, gjt);
+        }).catch((err) => {
+            fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
+        });
+    },
+    postCeData: function (gjt) {
+        fpNewCookie.getStorage().then((cookie) => {
+            var data = {
+                'Cookie': cookie,
+                'SessionKey': sessionKey,
+                'SubscriberId': subscriberId
+            };
+
+            fp.postAuthor(portalAPIUrl + '/ce', data, gjt);
+            fpNewCookie.setStorage('gfp', cookie);
+            fp.getWithCache(portalAPIUrl + "/etg/" + subscriberId + "/" + sessionKey + "/" + cookie);
+        });
+    },
+    postHlData: function (gjt) {
+        fp.requireJS(apiUrl + '/scr/' + version + '/hl').then(() => {
+            return fpHeadless.getHeadlessScore();
+        }).then(res => {
+            var data = {
+                'HeadlessBrowser': {
+                    "Score": res.score,
+                    "TestsRun": res.testsRun,
+                    "TestsDetail": res.testsDetail
+                },
+                'SessionKey': sessionKey,
+                'SubscriberId': subscriberId
+            };
+
+            fp.postAuthor(portalAPIUrl + '/hl', data, gjt);
+        }).catch((err) => {
+            fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
+        });
+    },
+    postBiData: function (gjt) {
+        fp.requireJS(apiUrl + '/scr/' + version + '/bi').then(() => {
+            return fpBrowserDetect.getBrowserInfo();
+        }).then(res => {
+            var data = {
+                'BrowserDetect': {
+                    "OSName": res.OSName,
+                    "BrowserName": res.BrowserName,
+                    "Platform": res.Platform,
+                    "Vendor": res.Vendor,
+                    "IsMobileDevice": res.IsMobileDevice
+                },
+                'SessionKey': sessionKey,
+                'SubscriberId': subscriberId
+            };
+
+            fp.postAuthor(portalAPIUrl + '/bi', data, gjt);
+        }).catch((err) => {
+            fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
+        });
+    },
     checkDomReady: function () {
+        fp.requireJS(apiUrl + '/scr/' + version + '/ce').then(() => {
+            fpNewCookie.getStorage('newgfp').then((newCookie) => {
+                if (newCookie && newCookie.length > 0) {
+                    sessionKey = newCookie;
+                }
 
-        fp.inject(sessionKey);
-
-        fp.get(apiUrl + '/scr/gjt')
-            .then(response => {
-                return response.text();
+                fpNewCookie.setStorage('newgfp', sessionKey);
             })
-            .then((gjt) => {
-
-                fp.requireJS(apiUrl + '/scr/' + version + '/crt').then(() => {
-                    fp.requireJS(apiUrl + '/scr/' + version + '/fp').then(() => {
-                        return globalFP.getFP(crypt.hashMD5);
-                    }).then(res => {
-                        var data = {
-                            'fingerprint': {
-                                "Id": res.Id,
-                                "Attributes": res.Properties
-                            },
-                            'SessionKey': sessionKey,
-                            'SubscriberId': subscriberId
-                        };
-
-                        fp.postAuthor(portalAPIUrl + '/fp', data, gjt);
+            .then(() => {
+                fp.inject(sessionKey);
+            })
+            .then(() => {
+                fp.get(apiUrl + '/scr/gjt')
+                .then(response => {
+                    return response.text();
+                })
+                .then((gjt) => {
+                    fp.requireJS(apiUrl + '/scr/' + version + '/crt').then(() => {
+                        fp.postFpData(gjt);
+                        fp.postCeData(gjt)
+                        fp.postHlData(gjt); 
+                        fp.postBiData(gjt);
                     }).catch((err) => {
-                        fp.log(portalAPIUrl, "Load Script fp", err.message + '|' + sessionKey);
-                    });
-
-                    fp.requireJS(apiUrl + '/scr/' + version + '/ce').then(() => {
-                        fpNewCookie.getStorage().then((cookie) => {
-                            var data = {
-                                'Cookie': cookie,
-                                'SessionKey': sessionKey,
-                                'SubscriberId': subscriberId
-                            };
-
-                            fp.postAuthor(portalAPIUrl + '/ce', data, gjt);
-                            fpNewCookie.setStorage(cookie);
-                            fp.getWithCache(portalAPIUrl + "/etg/" + subscriberId + "/" + sessionKey + "/" + cookie);
-                        });
-                    }).catch((err) => {
-                        fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
-                    });
-
-                    fp.requireJS(apiUrl + '/scr/' + version + '/hl').then(() => {
-                        return fpHeadless.getHeadlessScore();
-                    }).then(res => {
-                        var data = {
-                            'HeadlessBrowser': {
-                                "Score": res.score,
-                                "TestsRun": res.testsRun,
-                                "TestsDetail": res.testsDetail
-                            },
-                            'SessionKey': sessionKey,
-                            'SubscriberId': subscriberId
-                        };
-
-                        fp.postAuthor(portalAPIUrl + '/hl', data, gjt);
-                    }).catch((err) => {
-                        fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
-                    });
-
-                    fp.requireJS(apiUrl + '/scr/' + version + '/bi').then(() => {
-                        return fpBrowserDetect.getBrowserInfo();
-                    }).then(res => {
-                        var data = {
-                            'BrowserDetect': {
-                                "OSName": res.OSName,
-                                "BrowserName": res.BrowserName,
-                                "Platform": res.Platform,
-                                "Vendor": res.Vendor,
-                                "IsMobileDevice": res.IsMobileDevice
-                            },
-                            'SessionKey': sessionKey,
-                            'SubscriberId': subscriberId
-                        };
-
-                        fp.postAuthor(portalAPIUrl + '/bi', data, gjt);
-
-                    }).catch((err) => {
-                        fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
+                        fp.log(portalAPIUrl, "Load Script crt", err.message + '|' + sessionKey);
                     });
                 }).catch((err) => {
-                    fp.log(portalAPIUrl, "Load Script crt", err.message + '|' + sessionKey);
+                    fp.log(portalAPIUrl, "Load Script gjt", err.message + '|' + sessionKey);
                 });
-            }).catch((err) => {
-                fp.log(portalAPIUrl, "Load Script gjt", err.message + '|' + sessionKey);
-            });
+            })
+        }).catch((err) => {
+            fp.log(portalAPIUrl, "Load Script ce", err.message + '|' + sessionKey);
+        });
     }
 }
 

@@ -1,29 +1,16 @@
-﻿using Device.FingerPrint.Model;
-using Device.FingerPrint.PortalAPI.Models;
-using StackExchange.Redis.Extensions.Core.Abstractions;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.PortalAPI.Services
+﻿namespace Device.FingerPrint.PortalAPI.Services
 {
+    using Device.FingerPrint.PortalAPI.Models;
+    using StackExchange.Redis.Extensions.Core.Abstractions;
+    using System;
+    using System.Threading.Tasks;
     public interface IRedisService
     {
         IRedisDatabase RedisDatabase { get; }
 
-        T GetResult<T>(string RedisKey);
+        Task<T> HashGetAsync<T>(RedisKey redisKey, int subscriberId, string sessionKey);
 
-        Task<BrowserDetectModel>  GetBrowserInfo(int SubscriberId, string SessionKey);
-
-        Task<string> GetCookie(int SubscriberId, string SessionKey);
-
-        Task<FingerprintModel> GetFingerPrint(int SubscriberId, string SessionKey);
-
-        Task<HeaderModel> GetHeader(int SubscriberId, string SessionKey);
-
-        Task<HeadlessBrowserModel>  GetHeadless(int SubscriberId, string SessionKey);
-
-        string GetRedisKey(RedisKey Key, int SubscriberId, string SessionKey);
-
-        string GetRedisKey(string Key, int SubscriberId, string SessionKey);
+        string GetHashKey(int subscriberId, string sessionKey);
     }
 
     public class RedisService : IRedisService
@@ -38,54 +25,17 @@ namespace Device.FingerPrint.PortalAPI.Services
         public IRedisDatabase RedisDatabase => redisDatabase;
 
 
-        public Task<BrowserDetectModel>  GetBrowserInfo(int SubscriberId, string SessionKey)
+        public async Task<T> HashGetAsync<T>(RedisKey redisKey, int subscriberId, string sessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.BrowserInfo, SubscriberId, SessionKey);
+            var hashKey = GetHashKey(subscriberId, sessionKey);
+            var key = Enum.GetName(typeof(RedisKey), redisKey);
 
-            return RedisDatabase.GetAsync<BrowserDetectModel>(redisKey);
+            return await RedisDatabase.HashGetAsync<T>(hashKey, key);
         }
 
-        public Task<string> GetCookie(int SubscriberId, string SessionKey)
+        public string GetHashKey(int subscriberId, string sessionKey)
         {
-            var redisKey = GetRedisKey(RedisKey.Cookie, SubscriberId, SessionKey);
-
-            return RedisDatabase.GetAsync<string>(redisKey);
-        }
-
-        public Task<FingerprintModel> GetFingerPrint(int SubscriberId, string SessionKey)
-        {
-            var redisKey = GetRedisKey(RedisKey.FingerPrint, SubscriberId, SessionKey);
-
-            return RedisDatabase.GetAsync<FingerprintModel>(redisKey);
-        }
-
-        public Task<HeaderModel> GetHeader(int SubscriberId, string SessionKey)
-        {
-            var redisKey = GetRedisKey(RedisKey.Header, SubscriberId, SessionKey);
-
-            return RedisDatabase.GetAsync<HeaderModel>(redisKey);
-        }
-
-        public Task<HeadlessBrowserModel>  GetHeadless(int SubscriberId, string SessionKey)
-        {
-            var redisKey = GetRedisKey(RedisKey.Headless, SubscriberId, SessionKey);
-
-            return RedisDatabase.GetAsync<HeadlessBrowserModel>(redisKey);
-        }
-        
-        public string GetRedisKey(RedisKey Key, int SubscriberId, string SessionKey)
-        {
-            return $"{Key}:{SubscriberId}:{SessionKey}";
-        }
-
-        public string GetRedisKey(string Key, int SubscriberId, string SessionKey)
-        {
-            return $"{Key}:{SubscriberId}:{SessionKey}";
-        }
-
-        public T GetResult<T>(string RedisKey)
-        {
-            return RedisDatabase.GetAsync<T>(RedisKey).Result;
+            return $"{subscriberId}:{sessionKey}";
         }
     }
 }

@@ -147,14 +147,14 @@ var fpNewCookie = (function (exports) {
         return new Promise(function (resolve, reject) {
             try {
                 if (isSet) {
-                    var currentValue = window.name;
+                    var currentValue = window[key] || '';
                     if (!isValidObject(currentValue) || validateUUID(currentValue)) {
-                        window.name = value;
+                        window[key] = value;
                     }
                     resolve(null);
                 }
                 else {
-                    value = window.name;
+                    value = window[key];
                     if (!validateUUID(value)) {
                         value = null;
                     }
@@ -231,12 +231,12 @@ var fpNewCookie = (function (exports) {
             resolve(validateUUID(maxValue) ? maxValue : generateUUIDv4());
         });
     }
-    function get() {
+    function get(key) {
         try {
             isSet = false;
             const promises = storageHandlers.map((handler) => {
                 return new Promise((resolve) => {
-                    resolve(handler(cookieKey, null));
+                    resolve(handler(key, null));
                 });
             });
             return waitAllWithTimeout(promises).then((cookies) => {
@@ -248,22 +248,22 @@ var fpNewCookie = (function (exports) {
         catch (exception) {
         }
     }
-    function set(value) {
+    function set(key, value) {
         try {
             isSet = true;
             storageHandlers.forEach(function (handler) {
-                handler(cookieKey, value);
+                handler(key, value);
             });
         }
         catch (exception) {
         }
     }
-    function getStorage() {
-        return get();
+    function getStorage(key = cookieKey) {
+        return get(key);
     }
-    function setStorage(value) {
-        if (value)
-            set(value);
+    function setStorage(key = cookieKey, value) {
+        if (key && value)
+            set(key, value);
     }
 
     exports.getStorage = getStorage;
