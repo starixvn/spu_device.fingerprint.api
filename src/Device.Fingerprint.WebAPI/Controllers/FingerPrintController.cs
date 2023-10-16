@@ -169,23 +169,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
         //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
         public ActionResult CryptScript(string version)
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var newContent = bundleFile.Content
-                    .Replace("__keyIV__", appSettings.CryptoIV)
-                    .Replace("__keySalt__", appSettings.CryptoSalt)
-                    .Replace("__keyPass__", appSettings.CryptoPassword);
-
-                return new JavascriptResult(newContent);
+                return new JavascriptResult(bundleFile.Content);
             }
 
             return new EmptyResult();

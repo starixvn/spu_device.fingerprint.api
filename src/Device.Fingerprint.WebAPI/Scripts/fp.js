@@ -84,7 +84,7 @@ var fp = {
     },
     postFpData: function (gjt) {
         fp.requireJS(apiUrl + '/scr/' + version + '/fp').then(() => {
-            return globalFP.getFP(crypt.hashMD5);
+            return globalFP.getFP(md5.hash);
         }).then(res => {
             var data = {
                 'fingerprint': {
