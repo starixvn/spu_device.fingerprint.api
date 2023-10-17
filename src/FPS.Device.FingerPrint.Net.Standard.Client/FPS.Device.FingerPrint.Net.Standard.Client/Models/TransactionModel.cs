@@ -14,6 +14,7 @@ namespace FPS.Device.FingerPrint.Net.Standard.Client.Model
         public string SessionKey { get; set; }
 
         public string ClientIp { get; set; }
+        public string FakeIP { get; set; }
 
         public string UserAgent { get; set; }
 
