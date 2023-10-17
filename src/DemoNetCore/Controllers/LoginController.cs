@@ -61,7 +61,8 @@ namespace DemoNetCore.Controllers
                     SubAccId = 0,
                     UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
                     Url = HttpContext.Request.GetDisplayUrl(),
-                    ClientIp = HttpContext.Connection.RemoteIpAddress.ToString()
+                    ClientIp = GetRealIp(),
+                    FakeIp = GetFakeIp(),
                 });
 
                 FpsIntegrationVer105(loginModel.Username, "Login", "Demo Page Login", "Alpha", DateTime.Now);
@@ -103,5 +104,91 @@ namespace DemoNetCore.Controllers
 
             fpsService.CheckTransaction(httpRequestData);
         }
+
+         private string GetHeaderIP(string param)
+        {
+            var headerVal = HttpContext.Request.Headers[param].ToString();
+            if (!string.IsNullOrEmpty(headerVal))
+            {
+                return headerVal;
+            }
+
+            return string.Empty;
+        }
+
+        private string GetXForWarded()
+        {
+            var proxyIP = GetHeaderIP("X-Forwarded-For");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Originating-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-Addr");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = HttpContext.Request.Host.ToString();
+            }
+
+            return proxyIP;
+        }
+
+        private string GetRealIp()
+        {
+            var proxyIP = GetHeaderIP("X-Actual-IP");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                var clientIps = GetXForWarded();
+
+                if (!string.IsNullOrEmpty(clientIps))
+                {
+                    var ips = clientIps.Split(new char[] { ',' });
+
+                    if (ips.Length > 1)
+                    {
+                        return ips[1];
+                    }
+
+                    return ips[0];
+                }
+                else
+                {
+                    return HttpContext.Request.Host.ToString();
+                }
+            }
+            else
+            {
+                return proxyIP.Split(new char[] { ',' })[0];
+            }
+        }
+
+        private string GetFakeIp()
+        {
+            var proxyIP = GetXForWarded();
+
+            if (!string.IsNullOrEmpty(proxyIP))
+            {
+                var ips = proxyIP.Split(new char[] { ',' });
+
+                if (ips[0] != GetRealIp())
+                {
+                    return ips[0];
+                }
+            }
+
+            return string.Empty;
+        }
+
     }
 }

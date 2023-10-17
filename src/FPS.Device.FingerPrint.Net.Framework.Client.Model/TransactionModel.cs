@@ -24,5 +24,7 @@ namespace FPS.Device.FingerPrint.Net.Framework.Client.Model
         public long CustId { get; set; }
 
         public long SubAccId { get; set; }
+
+        public string FakeIP { get; set; }
     }
 }

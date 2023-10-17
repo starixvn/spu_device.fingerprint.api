@@ -40,6 +40,7 @@
             {
                 LoginName = model.LoginName,
                 ClientIP = model.ClientIP,
+                FakeIP = model.FakeIP,
                 UserAgent = model.UserAgent,
                 UserAgentCode = model.UserAgentCode,
                 SessionKey = model.SessionKey,

@@ -132,6 +132,7 @@
                     {
                         SubscriberId = subscriber.SubscriberId,
                         ClientIP = data.ClientIp,
+                        FakeIP = data.FakeIP,
                         LoginName = data.LoginName,
                         UserAgent = data.UserAgent,
                         UserAgentCode = userAgentCode,
