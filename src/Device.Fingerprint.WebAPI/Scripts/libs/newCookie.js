@@ -116,6 +116,7 @@ var fpNewCookie = (function (exports) {
                     let date = new Date();
                     date.setFullYear(date.getFullYear() + 1);
                     expires = '; expires=' + date.toUTCString();
+
                     const setValue = key + '=' + (value || '') + expires + '; SameSite=None; Secure; path=/';
                     document.cookie = setValue;
                     resolve(null);
