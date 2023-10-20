@@ -139,7 +139,7 @@
                         TransTime = DateTime.Now,
                         Url = urlAddress.GetLeftPart(UriPartial.Path),
                         Action = data.Action,
-                        TransKey = data.TransKey,
+                        TransKey = data.SessionKey,
                         CustId = data.CustId,
                         SubAccId = data.SubAccId,
                         UserAgentInfo = userAgentInfo,
