@@ -1,8 +1,11 @@
 namespace Device.FingerPrint.QueueConsumer
 {
+    using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.QueueConsumer.Handlers;
+    using Device.FingerPrint.QueueConsumer.Services;
+    using Device.FingerPrint.Redis;
     using Fanex.Data;
     using Fanex.Data.MySql;
     using Fanex.Logging;
@@ -17,6 +20,9 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
+    using StackExchange.Redis.Extensions.Core.Abstractions;
+    using StackExchange.Redis.Extensions.Core.Configuration;
+    using StackExchange.Redis.Extensions.Core.Implementations;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -62,6 +68,10 @@ namespace Device.FingerPrint.QueueConsumer
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
             services.AddHostedService<Consumer>();
+
+            RegisterRedis(services);
+
+            InitService(services);
         }
         private void FanexDataConfig(IAppSettings appSettings)
         {
@@ -98,6 +108,26 @@ namespace Device.FingerPrint.QueueConsumer
             });
 
             app.UseRouting();
+        }
+
+        private void RegisterRedis(IServiceCollection services)
+        {
+            var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+
+            services.AddSingleton(redisConfiguration);
+
+            services.AddSingleton<IRedisClient, RedisClient>();
+            services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
+            //services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
+            services.AddSingleton<IRedisService, RedisService>();
+        }
+
+        private void InitService(IServiceCollection services)
+        {
+            services.AddSingleton<IRawTransactionService, RawTransactionService>();
+            services.AddSingleton<IRawTransactionAttributeService, RawTransactionAttributeService>();
+            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
+            services.AddSingleton<ICrypto, Crypto>();
         }
     }
 }

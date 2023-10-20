@@ -1,14 +1,14 @@
 ﻿using Device.FingerPrint.Model;
 using DeviceDetectorNET;
 
-namespace Device.FingerPrint.PortalAPI.Services
+namespace Device.FingerPrint.QueueConsumer.Services
 {
-    public interface ITransactionAttributeService
+    public interface IRawTransactionAttributeService
     {
         UserAgentInfoModel GetUserAgentInfo(string userAgent);
     }
 
-    public class TransactionAttributeService : ITransactionAttributeService
+    public class RawTransactionAttributeService : IRawTransactionAttributeService
     {
         public UserAgentInfoModel GetUserAgentInfo(string userAgent)
         {

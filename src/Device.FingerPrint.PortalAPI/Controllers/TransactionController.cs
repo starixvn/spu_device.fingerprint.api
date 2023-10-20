@@ -7,48 +7,40 @@
     using Device.FingerPrint.PortalAPI.Models;
     using Device.FingerPrint.PortalAPI.Services;
     using Device.FingerPrint.PortalAPI.Ultilities;
+    using Device.FingerPrint.Redis;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using System;
-    using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
-    using RedisKey = Device.FingerPrint.PortalAPI.Models.RedisKey;
 
     [Route("api")]
     [ApiController]
     public class TransactionController : ControllerBase
     {
         private readonly IRedisService redisService;
-        private readonly IEasyNetQService easyNetQService;
-        private readonly ITransactionService transactionService;
+        private readonly IEasyNetQService easyNetQService;    
         private readonly ISubscriberServices subscriberServices;
         private readonly IClientTransactionService clientTransactionService;
         private readonly ICrypto crypto;
         private readonly ILogger logger;
-        private readonly IAppSettings appSettings;
-        private readonly IBrowserInfoService browserInfoService;
+        private readonly IAppSettings appSettings;      
 
         public TransactionController(
             IAppSettings appSettings,
-            IRedisService redisService,
-            ITransactionService transactionService,
+            IRedisService redisService,           
             IEasyNetQService easyNetQService,
             ISubscriberServices subscriberServices,
-            IClientTransactionService clientTransactionService,
-            IBrowserInfoService browserInfoService,
+            IClientTransactionService clientTransactionService,           
             ILogger logger,
             ICrypto crypto)
         {
-            this.redisService = redisService;
-            this.transactionService = transactionService;
+            this.redisService = redisService;           
             this.easyNetQService = easyNetQService;
             this.subscriberServices = subscriberServices;
-            this.clientTransactionService = clientTransactionService;
-            this.browserInfoService = browserInfoService;
+            this.clientTransactionService = clientTransactionService;           
             this.appSettings = appSettings;
             this.crypto = crypto;
             this.logger = logger;
@@ -60,9 +52,9 @@
         {
             if (data != null)
             {
-                var hashKey = redisService.GetHashKey(data.SubscriberId, data.SessionKey);
+                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
                 AddHeaderToRedis(hashKey);
-                RedisHashSet(hashKey, RedisKey.Cookie, data.Cookie);
+                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie);
             }
         }
 
@@ -72,8 +64,8 @@
         {
             if (data != null)
             {
-                var hashKey = redisService.GetHashKey(data.SubscriberId, data.SessionKey);
-                RedisHashSet(hashKey, RedisKey.Headless, data.HeadlessBrowser);
+                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
+                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless), data.HeadlessBrowser);
             }
         }
 
@@ -83,8 +75,8 @@
         {
             if (data != null)
             {
-                var hashKey = redisService.GetHashKey(data.SubscriberId, data.SessionKey);
-                RedisHashSet(hashKey, RedisKey.BrowserInfo, data.BrowserDetect);
+                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
+                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo), data.BrowserDetect);
             }
         }
 
@@ -94,15 +86,15 @@
         {
             if (data != null)
             {
-                var hashKey = redisService.GetHashKey(data.SubscriberId, data.SessionKey);
-                RedisHashSet(hashKey, RedisKey.FingerPrint, data.fingerprint);
+                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
+                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint);
             }
         }
 
         [HttpPost("transaction")]
-        public async void Transaction([FromBody] ClientTransactionModel data)
+        public void Transaction([FromBody] ClientTransactionModel data)
         {
-            if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SessionKey) && !string.IsNullOrWhiteSpace(data.SubscriberName))
+            if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SubscriberName))
             {
                 var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
 
@@ -110,23 +102,6 @@
                 {
                     var urlAddress = new Uri(data.Url);
                     var userAgentCode = data.UserAgent != null ? crypto.GetMD5Hash(data.UserAgent) : string.Empty;
-
-                    var fingerPrint = await redisService.HashGetAsync<FingerprintModel>(RedisKey.FingerPrint, subscriber.SubscriberId, data.SessionKey);
-                    var header = await redisService.HashGetAsync<HeaderModel>(RedisKey.Header, subscriber.SubscriberId, data.SessionKey);
-                    var browserInfo = await redisService.HashGetAsync<BrowserDetectModel>(RedisKey.BrowserInfo ,subscriber.SubscriberId, data.SessionKey);
-                    var cookie = await redisService.HashGetAsync<string>(RedisKey.Cookie, subscriber.SubscriberId, data.SessionKey);
-                    var headless = await redisService.HashGetAsync<HeadlessBrowserModel>(RedisKey.Headless, subscriber.SubscriberId, data.SessionKey);
-
-                    var userAgentInfo = transactionService.ParseUserAgentInfo(data.UserAgent);
-                    var browserInfoModel = browserInfoService.GetBrowserInfo(header, browserInfo);
-
-                    if(headless!= null)
-                    {
-                        browserInfoModel.HeadlessScore = headless.Score;
-                        browserInfoModel.HeadlessDetail = headless.TestsDetail;
-                    }                    
-
-                    var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header, browserInfo);
 
                     var transaction = new TransactionModel
                     {
@@ -142,16 +117,10 @@
                         TransKey = data.SessionKey,
                         CustId = data.CustId,
                         SubAccId = data.SubAccId,
-                        UserAgentInfo = userAgentInfo,
-                        CookieCode = cookie,
-                        BrowserInfo = browserInfoModel,
-                        BrowserInfoAttribute = browserInfoAttributeModel,
-                        FingerprintAttribute = transactionService.TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo)
+                        BotD = data.BotD                        
                     };
 
                     easyNetQService.PushData(transaction);
-
-                    RedisRemoveAll(subscriber.SubscriberId, data.SessionKey);
 
                 }
                 else
@@ -165,12 +134,6 @@
         public void RemoveRedisByTag([FromForm] string tag)
         {
             redisService.RedisDatabase.RemoveByTagAsync(tag);
-        }
-
-        [HttpPost("removeRedis")]
-        public void RemoveRedis([FromForm] int SubscriberId, [FromForm] string SessionKey)
-        {
-            RedisRemoveAll(SubscriberId, SessionKey);
         }
 
         [HttpPost("removeRedisBySubcriberId")]
@@ -200,8 +163,9 @@
 
             HttpContext.Response.Headers.Add("ETag", new[] { cookie });
 
-            var redisKey = redisService.GetHashKey(subscriberId, sessionKey);
-            RedisHashSet(redisKey, RedisKey.Cookie, cookie);
+            var redisKey = GetHashKey(subscriberId, sessionKey);
+
+            redisService.HashSetAsync(redisKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie);
         }
 
         [HttpGet("whoami")]
@@ -215,28 +179,7 @@
                 LocalIP = localIpAddress.ToString(),
                 ServerName = Environment.MachineName,
                 ServerTime = DateTime.Now
-
             };
-        }
-
-        private async Task RedisHashSet<T>(string hashKey, RedisKey redisKey, T value)
-        {
-            var key = Enum.GetName(typeof(RedisKey), redisKey);
-
-            if (!await redisService.RedisDatabase.HashExistsAsync(hashKey, key))
-            {
-                await redisService.RedisDatabase.HashSetAsync(hashKey, key, value, flag: StackExchange.Redis.CommandFlags.FireAndForget);
-            }
-
-            await redisService.RedisDatabase.UpdateExpiryAsync(hashKey, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), flag: StackExchange.Redis.CommandFlags.FireAndForget);
-        }
-
-        private async void RedisRemoveAll(int subscriberId, string sessionKey)
-        {
-            var hashKey = redisService.GetHashKey(subscriberId, sessionKey);
-            var keys = Enum.GetNames(typeof(RedisKey));
-
-            await redisService.RedisDatabase.HashDeleteAsync(hashKey, keys);
         }
 
         private void AddHeaderToRedis(string hashKey)
@@ -253,7 +196,12 @@
                 Url = url
             };
 
-            RedisHashSet(hashKey, RedisKey.Header, headerModel);
+            redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
+        }
+
+        private static string GetHashKey(int subscriberId, string sessionKey)
+        {
+            return $"{subscriberId}:{sessionKey}";
         }
 
     }

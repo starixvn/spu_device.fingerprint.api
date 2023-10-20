@@ -1,14 +1,11 @@
-﻿using Device.FingerPrint.Core;
+﻿using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Model;
-using Device.FingerPrint.PortalAPI.Models;
-using Device.FingerPrint.PortalAPI.Ultilities;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 
-namespace Device.FingerPrint.PortalAPI.Services
+namespace Device.FingerPrint.QueueConsumer.Services
 {
     public interface IBrowserInfoService
     {

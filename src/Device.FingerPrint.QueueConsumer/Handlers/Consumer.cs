@@ -4,34 +4,92 @@
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
+    using Device.FingerPrint.QueueConsumer.Services;
+    using Device.FingerPrint.Redis;
     using EasyNetQ;
     using EasyNetQ.Consumer;
     using Fanex.Logging;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
+    using RabbitMQ.Client;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
     public class Consumer : BackgroundService
     {
         private readonly ITransactionService transactionService;
+        private readonly IRawTransactionService rawTransactionService;
         private readonly IAppSettings appSettings;
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
+        private readonly IRedisService redisService;
+        private readonly IBrowserInfoService browserInfoService;
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
 
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
-                        , ILogger logger)
+                        , ILogger logger
+                        , IRedisService redisService
+                        , IBrowserInfoService browserInfoService
+                        , IRawTransactionService rawTransactionService)
         {
             this.transactionService = transactionService;
             this.appSettings = appSettings;
-            this._logger = logger;
+            this.logger = logger;
+            this.redisService = redisService;
+            this.browserInfoService = browserInfoService;
 
             listTransactionInsertModel = new List<TransactionEntity>();
+            this.rawTransactionService = rawTransactionService;
+
+        }
+
+        private async void GetTransactionAttribute(TransactionModel model)
+        {
+            if (model != null)
+            {
+
+                var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
+
+                var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
+                var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                var browserInfoTask = redisService.HashGetAsync<BrowserDetectModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo));
+                var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
+                var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
+
+                try
+                {
+                    await Task.WhenAll(fingerPrintTask, headerTask, browserInfoTask, cookieTask, headlessTask);
+
+                    var browserInfoModel = browserInfoService.GetBrowserInfo(headerTask.Result, browserInfoTask.Result);
+                    var headless = headlessTask.Result;
+                    var header = headerTask.Result;
+                    var browserInfo = browserInfoTask.Result;
+                    var fingerPrint = fingerPrintTask.Result;
+
+                    if (headless != null)
+                    {
+                        browserInfoModel.HeadlessScore = headless.Score;
+                        browserInfoModel.HeadlessDetail = headless.TestsDetail;
+                    }
+
+                    var userAgentInfo = rawTransactionService.ParseUserAgentInfo(model.UserAgent);
+
+                    var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header, browserInfo);
+
+                    model.BrowserInfoAttribute = browserInfoAttributeModel;
+                    model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
+
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex.Message);
+                }
+            }
         }
 
         private static TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -62,7 +120,7 @@
         private void StartConsuming()
         {
             var easyNetQConnector = RabbitMQBus();
-            _logger.Info("Start Consuming!");
+            logger.Info("Start Consuming!");
 
             try
             {
@@ -70,7 +128,10 @@
                 {
                     x.Add<TransactionModel>((message, info) =>
                     {
+                        GetTransactionAttribute(message.Body);
+
                         var transaction = TranformTransactionEntity(message.Body);
+
                         listTransactionInsertModel.Add(transaction);
 
                         if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
@@ -79,11 +140,15 @@
                             {
                                 transactionService.InsertTransaction(listTransactionInsertModel);
 
+                                ClearRedis(listTransactionInsertModel);
+
                                 listTransactionInsertModel.Clear();
+
+
                             }
                             catch (Exception ex)
                             {
-                                _logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
+                                logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
                             }
                         }
                     });
@@ -91,7 +156,7 @@
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message);
+                logger.Error(ex.Message);
             }
         }
 
@@ -111,6 +176,22 @@
                     .Bind();
 
             return easyNetQConnector;
+        }
+
+        private void ClearRedis(List<TransactionEntity> transactions)
+        {
+            var groupByTrans = transactions.GroupBy(x => new
+            {
+                x.SubscriberId,
+                x.SessionKey
+            });
+
+            foreach (var trans in groupByTrans)
+            {
+                var hashKey = $"{trans.Key.SubscriberId}:{trans.Key.SessionKey}";
+
+                redisService.HashDeleteAsync(hashKey, RedisString.GetRedisKeyNames());
+            }
         }
 
         protected override Task ExecuteAsync(CancellationToken stoppingToken)

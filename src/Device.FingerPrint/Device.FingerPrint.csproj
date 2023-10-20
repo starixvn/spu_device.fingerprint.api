@@ -5,8 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Features\ClientTransaction\Model\**" />
     <Compile Remove="Features\SummaryTransaction\Model\**" />
+    <EmbeddedResource Remove="Features\ClientTransaction\Model\**" />
     <EmbeddedResource Remove="Features\SummaryTransaction\Model\**" />
+    <None Remove="Features\ClientTransaction\Model\**" />
     <None Remove="Features\SummaryTransaction\Model\**" />
   </ItemGroup>
 
@@ -22,7 +25,6 @@
 
   <ItemGroup>
     <Folder Include="Features\Archive\Model\" />
-    <Folder Include="Features\ClientTransaction\Model\" />
   </ItemGroup>
 
 </Project>

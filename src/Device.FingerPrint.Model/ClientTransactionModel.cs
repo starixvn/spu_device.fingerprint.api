@@ -27,5 +27,7 @@ namespace Device.FingerPrint.Model
         public long SubAccId { get; set; }
 
         public DateTime LoginTime { get; set; }
+
+        public string BotD { get; set; }
     }
 }

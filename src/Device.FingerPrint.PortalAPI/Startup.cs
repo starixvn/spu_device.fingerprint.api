@@ -2,6 +2,7 @@ using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Middleware;
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
+using Device.FingerPrint.Redis;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;

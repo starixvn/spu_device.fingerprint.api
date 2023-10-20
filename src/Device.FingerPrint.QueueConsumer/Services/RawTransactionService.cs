@@ -1,12 +1,10 @@
-﻿using Device.FingerPrint.Core;
+﻿using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Model;
-using Device.FingerPrint.PortalAPI.Models;
-using Device.FingerPrint.PortalAPI.Ultilities;
 using Newtonsoft.Json;
 
-namespace Device.FingerPrint.PortalAPI.Services
+namespace Device.FingerPrint.QueueConsumer.Services
 {
-    public interface ITransactionService
+    public interface IRawTransactionService
     {
 
         UserAgentInfoModel ParseUserAgentInfo(string userAgent);
@@ -15,12 +13,12 @@ namespace Device.FingerPrint.PortalAPI.Services
 
     }
 
-    public class TransactionService : ITransactionService
+    public class RawTransactionService : IRawTransactionService
     {
-        private readonly ITransactionAttributeService transactionAttributeService;
+        private readonly IRawTransactionAttributeService transactionAttributeService;
         private readonly ICrypto crypto;
 
-        public TransactionService(ICrypto crypto, ITransactionAttributeService transactionAttributeService)
+        public RawTransactionService(ICrypto crypto, IRawTransactionAttributeService transactionAttributeService)
         {
             this.transactionAttributeService = transactionAttributeService;
             this.crypto = crypto;

@@ -1,4 +1,4 @@
-﻿namespace Device.FingerPrint.PortalAPI.Models
+﻿namespace Device.FingerPrint.Model
 {
     public class HeaderModel
     {

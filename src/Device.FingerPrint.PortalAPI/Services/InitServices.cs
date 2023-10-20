@@ -17,9 +17,6 @@ namespace Device.FingerPrint.PortalAPI.Services
 
         private static void InitService(this IServiceCollection services)
         {
-            services.AddSingleton<ITransactionService, TransactionService>();
-            services.AddSingleton<ITransactionAttributeService, TransactionAttributeService>();
-            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
             services.AddSingleton<ICrypto, Crypto>();
         }
 
