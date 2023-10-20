@@ -113,12 +113,9 @@ var fpNewCookie = (function (exports) {
             try {
                 if (isSet) {
                     let expires = '';
-                    const days = 30;
-                    if (days) {
-                        const date = new Date();
-                        date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
-                        expires = '; expires=' + date.toUTCString();
-                    }
+                    let date = new Date();
+                    date.setFullYear(date.getFullYear() + 1);
+                    expires = '; expires=' + date.toUTCString();
                     const setValue = key + '=' + (value || '') + expires + '; SameSite=None; Secure; path=/';
                     document.cookie = setValue;
                     resolve(null);

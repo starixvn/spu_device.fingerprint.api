@@ -143,6 +143,7 @@ namespace Device.FingerPrint.DCS.QueueConsumer.Handlers
                 SubscriberId = message.SubscriberId,
                 TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
                 IP = message.IP,
+                FakeIP = message.FakeIP,
                 IPId = message.IP.Ip2Long().IpNumber,
                 PluginID = 0,
                 Flagged = (int)flagged,

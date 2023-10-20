@@ -62,7 +62,7 @@ namespace DemoNetCore.Controllers
                     UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
                     Url = HttpContext.Request.GetDisplayUrl(),
                     ClientIp = GetRealIp(),
-                    FakeIp = GetFakeIp(),
+                    FakeIP = GetFakeIp(),
                 });
 
                 FpsIntegrationVer105(loginModel.Username, "Login", "Demo Page Login", "Alpha", DateTime.Now);

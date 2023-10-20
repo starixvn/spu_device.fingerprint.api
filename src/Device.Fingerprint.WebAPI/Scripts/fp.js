@@ -155,12 +155,12 @@ var fp = {
     },
     checkDomReady: function () {
         fp.requireJS(apiUrl + '/scr/' + version + '/ce').then(() => {
-            fpNewCookie.getStorage('newgfp').then((newCookie) => {
+            fpNewCookie.getStorage('gps.session').then((newCookie) => {
                 if (newCookie && newCookie.length > 0) {
                     sessionKey = newCookie;
                 }
 
-                fpNewCookie.setStorage('newgfp', sessionKey);
+                fpNewCookie.setStorage('gps.session', sessionKey);
             })
             .then(() => {
                 fp.inject(sessionKey);
