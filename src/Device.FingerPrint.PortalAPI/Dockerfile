@@ -10,6 +10,8 @@ COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
 
 COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
+COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
+
 COPY ["./src/Device.FingerPrint.PortalAPI/Device.FingerPrint.PortalAPI.csproj", "Device.FingerPrint.PortalAPI/"]
 
 WORKDIR "/src/Device.FingerPrint.PortalAPI"

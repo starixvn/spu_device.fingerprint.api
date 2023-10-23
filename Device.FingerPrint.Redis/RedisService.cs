@@ -25,6 +25,8 @@
     {
         private readonly IRedisDatabase redisDatabase;
 
+        private const bool isSetNotExist = true;
+
         public RedisService(IRedisClient redisClient)
         {
             redisDatabase = redisClient.GetDefaultDatabase();
@@ -35,7 +37,7 @@
 
         public Task<bool> HashSetAsync<T>(string hashKey, string key, T value)
         {
-            return redisDatabase.HashSetAsync<T>(hashKey, key, value, flag: CommandFlags.FireAndForget);
+            return redisDatabase.HashSetAsync<T>(hashKey, key, value, nx: isSetNotExist, flag: CommandFlags.FireAndForget);
         }       
 
         public async Task<T?> HashGetAsync<T>(string hashKey, string key)
@@ -60,11 +62,8 @@
 
         public async Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt)
         {
+            await HashSetAsync(hashKey, key, value);
 
-            if (!await redisDatabase.HashExistsAsync(hashKey, key))
-            {
-                await HashSetAsync(hashKey, key, value);
-            }
             await UpdateExpiryAsync(hashKey, expiresAt);
         }
     }
