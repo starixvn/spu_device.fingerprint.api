@@ -28,6 +28,9 @@ namespace Device.FingerPrint.Core
 
         string JWTPassword { get; }
 
+        int TransBatchSize { get; }
+
+        IConfiguration Configuration { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -48,7 +51,9 @@ namespace Device.FingerPrint.Core
         private readonly bool ignoreClientTransLogs;
         private readonly long redisExpired;
 
-        private readonly string jWTPassword;    
+        private readonly string jWTPassword;
+
+        private readonly int transBatchSize;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -77,6 +82,8 @@ namespace Device.FingerPrint.Core
             redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
+
+            transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "1" : GetValue<string>("Consumer:TransBatchSize"));
         }
 
         public string ApiUrl => apiUrl;
@@ -103,6 +110,8 @@ namespace Device.FingerPrint.Core
 
         public string JWTPassword => jWTPassword;
 
+        public int TransBatchSize => transBatchSize;
+
         public T GetValue<T>(string key)
         {
             try
@@ -125,5 +134,7 @@ namespace Device.FingerPrint.Core
 
             return schedulerSection.Get<T>();
         }
+
+        public IConfiguration Configuration => configuration;
     }
 }

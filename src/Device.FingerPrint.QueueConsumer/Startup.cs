@@ -1,5 +1,6 @@
 namespace Device.FingerPrint.QueueConsumer
 {
+    using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.Transaction.Services;
@@ -20,9 +21,11 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
+    using StackExchange.Redis.Extensions.Core;
     using StackExchange.Redis.Extensions.Core.Abstractions;
     using StackExchange.Redis.Extensions.Core.Configuration;
     using StackExchange.Redis.Extensions.Core.Implementations;
+    using StackExchange.Redis.Extensions.MsgPack;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -67,11 +70,11 @@ namespace Device.FingerPrint.QueueConsumer
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-            services.AddHostedService<Consumer>();
-
             RegisterRedis(services);
 
             InitService(services);
+
+            services.AddHostedService<Consumer>();
         }
         private void FanexDataConfig(IAppSettings appSettings)
         {
@@ -118,7 +121,7 @@ namespace Device.FingerPrint.QueueConsumer
 
             services.AddSingleton<IRedisClient, RedisClient>();
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
-            //services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
+            services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
             services.AddSingleton<IRedisService, RedisService>();
         }
 
