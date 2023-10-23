@@ -115,7 +115,7 @@
                         TransTime = DateTime.Now,
                         Url = urlAddress.GetLeftPart(UriPartial.Path),
                         Action = data.Action,
-                        TransKey = data.SessionKey,
+                        TransKey = data.TransKey,
                         CustId = data.CustId,
                         SubAccId = data.SubAccId,
                         BotD = data.BotD                        

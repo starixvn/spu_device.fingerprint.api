@@ -13,14 +13,11 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
-    using RabbitMQ.Client;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
-    using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public class Consumer : BackgroundService
     {
