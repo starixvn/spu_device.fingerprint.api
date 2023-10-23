@@ -83,7 +83,7 @@ namespace Device.FingerPrint.Core
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
 
-            transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "1" : GetValue<string>("Consumer:TransBatchSize"));
+            transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "0" : GetValue<string>("Consumer:TransBatchSize"));
         }
 
         public string ApiUrl => apiUrl;
