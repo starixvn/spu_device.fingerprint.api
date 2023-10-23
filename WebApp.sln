@@ -53,7 +53,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demoAPI", "src\demoAPI\demo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RSAKeyGenerator", "RSAKeyGenerator\RSAKeyGenerator.csproj", "{5000AFC8-BC87-44DC-A97C-30AA0981CF5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.Redis", "Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj", "{79E46050-A1E4-460B-89C7-C9A71CCD2968}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.Redis", "src\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj", "{79E46050-A1E4-460B-89C7-C9A71CCD2968}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
