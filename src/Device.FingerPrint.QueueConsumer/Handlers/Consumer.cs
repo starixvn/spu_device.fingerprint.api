@@ -17,8 +17,10 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text;
     using System.Threading;
     using System.Threading.Tasks;
+    using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public class Consumer : BackgroundService
     {
@@ -49,28 +51,30 @@
 
         }
 
-        private async void GetTransactionAttribute(TransactionModel model)
+        private async Task GetTransactionAttribute(TransactionModel model)
         {
-            if (model != null)
+            try
             {
-
-                var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
-
-                var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                var browserInfoTask = redisService.HashGetAsync<BrowserDetectModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo));
-                var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-                var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
-
-                try
+                if (model != null)
                 {
-                    await Task.WhenAll(fingerPrintTask, headerTask, browserInfoTask, cookieTask, headlessTask);
 
-                    var browserInfoModel = browserInfoService.GetBrowserInfo(headerTask.Result, browserInfoTask.Result);
-                    var headless = headlessTask.Result;
+                    var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
+
+                    var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
+                    var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                    var browserInfoTask = redisService.HashGetAsync<BrowserDetectModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo));
+                    var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
+                    var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
+
+                    await Task.WhenAll(fingerPrintTask, headerTask, browserInfoTask, cookieTask, headlessTask).ConfigureAwait(false);
+
+                    var fingerPrint = fingerPrintTask.Result;
                     var header = headerTask.Result;
                     var browserInfo = browserInfoTask.Result;
-                    var fingerPrint = fingerPrintTask.Result;
+                    var cookie = cookieTask.Result;
+                    var headless = headlessTask.Result;
+
+                    var browserInfoModel = browserInfoService.GetBrowserInfo(header, browserInfo);
 
                     if (headless != null)
                     {
@@ -79,17 +83,18 @@
                     }
 
                     var userAgentInfo = rawTransactionService.ParseUserAgentInfo(model.UserAgent);
-
                     var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header, browserInfo);
 
                     model.BrowserInfoAttribute = browserInfoAttributeModel;
                     model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
-
+                    model.CookieCode = cookie;
+                    model.UserAgentInfo = userAgentInfo;
+                    model.BrowserInfo = browserInfoModel;
                 }
-                catch (Exception ex)
-                {
-                    logger.Error(ex.Message);
-                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
             }
         }
 
@@ -125,11 +130,12 @@
 
             try
             {
+
                 easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
-                    x.Add<TransactionModel>((message, info) =>
+                    x.Add<TransactionModel>(async (message, info) =>
                     {
-                        GetTransactionAttribute(message.Body);
+                        await GetTransactionAttribute(message.Body);
 
                         var transaction = TranformTransactionEntity(message.Body);
 

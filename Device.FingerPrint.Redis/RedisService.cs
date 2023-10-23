@@ -14,11 +14,11 @@
 
         Task<bool> HashExistAsync<T>(string hashKey, string key);
 
-        Task<bool> UpdateExpiryAsync(string key, TimeSpan expiresAt);
+        Task<bool> UpdateExpiryAsync(string key, DateTimeOffset expiresAt);
 
         Task<long> HashDeleteAsync(string hashKey, string[] keys);
 
-        Task<bool> HashSetAndExpiryAsync<T>(string hashKey, string key, T value, TimeSpan expiresAt);
+        Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt);
     }
 
     public class RedisService : IRedisService
@@ -32,14 +32,15 @@
 
         public IRedisDatabase RedisDatabase => redisDatabase;
 
+
         public Task<bool> HashSetAsync<T>(string hashKey, string key, T value)
         {
             return redisDatabase.HashSetAsync<T>(hashKey, key, value, flag: CommandFlags.FireAndForget);
         }       
 
-        public Task<T?> HashGetAsync<T>(string hashKey, string key)
+        public async Task<T?> HashGetAsync<T>(string hashKey, string key)
         {
-            return redisDatabase.HashGetAsync<T>(hashKey, key);
+            return await redisDatabase.HashGetAsync<T>(hashKey, key);
         }
 
         public Task<bool> HashExistAsync<T>(string hashKey, string key)
@@ -47,7 +48,7 @@
             return redisDatabase.HashExistsAsync(hashKey, key);
         }
 
-        public Task<bool> UpdateExpiryAsync(string key, TimeSpan expiresAt)
+        public Task<bool> UpdateExpiryAsync(string key, DateTimeOffset expiresAt)
         {
             return redisDatabase.UpdateExpiryAsync(key, expiresAt, CommandFlags.FireAndForget);
         }
@@ -57,16 +58,14 @@
             return redisDatabase.HashDeleteAsync(hashKey, keys);    
         }
 
-        public Task<bool> HashSetAndExpiryAsync<T>(string hashKey, string key, T value, TimeSpan expiresAt)
+        public async Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt)
         {
-            var result = redisDatabase.HashSetAsync(hashKey, key, value);
 
-            if (result.IsCompleted)
-            {                
-                return UpdateExpiryAsync(hashKey, expiresAt);
+            if (!await redisDatabase.HashExistsAsync(hashKey, key))
+            {
+                await HashSetAsync(hashKey, key, value);
             }
-
-            return result;
+            await UpdateExpiryAsync(hashKey, expiresAt);
         }
     }
 }

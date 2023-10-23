@@ -54,7 +54,7 @@
             {
                 var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
                 AddHeaderToRedis(hashKey);
-                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie);
+                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -65,7 +65,7 @@
             if (data != null)
             {
                 var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless), data.HeadlessBrowser);
+                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless), data.HeadlessBrowser, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -76,7 +76,7 @@
             if (data != null)
             {
                 var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo), data.BrowserDetect);
+                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo), data.BrowserDetect, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -87,7 +87,7 @@
             if (data != null)
             {
                 var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint);
+                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -105,6 +105,7 @@
 
                     var transaction = new TransactionModel
                     {
+                        SessionKey = data.SessionKey,
                         SubscriberId = subscriber.SubscriberId,
                         ClientIP = data.ClientIp,
                         FakeIP = data.FakeIP,
@@ -165,7 +166,7 @@
 
             var redisKey = GetHashKey(subscriberId, sessionKey);
 
-            redisService.HashSetAsync(redisKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie);
+            redisService.HashSetAndExpiryAsync(redisKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
         }
 
         [HttpGet("whoami")]
