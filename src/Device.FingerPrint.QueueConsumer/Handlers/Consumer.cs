@@ -63,7 +63,7 @@
                     var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
                     var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
 
-                    await Task.WhenAll(fingerPrintTask, headerTask, browserInfoTask, cookieTask, headlessTask).ConfigureAwait(false);
+                    await Task.WhenAll(fingerPrintTask, headerTask, browserInfoTask, cookieTask, headlessTask);
 
                     var fingerPrint = fingerPrintTask.Result;
                     var header = headerTask.Result;
