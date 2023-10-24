@@ -123,6 +123,11 @@
                     };
 
                     easyNetQService.PushData(transaction);
+
+                    if(data.LoginName.ToLower() == "sutest01")
+                    {
+                        logger.Info(JsonConvert.SerializeObject(data));
+                    }
                 }
                 else
                 {
