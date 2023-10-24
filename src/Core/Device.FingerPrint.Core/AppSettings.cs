@@ -30,6 +30,8 @@ namespace Device.FingerPrint.Core
 
         int TransBatchSize { get; }
 
+        bool BotDBotComponentForHuman { get; }
+
         IConfiguration Configuration { get; }
     }
 
@@ -54,6 +56,7 @@ namespace Device.FingerPrint.Core
         private readonly string jWTPassword;
 
         private readonly int transBatchSize;
+        private readonly bool botDBotComponentForHuman;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -84,6 +87,9 @@ namespace Device.FingerPrint.Core
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
 
             transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "0" : GetValue<string>("Consumer:TransBatchSize"));
+
+            botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
+
         }
 
         public string ApiUrl => apiUrl;
@@ -111,6 +117,8 @@ namespace Device.FingerPrint.Core
         public string JWTPassword => jWTPassword;
 
         public int TransBatchSize => transBatchSize;
+
+        public bool BotDBotComponentForHuman => botDBotComponentForHuman;
 
         public T GetValue<T>(string key)
         {

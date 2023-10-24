@@ -36,10 +36,6 @@ namespace Device.FingerPrint.Model
 
         public UserAgentInfoModel UserAgentInfo { get; set; }
 
-        public BrowserInfoModel BrowserInfo { get; set; }
-
-        public BrowserInfoAttributeModel BrowserInfoAttribute { get; set; }
-
         public string BotD { get; set; }
     }
 }

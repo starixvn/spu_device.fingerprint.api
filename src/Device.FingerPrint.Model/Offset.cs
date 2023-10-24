@@ -5,8 +5,6 @@ namespace Device.FingerPrint.Model
     {
         SummaryTransaction = 6,
 
-        UpdateBrowserInfo = 10,
-
         UpdateModifiedDateDevice = 11,
 
         UpdateEvolution = 12,

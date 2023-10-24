@@ -129,7 +129,6 @@ namespace Device.FingerPrint.QueueConsumer
         {
             services.AddSingleton<IRawTransactionService, RawTransactionService>();
             services.AddSingleton<IRawTransactionAttributeService, RawTransactionAttributeService>();
-            services.AddSingleton<IBrowserInfoService, BrowserInfoService>();
             services.AddSingleton<ICrypto, Crypto>();
         }
     }

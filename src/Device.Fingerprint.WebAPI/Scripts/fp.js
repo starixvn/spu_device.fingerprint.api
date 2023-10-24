@@ -135,27 +135,6 @@
                 fp.log(portalAPIUrl, "Load Script hl", err.message + '|' + sessionKey);
             });
         },
-        postBiData: function (gjt) {
-            fp.requireJS(apiUrl + '/scr/' + version + '/bi').then(() => {
-                return fpBrowserDetect.getBrowserInfo();
-            }).then(res => {
-                var data = {
-                    'BrowserDetect': {
-                        "OSName": res.OSName,
-                        "BrowserName": res.BrowserName,
-                        "Platform": res.Platform,
-                        "Vendor": res.Vendor,
-                        "IsMobileDevice": res.IsMobileDevice
-                    },
-                    'SessionKey': sessionKey,
-                    'SubscriberId': subscriberId
-                };
-
-                fp.postAuthor(portalAPIUrl + '/bi', data, gjt);
-            }).catch((err) => {
-                fp.log(portalAPIUrl, "Load Script bi", err.message + '|' + sessionKey);
-            });
-        },
         checkDomReady: function () {
             fp.requireJS(apiUrl + '/scr/' + version + '/ce').then(() => {
                 fpNewCookie.getStorage('gps.session').then((newCookie) => {
@@ -178,7 +157,6 @@
                                     fp.postFpData(gjt);
                                     fp.postCeData(gjt);
                                     fp.postHlData(gjt);
-                                    fp.postBiData(gjt);
                                 }).catch((err) => {
                                     fp.log(portalAPIUrl, "Load Script crt", err.message + '|' + sessionKey);
                                 });

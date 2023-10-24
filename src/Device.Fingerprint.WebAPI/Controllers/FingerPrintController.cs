@@ -123,27 +123,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/{version}/bi")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult BrowserInfoScript(string version)
-        {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.js";
-
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.min.js";
-            }
-
-            var bundleFile = new BundleFile(scriptPath);
-
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-            {
-                return new JavascriptResult(bundleFile.Content);
-            }
-
-            return new EmptyResult();
-        }
-
         [HttpGet("scr/{version}/fp")]
        // [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
         public ActionResult FingerPrintScript(string version)

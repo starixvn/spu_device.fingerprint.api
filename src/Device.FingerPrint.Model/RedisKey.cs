@@ -7,7 +7,6 @@ namespace Device.FingerPrint.Model
         Cookie,
         Headless,
         FingerPrint,
-        BrowserInfo,
         Header
     }
 

@@ -71,17 +71,6 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("bi")]
-        public void BrowserInfo([FromBody] BrowserDetectParameter data)
-        {
-            if (data != null)
-            {
-                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo), data.BrowserDetect, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
-            }
-        }
-
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] FingerprintParameter data)
         {
@@ -119,7 +108,7 @@
                         TransKey = data.TransKey,
                         CustId = data.CustId,
                         SubAccId = data.SubAccId,
-                        BotD = data.BotD                        
+                        BotD = data.BotD
                     };
 
                     easyNetQService.PushData(transaction);                    

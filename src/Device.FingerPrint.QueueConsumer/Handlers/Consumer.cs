@@ -13,6 +13,7 @@
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -26,7 +27,6 @@
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
         private readonly IRedisService redisService;
-        private readonly IBrowserInfoService browserInfoService;
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
 
@@ -34,14 +34,12 @@
                         , ITransactionService transactionService
                         , ILogger logger
                         , IRedisService redisService
-                        , IBrowserInfoService browserInfoService
                         , IRawTransactionService rawTransactionService)
         {
             this.transactionService = transactionService;
             this.appSettings = appSettings;
             this.logger = logger;
             this.redisService = redisService;
-            this.browserInfoService = browserInfoService;
 
             listTransactionInsertModel = new List<TransactionEntity>();
             this.rawTransactionService = rawTransactionService;
@@ -59,34 +57,21 @@
 
                     var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
                     var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                    var browserInfoTask = redisService.HashGetAsync<BrowserDetectModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.BrowserInfo));
                     var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
                     var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
 
-                    await Task.WhenAll(fingerPrintTask, headerTask, browserInfoTask, cookieTask, headlessTask);
+                    await Task.WhenAll(fingerPrintTask, headerTask, cookieTask, headlessTask);
 
                     var fingerPrint = fingerPrintTask.Result;
                     var header = headerTask.Result;
-                    var browserInfo = browserInfoTask.Result;
                     var cookie = cookieTask.Result;
                     var headless = headlessTask.Result;
 
-                    var browserInfoModel = browserInfoService.GetBrowserInfo(header, browserInfo);
-
-                    if (headless != null)
-                    {
-                        browserInfoModel.HeadlessScore = headless.Score;
-                        browserInfoModel.HeadlessDetail = headless.TestsDetail;
-                    }
-
                     var userAgentInfo = rawTransactionService.ParseUserAgentInfo(model.UserAgent);
-                    var browserInfoAttributeModel = browserInfoService.GetBrowserInfoAttribute(header, browserInfo);
 
-                    model.BrowserInfoAttribute = browserInfoAttributeModel;
-                    model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, browserInfo, userAgentInfo);
+                    model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, userAgentInfo);
                     model.CookieCode = cookie;
                     model.UserAgentInfo = userAgentInfo;
-                    model.BrowserInfo = browserInfoModel;
                 }
             }
             catch (Exception ex)
@@ -95,8 +80,11 @@
             }
         }
 
-        private static TransactionEntity TranformTransactionEntity(TransactionModel model)
+        private TransactionEntity TranformTransactionEntity(TransactionModel model)
         {
+            var botDModel = TransformBotdModel(model.BotD);
+            var flaggedCode = GetFlaggedCode(botDModel, model.UserAgent, model.FingerprintAttribute is null);
+
             return new TransactionEntity
             {
                 LoginName = model.LoginName,
@@ -115,8 +103,9 @@
                 CookieCode = model.CookieCode,
                 FingerprintAttribute = model.FingerprintAttribute,
                 UserAgentInfo = model.UserAgentInfo,
-                BrowserInfo = model.BrowserInfo,
-                BrowserInfoAttribute = model.BrowserInfoAttribute
+                FlaggedCode = flaggedCode,
+                BotDetection = GetBotDetectionTrue(botDModel),
+                BotComponent = GetBotComponent(botDModel, flaggedCode)
             };
         }
 
@@ -162,6 +151,106 @@
             {
                 logger.Error(ex.Message);
             }
+        }
+
+
+
+        private BotDModel TransformBotdModel(string encodedBotD)
+        {
+            if (!string.IsNullOrEmpty(encodedBotD))
+            {
+                var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
+
+                if (!string.IsNullOrEmpty(botD))
+                {
+                    return JsonConvert.DeserializeObject<BotDModel>(botD);
+                }
+            }
+
+            return new BotDModel();
+        }
+
+        private string GetFlaggedCode(BotDModel botDModel, string userAgent, bool emptyFP)
+        {
+            var flaggedCode = botDModel?.Result?.Bot == true ? botDModel.Result.BotKind : string.Empty;
+            if (string.IsNullOrEmpty(flaggedCode))
+            {
+                var browserless = Browserless(userAgent, emptyFP);
+                return browserless.ToString();
+            }
+
+            return flaggedCode;
+        }
+
+        private string GetBotDetectionTrue(BotDModel botDModel)
+        {
+            try
+            {
+                var detection = botDModel?.Detection;
+                if (!string.IsNullOrEmpty(detection))
+                {
+                    JObject jObject = JObject.Parse(detection);
+                    IEnumerable<string> filteredKeys = jObject.Properties()
+                        .Where(p => p.Value.Value<bool>("bot"))
+                        .Select(p => p.Name);
+
+                    return string.Join(",", filteredKeys);
+                }
+            }
+            catch { }
+
+            return string.Empty;
+        }
+
+        private string GetBotComponent(BotDModel botDModel, string flaggedCode)
+        {
+            if (!appSettings.BotDBotComponentForHuman)
+            {
+                if (flaggedCode != Flagged.Human.ToString())
+                {
+                    return botDModel?.Component ?? string.Empty;
+                }
+            }
+            else
+            {
+                return botDModel?.Component ?? string.Empty;
+            }
+
+            return string.Empty;
+        }
+
+        private Flagged Browserless(string userAgent, bool emptyFP)
+        {
+            try
+            {
+                if (!string.IsNullOrWhiteSpace(userAgent) && IsHeadless(userAgent))
+                {
+                    return Flagged.Headless;
+                }
+
+                if (emptyFP)
+                {
+                    return Flagged.EmptyDevice;
+                }
+
+                if (string.IsNullOrWhiteSpace(userAgent))
+                {
+                    return Flagged.EmptyUserAgent;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message);
+            }
+
+            return Flagged.Human;
+        }
+
+        private bool IsHeadless(string userAgent)
+        {
+            if (userAgent.Contains("Headless")) return true;
+
+            return false;
         }
 
         private EasyNetQConnector RabbitMQBus()

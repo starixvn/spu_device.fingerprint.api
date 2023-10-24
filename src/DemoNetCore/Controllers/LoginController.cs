@@ -49,23 +49,7 @@ namespace DemoNetCore.Controllers
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
 
-                var fpsService = new TransactionServices(subscriberName, postAPIUrl);
-
-                fpsService.CheckTransaction(new TransactionModel
-                {
-                    SessionKey = HttpContext.Request.Form["__fdi"].ToString(),
-                    Action = "Login",
-                    CustId = 0,
-                    LoginName = loginModel.Username,
-                    LoginTime = DateTime.Now,
-                    SubAccId = 0,
-                    UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
-                    Url = HttpContext.Request.GetDisplayUrl(),
-                    ClientIp = GetRealIp(),
-                    FakeIP = GetFakeIp(),
-                });
-
-                FpsIntegrationVer105(loginModel.Username, "Login", "Demo Page Login", "Alpha", DateTime.Now);
+                FpsIntegrationVer115(loginModel.Username, "Login", "Demo Page Login", "Alpha", DateTime.Now);
                 return RedirectToAction("index", "home");
             }
 
@@ -81,28 +65,11 @@ namespace DemoNetCore.Controllers
         }
 
 
-        private void FpsIntegrationVer105(string account, string action, string actionResult, string subscriber, DateTime loginTime)
+        private void FpsIntegrationVer115(string account, string action, string actionResult, string subscriber, DateTime loginTime)
         {
             var fpsAPI = configuration.GetSection("FPS_API").Value;
-            var fpsService = new FPS.Client.NetStandard.Service(fpsAPI, HttpContext.Request);
-            var httpRequestData = new HttpRequestModel()
-            {
-                AcceptTypes = Request.Headers["Accept"].ToString() ?? string.Empty,
-                UserAgent = Request.Headers["User-Agent"].ToString() ?? string.Empty,              
-                Di = Request.Form["__di"].ToString(),
-                Token = Request.Form["__tk"].ToString(),
-                Url = Request.Scheme.ToString() + "://" + Request.Host.ToString(),
-                DebugInfo = Request.Form["detecas-analysis"].ToString(),
-                CaptchaResult = Request.Form["captcha_result"].ToString(),
-                Account = account,
-                Action = action,
-                ActionResult= actionResult,
-                Bi = Request.Form["__bi"].ToString(),
-                LoginTime= loginTime,
-                Subscriber= subscriber                
-            };
-
-            fpsService.CheckTransaction(httpRequestData);
+            var fpsService = new FPS.Client.NetStandard.Service(); // (fpsAPI, HttpContext.Request);
+            fpsService.InitialRequest(fpsAPI, HttpContext.Request).CheckTransaction(account, subscriber, action, loginTime);
         }
 
          private string GetHeaderIP(string param)

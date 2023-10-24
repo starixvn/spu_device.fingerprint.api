@@ -9,7 +9,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         UserAgentInfoModel ParseUserAgentInfo(string userAgent);
 
-        FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, BrowserDetectModel browserInfo, UserAgentInfoModel userAgentInfo);
+        FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo);
 
     }
 
@@ -24,7 +24,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.crypto = crypto;
         }        
 
-        public FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, BrowserDetectModel browserInfo, UserAgentInfoModel userAgentInfo)
+        public FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo)
         {
             if (fpModel == null) return new FingerprintAttributeModel();
 
@@ -44,12 +44,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 result.BrowserName = userAgentInfo.ClientName;
                 result.BrowserVersion = userAgentInfo.ClientVersion;
                 result.OSName = userAgentInfo.OSName;
-            }
-
-            if (browserInfo != null)
-            {
-                result.Platform = browserInfo.Platform;
-            }                        
+            }                     
 
             result.BrowserInstanceCode = HashBrowserInstanceCode(result);
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);

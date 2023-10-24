@@ -37,9 +37,10 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public UserAgentInfoModel UserAgentInfo { get; set; }
 
-        public BrowserInfoModel BrowserInfo { get; set; }
+        public string FlaggedCode { get; set; }
 
-        public BrowserInfoAttributeModel BrowserInfoAttribute { get; set; }
+        public string BotDetection { get; set; }
 
+        public string BotComponent { get; set; }
     }
 }
