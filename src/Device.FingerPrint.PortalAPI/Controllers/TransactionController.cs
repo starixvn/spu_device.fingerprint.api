@@ -122,10 +122,7 @@
                         BotD = data.BotD                        
                     };
 
-                    logger.Info($"{JsonConvert.SerializeObject(data)}");
-
                     easyNetQService.PushData(transaction);
-
                 }
                 else
                 {
