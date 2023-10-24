@@ -1,6 +1,8 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Logging;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -40,7 +42,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 catch (Exception ex)
                 {
                     var rawTransIds = string.Join(",", rawTrans.Item1);
-                    _logger.Error(ex.Message + "\n" + rawTransIds);
+                    WriteLogException(ex, rawTransIds);
                 }
             }));
 
@@ -53,7 +55,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 catch (Exception ex)
                 {
                     var rawTransIds = string.Join(",", rawTrans.Item2);
-                    _logger.Error(ex.Message + "\n" + rawTransIds);
+                    WriteLogException(ex, rawTransIds);
                 }
             }));
 
@@ -68,7 +70,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                     }
                     catch (Exception ex)
                     {
-                        _logger.Error(ex.Message + "\n" + rawTransIds);
+                        WriteLogException(ex, rawTransIds);
                     }
                 }
             }));
@@ -110,9 +112,20 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error(ex.Message + "\n" + rawTransJson);
+                    WriteLogException(ex, rawTransJson);
                 }
             });
+        }
+
+        private void WriteLogException(Exception ex, string message) {
+            var logMessage = new LogMessage(ex.Message)
+                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .AddMessage(message)
+                   .ToString();
+
+             _logger.ErrorAsync(logMessage);
         }
     }
 }

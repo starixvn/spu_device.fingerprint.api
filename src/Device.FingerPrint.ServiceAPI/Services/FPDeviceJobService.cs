@@ -1,5 +1,7 @@
 ﻿using Device.FingerPrint.Features.FPDevices.Services;
 using Fanex.Logging;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Extensions;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -54,7 +56,15 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         catch (Exception ex)
                         {
                             var transIdJson = JsonConvert.SerializeObject(trans);
-                            _logger.Error(ex.Message + "\n" + transIdJson);
+
+                            var logMessage = new LogMessage(ex.Message)
+                                       .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                                       .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                                       .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                                       .AddMessage(transIdJson)
+                                       .ToString();
+
+                            _logger.ErrorAsync(logMessage);
                         }
                     });
 
