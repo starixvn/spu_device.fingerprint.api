@@ -22,7 +22,7 @@
             RegisterArchiveService(services);
             RegisterOffset(services);
             RegisterEvolution(services);
-
+            RegisterQueueService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -78,6 +78,11 @@
         private static void RegisterEvolution(this IServiceCollection services)
         {
             services.AddSingleton<IEvolutionJobServices, EvolutionJobServices>();
+        }
+
+        private static void RegisterQueueService(this IServiceCollection services)
+        {
+            services.AddSingleton<IEasyNetQService, EasyNetQService>();
         }
 
     }

@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.ServiceAPI.Services;
+﻿using Device.FingerPrint.Core.Model;
+using Device.FingerPrint.ServiceAPI.Services;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IEvolutionJobServices evolutionJobServices;
         private readonly ILogger logger;
+        private readonly IEasyNetQService easyNetQService;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -27,7 +29,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
                             , IEvolutionJobServices evolutionJobServices
-                            , ILogger logger)
+                            , ILogger logger
+                            , IEasyNetQService easyNetQService)
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -38,6 +41,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.archiveJobServices = archiveJobServices;
             this.evolutionJobServices = evolutionJobServices;
             this.logger = logger;
+            this.easyNetQService = easyNetQService;
         }
 
         [HttpPost("deviceidentify")]
@@ -116,6 +120,12 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         public void TestNotificationTelegram([FromForm] string message)
         {
             monitorJobServices.TestNotificationTelegram(message);
+        }
+
+        [HttpPost("pushLogTrailEvent")]
+        public void PushLogTrailEvent(LogEventInfo logEventInfo)
+        {
+            easyNetQService.PushData(logEventInfo);
         }
 
         [HttpGet("hc")]

@@ -1,6 +1,7 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Controllers
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Filters;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Features.Subscriber.Services;
     using Device.FingerPrint.Model;
@@ -13,8 +14,10 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Extensions.Configuration;
     using Newtonsoft.Json;
     using System;
+    using System.Diagnostics.Tracing;
     using System.Linq;
 
     [Route("api")]
@@ -27,7 +30,7 @@
         private readonly IClientTransactionService clientTransactionService;
         private readonly ICrypto crypto;
         private readonly ILogger logger;
-        private readonly IAppSettings appSettings;      
+        private readonly IAppSettings appSettings;
 
         public TransactionController(
             IAppSettings appSettings,
@@ -81,7 +84,9 @@
             }
         }
 
+
         [HttpPost("transaction")]
+        [TypeFilter(typeof(LogTrailAttribute))]
         public void Transaction([FromBody] ClientTransactionModel data)
         {
             if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SubscriberName))
@@ -119,6 +124,7 @@
                 }
             }
         }
+
 
         [HttpPost("removeRedisByTag")]
         public void RemoveRedisByTag([FromForm] string tag)
