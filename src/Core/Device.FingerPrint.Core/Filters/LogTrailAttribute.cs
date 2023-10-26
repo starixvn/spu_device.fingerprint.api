@@ -10,7 +10,6 @@
     using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc.Filters;
     using System.Text.Json;
-    using Microsoft.Extensions.Configuration;
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
     public class LogTrailAttribute : Attribute, IAsyncActionFilter
@@ -33,14 +32,13 @@
                 if (context.HttpContext.Request.Method == "POST")
                 {
                     var model = context.ActionArguments.FirstOrDefault().Value;
-
                     var logEvent = new LogEventInfo
                     {
-                        SubscriberName = model.GetType().GetProperty("SubscriberName")?.GetValue(model, null)?.ToString(),
-                        EventTime = DateTime.Now,
+                        SubscriberID = int.Parse(model.GetType().GetProperty("SubscriberId")?.GetValue(model, null).ToString()),
+                        Date = DateTime.Now,
                         Source = model.GetType().GetProperty("Url")?.GetValue(model, null)?.ToString(),
                         Destination = context.HttpContext.Request.Host.ToString(),
-                        Method = context.HttpContext.Request.Path.ToString()
+                        Method = context.HttpContext.Request.Path.ToString(),
                     };
 
                     await PostBasicAsync(logEvent);

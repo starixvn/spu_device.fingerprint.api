@@ -95,6 +95,7 @@
 
                 if (subscriber != null)
                 {
+                    data.SubscriberId = subscriber.SubscriberId;
                     var urlAddress = new Uri(data.Url);
                     var userAgentCode = data.UserAgent != null ? crypto.GetMD5Hash(data.UserAgent) : string.Empty;
 

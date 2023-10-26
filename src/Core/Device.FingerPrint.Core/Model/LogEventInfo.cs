@@ -2,13 +2,18 @@
 {
     using System;
 
-    [Serializable]
     public class LogEventInfo
     {
-        public string SubscriberName { get; set; }
-        public DateTime EventTime { get; set; }
+        public DateTime Date { get; set; }
+
+        public int SubscriberID { get; set; }
+
         public string Source { get; set; }
+
         public string Destination { get; set; }
+
         public string Method { get; set; }
+
+        public string SystemName { get; set; } = "test system";
     }
 }

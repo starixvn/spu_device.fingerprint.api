@@ -10,6 +10,8 @@
     using Device.FingerPrint.LogTrail.Consumer.Handler;
     using Fanex.Data;
     using Fanex.Data.MySql;
+    using Device.FingerPrint.LogTrail.Consumer.Services;
+    using Device.FingerPrint.Features.LogTrail.Services;
 
     public class Startup
     {
@@ -24,8 +26,9 @@
             var appSettings = new AppSettings(this.Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
 
+            services.AddSingleton<ILogger, Logger>();
 
-            services.AddSingleton<Fanex.Logging.ILogger, Logger>();
+            RegisterServices(services);
 
             services.AddHealthChecks();
 
@@ -79,6 +82,14 @@
             {
                 Predicate = _ => true
             });
+        }
+
+        private void RegisterServices(IServiceCollection services)
+        {
+            services.AddSingleton<ICapturingService, CaptureService>();
+
+            services.AddSingleton<ILogTrailServices, LogTrailServices>();
+            services.AddSingleton<ILogTrailDataAccess, LogTrailDataAccess>();
         }
     }
 }
