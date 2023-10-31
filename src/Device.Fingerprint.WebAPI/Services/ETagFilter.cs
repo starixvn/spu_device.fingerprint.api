@@ -2,11 +2,9 @@
 using Microsoft.AspNetCore.Mvc.Filters;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Device.Fingerprint.WebAPI.Services
 {
@@ -18,11 +16,11 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             _statusCodes = statusCodes;
             if (statusCodes.Length == 0) _statusCodes = new[] { 200 };
-        }        
+        }
 
         public void OnActionExecuting(ActionExecutingContext context)
-         {
-            
+        {
+
         }
 
         public void OnActionExecuted(ActionExecutedContext context)
