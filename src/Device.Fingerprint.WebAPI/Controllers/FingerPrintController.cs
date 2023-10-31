@@ -20,21 +20,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        private readonly ISubscriberServices subscriberServices;
-        //private readonly IRedisService redisService;
+        private readonly ISubscriberServices subscriberServices;        
         private readonly ILogger logger;
         
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            ISubscriberServices subscriberServices,
-            //IRedisService redisService,
+            ISubscriberServices subscriberServices,            
             ILogger logger)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
-            this.subscriberServices = subscriberServices;
-            //this.redisService = redisService;
+            this.subscriberServices = subscriberServices;            
             this.logger = logger;
         }
 

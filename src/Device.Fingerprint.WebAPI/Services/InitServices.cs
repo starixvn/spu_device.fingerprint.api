@@ -26,11 +26,6 @@ namespace Device.Fingerprint.WebAPI.Services
             services.AddSingleton<ISubscriberServices, SubscriberServices>();
         }
 
-        private static void RegisterQueueService(this IServiceCollection services)
-        {
-            services.AddSingleton<IEasyNetQService, EasyNetQService>();
-        }
-
         private static void RegisterExceptionService(this IServiceCollection services)
         {
             services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
