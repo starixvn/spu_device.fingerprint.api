@@ -7,11 +7,12 @@
     using Fanex.Logging.Sentry;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Sentry;
-    using Device.FingerPrint.LogTrail.Consumer.Handler;
     using Fanex.Data;
     using Fanex.Data.MySql;
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using Device.FingerPrint.Features.LogTrail.Services;
+    using MassTransit;
+    using Device.FingerPrint.LogTrail.Consumer.Consumer;
 
     public class Startup
     {
@@ -48,7 +49,42 @@
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-            services.AddHostedService<Consumer>();
+            services.AddMassTransit(busConfigurator =>
+            {
+                busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                //busConfigurator.AddConsumer<LogTrailFaultConsumer>();
+
+                busConfigurator.AddConsumer<LogTrailConsumer>().Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = appSettings.GetValue<string>("RabbitMQ:LogTrail:ConsumerName");
+                    e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
+                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
+                });
+
+                busConfigurator.UsingRabbitMq((context, cfx) =>
+                {
+                    cfx.UseMessageRetry(retry => retry.Interval(
+                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
+                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
+                    ));
+
+                    cfx.UseInMemoryOutbox();
+
+                    cfx.ConfigureEndpoints(context);
+                });
+            });
+
+            services.AddOptions<RabbitMqTransportOptions>()
+            .Configure(options =>
+            {
+                options.Host = appSettings.RabitMQHost;
+                options.Port = appSettings.RabitMQPort;
+                options.User = appSettings.RabitMQUserName;
+                options.Pass = appSettings.RabitMQPassword;
+                options.VHost = appSettings.RabitMQVirtualHost;
+            });
         }
         private void FanexDataConfig(IAppSettings appSettings)
         {
@@ -86,8 +122,9 @@
 
         private void RegisterServices(IServiceCollection services)
         {
-            services.AddSingleton<ICapturingService, CaptureService>();
+            services.AddSingleton<LogTrailConsumer>();
 
+            services.AddSingleton<ICapturingService, CaptureService>();
             services.AddSingleton<ILogTrailServices, LogTrailServices>();
             services.AddSingleton<ILogTrailDataAccess, LogTrailDataAccess>();
         }

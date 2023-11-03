@@ -35,6 +35,7 @@
         private readonly List<TransactionEntity> listTransactionInsertModel;
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
+        private const string defaultMethod = "Device.FingerPrint.QueueConsumer.Method";
 
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
@@ -303,7 +304,8 @@
                     SubscriberID = transaction.SubscriberId,
                     SystemName = appSettings.SystemName,
                     Source = transaction.Url,
-                    Destination = webHostEnvironment.ContentRootPath ?? defaultDestination
+                    Destination = webHostEnvironment.ContentRootPath ?? defaultDestination,
+                    Method = defaultMethod
                 };
 
                 var logEventService = new LogEventService(appSettings.LogTrailEndPoint);

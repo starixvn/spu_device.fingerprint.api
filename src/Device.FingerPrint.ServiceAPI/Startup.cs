@@ -1,5 +1,4 @@
 using Device.FingerPrint.ServiceAPI.Services;
-using Device.FingerPrint.ServiceAPI.Services.RabbitMQ.Consumer;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
@@ -16,9 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sentry;
-using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Data;
 using System.Linq;
 
@@ -71,42 +68,8 @@ namespace Device.FingerPrint.ServiceAPI
             {
                 busConfigurator.SetKebabCaseEndpointNameFormatter();
 
-                busConfigurator.AddConsumer<LogTrailFaultConsumer>();
-
-                busConfigurator.AddConsumer<LogTrailConsumer>().Endpoint(e =>
-                {
-                    e.ConfigureConsumeTopology = false;
-                    e.Name = appSettings.GetValue<string>("RabbitMQ:LogTrail:Name");
-                    e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
-                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
-                });
-
-
                 busConfigurator.UsingRabbitMq((context, cfx) =>
                 {
-                    //cfx.ReceiveEndpoint(appSettings.GetValue<string>("RabbitMQ:LogTrail:Name"), endpointConfigurator =>
-                    //{
-                    //    //endpointConfigurator.ConfigureConsumeTopology = false;
-
-                    //    //endpointConfigurator.Consumer<LogTrailConsumer>();
-
-                    //    //endpointConfigurator.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
-                    //    //endpointConfigurator.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
-
-                    //    endpointConfigurator.UseMessageRetry(retry => retry.Interval(
-                    //        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
-                    //        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
-                    //    ));
-                    //    endpointConfigurator.UseInMemoryOutbox();
-                    //});
-
-                    cfx.UseMessageRetry(retry => retry.Interval(
-                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
-                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
-                    ));
-
-                    cfx.UseInMemoryOutbox();
-
                     cfx.ConfigureEndpoints(context);
                 });
             });

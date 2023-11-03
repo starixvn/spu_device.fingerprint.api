@@ -21,6 +21,7 @@
         private readonly IEvolutionJobServices evolutionJobServices;
         private readonly ILogger logger;
         private readonly IProducerService producerService;
+        private readonly IAppSettings appSettings;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -32,6 +33,8 @@
                             , IEvolutionJobServices evolutionJobServices
                             , ILogger logger
                             , IProducerService producerService
+                            , IAppSettings appSettings
+
                             )
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
@@ -44,6 +47,7 @@
             this.evolutionJobServices = evolutionJobServices;
             this.logger = logger;
             this.producerService = producerService;
+            this.appSettings = appSettings;
         }
 
         [HttpPost("deviceidentify")]
@@ -127,7 +131,7 @@
         [HttpPost("pushLogTrailEvent")]
         public async Task PushLogTrailEventAsync(LogEventInfo logEventInfo)
         {
-            await producerService.SendAsync(logEventInfo, "queue:LogTrail_DEV");
+            await producerService.SendAsync(logEventInfo, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
         }
 
         [HttpGet("hc")]

@@ -1,4 +1,4 @@
-﻿namespace Device.FingerPrint.ServiceAPI.Services.RabbitMQ.Consumer
+﻿namespace Device.FingerPrint.LogTrail.Consumer.Consumer
 {
     using System;
     using System.Linq;
