@@ -10,6 +10,9 @@
     using EasyNetQ;
     using EasyNetQ.Consumer;
     using Fanex.Logging;
+    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client;
+    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
+    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
@@ -27,14 +30,18 @@
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
         private readonly IRedisService redisService;
+        private readonly IWebHostEnvironment webHostEnvironment;
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
+
+        private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
 
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
                         , ILogger logger
                         , IRedisService redisService
-                        , IRawTransactionService rawTransactionService)
+                        , IRawTransactionService rawTransactionService
+                        , IWebHostEnvironment webHostEnvironment)
         {
             this.transactionService = transactionService;
             this.appSettings = appSettings;
@@ -43,7 +50,7 @@
 
             listTransactionInsertModel = new List<TransactionEntity>();
             this.rawTransactionService = rawTransactionService;
-
+            this.webHostEnvironment = webHostEnvironment;
         }
 
         private async Task GetTransactionAttribute(TransactionModel model)
@@ -132,18 +139,17 @@
                             try
                             {
                                 transactionService.InsertTransaction(listTransactionInsertModel);
-
                                 ClearRedis(listTransactionInsertModel);
 
                                 listTransactionInsertModel.Clear();
-
-
                             }
                             catch (Exception ex)
                             {
                                 logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
                             }
                         }
+
+                        InsertLogTrail(transaction);
                     });
                 });
             }
@@ -284,6 +290,29 @@
                 var hashKey = $"{trans.Key.SubscriberId}:{trans.Key.SessionKey}";
 
                 redisService.HashDeleteAsync(hashKey, RedisString.GetRedisKeyNames());
+            }
+        }
+
+        private void InsertLogTrail(TransactionEntity transaction)
+        {
+            try
+            {
+                var logEventInfo = new LogEventInfo
+                {
+                    EventDate = DateTime.Now.Date,
+                    SubscriberID = transaction.SubscriberId,
+                    SystemName = appSettings.SystemName,
+                    Source = transaction.Url,
+                    Destination = webHostEnvironment.ContentRootPath ?? defaultDestination
+                };
+
+                var logEventService = new LogEventService(appSettings.LogTrailEndPoint);
+
+                _ = logEventService.PostAsync(logEventInfo);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
             }
         }
 

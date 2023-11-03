@@ -30,9 +30,14 @@ namespace Device.FingerPrint.Core
 
         int TransBatchSize { get; }
 
+        string LogTrailEndPoint { get; }
+        
         bool BotDBotComponentForHuman { get; }
 
-        IConfiguration Configuration { get; }
+        string SystemName {get; }
+        
+
+    IConfiguration Configuration { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -57,6 +62,9 @@ namespace Device.FingerPrint.Core
 
         private readonly int transBatchSize;
         private readonly bool botDBotComponentForHuman;
+
+        private readonly string logTrailEndPoint;
+        private readonly string systemName;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -88,8 +96,11 @@ namespace Device.FingerPrint.Core
 
             transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "0" : GetValue<string>("Consumer:TransBatchSize"));
 
-            botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
 
+            logTrailEndPoint = GetValue<string>("LogTrail:EndPoint") ?? string.Empty;
+            systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
+            
+            botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
         }
 
         public string ApiUrl => apiUrl;
@@ -118,7 +129,11 @@ namespace Device.FingerPrint.Core
 
         public int TransBatchSize => transBatchSize;
 
+        public string LogTrailEndPoint => logTrailEndPoint;
+        
         public bool BotDBotComponentForHuman => botDBotComponentForHuman;
+        
+        public string SystemName => systemName;
 
         public T GetValue<T>(string key)
         {

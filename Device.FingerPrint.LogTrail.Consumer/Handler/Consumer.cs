@@ -1,11 +1,10 @@
 ﻿namespace Device.FingerPrint.LogTrail.Consumer.Handler
 {
-    using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.LogTrail.Consumer.Services;
-    using Device.FingerPrint.LogTrail.Model;
     using Device.FingerPrint.Queue;
     using EasyNetQ;
     using Fanex.Logging;
+    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
 
     public class Consumer : BackgroundService
     {
@@ -37,7 +36,8 @@
                     logger.Info("Start Consuming!");
 
                     var easyNetQConnector = RabbitMQBus();
-                    var rawLogEvents = new List<RawLogEventModel>();
+
+                    var logEventInfos = new List<LogEventInfo>();
 
                     easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, (Action<IMessage<LogEventInfo>, MessageReceivedInfo>)((message, info) =>
                     {
@@ -45,33 +45,35 @@
                         {
                             if (message.Body != null)
                             {
-                                var rawLogEvent = TransformRawLogEvent(message.Body);
-                                rawLogEvents.Add(rawLogEvent);
+                                var logEvent = message.Body;
+                                logEventInfos.Add(logEvent);
 
-                                if (rawLogEvents.Count >= appSettings.TransBatch)
+                                if (logEventInfos.Count >= appSettings.TransBatch)
                                 {
-                                    var groupRawLogEvents = rawLogEvents
+                                    var groupLogEvents = logEventInfos
                                     .GroupBy(x => new
                                     {
-                                        x.Date.Date,
+                                        x.EventDate.Date,
                                         x.SubscriberID,
+                                        x.SystemName,
                                         x.Source,
+                                        x.Destination,
                                         x.Method,
-                                        x.SystemName
                                     })
-                                    .Select(group => new RawLogEventModel
+                                    .Select(group => new LogEventInfo
                                     {
-                                        Date = group.Key.Date.Date,
+                                        EventDate = group.Key.Date.Date,
                                         SubscriberID = group.Key.SubscriberID,
-                                        Source = group.Key.Source,
-                                        Method = group.Key.Method,
                                         SystemName = group.Key.SystemName,
+                                        Source = group.Key.Source,
+                                        Destination = group.Key.Destination,
+                                        Method = group.Key.Method,
                                         Total = group.Count()
                                     });
 
-                                    capturingService.InserLogTrailEvent(groupRawLogEvents);
+                                    capturingService.InserLogTrailEventAsync(groupLogEvents);
 
-                                    rawLogEvents.Clear();
+                                    logEventInfos.Clear();
                                 }
                             }
                         }
@@ -88,19 +90,6 @@
             }
         }
 
-        private RawLogEventModel TransformRawLogEvent(LogEventInfo logEventInfo)
-        {
-            var rawLogEvent = new RawLogEventModel
-            {
-                Date = logEventInfo.Date,
-                SubscriberID = logEventInfo.SubscriberID,
-                Source = logEventInfo.Destination,
-                Method = logEventInfo.Method,
-                SystemName = logEventInfo.SystemName,
-            };
-
-            return rawLogEvent;
-        }
         private EasyNetQConnector RabbitMQBus()
         {
             var easyNetQConnector = new EasyNetQConnector(appSettings.RabitMQHost + ":" + appSettings.RabitMQPort,

@@ -48,4 +48,7 @@
     <Setting Key="FP_DCS_DC_Transform_Transaction_Insert" SpName="FP_DCS_DC_Transform_Transaction_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin" />
     <Setting Key="FP_DCS_DC_Transform_UnhandleSubscriberAction" SpName="FP_DCS_DC_Transform_UnhandleSubscriberAction" DbName="MySQL.FPSTesting.fpsServiceAdmin" Timeout="600" />
   </Function>
+  <Function Name="LogTrail">
+    <Setting Key="DCS_DT_Summary_LogTrail_Insert" SpName="DCS_DT_Summary_LogTrail_Insert" DbName="MySQL.DCS_DataTrace.ctsServiceAdmin"/>
+  </Function>
 </Functions>

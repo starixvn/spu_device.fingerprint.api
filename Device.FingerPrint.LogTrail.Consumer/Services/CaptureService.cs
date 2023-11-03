@@ -1,12 +1,13 @@
 ﻿namespace Device.FingerPrint.LogTrail.Consumer.Services
 {
     using System.Text.Json;
+    using System.Threading.Tasks;
     using Device.FingerPrint.Features.LogTrail.Services;
-    using Device.FingerPrint.LogTrail.Model;
+    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
 
     public interface ICapturingService
     {
-        int InserLogTrailEvent(IEnumerable<RawLogEventModel> logEventInfos);
+        Task<int> InserLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos);
     }
 
     public class CaptureService : ICapturingService
@@ -18,10 +19,10 @@
             this.logTrailServices = logTrailServices;
         }
 
-        public int InserLogTrailEvent(IEnumerable<RawLogEventModel> logEventInfos)
+        public async Task<int> InserLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos)
         {
             var rawLogEvent = JsonSerializer.Serialize(logEventInfos);
-            return logTrailServices.InsertSummaryLogTrail(rawLogEvent);
+            return await logTrailServices.InsertSummaryLogTrailAsync(rawLogEvent);
         }
     }
 }

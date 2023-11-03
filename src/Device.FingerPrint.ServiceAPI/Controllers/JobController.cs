@@ -1,11 +1,12 @@
-﻿using Device.FingerPrint.Core.Model;
-using Device.FingerPrint.ServiceAPI.Services;
-using Fanex.Logging;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.ServiceAPI.Controllers
+﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
+    using Device.FingerPrint.ServiceAPI.Services;
+    using Device.FingerPrint.ServiceAPI.Services.RabbitMQ;
+    using Fanex.Logging;
+    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
+    using Microsoft.AspNetCore.Mvc;
+    using System.Threading.Tasks;
+
     [ApiController]
     [Route("api/job")]
     public class JobController : ControllerBase
@@ -19,7 +20,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IEvolutionJobServices evolutionJobServices;
         private readonly ILogger logger;
-        private readonly IEasyNetQService easyNetQService;
+        private readonly IProducerService producerService;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -30,7 +31,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IArchiveJobServices archiveJobServices
                             , IEvolutionJobServices evolutionJobServices
                             , ILogger logger
-                            , IEasyNetQService easyNetQService)
+                            , IProducerService producerService
+                            )
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -41,7 +43,7 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.archiveJobServices = archiveJobServices;
             this.evolutionJobServices = evolutionJobServices;
             this.logger = logger;
-            this.easyNetQService = easyNetQService;
+            this.producerService = producerService;
         }
 
         [HttpPost("deviceidentify")]
@@ -123,16 +125,14 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         }
 
         [HttpPost("pushLogTrailEvent")]
-        public void PushLogTrailEvent(LogEventInfo logEventInfo)
+        public async Task PushLogTrailEventAsync(LogEventInfo logEventInfo)
         {
-            easyNetQService.PushData(logEventInfo);
+            await producerService.SendAsync(logEventInfo, "queue:LogTrail_DEV");
         }
 
         [HttpGet("hc")]
         public void HealthCheck()
         {
-            // Method intentionally left empty.
-            // 
             logger.Info("I'm good!");
         }
     }

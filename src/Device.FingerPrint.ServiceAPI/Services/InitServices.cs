@@ -3,10 +3,13 @@
     using Device.FingerPrint.Features.Archive.Services;
     using Device.FingerPrint.Features.FPDevices.Services;
     using Device.FingerPrint.Features.FPTransactions.Services;
+    using Device.FingerPrint.Features.LogTrail.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.Offset.Services;
     using Device.FingerPrint.Features.SummaryTransaction.Services;
     using Device.FingerPrint.Features.Transaction.Services;
+    using Device.FingerPrint.ServiceAPI.Services.RabbitMQ;
+    using Device.FingerPrint.ServiceAPI.Services.RabbitMQ.Consumer;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -82,8 +85,10 @@
 
         private static void RegisterQueueService(this IServiceCollection services)
         {
-            services.AddSingleton<IEasyNetQService, EasyNetQService>();
+            services.AddSingleton<LogTrailConsumer>();
+            services.AddSingleton<IProducerService, ProducerService>();
+            services.AddSingleton<ILogTrailServices, LogTrailServices>();
+            services.AddSingleton<ILogTrailDataAccess, LogTrailDataAccess>();
         }
-
     }
 }

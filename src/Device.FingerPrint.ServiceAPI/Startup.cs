@@ -1,4 +1,5 @@
 using Device.FingerPrint.ServiceAPI.Services;
+using Device.FingerPrint.ServiceAPI.Services.RabbitMQ.Consumer;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
@@ -6,6 +7,7 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -14,7 +16,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sentry;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
 using System.Linq;
 
 namespace Device.FingerPrint.ServiceAPI
@@ -28,7 +33,6 @@ namespace Device.FingerPrint.ServiceAPI
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
@@ -62,6 +66,60 @@ namespace Device.FingerPrint.ServiceAPI
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+
+            services.AddMassTransit(busConfigurator =>
+            {
+                busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                busConfigurator.AddConsumer<LogTrailFaultConsumer>();
+
+                busConfigurator.AddConsumer<LogTrailConsumer>().Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = appSettings.GetValue<string>("RabbitMQ:LogTrail:Name");
+                    e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
+                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
+                });
+
+
+                busConfigurator.UsingRabbitMq((context, cfx) =>
+                {
+                    //cfx.ReceiveEndpoint(appSettings.GetValue<string>("RabbitMQ:LogTrail:Name"), endpointConfigurator =>
+                    //{
+                    //    //endpointConfigurator.ConfigureConsumeTopology = false;
+
+                    //    //endpointConfigurator.Consumer<LogTrailConsumer>();
+
+                    //    //endpointConfigurator.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
+                    //    //endpointConfigurator.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
+
+                    //    endpointConfigurator.UseMessageRetry(retry => retry.Interval(
+                    //        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
+                    //        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
+                    //    ));
+                    //    endpointConfigurator.UseInMemoryOutbox();
+                    //});
+
+                    cfx.UseMessageRetry(retry => retry.Interval(
+                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
+                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
+                    ));
+
+                    cfx.UseInMemoryOutbox();
+
+                    cfx.ConfigureEndpoints(context);
+                });
+            });
+
+            services.AddOptions<RabbitMqTransportOptions>()
+            .Configure(options =>
+            {
+                options.Host = appSettings.RabitMQHost;
+                options.Port = appSettings.RabitMQPort;
+                options.User = appSettings.RabitMQUserName;
+                options.Pass = appSettings.RabitMQPassword;
+                options.VHost = appSettings.RabitMQVirtualHost;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

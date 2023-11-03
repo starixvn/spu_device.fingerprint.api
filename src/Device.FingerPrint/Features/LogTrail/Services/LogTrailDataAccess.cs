@@ -1,12 +1,13 @@
 ﻿
 namespace Device.FingerPrint.Features.LogTrail.Services
 {
+    using System.Threading.Tasks;
     using Device.FingerPrint.Features.LogTrail.Criterias;
     using Fanex.Data.Repository;
 
     public interface ILogTrailDataAccess
     {
-        int InsertSummaryLogTrail(string RawLogEvent);
+        Task<int> InsertSummaryLogTrailAsync(string rawLogEvent);
     }
     public class LogTrailDataAccess : ILogTrailDataAccess
     {
@@ -17,14 +18,14 @@ namespace Device.FingerPrint.Features.LogTrail.Services
             repository = new DynamicRepository();
         }
 
-        public int InsertSummaryLogTrail(string RawLogEvent)
+        public async Task<int> InsertSummaryLogTrailAsync(string rawLogEvent)
         {
             var criteria = new InsertSummaryLogTrailCriteria
             {
-                RawLogEvent = RawLogEvent
+                RawLogEvent = rawLogEvent
             };
 
-            return repository.Execute(criteria);
+            return await repository.ExecuteAsync(criteria);
         }
     }
 }

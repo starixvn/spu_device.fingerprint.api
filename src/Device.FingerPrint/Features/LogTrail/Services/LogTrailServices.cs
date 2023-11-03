@@ -1,8 +1,10 @@
-﻿namespace Device.FingerPrint.Features.LogTrail.Services
+﻿using System.Threading.Tasks;
+
+namespace Device.FingerPrint.Features.LogTrail.Services
 {
     public interface ILogTrailServices
     {
-        int InsertSummaryLogTrail(string RawLogEvent);
+        Task<int> InsertSummaryLogTrailAsync(string rawLogEvent);
     }
     public class LogTrailServices : ILogTrailServices
     {
@@ -12,9 +14,9 @@
             this.dataAccess = dataAccess;
         }
 
-        public int InsertSummaryLogTrail(string RawLogEvent)
+        public async Task<int> InsertSummaryLogTrailAsync(string rawLogEvent)
         {
-           return dataAccess.InsertSummaryLogTrail(RawLogEvent);
+           return await dataAccess.InsertSummaryLogTrailAsync(rawLogEvent);
         }
     }
 }

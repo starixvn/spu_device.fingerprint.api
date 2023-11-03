@@ -1,12 +1,13 @@
-﻿namespace Device.FingerPrint.Core.Model
+﻿namespace FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models
 {
     using System;
-
     public class LogEventInfo
     {
-        public DateTime Date { get; set; }
+        public DateTime EventDate { get; set; }
 
         public int SubscriberID { get; set; }
+
+        public string SystemName { get; set; }
 
         public string Source { get; set; }
 
@@ -14,6 +15,6 @@
 
         public string Method { get; set; }
 
-        public string SystemName { get; set; } = "test system";
+        public int Total { get; set; }
     }
 }
