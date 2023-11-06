@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Fanex.Data" Version="4.2.4" />
+    <PackageReference Include="Fanex.Data.MySql" Version="4.2.2" />
     <PackageReference Include="Fanex.Data.SqlServer" Version="4.2.4" />
     <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.1" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
@@ -18,9 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.csproj" />
-    <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
-    <ProjectReference Include="..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
-    <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>
 

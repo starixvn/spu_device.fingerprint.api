@@ -7,12 +7,12 @@
     using Fanex.Logging.Sentry;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Sentry;
-    using Fanex.Data;
-    using Fanex.Data.MySql;
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using Device.FingerPrint.Features.LogTrail.Services;
     using MassTransit;
     using Device.FingerPrint.LogTrail.Consumer.Consumer;
+    using Fanex.Data;
+    using Fanex.Data.MySql;
 
     public class Startup
     {
