@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.csproj" />
+    <ProjectReference Include="..\..\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.csproj" />
   </ItemGroup>
 
 </Project>

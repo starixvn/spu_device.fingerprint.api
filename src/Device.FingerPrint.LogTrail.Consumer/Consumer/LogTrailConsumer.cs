@@ -5,10 +5,10 @@
     using Fanex.Logging;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Extensions;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
     using MassTransit;
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using System.Linq;
+    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
 
     public class LogTrailConsumer : IConsumer<Batch<LogEventInfo>>
     {
