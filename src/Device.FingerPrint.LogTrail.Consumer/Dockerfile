@@ -2,15 +2,13 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:7.0-alpine AS builder
 
 WORKDIR /src
 
-COPY ["./src/Device.FingerPrint.LogTrail.Consumer", "Device.FingerPrint.LogTrail.Consumer/"]
-
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
 COPY ["./src/FPS.Device.FingerPrint.LogTrail.Net.Standard.Client", "FPS.Device.FingerPrint.LogTrail.Net.Standard.Client/"]
 
 COPY ["./src/Device.FingerPrint.LogTrail.Consumer/Device.FingerPrint.LogTrail.Consumer.csproj", "Device.FingerPrint.LogTrail.Consumer/"]
 
-WORKDIR "/Device.FingerPrint.LogTrail.Consumer"
+WORKDIR "/src/Device.FingerPrint.LogTrail.Consumer"
 
 RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
 
