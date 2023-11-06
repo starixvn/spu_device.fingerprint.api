@@ -21,7 +21,26 @@
 
         public async Task<int> InserLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos)
         {
-            var rawLogEvent = JsonSerializer.Serialize(logEventInfos);
+            var groupMessage = logEventInfos.GroupBy(x => new
+            {
+                x.EventDate.Date,
+                x.SubscriberID,
+                x.SystemName,
+                x.Source,
+                x.Destination,
+                x.Method
+            }).Select(group => new LogEventInfo
+            {
+                EventDate = group.Key.Date,
+                SubscriberID = group.Key.SubscriberID,
+                SystemName = group.Key.SystemName,
+                Source = group.Key.Source,
+                Destination = group.Key.Destination,
+                Method = group.Key.Method,
+                Total = group.Count()
+            });
+
+            var rawLogEvent = JsonSerializer.Serialize(groupMessage);
             return await logTrailServices.InsertSummaryLogTrailAsync(rawLogEvent);
         }
     }

@@ -1,29 +1,27 @@
 ﻿namespace Device.FingerPrint.LogTrail.Consumer.Consumer
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
-    using Device.FingerPrint.Features.LogTrail.Services;
     using Fanex.Logging;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.Logging.Extensions;
     using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
     using MassTransit;
+    using Device.FingerPrint.LogTrail.Consumer.Services;
+    using System.Linq;
 
     public class LogTrailConsumer : IConsumer<Batch<LogEventInfo>>
     {
-        private readonly ILogTrailServices logTrailServices;
+        private readonly ICapturingService capturingService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
 
-        private List<LogEventInfo> logEventInfos = new List<LogEventInfo>();
-
         public LogTrailConsumer(
-            ILogTrailServices logTrailServices,
+            ICapturingService capturingService,
             IAppSettings appSettings,
             ILogger logger)
         {
-            this.logTrailServices = logTrailServices;
+            this.capturingService = capturingService;
             this.appSettings = appSettings;
             this.logger = logger;
         }
@@ -32,60 +30,43 @@
         {
             try
             {
-                if (appSettings.GetValue<bool>("ConsumerConfig:LogTrail:Queue-Consume"))
+                if (appSettings.GetValue<bool>("RabbitMQ:LogTrail:Queue-Consume"))
                 {
                     logger.Info("Start Consuming!");
 
-                    for (int i = 0; i < context.Message.Length; i++)
+                    var rawLogEvent = context.Message.Select(x =>
                     {
-                        LogEventInfo logEvent = context.Message[i].Message;
-
-                        if (logEvent != null)
+                        return new LogEventInfo
                         {
-                            logEventInfos.Add(logEvent);
+                            EventDate = x.Message.EventDate,
+                            SubscriberID = x.Message.SubscriberID,
+                            SystemName = x.Message.SystemName,
+                            Source = x.Message.Source,
+                            Destination = x.Message.Destination,
+                            Method = x.Message.Method,
+                        };
+                    });
 
-                            if (logEventInfos.Count >= appSettings.GetValue<int>("ConsumerConfig:LogTrail:TransBatch"))
-                            {
-                                var groupLogEvents = logEventInfos
-                                .GroupBy(x => new
-                                {
-                                    x.EventDate.Date,
-                                    x.SubscriberID,
-                                    x.SystemName,
-                                    x.Source,
-                                    x.Destination,
-                                    x.Method,
-                                })
-                                .Select(group => new LogEventInfo
-                                {
-                                    EventDate = group.Key.Date.Date,
-                                    SubscriberID = group.Key.SubscriberID,
-                                    SystemName = group.Key.SystemName,
-                                    Source = group.Key.Source,
-                                    Destination = group.Key.Destination,
-                                    Method = group.Key.Method,
-                                    Total = group.Count()
-                                });
-
-                                await InserLogTrailEventAsync(groupLogEvents);
-
-                                logEventInfos.Clear();
-                            }
-                        }
-                    }
+                    await capturingService.InserLogTrailEventAsync(rawLogEvent);
                 }
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message);
+                HandleErrorException(ex);
+
                 throw;
             }
         }
 
-        public async Task<int> InserLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos)
+        private void HandleErrorException(Exception ex)
         {
-            var rawLogEvent = JsonSerializer.Serialize(logEventInfos);
-            return await logTrailServices.InsertSummaryLogTrailAsync(rawLogEvent);
+            var logMessage = new LogMessage(ex.Message)
+                       .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                       .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                       .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                       .ToString();
+
+            logger.Error(logMessage);
         }
     }
 }

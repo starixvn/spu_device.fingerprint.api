@@ -53,26 +53,18 @@
             {
                 busConfigurator.SetKebabCaseEndpointNameFormatter();
 
-                //busConfigurator.AddConsumer<LogTrailFaultConsumer>();
+                BusConsumerLogTrailConfiguration(busConfigurator, appSettings);
 
-                busConfigurator.AddConsumer<LogTrailConsumer>().Endpoint(e =>
+                if (appSettings.GetValue<bool>("RabbitMQ:LogTrail_error:Queue-Consume"))
                 {
-                    e.ConfigureConsumeTopology = false;
-                    e.Name = appSettings.GetValue<string>("RabbitMQ:LogTrail:ConsumerName");
-                    e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
-                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
-                });
+                    BusConsumerLogTrailErrorConfiguration(busConfigurator, appSettings);
+                }
 
-                busConfigurator.UsingRabbitMq((context, cfx) =>
+                busConfigurator.UsingRabbitMq((context, rgx) =>
                 {
-                    cfx.UseMessageRetry(retry => retry.Interval(
-                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
-                        appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
-                    ));
+                    rgx.UseRateLimit(20, TimeSpan.FromSeconds(5));
 
-                    cfx.UseInMemoryOutbox();
-
-                    cfx.ConfigureEndpoints(context);
+                    rgx.ConfigureEndpoints(context);
                 });
             });
 
@@ -86,6 +78,49 @@
                 options.VHost = appSettings.RabitMQVirtualHost;
             });
         }
+
+        private static void BusConsumerLogTrailConfiguration(IBusRegistrationConfigurator busConfigurator, AppSettings appSettings)
+        {
+            busConfigurator.AddConsumer<LogTrailConsumer>(cfg =>
+            {
+                cfg.Options<BatchOptions>(options => options
+                .SetMessageLimit(appSettings.GetValue<int>("RabbitMQ:LogTrail:BatchSizeLimit"))
+                .SetTimeLimit(s: appSettings.GetValue<int>("RabbitMQ:LogTrail:BatchTimeLimit"))
+                .SetConcurrencyLimit(10));
+
+                cfg.UseMessageRetry(retry => retry.Interval(
+                    appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
+                    appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryInterval")
+                ));
+
+                cfg.UseInMemoryOutbox();
+            }).Endpoint(e =>
+            {
+                e.ConfigureConsumeTopology = false;
+                e.Name = appSettings.GetValue<string>("RabbitMQ:LogTrail:ConsumerName");
+                e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
+                e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
+            });
+        }
+
+        private static void BusConsumerLogTrailErrorConfiguration(IBusRegistrationConfigurator busConfigurator, AppSettings appSettings)
+        {
+            busConfigurator.AddConsumer<LogTrailFaultConsumer>(cfg =>
+            {
+                cfg.Options<BatchOptions>(options => options
+                .SetMessageLimit(appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:BatchSizeLimit"))
+                .SetTimeLimit(s: appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:BatchTimeLimit"))
+                .SetConcurrencyLimit(10));
+
+                cfg.UseMessageRetry(retry => retry.Interval(
+                   appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:RetryCount"),
+                   appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:RetryInterval")
+                ));
+
+                cfg.UseInMemoryOutbox();
+            }).Endpoint(e => e.ConfigureConsumeTopology = false);
+        }
+
         private void FanexDataConfig(IAppSettings appSettings)
         {
             var connections = Configuration
