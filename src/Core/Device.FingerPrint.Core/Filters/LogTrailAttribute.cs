@@ -44,8 +44,12 @@
                     };
 
                     var logTrailClientService = new LogTrailClientService(appSettings.LogTrailEndPoint);
-                    logger.Info("start insert log trail : " + logEvent.Destination);
-                    _ = logTrailClientService.PostAsync(logEvent);
+                    logger.Info("start insert log trail : " + logEvent.Destination + appSettings.LogTrailEndPoint);
+
+                    await logTrailClientService.PostAsync(logEvent);
+
+                    logger.Info("end insert log trail");
+
                 }
             }
             catch (Exception ex)
