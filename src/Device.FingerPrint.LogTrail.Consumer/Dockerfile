@@ -2,6 +2,8 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:7.0-alpine AS builder
 
 WORKDIR /src
 
+COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
+
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
 COPY ["./src/FPS.Device.FingerPrint.LogTrail.Net.Standard.Client", "FPS.Device.FingerPrint.LogTrail.Net.Standard.Client/"]
