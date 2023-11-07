@@ -8,15 +8,15 @@
     using System.Threading;
     using Device.FingerPrint.Core.Model;
 
-    public interface IHttpClientService
+    public interface ILogTrailClientService
     {
         Task PostAsync(LogEventInfo logEventInfo);
     }
-    public class HttpClientService
+    public class LogTrailClientService
     {
         private readonly string LogTrailEndPoint;
 
-        public HttpClientService(string LogTrailEndPoint)
+        public LogTrailClientService(string LogTrailEndPoint)
         {
             if (string.IsNullOrWhiteSpace(LogTrailEndPoint))
             {

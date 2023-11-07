@@ -21,9 +21,9 @@
         public async Task PostAsync(LogEventInfo logEventInfo)
         {
 
-            var httpClientService = new HttpClientService(LogTrailEndPoint);
+            var logTrailClientService = new LogTrailClientService(LogTrailEndPoint);
 
-            await httpClientService.PostAsync(logEventInfo);
+            await logTrailClientService.PostAsync(logEventInfo);
         }
     }
 }

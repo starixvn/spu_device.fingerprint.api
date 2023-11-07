@@ -43,9 +43,9 @@
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
 
-                    var httpClientService = new HttpClientService(appSettings.LogTrailEndPoint);
+                    var logTrailClientService = new LogTrailClientService(appSettings.LogTrailEndPoint);
 
-                    _ = httpClientService.PostAsync(logEvent);
+                    _ = logTrailClientService.PostAsync(logEvent);
                 }
             }
             catch (Exception ex)
