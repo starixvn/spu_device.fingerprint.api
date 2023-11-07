@@ -55,7 +55,7 @@
 
                 BusConsumerLogTrailConfiguration(busConfigurator, appSettings);
 
-                if (appSettings.GetValue<bool>("RabbitMQ:LogTrail_error:Queue-Consume"))
+                if (appSettings.GetValue<bool>("RabbitMQ:LogTrail_Error:Queue-Consume"))
                 {
                     BusConsumerLogTrailErrorConfiguration(busConfigurator, appSettings);
                 }
