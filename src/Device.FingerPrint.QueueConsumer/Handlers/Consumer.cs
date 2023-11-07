@@ -308,9 +308,9 @@
                     Method = defaultMethod
                 };
 
-                var httpClientService = new HttpClientService(appSettings.LogTrailEndPoint);
+                var logTrailClientService = new LogTrailClientService(appSettings.LogTrailEndPoint);
 
-                _ = httpClientService.PostAsync(logEventInfo);
+                _ = logTrailClientService.PostAsync(logEventInfo);
             }
             catch (Exception ex)
             {
