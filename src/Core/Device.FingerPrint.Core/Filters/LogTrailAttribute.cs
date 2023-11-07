@@ -44,7 +44,7 @@
                     };
 
                     var logTrailClientService = new LogTrailClientService(appSettings.LogTrailEndPoint);
-
+                    logger.Info("start insert log trail : " + logEvent.Destination);
                     _ = logTrailClientService.PostAsync(logEvent);
                 }
             }
