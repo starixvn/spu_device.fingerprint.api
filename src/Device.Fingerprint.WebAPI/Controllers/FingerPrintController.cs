@@ -35,7 +35,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.logger = logger;
         }
 
-        [HttpGet("scr/{subscriberName}")]
+        [HttpGet("s/{subscriberName}")]
         [ETagFilter(200)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public ActionResult Script(string subscriberName)
@@ -76,9 +76,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }        
 
-        [HttpGet("scr/{version}/ce")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]            
-        public ActionResult CookieScript(string version)
+        [HttpGet("s/ce/{version}")]
+        public ActionResult CookieScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
@@ -97,9 +96,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
         
-        [HttpGet("scr/{version}/hl")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult HeadlessBrowserScript(string version)
+        [HttpGet("s/hl/{version}")]
+        public ActionResult HeadlessBrowserScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
 
@@ -120,9 +118,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/{version}/fp")]
-       // [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult FingerPrintScript(string version)
+        [HttpGet("s/fp/{version}")]
+        public ActionResult FingerPrintScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
 
@@ -141,9 +138,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/{version}/crt")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult CryptScript(string version)
+        [HttpGet("s/crt/{version}")]
+        public ActionResult CryptScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.js";
 
@@ -162,7 +158,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/gjt")]
+        [HttpGet("s/gjt")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult<string> GetJWT()
         {
