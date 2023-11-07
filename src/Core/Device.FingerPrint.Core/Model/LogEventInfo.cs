@@ -1,4 +1,4 @@
-﻿namespace FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models
+﻿namespace Device.FingerPrint.Core.Model
 {
     using System;
     public class LogEventInfo

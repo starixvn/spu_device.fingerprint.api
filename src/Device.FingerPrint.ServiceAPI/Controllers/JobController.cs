@@ -1,9 +1,9 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
+    using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.ServiceAPI.Services;
     using Device.FingerPrint.ServiceAPI.Services.RabbitMQ;
     using Fanex.Logging;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
     using Microsoft.AspNetCore.Mvc;
     using System.Threading.Tasks;
 
@@ -34,7 +34,6 @@
                             , ILogger logger
                             , IProducerService producerService
                             , IAppSettings appSettings
-
                             )
         {
             this.deviceIdentifyServices = deviceIdentifyServices;

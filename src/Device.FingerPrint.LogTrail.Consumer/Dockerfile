@@ -6,7 +6,7 @@ COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
-COPY ["./src/FPS.Device.FingerPrint.LogTrail.Net.Standard.Client", "FPS.Device.FingerPrint.LogTrail.Net.Standard.Client/"]
+COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
 COPY ["./src/Device.FingerPrint.LogTrail.Consumer/Device.FingerPrint.LogTrail.Consumer.csproj", "Device.FingerPrint.LogTrail.Consumer/"]
 

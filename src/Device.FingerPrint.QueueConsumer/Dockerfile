@@ -14,8 +14,6 @@ COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
 
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
-COPY ["./src/FPS.Device.FingerPrint.LogTrail.Net.Standard.Client", "FPS.Device.FingerPrint.LogTrail.Net.Standard.Client/"]
-
 COPY ["./src/Device.FingerPrint.QueueConsumer/Device.FingerPrint.QueueConsumer.csproj", "Device.FingerPrint.QueueConsumer/"]
 
 WORKDIR "/src/Device.FingerPrint.QueueConsumer"

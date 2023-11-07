@@ -2,8 +2,8 @@
 {
     using System.Text.Json;
     using System.Threading.Tasks;
+    using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Features.LogTrail.Services;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
 
     public interface ICapturingService
     {

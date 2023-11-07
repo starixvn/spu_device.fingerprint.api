@@ -8,7 +8,7 @@
     using MassTransit;
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using System.Linq;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
+    using Device.FingerPrint.Core.Model;
 
     public class LogTrailConsumer : IConsumer<Batch<LogEventInfo>>
     {

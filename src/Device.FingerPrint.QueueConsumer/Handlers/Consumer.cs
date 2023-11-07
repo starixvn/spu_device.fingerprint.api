@@ -1,6 +1,8 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.Features.Transaction.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
@@ -10,8 +12,6 @@
     using EasyNetQ;
     using EasyNetQ.Consumer;
     using Fanex.Logging;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
@@ -308,9 +308,9 @@
                     Method = defaultMethod
                 };
 
-                var logEventService = new LogEventService(appSettings.LogTrailEndPoint);
+                var httpClientService = new HttpClientService(appSettings.LogTrailEndPoint);
 
-                _ = logEventService.PostAsync(logEventInfo);
+                _ = httpClientService.PostAsync(logEventInfo);
             }
             catch (Exception ex)
             {

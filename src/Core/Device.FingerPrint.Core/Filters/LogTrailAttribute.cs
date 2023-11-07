@@ -3,9 +3,9 @@
     using System;
     using System.Linq;
     using System.Threading.Tasks;
+    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Services;
     using Fanex.Logging;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
     using Microsoft.AspNetCore.Mvc.Filters;
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
@@ -43,9 +43,9 @@
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
 
-                    var logEventService = new LogEventService(appSettings.LogTrailEndPoint);
+                    var httpClientService = new HttpClientService(appSettings.LogTrailEndPoint);
 
-                    _ = logEventService.PostAsync(logEvent);
+                    _ = httpClientService.PostAsync(logEvent);
                 }
             }
             catch (Exception ex)

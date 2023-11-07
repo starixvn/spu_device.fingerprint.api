@@ -4,8 +4,8 @@
     using Fanex.Logging;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Extensions;
-    using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.Models;
     using MassTransit;
+    using Device.FingerPrint.Core.Model;
 
     public class LogTrailFaultConsumer : IConsumer<Batch<Fault<LogEventInfo>>>
     {
