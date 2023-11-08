@@ -32,7 +32,7 @@
             {
                 if (appSettings.GetValue<bool>("RabbitMQ:LogTrail:Queue-Consume"))
                 {
-                    logger.Info("Start Consuming!");
+                    logger.Info("Start Log Trail Consuming!");
 
                     var rawLogEvent = context.Message.Select(x =>
                     {
