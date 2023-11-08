@@ -52,7 +52,7 @@ namespace Device.FingerPrint.QueueConsumer
 
             services.AddSingleton<ILogger, Logger>();
 
-            services.AddSingleton(serviceProvider =>
+            services.AddSingleton<ILogTrailClientService>(serviceProvider =>
             {
                 var logTrailApiUrl = appSettings.LogTrailEndPoint;
                 var logTrailClientService = new LogTrailClientService();

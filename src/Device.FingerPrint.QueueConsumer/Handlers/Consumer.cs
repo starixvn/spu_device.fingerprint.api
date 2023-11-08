@@ -30,21 +30,19 @@
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
         private readonly IRedisService redisService;
-        private readonly IWebHostEnvironment webHostEnvironment;
-        private readonly LogTrailClientService logTrailClientService;
+        private readonly ILogTrailClientService logTrailClientService;
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
-        private const string defaultMethod = "Device.FingerPrint.QueueConsumer.Method";
+        private const string defaultMethod = "Device.FingerPrint.QueueConsumer.Consumer";
 
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
                         , ILogger logger
                         , IRedisService redisService
                         , IRawTransactionService rawTransactionService
-                        , IWebHostEnvironment webHostEnvironment
-                        , LogTrailClientService logTrailClientService)
+                        , ILogTrailClientService logTrailClientService)
         {
             this.transactionService = transactionService;
             this.appSettings = appSettings;
@@ -53,7 +51,6 @@
 
             listTransactionInsertModel = new List<TransactionEntity>();
             this.rawTransactionService = rawTransactionService;
-            this.webHostEnvironment = webHostEnvironment;
             this.logTrailClientService = logTrailClientService;
         }
 
@@ -307,7 +304,7 @@
                     SubscriberID = transaction.SubscriberId,
                     SystemName = appSettings.SystemName,
                     Source = transaction.Url,
-                    Destination = webHostEnvironment.ContentRootPath ?? defaultDestination,
+                    Destination = defaultDestination,
                     Method = defaultMethod
                 };
 

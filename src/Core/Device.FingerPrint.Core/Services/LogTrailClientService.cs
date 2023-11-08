@@ -8,7 +8,12 @@
     using System.Threading;
     using Device.FingerPrint.Core.Model;
 
-    public class LogTrailClientService
+    public interface ILogTrailClientService
+    {
+        Task PostAsync(LogEventInfo logEventInfo);
+    }
+
+    public class LogTrailClientService : ILogTrailClientService
     {
         private string LogTrailEndPoint;
 

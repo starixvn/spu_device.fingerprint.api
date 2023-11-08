@@ -11,9 +11,9 @@
 
     public class LogEventService : ILogEventService
     {
-        private readonly LogTrailClientService logTrailClientService;
+        private readonly ILogTrailClientService logTrailClientService;
 
-        public LogEventService(LogTrailClientService logTrailClientService)
+        public LogEventService(ILogTrailClientService logTrailClientService)
         {
             this.logTrailClientService = logTrailClientService;
         }

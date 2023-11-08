@@ -13,12 +13,12 @@
     {
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly LogTrailClientService logTrailClientService;
+        private readonly ILogTrailClientService logTrailClientService;
 
         public LogTrailAttribute(
             IAppSettings appSettings,
             ILogger logger,
-            LogTrailClientService logTrailClientService
+            ILogTrailClientService logTrailClientService
             )
         {
             this.appSettings = appSettings;
