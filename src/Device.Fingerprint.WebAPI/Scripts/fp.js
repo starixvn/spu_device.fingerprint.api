@@ -86,7 +86,7 @@
             fp.post(url + "/cle", data);
         },
         postFpData: function (gjt) {
-            fp.requireJS(apiUrl + '/s/' + version + '/fp').then(() => {
+            fp.requireJS(apiUrl + '/s' + '/fp/' + version).then(() => {
                 return globalFP.getFP(md5.hash);
             }).then(res => {
                 var data = {
@@ -117,7 +117,7 @@
             });
         },
         postHlData: function (gjt) {
-            fp.requireJS(apiUrl + '/s/' + version + '/hl').then(() => {
+            fp.requireJS(apiUrl + '/s' + '/hl/' + version).then(() => {
                 return fpHeadless.getHeadlessScore();
             }).then(res => {
                 var data = {
@@ -136,7 +136,7 @@
             });
         },
         checkDomReady: function () {
-            fp.requireJS(apiUrl + '/s/' + version + '/ce').then(() => {
+            fp.requireJS(apiUrl + '/s' + '/ce/' + version).then(() => {
                 fpNewCookie.getStorage('gps.session').then((newCookie) => {
                     if (newCookie && newCookie.length > 0) {
                         sessionKey = newCookie;
@@ -153,7 +153,7 @@
                                 return response.text();
                             })
                             .then((gjt) => {
-                                fp.requireJS(apiUrl + '/s/' + version + '/crt').then(() => {
+                                fp.requireJS(apiUrl + '/s' + '/crt/' + version).then(() => {
                                     fp.postFpData(gjt);
                                     fp.postCeData(gjt);
                                     fp.postHlData(gjt);

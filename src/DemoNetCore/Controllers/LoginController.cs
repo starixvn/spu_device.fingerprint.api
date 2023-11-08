@@ -30,7 +30,7 @@ namespace DemoNetCore.Controllers
         // GET: Login
         public ActionResult Index()
         {
-            ViewBag.GetAPIUrl = String.Format("{0}/api/scr/{1}", string.IsNullOrEmpty(getAPIUrl) ? string.Empty : getAPIUrl, subscriberName);
+            ViewBag.GetAPIUrl = String.Format("{0}/api/s/{1}", string.IsNullOrEmpty(getAPIUrl) ? string.Empty : getAPIUrl, subscriberName);
             ViewBag.GetActivatorUrl = getActivatorUrl;
 
             if (HttpContext.Session.GetString("Username") == null)
