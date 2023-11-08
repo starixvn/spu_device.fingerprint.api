@@ -12,7 +12,6 @@
     using EasyNetQ;
     using EasyNetQ.Consumer;
     using Fanex.Logging;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
@@ -35,7 +34,7 @@
         private readonly List<TransactionEntity> listTransactionInsertModel;
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
-        private const string defaultMethod = "Device.FingerPrint.QueueConsumer.Consumer";
+        private const string defaultMethod = "Consumer";
 
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
@@ -298,12 +297,14 @@
         {
             try
             {
+                var urlAddress = new Uri(transaction.Url);
+
                 var logEventInfo = new LogEventInfo
                 {
                     EventDate = DateTime.Now.Date,
                     SubscriberID = transaction.SubscriberId,
                     SystemName = appSettings.SystemName,
-                    Source = transaction.Url,
+                    Source = $"{urlAddress.Host}:{urlAddress.Port}",
                     Destination = defaultDestination,
                     Method = defaultMethod
                 };
