@@ -35,13 +35,14 @@
                 if (context.HttpContext.Request.Method == "POST")
                 {
                     var model = context.ActionArguments.FirstOrDefault().Value;
+                    var urlAddress = new Uri(model.GetType().GetProperty("Url")?.GetValue(model, null)?.ToString());
 
                     var logEvent = new LogEventInfo
                     {
                         SubscriberID = int.Parse(model.GetType().GetProperty("SubscriberId")?.GetValue(model, null).ToString()),
                         SystemName = appSettings.SystemName,
                         EventDate = DateTime.Now,
-                        Source = model.GetType().GetProperty("Url")?.GetValue(model, null)?.ToString(),
+                        Source = $"{urlAddress.Host}:{urlAddress.Port}",
                         Destination = context.HttpContext.Request.Host.ToString(),
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
