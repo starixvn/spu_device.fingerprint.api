@@ -8,26 +8,26 @@
     using System.Threading;
     using Device.FingerPrint.Core.Model;
 
-    public interface ILogTrailClientService
-    {
-        Task PostAsync(LogEventInfo logEventInfo);
-    }
     public class LogTrailClientService
     {
-        private readonly string LogTrailEndPoint;
+        private string LogTrailEndPoint;
 
-        public LogTrailClientService(string LogTrailEndPoint)
+        public LogTrailClientService()
         {
-            if (string.IsNullOrWhiteSpace(LogTrailEndPoint))
-            {
-                throw new ArgumentException("Log Trail API URL cannot be null or empty.", nameof(LogTrailEndPoint));
-            }
+        }
 
-            this.LogTrailEndPoint = LogTrailEndPoint + "/api/job/pushLogTrailEvent";
+        public LogTrailClientService(string logTrailEndPoint)
+        {
+            SetLogTrailEndPoint(logTrailEndPoint);
         }
 
         public async Task PostAsync(LogEventInfo logEventInfo)
         {
+            if (string.IsNullOrWhiteSpace(LogTrailEndPoint))
+            {
+                throw new InvalidOperationException("Log Trail API URL is not set.");
+            }
+
             using (var client = new HttpClient())
             using (var request = new HttpRequestMessage(HttpMethod.Post, LogTrailEndPoint))
             {
@@ -44,6 +44,16 @@
                     }
                 }
             }
+        }
+
+        public void SetLogTrailEndPoint(string logTrailEndPoint)
+        {
+            if (string.IsNullOrWhiteSpace(logTrailEndPoint))
+            {
+                throw new ArgumentException("Log Trail API URL cannot be null or empty.", nameof(logTrailEndPoint));
+            }
+
+            LogTrailEndPoint = logTrailEndPoint + "/api/job/pushLogTrailEvent";
         }
     }
 }

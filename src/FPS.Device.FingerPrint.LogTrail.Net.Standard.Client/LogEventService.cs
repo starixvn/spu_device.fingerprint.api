@@ -11,18 +11,15 @@
 
     public class LogEventService : ILogEventService
     {
-        private readonly string LogTrailEndPoint;
+        private readonly LogTrailClientService logTrailClientService;
 
-        public LogEventService(string LogTrailEndPoint)
+        public LogEventService(LogTrailClientService logTrailClientService)
         {
-            this.LogTrailEndPoint = LogTrailEndPoint;
+            this.logTrailClientService = logTrailClientService;
         }
 
         public async Task PostAsync(LogEventInfo logEventInfo)
         {
-
-            var logTrailClientService = new LogTrailClientService(LogTrailEndPoint);
-
             await logTrailClientService.PostAsync(logEventInfo);
         }
     }

@@ -31,6 +31,7 @@
         private readonly ILogger logger;
         private readonly IRedisService redisService;
         private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly LogTrailClientService logTrailClientService;
 
         private readonly List<TransactionEntity> listTransactionInsertModel;
 
@@ -42,7 +43,8 @@
                         , ILogger logger
                         , IRedisService redisService
                         , IRawTransactionService rawTransactionService
-                        , IWebHostEnvironment webHostEnvironment)
+                        , IWebHostEnvironment webHostEnvironment
+                        , LogTrailClientService logTrailClientService)
         {
             this.transactionService = transactionService;
             this.appSettings = appSettings;
@@ -52,6 +54,7 @@
             listTransactionInsertModel = new List<TransactionEntity>();
             this.rawTransactionService = rawTransactionService;
             this.webHostEnvironment = webHostEnvironment;
+            this.logTrailClientService = logTrailClientService;
         }
 
         private async Task GetTransactionAttribute(TransactionModel model)
@@ -294,7 +297,7 @@
             }
         }
 
-        private void InsertLogTrail(TransactionEntity transaction)
+        private async void InsertLogTrail(TransactionEntity transaction)
         {
             try
             {
@@ -308,9 +311,7 @@
                     Method = defaultMethod
                 };
 
-                var logTrailClientService = new LogTrailClientService(appSettings.LogTrailEndPoint);
-
-                _ = logTrailClientService.PostAsync(logEventInfo);
+                await logTrailClientService.PostAsync(logEventInfo);
             }
             catch (Exception ex)
             {

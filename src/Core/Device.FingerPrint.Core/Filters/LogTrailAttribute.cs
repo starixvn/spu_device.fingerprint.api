@@ -13,14 +13,17 @@
     {
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
+        private readonly LogTrailClientService logTrailClientService;
 
         public LogTrailAttribute(
             IAppSettings appSettings,
-            ILogger logger
+            ILogger logger,
+            LogTrailClientService logTrailClientService
             )
         {
             this.appSettings = appSettings;
             this.logger = logger;
+            this.logTrailClientService = logTrailClientService;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -43,13 +46,7 @@
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
 
-                    var logTrailClientService = new LogTrailClientService(appSettings.LogTrailEndPoint);
-                    logger.Info("start insert log trail : " + logEvent.Destination + appSettings.LogTrailEndPoint);
-
                     await logTrailClientService.PostAsync(logEvent);
-
-                    logger.Info("end insert log trail");
-
                 }
             }
             catch (Exception ex)

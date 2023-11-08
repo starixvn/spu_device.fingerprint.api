@@ -52,6 +52,14 @@ namespace Device.FingerPrint.QueueConsumer
 
             services.AddSingleton<ILogger, Logger>();
 
+            services.AddSingleton(serviceProvider =>
+            {
+                var logTrailApiUrl = appSettings.LogTrailEndPoint;
+                var logTrailClientService = new LogTrailClientService();
+                logTrailClientService.SetLogTrailEndPoint(logTrailApiUrl);
+                return logTrailClientService;
+            });
+
             services.AddHealthChecks();
              
             FanexDataConfig(appSettings);
