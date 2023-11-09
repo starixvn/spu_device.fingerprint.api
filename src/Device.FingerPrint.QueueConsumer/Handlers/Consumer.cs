@@ -149,7 +149,7 @@
                             }
                         }
 
-                        InsertLogTrail(transaction);
+                        InsertLogTrail(message.Body.SourceUrl, transaction.SubscriberId);
                     });
                 });
             }
@@ -293,18 +293,16 @@
             }
         }
 
-        private async void InsertLogTrail(TransactionEntity transaction)
+        private async void InsertLogTrail(string sourceUrl, int subscriberId)
         {
             try
             {
-                var urlAddress = new Uri(transaction.Url);
-
                 var logEventInfo = new LogEventInfo
                 {
                     EventDate = DateTime.Now.Date,
-                    SubscriberID = transaction.SubscriberId,
+                    SubscriberID = subscriberId,
                     SystemName = appSettings.SystemName,
-                    Source = $"{urlAddress.Host}:{urlAddress.Port}",
+                    Source = sourceUrl,
                     Destination = defaultDestination,
                     Method = defaultMethod
                 };
