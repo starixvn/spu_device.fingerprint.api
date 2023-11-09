@@ -5,10 +5,15 @@
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
+    using Device.FingerPrint.QueueConsumer.Factory;
     using Device.FingerPrint.QueueConsumer.Services;
     using Device.FingerPrint.Redis;
+    using DeviceDetectorNET;
+    using DeviceDetectorNET.Class.Device;
     using EasyNetQ;
     using EasyNetQ.Consumer;
+    using Fanex.DeviceDetector.Factory;
+    using Fanex.DeviceDetector.Models;
     using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
     using Microsoft.Extensions.Configuration;
@@ -19,8 +24,10 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.RegularExpressions;
     using System.Threading;
     using System.Threading.Tasks;
+    using static System.Runtime.InteropServices.JavaScript.JSType;
 
     public class Consumer : BackgroundService
     {
@@ -30,7 +37,12 @@
         private readonly ILogger logger;
         private readonly IRedisService redisService;
 
+        private readonly DCSSubsTransactionFactory _dCSSubsTransactionFactory;
+        private readonly ExtraSubsTransactionFactory _extraSubsTransactionFactory;
+
         private readonly List<TransactionEntity> listTransactionInsertModel;
+        private readonly List<RawTransactionModel> transDcsSub = new List<RawTransactionModel>();
+        private readonly List<RawTransactionModel> tranOfExtraSubs = new List<RawTransactionModel>();
 
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
@@ -46,40 +58,9 @@
             listTransactionInsertModel = new List<TransactionEntity>();
             this.rawTransactionService = rawTransactionService;
 
-        }
+            _dCSSubsTransactionFactory = new DCSSubsTransactionFactory(appSettings, transactionService);
+            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings);
 
-        private async Task GetTransactionAttribute(TransactionModel model)
-        {
-            try
-            {
-                if (model != null)
-                {
-
-                    var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
-
-                    var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                    var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                    var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-                    var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
-
-                    await Task.WhenAll(fingerPrintTask, headerTask, cookieTask, headlessTask);
-
-                    var fingerPrint = fingerPrintTask.Result;
-                    var header = headerTask.Result;
-                    var cookie = cookieTask.Result;
-                    var headless = headlessTask.Result;
-
-                    var userAgentInfo = rawTransactionService.ParseUserAgentInfo(model.UserAgent);
-
-                    model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, userAgentInfo);
-                    model.CookieCode = cookie;
-                    model.UserAgentInfo = userAgentInfo;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message);
-            }
         }
 
         private TransactionEntity TranformTransactionEntity(TransactionModel model)
@@ -111,10 +92,260 @@
             };
         }
 
+
+        private DeviceInfoModel GetDeviceInfo(string deviceCode)
+        {
+            if (string.IsNullOrWhiteSpace(deviceCode))
+            {
+                return TransformEmptyDeviceInfo();
+            }
+
+            var deviceInfo = DeviceFactory.GetDeviceInfo(deviceCode);
+
+            if (deviceInfo != null)
+            {
+                return TransformDeviceInfo(deviceInfo);
+            }
+
+            return TransformEmptyDeviceInfo();
+        }
+
+        private async Task GetTransactionAttribute(RawTransactionModel model)
+        {
+            try
+            {
+                if (model != null)
+                {
+
+                    var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
+
+                    var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
+                    var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                    var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
+                    var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
+
+                    await Task.WhenAll(fingerPrintTask, headerTask, cookieTask, headlessTask);
+
+                    var fingerPrint = fingerPrintTask.Result;
+                    var header = headerTask.Result;
+                    var cookie = cookieTask.Result;
+                    var headless = headlessTask.Result;
+
+                    model.RawUserAgent = model.UserAgent;
+                    model.RawUserAgentInfo = rawTransactionService.ParseUserAgentInfo(model.UserAgent);
+
+                    model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
+                    model.CookieCode = cookie;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
+            }
+        }
+
+        private DeviceInfoModel TransformEmptyDeviceInfo()
+        {
+            return new DeviceInfoModel
+            {
+                AppVersion = string.Empty,
+                CapturedDate = 0,
+                DeviceFPCode = string.Empty,
+                DeviceNo = string.Empty,
+                HRef = string.Empty,
+                NA = string.Empty,
+                Screen = new ScreenInfoModel
+                {
+                    ColorDepth = 0,
+                    Height = 0,
+                    Width = 0
+                },
+                TimeZone = string.Empty,
+                UserAgent = string.Empty,
+                InvalidDeviceId = true
+            };
+        }
+
+        private DeviceInfoModel TransformDeviceInfo(DeviceInfo deviceInfo)
+        {
+            var botD = new BotDModel();
+            try
+            {
+                if (deviceInfo.BotD?.Result != null)
+                {
+                    botD = new BotDModel
+                    {
+                        Result = new BotDResultModel
+                        {
+                            Bot = deviceInfo.BotD.Result.Bot,
+                            BotKind = deviceInfo.BotD.Result.BotKind
+                        },
+                        Detection = deviceInfo.BotD.Detection,
+                        Component = deviceInfo.BotD.Component
+                    };
+                }
+            }
+            catch { }
+
+            return new DeviceInfoModel
+            {
+                AppVersion = deviceInfo.AppVersion,
+                CapturedDate = deviceInfo.CapturedDate,
+                DeviceFPCode = deviceInfo.DeviceCode,
+                DeviceNo = deviceInfo.DeviceId,
+                HRef = deviceInfo.HRef,
+                NA = deviceInfo.NA,
+                TimeZone = deviceInfo.TimeZone,
+                UserAgent = deviceInfo.UserAgent,
+                Screen = deviceInfo.Screen == null
+                    ? new ScreenInfoModel
+                    {
+                        ColorDepth = 0,
+                        Height = 0,
+                        Width = 0
+                    }
+                    : new ScreenInfoModel
+                    {
+                        ColorDepth = deviceInfo.Screen.ColorDepth,
+                        Height = deviceInfo.Screen.Height,
+                        Width = deviceInfo.Screen.Width
+                    },
+                BotD = botD
+            };
+        }
+
         public RawTransactionModel TransformRawTransaction(MessageQueue message)
         {
+            var invalidDevice = string.Empty;
+            var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
+            var deviceInfo = GetDeviceInfo(deviceCode);
+            var url = Utilities.GetURLFromDeviceCode(message.Device);
+            var userAgent = Utilities.GetUserAgentFromDeviceCode(message.Device);
+            var transBit = new BitArray(16);
 
-            return new RawTransactionModel();
+            if (!string.IsNullOrWhiteSpace(message?.BotD))
+            {
+                deviceInfo.BotD = TransformBotD(message.BotD);
+            }
+            var flaggedCode = deviceInfo.BotD?.Result?.Bot == true ? deviceInfo.BotD.Result.BotKind : string.Empty;
+            if (string.IsNullOrEmpty(flaggedCode))
+            {
+                var browserless = Browserless(userAgent, string.IsNullOrWhiteSpace(deviceInfo.DeviceNo));
+                flaggedCode = browserless.ToString();
+            }
+            if (string.IsNullOrWhiteSpace(deviceInfo.DeviceNo) || deviceInfo.DeviceNo == "N/A")
+            {
+                deviceInfo.DeviceNo = null;
+                transBit.Set((int)TransStatusEnum.DeviceCodeIsEmpty, true);
+            }
+            else
+            {
+                if (!Utilities.IsGuidDeviceId(deviceInfo.DeviceNo) || deviceInfo.InvalidDeviceId)
+                {
+                    invalidDevice = deviceCode;
+                    deviceInfo.DeviceNo = null;
+                    transBit.Set((int)TransStatusEnum.InvalidDI, true);
+                }
+            }
+
+            if (ContainsUnicodeCharacter(message.Account))
+            {
+                transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
+            }
+
+            var realIP = message.IP?.Trim();
+            var ipConverted = realIP.Ip2Long();
+
+            var botDModel = TransformBotdModel(message.BotD);
+            var result = new RawTransactionModel
+            {
+                DeviceCode = deviceInfo.DeviceNo,
+                InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
+                TransStatus = Core.Utilities.ConvertBitArray2Int(transBit),
+                LoginName = message.Account,
+                SubscriberName = GetSubscriber(message.Subscriber),
+                SubscriberId = message.SubscriberId,
+                TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
+                IP = realIP,
+                IPId = ipConverted.IpNumber,
+                FakeIP = message.FakeIP?.Trim(),
+                IsIPV6 = ipConverted.IsIpV6,
+                PluginID = 0,
+                URL = string.IsNullOrWhiteSpace(url) ? ConvertNA2Empty(SubStringUrl(deviceInfo.HRef)) : SubStringUrl(url),
+                Action = message.Action,
+                ActionResult = message.ActionResult,
+                UserAgent = string.IsNullOrWhiteSpace(userAgent) ? ConvertNA2Empty(StripUnicodeCharactersFromString(deviceInfo.UserAgent)) : StripUnicodeCharactersFromString(userAgent),
+                FingerprintCode = deviceInfo.DeviceFPCode != "N/A" ? deviceInfo.DeviceFPCode : null,
+                FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? EncodeCapturedData(deviceInfo) : null,
+                SessionKey = message.SessionKey,
+                FlaggedCode = flaggedCode,
+                BotDetection = GetBotDetectionTrue(botDModel),
+                BotComponent = GetBotComponent(botDModel, flaggedCode)
+            };
+
+            return result;
+        }
+
+
+        private BotDModel TransformBotD(string encodedBotD)
+        {
+            var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
+
+            if (!string.IsNullOrEmpty(botD))
+            {
+                return JsonConvert.DeserializeObject<BotDModel>(botD);
+            }
+
+            return new BotDModel();
+        }
+
+        private static bool ContainsUnicodeCharacter(string input)
+        {
+            const int MaxAnsiCode = 255;
+
+            return input.Any(c => c > MaxAnsiCode);
+        }
+
+
+        private string GetSubscriber(string subscriber)
+        {
+            //var extraSubs = AppSettings.ExtraSubs;
+            //var extraSubsTest = AppSettings.ExtraSubsTest;
+            //var isMatchingSubscriberTest = !string.IsNullOrEmpty(extraSubsTest) && subscriber == extraSubsTest;
+
+            //if (AppSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs) && isMatchingSubscriberTest)
+            //{
+            //    var random = new Random();
+            //    var subIndex = random.Next(0, extraSubsTest.Length);
+            //    return extraSubs.Split(';')[subIndex];
+            //}
+
+            return subscriber;
+        }
+
+        private static string ConvertNA2Empty(string data)
+        {
+            return data != "N/A" ? data : null;
+        }
+
+        private static string StripUnicodeCharactersFromString(string inputValue)
+        {
+            return Regex.Replace(inputValue, @"[^\u0000-\u007F]", string.Empty);
+        }
+
+        private static string EncodeCapturedData(DeviceInfoModel deviceInfo)
+        {
+            return Cipher.Encrypt(string.Format("{0}#{1}#{2}#{3}#{4}",
+                deviceInfo.Battery,
+                deviceInfo.CapturedDate,
+                deviceInfo.OSName,
+                deviceInfo.TimeZone,
+                deviceInfo.LocalIps));
+        }
+
+        private static string SubStringUrl(string url)
+        {
+            return url.IndexOf('?') != -1 ? url.Substring(0, url.IndexOf('?')) : url;
         }
 
         private void StartConsuming()
@@ -128,56 +359,15 @@
                 {
                     x.Add<MessageQueue>((message, info) =>
                     {
-                        TransformRawTransaction(message.Body);
-
-                        //var transaction = TranformTransactionEntity(message.Body);
-
-                        //listTransactionInsertModel.Add(transaction);
-
-                        //if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
-                        //{
-                        //    try
-                        //    {
-                        //        transactionService.InsertTransaction(listTransactionInsertModel);
-
-                        //        ClearRedis(listTransactionInsertModel);
-
-                        //        listTransactionInsertModel.Clear();
-
-
-                        //    }
-                        //    catch (Exception ex)
-                        //    {
-                        //        logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
-                        //    }
-                        //}
+                        try
+                        {
+                            ProcessTransaction(message.Body);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body));
+                        }
                     });
-                    //x.Add<TransactionModel>(async (message, info) =>
-                    //{
-                    //    await GetTransactionAttribute(message.Body);
-
-                    //    var transaction = TranformTransactionEntity(message.Body);
-
-                    //    listTransactionInsertModel.Add(transaction);
-
-                    //    if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
-                    //    {
-                    //        try
-                    //        {
-                    //            transactionService.InsertTransaction(listTransactionInsertModel);
-
-                    //            ClearRedis(listTransactionInsertModel);
-
-                    //            listTransactionInsertModel.Clear();
-
-
-                    //        }
-                    //        catch (Exception ex)
-                    //        {
-                    //            logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
-                    //        }
-                    //    }
-                    //});
                 });
             }
             catch (Exception ex)
@@ -186,6 +376,49 @@
             }
         }
 
+
+        private async void ProcessTransaction(MessageQueue message)
+        {
+            var transaction = TransformRawTransaction(message);
+            await GetTransactionAttribute(transaction);
+            var isTransOfExtraSubs = IsTransactionOfExtraSubs(transaction.SubscriberName);
+            if (isTransOfExtraSubs)
+            {
+                HandleAddTransOfExtraSubs(transaction);
+            }
+            else
+            {
+                HandleAddTransOfDCSSubs(transaction);
+            }
+        }
+
+        private bool IsTransactionOfExtraSubs(string subscriber)
+        {
+            //var extraSubs = AppSettings.ExtraSubs;
+            //if (AppSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs))
+            //{
+            //    return extraSubs.Split(';').Any(x => x.Equals(subscriber, StringComparison.CurrentCultureIgnoreCase));
+            //}
+
+            return false;
+        }
+
+        private void HandleAddTransOfExtraSubs(RawTransactionModel tran)
+        {
+            tranOfExtraSubs.Add(tran);
+            _extraSubsTransactionFactory.HandleTransaction(tranOfExtraSubs);
+        }
+
+        private void HandleAddTransOfDCSSubs(RawTransactionModel tran)
+        {
+            transDcsSub.Add(tran);
+            _dCSSubsTransactionFactory.HandleTransaction(transDcsSub);
+            if (transDcsSub.Count >= appSettings.TransBatchSize)
+            {
+                //PushTransactionToMonitor(transDcsSub);
+                transDcsSub.Clear();
+            }
+        }
 
 
         private BotDModel TransformBotdModel(string encodedBotD)

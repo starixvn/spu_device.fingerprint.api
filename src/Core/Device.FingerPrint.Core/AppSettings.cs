@@ -30,7 +30,11 @@ namespace Device.FingerPrint.Core
 
         int TransBatchSize { get; }
 
+        int TransOfExtraSubsBatch { get; }
+
         bool BotDBotComponentForHuman { get; }
+
+        int Interval { get; }
 
         IConfiguration Configuration { get; }
     }
@@ -56,7 +60,10 @@ namespace Device.FingerPrint.Core
         private readonly string jWTPassword;
 
         private readonly int transBatchSize;
+        private readonly int transOfExtraSubsBatch;
         private readonly bool botDBotComponentForHuman;
+
+        private readonly int interval;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -88,7 +95,11 @@ namespace Device.FingerPrint.Core
 
             transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "0" : GetValue<string>("Consumer:TransBatchSize"));
 
+            transOfExtraSubsBatch = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransOfExtraSubs-Batch")) ? "0" : GetValue<string>("Consumer:TransOfExtraSubs-Batch"));
+
             botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
+
+            interval = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:Interval")) ? "0" : GetValue<string>("Consumer:Interval"));
 
         }
 
@@ -118,7 +129,11 @@ namespace Device.FingerPrint.Core
 
         public int TransBatchSize => transBatchSize;
 
+        public int TransOfExtraSubsBatch => transOfExtraSubsBatch;
+
         public bool BotDBotComponentForHuman => botDBotComponentForHuman;
+
+        public int Interval => interval;
 
         public T GetValue<T>(string key)
         {
