@@ -10,11 +10,13 @@
     using EasyNetQ;
     using EasyNetQ.Consumer;
     using Fanex.Logging;
+    using Fanex.Oneyed.Infrastructure.Models;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
+    using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading;
@@ -109,6 +111,12 @@
             };
         }
 
+        public RawTransactionModel TransformRawTransaction(MessageQueue message)
+        {
+
+            return new RawTransactionModel();
+        }
+
         private void StartConsuming()
         {
             var easyNetQConnector = RabbitMQBus();
@@ -116,35 +124,60 @@
 
             try
             {
-
                 easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
-                    x.Add<TransactionModel>(async (message, info) =>
+                    x.Add<MessageQueue>((message, info) =>
                     {
-                        await GetTransactionAttribute(message.Body);
+                        TransformRawTransaction(message.Body);
 
-                        var transaction = TranformTransactionEntity(message.Body);
+                        //var transaction = TranformTransactionEntity(message.Body);
 
-                        listTransactionInsertModel.Add(transaction);
+                        //listTransactionInsertModel.Add(transaction);
 
-                        if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
-                        {
-                            try
-                            {
-                                transactionService.InsertTransaction(listTransactionInsertModel);
+                        //if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                        //{
+                        //    try
+                        //    {
+                        //        transactionService.InsertTransaction(listTransactionInsertModel);
 
-                                ClearRedis(listTransactionInsertModel);
+                        //        ClearRedis(listTransactionInsertModel);
 
-                                listTransactionInsertModel.Clear();
+                        //        listTransactionInsertModel.Clear();
 
 
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
-                            }
-                        }
+                        //    }
+                        //    catch (Exception ex)
+                        //    {
+                        //        logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
+                        //    }
+                        //}
                     });
+                    //x.Add<TransactionModel>(async (message, info) =>
+                    //{
+                    //    await GetTransactionAttribute(message.Body);
+
+                    //    var transaction = TranformTransactionEntity(message.Body);
+
+                    //    listTransactionInsertModel.Add(transaction);
+
+                    //    if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                    //    {
+                    //        try
+                    //        {
+                    //            transactionService.InsertTransaction(listTransactionInsertModel);
+
+                    //            ClearRedis(listTransactionInsertModel);
+
+                    //            listTransactionInsertModel.Clear();
+
+
+                    //        }
+                    //        catch (Exception ex)
+                    //        {
+                    //            logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
+                    //        }
+                    //    }
+                    //});
                 });
             }
             catch (Exception ex)
