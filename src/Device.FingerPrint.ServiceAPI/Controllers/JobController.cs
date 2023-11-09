@@ -130,8 +130,6 @@
         [HttpPost("pushLogTrailEvent")]
         public async Task PushLogTrailEventAsync(LogEventInfo logEventInfo)
         {
-            logger.Info("pushLogTrailEvent", logEventInfo.Destination);
-
             await producerService.SendAsync(logEventInfo, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
         }
 
