@@ -42,7 +42,7 @@
                     using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
                     {
                         request.Content = stringContent;
-                        client.Timeout = TimeSpan.FromSeconds(5);
+                        client.Timeout = TimeSpan.FromSeconds(10);
 
                         using (var response = await client
                             .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
