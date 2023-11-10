@@ -10,6 +10,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Device.FingerPrint.Redis;
     using Fanex.Data;
     using Fanex.Data.MySql;
+    using Fanex.Data.SqlServer;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.AspNetCore;
@@ -103,6 +104,7 @@ namespace Device.FingerPrint.QueueConsumer
               .StartNewSession()
               .Use(connections)
               .WithMySql()
+              .WithSqlServer()
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
         }

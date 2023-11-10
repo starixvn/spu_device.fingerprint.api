@@ -121,7 +121,7 @@ namespace Device.FingerPrint.Core
 
             isReadyDbExtra = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsReadyDbExtra")) && Convert.ToBoolean(GetValue<string>("Consumer:IsReadyDbExtra"));
 
-            extraSubs = GetValue<string>("Consumer:Extra-Subs") ?? "CTMax;Velki;AgentCTMax;Sky;agentvelki;AgentSky";
+            extraSubs = GetValue<string>("Consumer:ExtraSubs") ?? "CTMax;Velki;AgentCTMax;Sky;agentvelki;AgentSky";
 
             pushTransToMonitor = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:PushTrans-To-Monitor")) ? "0" : GetValue<string>("Consumer:PushTrans-To-Monitor"));
 

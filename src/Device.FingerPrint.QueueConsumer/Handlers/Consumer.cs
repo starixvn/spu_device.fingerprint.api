@@ -79,7 +79,7 @@
                     {
                         try
                         {
-                            ProcessTransaction(message.Body);
+                            Task.Run(() => ProcessTransaction(message.Body)).Wait();
                         }
                         catch (Exception ex)
                         {
@@ -96,7 +96,7 @@
             }
         }
 
-        private async void ProcessTransaction(MessageQueue message)
+        private async Task ProcessTransaction(MessageQueue message)
         {
             var transaction = rawTransactionService.TransformRawTransaction(message);
             await rawTransactionService.GetTransactionAttribute(transaction);
@@ -133,9 +133,10 @@
         {
             transDcsSub.Add(tran);
             _dCSSubsTransactionFactory.HandleTransaction(transDcsSub);
+
             if (transDcsSub.Count >= appSettings.TransBatchSize)
             {
-                //PushTransactionToMonitor(transDcsSub);
+                PushTransactionToMonitor(transDcsSub);
                 //rawTransactionService.ClearRedis(transDcsSub);
                 transDcsSub.Clear();
             }
@@ -182,10 +183,11 @@
             if (appSettings.PushTransToMonitor == 1)
             {
                 var groupTrans = trans.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
-                                    .GroupBy(x => new { x.SubscriberId, x.TransTime })
+                                    .GroupBy(x => new { x.SubscriberId, x.SubscriberName, x.TransTime })
                                     .Select(x => new TransactionMonitoringModel
                                     {
                                         SubscriberID = x.Key.SubscriberId,
+                                        SubscriberName = x.Key.SubscriberName,
                                         TransDate = x.Key.TransTime,
                                         TransTotal = x.Count()
                                     });

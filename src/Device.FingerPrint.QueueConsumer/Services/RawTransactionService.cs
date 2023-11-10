@@ -132,7 +132,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
                 TransStatus = Core.Utilities.ConvertBitArray2Int(transBit),
                 LoginName = message.Account,
-                SubscriberName = GetSubscriber(message.Subscriber),
+                SubscriberName = GetSubscriberName(message.Subscriber),
                 SubscriberId = message.SubscriberId,
                 TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
                 IP = realIP,
@@ -159,7 +159,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (model != null)
             {
-                var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
+                var hashKey = $"0:{model.SessionKey}";
+                //var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
 
                 var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
                 var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
@@ -386,15 +387,15 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return new BotDModel();
         }
 
-        private string GetSubscriber(string subscriber)
+        private string GetSubscriberName(string subscriber)
         {
             var randomExtraSubs = appSettings.Configuration["Consumer:ExtraConfig:RandomExtraSubs"];
             if (appSettings.IsReadyDbExtra && randomExtraSubs == "1")
             {
-                var extraSubs = appSettings.ExtraSubs;
+                var extraSubs = appSettings.ExtraSubs.Split(';');
                 var random = new Random();
                 var subIndex = random.Next(0, extraSubs.Length);
-                return extraSubs.Split(';')[subIndex];
+                return extraSubs[subIndex];
             }
 
             return subscriber;
