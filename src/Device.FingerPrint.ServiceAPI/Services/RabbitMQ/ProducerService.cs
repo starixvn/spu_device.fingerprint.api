@@ -23,15 +23,8 @@
 
         public async Task SendAsync<T>(T data, string address)
         {
-            try
-            {
-                var endpoint = await bus.GetSendEndpoint(new Uri(address));
-                await endpoint.Send(data, new CancellationToken());
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message);
-            }
+            var endpoint = await bus.GetSendEndpoint(new Uri(address));
+            await endpoint.Send(data, new CancellationToken());
         }
     }
 }

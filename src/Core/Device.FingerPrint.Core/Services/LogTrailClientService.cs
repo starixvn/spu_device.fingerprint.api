@@ -28,26 +28,34 @@
 
         public async Task PostAsync(LogEventInfo logEventInfo)
         {
-            if (string.IsNullOrWhiteSpace(LogTrailEndPoint))
+            try
             {
-                throw new InvalidOperationException("Log Trail API URL is not set.");
-            }
-
-            using (var client = new HttpClient())
-            using (var request = new HttpRequestMessage(HttpMethod.Post, LogTrailEndPoint))
-            {
-                var json = JsonSerializer.Serialize(logEventInfo);
-                using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
+                if (string.IsNullOrWhiteSpace(LogTrailEndPoint))
                 {
-                    request.Content = stringContent;
+                    throw new InvalidOperationException("Log Trail API URL is not set.");
+                }
 
-                    using (var response = await client
-                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
-                        .ConfigureAwait(false))
+                using (var client = new HttpClient())
+                using (var request = new HttpRequestMessage(HttpMethod.Post, LogTrailEndPoint))
+                {
+                    var json = JsonSerializer.Serialize(logEventInfo);
+                    using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
                     {
-                        response.EnsureSuccessStatusCode();
+                        request.Content = stringContent;
+                        client.Timeout = TimeSpan.FromSeconds(5);
+
+                        using (var response = await client
+                            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
+                            .ConfigureAwait(false))
+                        {
+                            response.EnsureSuccessStatusCode();
+                        }
                     }
                 }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 

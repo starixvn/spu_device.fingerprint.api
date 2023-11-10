@@ -7,11 +7,11 @@
     <UserSecretsId>1507c214-458c-4dd9-892c-54be4c155d23</UserSecretsId>
     <Title>FPS.Device.FingerPrint.LogTrail.Net.Standard.Client</Title>
     <Authors>Teddy.le</Authors>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 </Project>

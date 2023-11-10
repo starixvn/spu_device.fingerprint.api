@@ -9,7 +9,7 @@
 
     public interface ILogEventService
     {
-        void InsertLogEvent<T>(T content);
+        Task InsertLogEventAsync<T>(T content);
     }
 
     public class LogEventService : ILogEventService
@@ -18,45 +18,40 @@
 
         public LogEventService(string logTrailEnpoint)
         {
-            if (string.IsNullOrWhiteSpace(logTrailEnpoint))
-            {
-                throw new InvalidOperationException("Log Trail API URL is not set.");
-            }
-
             this.logTrailEnpoint = logTrailEnpoint + "/api/job/pushLogTrailEvent";
         }
 
-        public void InsertLogEvent<T>(T content)
+        public async Task InsertLogEventAsync<T>(T content)
         {
             try
             {
-                _= PostBasicAsync(content, new CancellationToken());
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        private async Task PostBasicAsync<T>(T content, CancellationToken cancellationToken)
-        {
-            using (var client = new HttpClient())
-            using (var request = new HttpRequestMessage(HttpMethod.Post, logTrailEnpoint))
-            {
-                var json = JsonConvert.SerializeObject(content);
-                using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
+                if (string.IsNullOrWhiteSpace(logTrailEnpoint))
                 {
-                    request.Content = stringContent;
+                    throw new InvalidOperationException("Log Trail API URL is not set.");
+                }
 
-                    client.Timeout = TimeSpan.FromSeconds(10);
-
-                    using (var response = await client
-                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken)
-                        .ConfigureAwait(false))
+                using (var client = new HttpClient())
+                using (var request = new HttpRequestMessage(HttpMethod.Post, logTrailEnpoint))
+                {
+                    var json = JsonConvert.SerializeObject(content);
+                    using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
                     {
-                        response.EnsureSuccessStatusCode();
+                        request.Content = stringContent;
+
+                        client.Timeout = TimeSpan.FromSeconds(5);
+
+                        using (var response =
+                            await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
+                            .ConfigureAwait(false))
+                        {
+                            response.EnsureSuccessStatusCode();
+                        }
                     }
                 }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
     }

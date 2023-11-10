@@ -5,6 +5,7 @@
     using Device.FingerPrint.ServiceAPI.Services.RabbitMQ;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc;
+    using System;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -130,8 +131,16 @@
         [HttpPost("pushLogTrailEvent")]
         public async Task PushLogTrailEventAsync(LogEventInfo logEventInfo)
         {
-            logger.Info("pushLogTrailEvent: " + logEventInfo.SystemName);
-            await producerService.SendAsync(logEventInfo, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+            try
+            {
+                logger.Info("pushLogTrailEvent: " + logEventInfo.SystemName);
+                await producerService.SendAsync(logEventInfo, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
+                throw;
+            }
         }
 
         [HttpGet("hc")]
