@@ -3,19 +3,19 @@
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Core.Services;
-    using Device.FingerPrint.Features.Transaction.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
+    using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
+    using Device.FingerPrint.QueueConsumer.Factory;
     using Device.FingerPrint.QueueConsumer.Services;
-    using Device.FingerPrint.Redis;
     using EasyNetQ;
     using EasyNetQ.Consumer;
     using Fanex.Logging;
+    using Fanex.Oneyed.Infrastructure.Models;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.Hosting;
     using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -24,14 +24,17 @@
 
     public class Consumer : BackgroundService
     {
-        private readonly ITransactionService transactionService;
         private readonly IRawTransactionService rawTransactionService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly IRedisService redisService;
+        private readonly EasyNetQConnector monitorMQConnector;
         private readonly ILogTrailClientService logTrailClientService;
 
-        private readonly List<TransactionEntity> listTransactionInsertModel;
+        private readonly DCSSubsTransactionFactory _dCSSubsTransactionFactory;
+        private readonly ExtraSubsTransactionFactory _extraSubsTransactionFactory;
+
+        private readonly List<RawTransactionModel> transDcsSub = new List<RawTransactionModel>();
+        private readonly List<RawTransactionModel> tranOfExtraSubs = new List<RawTransactionModel>();
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
         private const string defaultMethod = "Consumer";
@@ -43,77 +46,22 @@
                         , IRawTransactionService rawTransactionService
                         , ILogTrailClientService logTrailClientService)
         {
-            this.transactionService = transactionService;
+            this.rawTransactionService = rawTransactionService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.redisService = redisService;
+            this.monitorMQConnector = MonitorMQBus();
 
-            listTransactionInsertModel = new List<TransactionEntity>();
-            this.rawTransactionService = rawTransactionService;
+            _dCSSubsTransactionFactory = new DCSSubsTransactionFactory(appSettings, transactionService);
+            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings);
             this.logTrailClientService = logTrailClientService;
+
         }
 
-        private async Task GetTransactionAttribute(TransactionModel model)
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            try
-            {
-                if (model != null)
-                {
+            StartConsuming();
 
-                    var hashKey = $"{model.SubscriberId}:{model.SessionKey}";
-
-                    var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                    var headerTask = redisService.HashGetAsync<HeaderModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                    var cookieTask = redisService.HashGetAsync<string>(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-                    var headlessTask = redisService.HashGetAsync<HeadlessBrowserModel>(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless));
-
-                    await Task.WhenAll(fingerPrintTask, headerTask, cookieTask, headlessTask);
-
-                    var fingerPrint = fingerPrintTask.Result;
-                    var header = headerTask.Result;
-                    var cookie = cookieTask.Result;
-                    var headless = headlessTask.Result;
-
-                    var userAgentInfo = rawTransactionService.ParseUserAgentInfo(model.UserAgent);
-
-                    model.FingerprintAttribute = rawTransactionService.TransformFingerprintAttributes(fingerPrint, header, userAgentInfo);
-                    model.CookieCode = cookie;
-                    model.UserAgentInfo = userAgentInfo;
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message);
-            }
-        }
-
-        private TransactionEntity TranformTransactionEntity(TransactionModel model)
-        {
-            var botDModel = TransformBotdModel(model.BotD);
-            var flaggedCode = GetFlaggedCode(botDModel, model.UserAgent, model.FingerprintAttribute is null);
-
-            return new TransactionEntity
-            {
-                LoginName = model.LoginName,
-                ClientIP = model.ClientIP,
-                FakeIP = model.FakeIP,
-                UserAgent = model.UserAgent,
-                UserAgentCode = model.UserAgentCode,
-                SessionKey = model.SessionKey,
-                SubscriberId = model.SubscriberId,
-                TransKey = model.TransKey,
-                TransTime = model.TransTime,
-                Url = model.Url,
-                Action = model.Action,
-                CustId = model.CustId,
-                SubAccId = model.SubAccId,
-                CookieCode = model.CookieCode,
-                FingerprintAttribute = model.FingerprintAttribute,
-                UserAgentInfo = model.UserAgentInfo,
-                FlaggedCode = flaggedCode,
-                BotDetection = GetBotDetectionTrue(botDModel),
-                BotComponent = GetBotComponent(botDModel, flaggedCode)
-            };
+            return Task.CompletedTask;
         }
 
         private void StartConsuming()
@@ -123,30 +71,17 @@
 
             try
             {
-
                 easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
                 {
-                    x.Add<TransactionModel>(async (message, info) =>
+                    x.Add<MessageQueue>((message, info) =>
                     {
-                        await GetTransactionAttribute(message.Body);
-
-                        var transaction = TranformTransactionEntity(message.Body);
-
-                        listTransactionInsertModel.Add(transaction);
-
-                        if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
+                        try
                         {
-                            try
-                            {
-                                transactionService.InsertTransaction(listTransactionInsertModel);
-                                ClearRedis(listTransactionInsertModel);
-
-                                listTransactionInsertModel.Clear();
-                            }
-                            catch (Exception ex)
-                            {
-                                logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
-                            }
+                            ProcessTransaction(message.Body);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body));
                         }
 
                         InsertLogTrail(message.Body.SourceUrl, transaction.SubscriberId);
@@ -159,104 +94,49 @@
             }
         }
 
-
-
-        private BotDModel TransformBotdModel(string encodedBotD)
+        private async void ProcessTransaction(MessageQueue message)
         {
-            if (!string.IsNullOrEmpty(encodedBotD))
+            var transaction = rawTransactionService.TransformRawTransaction(message);
+            await rawTransactionService.GetTransactionAttribute(transaction);
+            var isTransOfExtraSubs = IsTransactionOfExtraSubs(transaction.SubscriberName);
+            if (isTransOfExtraSubs)
             {
-                var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
-
-                if (!string.IsNullOrEmpty(botD))
-                {
-                    return JsonConvert.DeserializeObject<BotDModel>(botD);
-                }
-            }
-
-            return new BotDModel();
-        }
-
-        private string GetFlaggedCode(BotDModel botDModel, string userAgent, bool emptyFP)
-        {
-            var flaggedCode = botDModel?.Result?.Bot == true ? botDModel.Result.BotKind : string.Empty;
-            if (string.IsNullOrEmpty(flaggedCode))
-            {
-                var browserless = Browserless(userAgent, emptyFP);
-                return browserless.ToString();
-            }
-
-            return flaggedCode;
-        }
-
-        private string GetBotDetectionTrue(BotDModel botDModel)
-        {
-            try
-            {
-                var detection = botDModel?.Detection;
-                if (!string.IsNullOrEmpty(detection))
-                {
-                    JObject jObject = JObject.Parse(detection);
-                    IEnumerable<string> filteredKeys = jObject.Properties()
-                        .Where(p => p.Value.Value<bool>("bot"))
-                        .Select(p => p.Name);
-
-                    return string.Join(",", filteredKeys);
-                }
-            }
-            catch { }
-
-            return string.Empty;
-        }
-
-        private string GetBotComponent(BotDModel botDModel, string flaggedCode)
-        {
-            if (!appSettings.BotDBotComponentForHuman)
-            {
-                if (flaggedCode != Flagged.Human.ToString())
-                {
-                    return botDModel?.Component ?? string.Empty;
-                }
+                HandleAddTransOfExtraSubs(transaction);
             }
             else
             {
-                return botDModel?.Component ?? string.Empty;
+                HandleAddTransOfDCSSubs(transaction);
             }
-
-            return string.Empty;
         }
 
-        private Flagged Browserless(string userAgent, bool emptyFP)
+        private bool IsTransactionOfExtraSubs(string subscriber)
         {
-            try
+            var extraSubs = appSettings.ExtraSubs;
+            if (appSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs))
             {
-                if (!string.IsNullOrWhiteSpace(userAgent) && IsHeadless(userAgent))
-                {
-                    return Flagged.Headless;
-                }
-
-                if (emptyFP)
-                {
-                    return Flagged.EmptyDevice;
-                }
-
-                if (string.IsNullOrWhiteSpace(userAgent))
-                {
-                    return Flagged.EmptyUserAgent;
-                }
+                return extraSubs.Split(';').Any(x => x.Equals(subscriber, StringComparison.CurrentCultureIgnoreCase));
             }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message);
-            }
-
-            return Flagged.Human;
-        }
-
-        private bool IsHeadless(string userAgent)
-        {
-            if (userAgent.Contains("Headless")) return true;
 
             return false;
+        }
+
+        private void HandleAddTransOfExtraSubs(RawTransactionModel tran)
+        {
+            tranOfExtraSubs.Add(tran);
+            _extraSubsTransactionFactory.HandleTransaction(tranOfExtraSubs);
+            rawTransactionService.ClearRedis(tranOfExtraSubs);
+        }
+
+        private void HandleAddTransOfDCSSubs(RawTransactionModel tran)
+        {
+            transDcsSub.Add(tran);
+            _dCSSubsTransactionFactory.HandleTransaction(transDcsSub);
+            if (transDcsSub.Count >= appSettings.TransBatchSize)
+            {
+                //PushTransactionToMonitor(transDcsSub);
+                rawTransactionService.ClearRedis(transDcsSub);
+                transDcsSub.Clear();
+            }
         }
 
         private EasyNetQConnector RabbitMQBus()
@@ -277,19 +157,45 @@
             return easyNetQConnector;
         }
 
-        private void ClearRedis(List<TransactionEntity> transactions)
+        private EasyNetQConnector MonitorMQBus()
         {
-            var groupByTrans = transactions.GroupBy(x => new
-            {
-                x.SubscriberId,
-                x.SessionKey
-            });
+            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
+                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
+                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
+                                      appSettings.Configuration["RabbitMQ:UserName"],
+                                      appSettings.Configuration["RabbitMQ:Password"]);
 
-            foreach (var trans in groupByTrans)
-            {
-                var hashKey = $"{trans.Key.SubscriberId}:{trans.Key.SessionKey}";
+            easyNetQConnector
+                    .CreateBus()
+                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Monitor:Exchange"])
+                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Monitor:Name"])
+                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:Monitor:RoutingKey"])
+                    .Bind();
 
-                redisService.HashDeleteAsync(hashKey, RedisString.GetRedisKeyNames());
+            return easyNetQConnector;
+        }
+
+
+        private void PushTransactionToMonitor(List<RawTransactionModel> trans)
+        {
+            if (appSettings.PushTransToMonitor == 1)
+            {
+                var groupTrans = trans.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
+                                    .GroupBy(x => new { x.SubscriberId, x.TransTime })
+                                    .Select(x => new TransactionMonitoringModel
+                                    {
+                                        SubscriberID = x.Key.SubscriberId,
+                                        TransDate = x.Key.TransTime,
+                                        TransTotal = x.Count()
+                                    });
+
+                if (groupTrans != null && groupTrans.Any())
+                {
+                    groupTrans.ToList().ForEach(x =>
+                    {
+                        var message = new Message<TransactionMonitoringModel>(x, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
+
+                        monitorMQConnector.AdvanceBus.Publish(monitorMQConnector.Exchange, monitorMQConnector.RoutingKey, true, message);
             }
         }
 
@@ -312,14 +218,8 @@
             catch (Exception ex)
             {
                 logger.Error(ex.Message);
+                }
             }
-        }
-
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
-        {
-            StartConsuming();
-
-            return Task.CompletedTask;
         }
     }
 }

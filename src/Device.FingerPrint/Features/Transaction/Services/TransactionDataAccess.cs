@@ -7,6 +7,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
+        void InsertRawTransaction(string transJson, bool isTransOfDBExtra);
+
         void InsertTransaction(string transJson);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -40,6 +42,17 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionDataAccess()
         {
             repository = new DynamicRepository();
+        }
+
+        public void InsertRawTransaction(string transJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertRawTransactionCriteria
+            {
+                RawTransJson = transJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            repository.Execute(criteria);
         }
 
         public void InsertTransaction(string transJson)

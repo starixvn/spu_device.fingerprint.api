@@ -32,10 +32,20 @@ namespace Device.FingerPrint.Core
 
         string LogTrailEndPoint { get; }
         
+        int TransOfExtraSubsBatch { get; }
+
         bool BotDBotComponentForHuman { get; }
 
         string SystemName {get; }
         
+
+        string ExtraSubs { get; }
+
+        bool IsReadyDbExtra { get; }
+
+        int PushTransToMonitor { get; }
+
+        int Interval { get; }
 
     IConfiguration Configuration { get; }
     }
@@ -61,7 +71,13 @@ namespace Device.FingerPrint.Core
         private readonly string jWTPassword;
 
         private readonly int transBatchSize;
+        private readonly int transOfExtraSubsBatch;
         private readonly bool botDBotComponentForHuman;
+        private readonly string extraSubs;
+        private readonly bool isReadyDbExtra;
+        private readonly int pushTransToMonitor;
+
+        private readonly int interval;
 
         private readonly string logTrailEndPoint;
         private readonly string systemName;
@@ -96,11 +112,21 @@ namespace Device.FingerPrint.Core
 
             transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "0" : GetValue<string>("Consumer:TransBatchSize"));
 
+            transOfExtraSubsBatch = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransOfExtraSubs-Batch")) ? "0" : GetValue<string>("Consumer:TransOfExtraSubs-Batch"));
+
 
             logTrailEndPoint = GetValue<string>("LogTrail:EndPoint") ?? string.Empty;
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
             
             botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
+            isReadyDbExtra = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsReadyDbExtra")) && Convert.ToBoolean(GetValue<string>("Consumer:IsReadyDbExtra"));
+
+            extraSubs = GetValue<string>("Consumer:Extra-Subs") ?? "CTMax;Velki;AgentCTMax;Sky;agentvelki;AgentSky";
+
+            pushTransToMonitor = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:PushTrans-To-Monitor")) ? "0" : GetValue<string>("Consumer:PushTrans-To-Monitor"));
+
+            interval = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:Interval")) ? "0" : GetValue<string>("Consumer:Interval"));
+
         }
 
         public string ApiUrl => apiUrl;
@@ -131,9 +157,19 @@ namespace Device.FingerPrint.Core
 
         public string LogTrailEndPoint => logTrailEndPoint;
         
+        public int TransOfExtraSubsBatch => transOfExtraSubsBatch;
+
         public bool BotDBotComponentForHuman => botDBotComponentForHuman;
         
         public string SystemName => systemName;
+
+        public string ExtraSubs => extraSubs;
+
+        public bool IsReadyDbExtra => isReadyDbExtra;
+
+        public int PushTransToMonitor => pushTransToMonitor;
+
+        public int Interval => interval;
 
         public T GetValue<T>(string key)
         {

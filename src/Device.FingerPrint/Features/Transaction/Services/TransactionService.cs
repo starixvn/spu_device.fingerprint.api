@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
+using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -6,6 +7,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
+        void InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
+
         void InsertTransaction(IEnumerable<TransactionEntity> transactions);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -38,6 +41,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionService(ITransactionDataAccess transactionDataAccess)
         {
             this.transactionDataAccess = transactionDataAccess;
+        }
+
+        public void InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            var transJson = JsonConvert.SerializeObject(transactions);
+            transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
         }
 
         public void InsertTransaction(IEnumerable<TransactionEntity> transactions)

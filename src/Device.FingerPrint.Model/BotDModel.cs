@@ -2,14 +2,14 @@
 {
     public class BotDModel
     {
-        public BotDResult Result { get; set; }
+        public BotDResultModel Result { get; set; }
 
         public string Detection { get; set; }
 
         public string Component { get; set; }
     }
 
-    public class BotDResult
+    public class BotDResultModel
     {
         public bool Bot { get; set; }
 
