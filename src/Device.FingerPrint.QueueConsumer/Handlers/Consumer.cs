@@ -54,7 +54,7 @@
             this.monitorMQConnector = MonitorMQBus();
 
             _dCSSubsTransactionFactory = new DCSSubsTransactionFactory(appSettings, transactionService);
-            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings, ipdbServices);
+            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings, transactionService, ipdbServices);
             this.logTrailClientService = logTrailClientService;
 
         }
@@ -126,7 +126,7 @@
         {
             tranOfExtraSubs.Add(tran);
             _extraSubsTransactionFactory.HandleTransaction(tranOfExtraSubs);
-            rawTransactionService.ClearRedis(tranOfExtraSubs);
+            //rawTransactionService.ClearRedis(tranOfExtraSubs);
         }
 
         private void HandleAddTransOfDCSSubs(RawTransactionModel tran)
@@ -136,7 +136,7 @@
             if (transDcsSub.Count >= appSettings.TransBatchSize)
             {
                 //PushTransactionToMonitor(transDcsSub);
-                rawTransactionService.ClearRedis(transDcsSub);
+                //rawTransactionService.ClearRedis(transDcsSub);
                 transDcsSub.Clear();
             }
         }

@@ -7,6 +7,7 @@ using System;
 using Fanex.Logging;
 using System.Linq;
 using Device.FingerPrint.Features.IPDB.Services;
+using Device.FingerPrint.Features.Transaction.Services;
 
 namespace Device.FingerPrint.QueueConsumer.Factory
 {
@@ -15,18 +16,20 @@ namespace Device.FingerPrint.QueueConsumer.Factory
         private Task taskExtraSub = null;
         private readonly CancellationTokenSource tokenSourceExtraSub = new CancellationTokenSource();
         private readonly IAppSettings appSettings;
+        private readonly ITransactionService transactionService;
         private readonly IIPDBServices ipdbServices;
 
-        public ExtraSubsTransactionFactory(IAppSettings appSettings, IIPDBServices ipdbServices)
+        public ExtraSubsTransactionFactory(IAppSettings appSettings, ITransactionService transactionService, IIPDBServices ipdbServices)
         {
             this.appSettings = appSettings;
+            this.transactionService = transactionService;
             this.ipdbServices = ipdbServices;
         }
 
         protected override void InsertTransaction(List<RawTransactionModel> transactions)
         {
             TransformTransactionByIps(transactions);
-            //_capturingDataService.InsertTransaction(transactions, true);
+            transactionService.InsertRawTransaction(transactions, true);
             transactions.Clear();
         }
 

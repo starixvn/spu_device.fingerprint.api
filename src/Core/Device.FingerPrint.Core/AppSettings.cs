@@ -37,7 +37,6 @@ namespace Device.FingerPrint.Core
         bool BotDBotComponentForHuman { get; }
 
         string SystemName {get; }
-        
 
         string ExtraSubs { get; }
 

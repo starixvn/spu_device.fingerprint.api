@@ -6,6 +6,7 @@ using Fanex.DeviceDetector.Factory;
 using Fanex.DeviceDetector.Models;
 using Fanex.Logging;
 using Fanex.Oneyed.Infrastructure.Models;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -387,16 +388,14 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private string GetSubscriber(string subscriber)
         {
-            //var extraSubs = AppSettings.ExtraSubs;
-            //var extraSubsTest = AppSettings.ExtraSubsTest;
-            //var isMatchingSubscriberTest = !string.IsNullOrEmpty(extraSubsTest) && subscriber == extraSubsTest;
-
-            //if (AppSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs) && isMatchingSubscriberTest)
-            //{
-            //    var random = new Random();
-            //    var subIndex = random.Next(0, extraSubsTest.Length);
-            //    return extraSubs.Split(';')[subIndex];
-            //}
+            var randomExtraSubs = appSettings.Configuration["Consumer:ExtraConfig:RandomExtraSubs"];
+            if (appSettings.IsReadyDbExtra && randomExtraSubs == "1")
+            {
+                var extraSubs = appSettings.ExtraSubs;
+                var random = new Random();
+                var subIndex = random.Next(0, extraSubs.Length);
+                return extraSubs.Split(';')[subIndex];
+            }
 
             return subscriber;
         }
