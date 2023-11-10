@@ -3,6 +3,7 @@
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
+    using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Factory;
     using Device.FingerPrint.QueueConsumer.Services;
@@ -15,6 +16,7 @@
     using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading;
     using System.Threading.Tasks;
 
@@ -23,6 +25,7 @@
         private readonly IRawTransactionService rawTransactionService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
+        private readonly EasyNetQConnector monitorMQConnector;
 
         private readonly DCSSubsTransactionFactory _dCSSubsTransactionFactory;
         private readonly ExtraSubsTransactionFactory _extraSubsTransactionFactory;
@@ -38,6 +41,7 @@
             this.rawTransactionService = rawTransactionService;
             this.appSettings = appSettings;
             this.logger = logger;
+            this.monitorMQConnector = MonitorMQBus();
 
             _dCSSubsTransactionFactory = new DCSSubsTransactionFactory(appSettings, transactionService);
             _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings);
@@ -96,11 +100,11 @@
 
         private bool IsTransactionOfExtraSubs(string subscriber)
         {
-            //var extraSubs = AppSettings.ExtraSubs;
-            //if (AppSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs))
-            //{
-            //    return extraSubs.Split(';').Any(x => x.Equals(subscriber, StringComparison.CurrentCultureIgnoreCase));
-            //}
+            var extraSubs = appSettings.ExtraSubs;
+            if (appSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs))
+            {
+                return extraSubs.Split(';').Any(x => x.Equals(subscriber, StringComparison.CurrentCultureIgnoreCase));
+            }
 
             return false;
         }
@@ -140,6 +144,50 @@
                     .Bind();
 
             return easyNetQConnector;
+        }
+
+        private EasyNetQConnector MonitorMQBus()
+        {
+            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
+                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
+                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
+                                      appSettings.Configuration["RabbitMQ:UserName"],
+                                      appSettings.Configuration["RabbitMQ:Password"]);
+
+            easyNetQConnector
+                    .CreateBus()
+                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Monitor:Exchange"])
+                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Monitor:Name"])
+                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:Monitor:RoutingKey"])
+                    .Bind();
+
+            return easyNetQConnector;
+        }
+
+
+        private void PushTransactionToMonitor(List<RawTransactionModel> trans)
+        {
+            if (appSettings.PushTransToMonitor == 1)
+            {
+                var groupTrans = trans.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
+                                    .GroupBy(x => new { x.SubscriberId, x.TransTime })
+                                    .Select(x => new TransactionMonitoringModel
+                                    {
+                                        SubscriberID = x.Key.SubscriberId,
+                                        TransDate = x.Key.TransTime,
+                                        TransTotal = x.Count()
+                                    });
+
+                if (groupTrans != null && groupTrans.Any())
+                {
+                    groupTrans.ToList().ForEach(x =>
+                    {
+                        var message = new Message<TransactionMonitoringModel>(x, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
+
+                        monitorMQConnector.AdvanceBus.Publish(monitorMQConnector.Exchange, monitorMQConnector.RoutingKey, true, message);
+                    });
+                }
+            }
         }
     }
 }

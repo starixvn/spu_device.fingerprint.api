@@ -39,7 +39,7 @@ namespace DemoNetCore.Controllers
             }
             return Redirect("Home");
         }
-        
+
 
         [HttpPost]
         public ActionResult OnPost(LoginModel loginModel)
@@ -72,7 +72,7 @@ namespace DemoNetCore.Controllers
             fpsService.InitialRequest(fpsAPI, HttpContext.Request).CheckTransaction(account, subscriber, action, loginTime);
         }
 
-         private string GetHeaderIP(string param)
+        private string GetHeaderIP(string param)
         {
             var headerVal = HttpContext.Request.Headers[param].ToString();
             if (!string.IsNullOrEmpty(headerVal))
@@ -156,6 +156,5 @@ namespace DemoNetCore.Controllers
 
             return string.Empty;
         }
-
     }
 }

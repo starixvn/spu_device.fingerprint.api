@@ -34,6 +34,12 @@ namespace Device.FingerPrint.Core
 
         bool BotDBotComponentForHuman { get; }
 
+        string ExtraSubs { get; }
+
+        bool IsReadyDbExtra { get; }
+
+        int PushTransToMonitor { get; }
+
         int Interval { get; }
 
         IConfiguration Configuration { get; }
@@ -62,6 +68,9 @@ namespace Device.FingerPrint.Core
         private readonly int transBatchSize;
         private readonly int transOfExtraSubsBatch;
         private readonly bool botDBotComponentForHuman;
+        private readonly string extraSubs;
+        private readonly bool isReadyDbExtra;
+        private readonly int pushTransToMonitor;
 
         private readonly int interval;
 
@@ -99,6 +108,12 @@ namespace Device.FingerPrint.Core
 
             botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
 
+            isReadyDbExtra = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsReadyDbExtra")) && Convert.ToBoolean(GetValue<string>("Consumer:IsReadyDbExtra"));
+
+            extraSubs = GetValue<string>("Consumer:Extra-Subs") ?? "CTMax;Velki;AgentCTMax;Sky;agentvelki;AgentSky";
+
+            pushTransToMonitor = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:PushTrans-To-Monitor")) ? "0" : GetValue<string>("Consumer:PushTrans-To-Monitor"));
+
             interval = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:Interval")) ? "0" : GetValue<string>("Consumer:Interval"));
 
         }
@@ -132,6 +147,12 @@ namespace Device.FingerPrint.Core
         public int TransOfExtraSubsBatch => transOfExtraSubsBatch;
 
         public bool BotDBotComponentForHuman => botDBotComponentForHuman;
+
+        public string ExtraSubs => extraSubs;
+
+        public bool IsReadyDbExtra => isReadyDbExtra;
+
+        public int PushTransToMonitor => pushTransToMonitor;
 
         public int Interval => interval;
 

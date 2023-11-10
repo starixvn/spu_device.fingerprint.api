@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Threading;
-using Device.FingerPrint.Model;
-using Device.FingerPrint.Core;
-using System;
-using Fanex.Logging;
-using System.Linq;
+﻿using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.Transaction.Services;
+using Device.FingerPrint.Model;
+using Fanex.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.QueueConsumer.Factory
 {
@@ -25,7 +25,6 @@ namespace Device.FingerPrint.QueueConsumer.Factory
 
         protected override void InsertTransaction(List<RawTransactionModel> transactions)
         {
-            TransformTransactionByIps(transactions);
             transactionService.InsertRawTransaction(transactions, false);
         }
 

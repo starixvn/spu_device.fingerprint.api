@@ -2,6 +2,7 @@ namespace Device.FingerPrint.QueueConsumer
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Services;
+    using Device.FingerPrint.Features.IPDB.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.QueueConsumer.Handlers;
@@ -49,6 +50,9 @@ namespace Device.FingerPrint.QueueConsumer
 
             services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
             services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
+
+            services.AddSingleton<IIPDBDataAccess, IPDBDataAccess>();
+            services.AddSingleton<IIPDBServices, IPDBServices>();
 
             services.AddSingleton<ILogger, Logger>();
 
