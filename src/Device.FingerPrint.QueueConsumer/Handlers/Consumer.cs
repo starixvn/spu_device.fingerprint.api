@@ -3,6 +3,7 @@
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Core.Services;
+    using Device.FingerPrint.Features.IPDB.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Model.TransactionMonitoring;
@@ -27,6 +28,7 @@
         private readonly IRawTransactionService rawTransactionService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
+        private readonly IIPDBServices ipdbServices;
         private readonly EasyNetQConnector monitorMQConnector;
         private readonly ILogTrailClientService logTrailClientService;
 
@@ -42,7 +44,7 @@
         public Consumer(IAppSettings appSettings
                         , ITransactionService transactionService
                         , ILogger logger
-                        , IRedisService redisService
+                        , IIPDBServices ipdbServices
                         , IRawTransactionService rawTransactionService
                         , ILogTrailClientService logTrailClientService)
         {
@@ -52,7 +54,7 @@
             this.monitorMQConnector = MonitorMQBus();
 
             _dCSSubsTransactionFactory = new DCSSubsTransactionFactory(appSettings, transactionService);
-            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings);
+            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings, ipdbServices);
             this.logTrailClientService = logTrailClientService;
 
         }
@@ -84,7 +86,7 @@
                             logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body));
                         }
 
-                        InsertLogTrail(message.Body.SourceUrl, transaction.SubscriberId);
+                        //InsertLogTrail(message.Body.SourceUrl, transaction.SubscriberId);
                     });
                 });
             }
@@ -175,7 +177,6 @@
             return easyNetQConnector;
         }
 
-
         private void PushTransactionToMonitor(List<RawTransactionModel> trans)
         {
             if (appSettings.PushTransToMonitor == 1)
@@ -196,6 +197,8 @@
                         var message = new Message<TransactionMonitoringModel>(x, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
 
                         monitorMQConnector.AdvanceBus.Publish(monitorMQConnector.Exchange, monitorMQConnector.RoutingKey, true, message);
+                    });
+                }
             }
         }
 
@@ -218,7 +221,6 @@
             catch (Exception ex)
             {
                 logger.Error(ex.Message);
-                }
             }
         }
     }

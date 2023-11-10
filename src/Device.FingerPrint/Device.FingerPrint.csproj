@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Folder Include="Features\Archive\Model\" />
+    <Folder Include="Features\IPDB\Models\" />
   </ItemGroup>
 
 </Project>

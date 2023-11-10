@@ -81,54 +81,6 @@
             }
         }
 
-
-        [HttpPost("transaction")]
-        [TypeFilter(typeof(LogTrailAttribute))]
-        public void Transaction([FromBody] ClientTransactionModel data)
-        {
-            if (data != null && !string.IsNullOrWhiteSpace(data.LoginName) && !string.IsNullOrWhiteSpace(data.SubscriberName))
-            {
-                var subscriber = subscriberServices.GetSubscriberByName(data.SubscriberName);
-
-                if (subscriber != null)
-                {
-                    data.SubscriberId = subscriber.SubscriberId;
-                    var urlAddress = new Uri(data.Url);
-                    var userAgentCode = data.UserAgent != null ? crypto.GetMD5Hash(data.UserAgent) : string.Empty;
-
-                    var transaction = new TransactionModel
-                    {
-                        SessionKey = data.SessionKey,
-                        SubscriberId = subscriber.SubscriberId,
-                        ClientIP = data.ClientIp,
-                        FakeIP = data.FakeIP,
-                        LoginName = data.LoginName,
-                        UserAgent = data.UserAgent,
-                        UserAgentCode = userAgentCode,
-                        TransTime = DateTime.Now,
-                        Url = urlAddress.GetLeftPart(UriPartial.Path),
-                        Action = data.Action,
-                        TransKey = data.TransKey,
-                        CustId = data.CustId,
-                        SubAccId = data.SubAccId,
-                        BotD = data.BotD,
-                        SourceUrl = HttpContext.Request.Host.ToString()
-                    };
-
-                    logger.Info("portal api");
-
-                    easyNetQService.PushData(transaction);
-
-                    logger.Info("portal api push queue");
-                }
-                else
-                {
-                    logger.Info($"{data.SubscriberName} does not exists.");
-                }
-            }
-        }
-
-
         [HttpPost("removeRedisByTag")]
         public void RemoveRedisByTag([FromForm] string tag)
         {

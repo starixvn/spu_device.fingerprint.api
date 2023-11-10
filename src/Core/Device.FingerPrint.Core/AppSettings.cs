@@ -114,11 +114,12 @@ namespace Device.FingerPrint.Core
 
             transOfExtraSubsBatch = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransOfExtraSubs-Batch")) ? "0" : GetValue<string>("Consumer:TransOfExtraSubs-Batch"));
 
-
             logTrailEndPoint = GetValue<string>("LogTrail:EndPoint") ?? string.Empty;
+
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
             
             botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
+
             isReadyDbExtra = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsReadyDbExtra")) && Convert.ToBoolean(GetValue<string>("Consumer:IsReadyDbExtra"));
 
             extraSubs = GetValue<string>("Consumer:Extra-Subs") ?? "CTMax;Velki;AgentCTMax;Sky;agentvelki;AgentSky";
