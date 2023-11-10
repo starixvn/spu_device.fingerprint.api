@@ -47,7 +47,11 @@
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
 
+                    logger.Info("start LogTrailAttribute");
+
                     await logTrailClientService.PostAsync(logEvent);
+
+                    logger.Info("end LogTrailAttribute");
                 }
             }
             catch (Exception ex)

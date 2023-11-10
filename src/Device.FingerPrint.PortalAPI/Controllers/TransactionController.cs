@@ -115,7 +115,11 @@
                         SourceUrl = HttpContext.Request.Host.ToString()
                     };
 
-                    easyNetQService.PushData(transaction);                    
+                    logger.Info("portal api");
+
+                    easyNetQService.PushData(transaction);
+
+                    logger.Info("portal api push queue");
                 }
                 else
                 {
