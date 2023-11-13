@@ -16,6 +16,8 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
+    using MassTransit;
+    using MassTransit.Serialization;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
@@ -28,6 +30,7 @@ namespace Device.FingerPrint.QueueConsumer
     using StackExchange.Redis.Extensions.Core.Configuration;
     using StackExchange.Redis.Extensions.Core.Implementations;
     using StackExchange.Redis.Extensions.MsgPack;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -59,11 +62,12 @@ namespace Device.FingerPrint.QueueConsumer
 
             services.AddSingleton<ILogTrailClientService>(serviceProvider =>
             {
-                var logTrailApiUrl = appSettings.LogTrailEndPoint;
                 var logTrailClientService = new LogTrailClientService();
-                logTrailClientService.SetLogTrailEndPoint(logTrailApiUrl);
+                logTrailClientService.SetLogTrailBaseUrl(appSettings.LogTrailBaseUrl);
                 return logTrailClientService;
             });
+
+            services.AddSingleton<QueueConsumer>();
 
             services.AddHealthChecks();
              
@@ -87,7 +91,55 @@ namespace Device.FingerPrint.QueueConsumer
 
             InitService(services);
 
-            services.AddHostedService<Consumer>();
+            services.AddMassTransit(busConfigurator =>
+            {
+                busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                busConfigurator.AddConsumer<QueueConsumer>(cfg =>
+                {
+                    cfg.Options<BatchOptions>(options => options
+                    .SetMessageLimit(appSettings.GetValue<int>("RabbitMQ:Newfps:BatchSizeLimit"))
+                    .SetTimeLimit(s: appSettings.GetValue<int>("RabbitMQ:Newfps:BatchTimeLimit"))
+                    .SetConcurrencyLimit(10));
+
+                    cfg.UseMessageRetry(retry => retry.Interval(
+                        appSettings.GetValue<int>("RabbitMQ:Newfps:RetryCount"),
+                        appSettings.GetValue<int>("RabbitMQ:Newfps:RetryInterval")
+                    ));
+
+                    cfg.UseInMemoryOutbox();
+                }).Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = appSettings.GetValue<string>("RabbitMQ:Newfps:ConsumerName");
+                    e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:Newfps:PrefetchCount");
+                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:Newfps:ConcurrentMessageLimit");
+                });
+
+
+                busConfigurator.UsingRabbitMq((context, rgx) =>
+                {
+                    rgx.ClearSerialization();
+                    rgx.UseRawJsonSerializer();
+
+                    rgx.UseRateLimit(20, TimeSpan.FromSeconds(5));
+
+                    rgx.ConfigureEndpoints(context);
+                });
+            });
+
+            services.AddOptions<RabbitMqTransportOptions>()
+            .Configure(options =>
+            {
+                options.Host = appSettings.RabitMQHost;
+                options.Port = appSettings.RabitMQPort;
+                options.User = appSettings.RabitMQUserName;
+                options.Pass = appSettings.RabitMQPassword;
+                options.VHost = appSettings.RabitMQVirtualHost;
+            });
+
+
+            //services.AddHostedService<Consumer>();
         }
         private void FanexDataConfig(IAppSettings appSettings)
         {

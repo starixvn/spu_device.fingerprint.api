@@ -30,7 +30,7 @@ namespace Device.FingerPrint.Core
 
         int TransBatchSize { get; }
 
-        string LogTrailEndPoint { get; }
+        string LogTrailBaseUrl { get; }
         
         int TransOfExtraSubsBatch { get; }
 
@@ -46,7 +46,17 @@ namespace Device.FingerPrint.Core
 
         int Interval { get; }
 
-    IConfiguration Configuration { get; }
+        IConfiguration Configuration { get; }
+
+        string RabitMQHost { get; }
+
+        ushort RabitMQPort { get; }
+
+        string RabitMQUserName { get; }
+
+        string RabitMQPassword { get; }
+
+        T GetValue<T>(string key);
     }
 
     public class AppSettings : IAppSettings
@@ -78,8 +88,14 @@ namespace Device.FingerPrint.Core
 
         private readonly int interval;
 
-        private readonly string logTrailEndPoint;
+        private readonly string logTrailBaseUrl;
         private readonly string systemName;
+
+        private readonly string rabitMQHost;
+        private readonly ushort rabitMQPort;
+        private readonly string rabitMQVirtualHost;
+        private readonly string rabitMQUserName;
+        private readonly string rabitMQPassword;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -113,7 +129,7 @@ namespace Device.FingerPrint.Core
 
             transOfExtraSubsBatch = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransOfExtraSubs-Batch")) ? "0" : GetValue<string>("Consumer:TransOfExtraSubs-Batch"));
 
-            logTrailEndPoint = GetValue<string>("LogTrail:EndPoint") ?? string.Empty;
+            logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
             
@@ -127,6 +143,15 @@ namespace Device.FingerPrint.Core
 
             interval = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:Interval")) ? "0" : GetValue<string>("Consumer:Interval"));
 
+            rabitMQHost = GetValue<string>("RabbitMQ:Host");
+
+            rabitMQPort = GetValue<ushort>("RabbitMQ:Port");
+
+            rabitMQVirtualHost = GetValue<string>("RabbitMQ:VirtualHost");
+
+            rabitMQUserName = GetValue<string>("RabbitMQ:UserName");
+
+            rabitMQPassword = GetValue<string>("RabbitMQ:Password");
         }
 
         public string ApiUrl => apiUrl;
@@ -155,7 +180,7 @@ namespace Device.FingerPrint.Core
 
         public int TransBatchSize => transBatchSize;
 
-        public string LogTrailEndPoint => logTrailEndPoint;
+        public string LogTrailBaseUrl => logTrailBaseUrl;
         
         public int TransOfExtraSubsBatch => transOfExtraSubsBatch;
 
@@ -170,6 +195,17 @@ namespace Device.FingerPrint.Core
         public int PushTransToMonitor => pushTransToMonitor;
 
         public int Interval => interval;
+
+        public string RabitMQHost => rabitMQHost;
+
+        public ushort RabitMQPort => rabitMQPort;
+
+        public string RabitMQVirtualHost => rabitMQVirtualHost;
+
+        public string RabitMQUserName => rabitMQUserName;
+
+        public string RabitMQPassword => rabitMQPassword;
+
 
         public T GetValue<T>(string key)
         {

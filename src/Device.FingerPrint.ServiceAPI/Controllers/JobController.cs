@@ -6,6 +6,7 @@
     using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc;
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -128,13 +129,26 @@
             monitorJobServices.TestNotificationTelegram(message);
         }
 
-        [HttpPost("pushLogTrailEvent")]
-        public async Task PushLogTrailEventAsync(LogEventInfo logEventInfo)
+        [HttpPost("pushMultipleLogTrailEvent")]
+        public async Task PushMultipleLogTrailEvent(IEnumerable<LogEventInfo> logEventInfos)
         {
             try
             {
-                logger.Info("pushLogTrailEvent: " + logEventInfo.SystemName);
-                await producerService.SendAsync(logEventInfo, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                await producerService.SendBatchAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message);
+                throw;
+            }
+        }
+
+        [HttpPost("pushLogTrailEvent")]
+        public async Task PushLogTrailEventAsync(LogEventInfo logEventInfos)
+        {
+            try
+            {
+                await producerService.SendAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
             }
             catch (Exception ex)
             {

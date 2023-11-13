@@ -1,5 +1,6 @@
 ﻿using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Features.IPDB.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.Redis;
 using Fanex.DeviceDetector.Factory;
@@ -27,10 +28,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         RawTransactionModel TransformRawTransaction(MessageQueue message);
 
-        Task GetTransactionAttribute(RawTransactionModel model);
+        Task<RawTransactionModel> GetTransactionAttribute(RawTransactionModel model);
 
-        void ClearRedis(List<RawTransactionModel> transactions);
+        void ClearRedisAsync(List<RawTransactionModel> transactions);
 
+        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -39,13 +41,21 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private readonly ICrypto crypto;
         private readonly IAppSettings appSettings;
         private readonly IRedisService redisService;
+        private readonly IIPDBServices ipdbServices;
 
-        public RawTransactionService(ICrypto crypto, IAppSettings appSettings, IRedisService redisService, IRawTransactionAttributeService transactionAttributeService)
+        public RawTransactionService(
+            ICrypto crypto,
+            IAppSettings appSettings,
+            IRedisService redisService,
+            IRawTransactionAttributeService transactionAttributeService,
+            IIPDBServices ipdbServices
+            )
         {
             this.transactionAttributeService = transactionAttributeService;
             this.crypto = crypto;
             this.appSettings = appSettings;
             this.redisService = redisService;
+            this.ipdbServices = ipdbServices;
         }
 
         public FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo)
@@ -155,7 +165,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return result;
         }
 
-        public async Task GetTransactionAttribute(RawTransactionModel model)
+        public async Task<RawTransactionModel> GetTransactionAttribute(RawTransactionModel model)
         {
             if (model != null)
             {
@@ -178,9 +188,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
                 model.CookieCode = cookie;
             }
+
+            return model;
         }
 
-        public void ClearRedis(List<RawTransactionModel> transactions)
+        public void ClearRedisAsync(List<RawTransactionModel> transactions)
         {
             var groupByTrans = transactions.GroupBy(x => new
             {
@@ -193,6 +205,27 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 var hashKey = $"{trans.Key.SubscriberId}:{trans.Key.SessionKey}";
 
                 redisService.HashDeleteAsync(hashKey, RedisString.GetRedisKeyNames());
+            }
+        }
+
+        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions)
+        {
+            var ipInfoList = GetIpInfos(transactions);
+            if (ipInfoList != null && ipInfoList.Any())
+            {
+                transactions = transactions.Select(x =>
+                {
+                    var ipInfo = ipInfoList.FirstOrDefault(y => x.IPId == y.IP);
+
+                    x.Country = ipInfo?.Country;
+                    x.CountryCode = ipInfo?.CountryCode;
+                    x.Region = ipInfo?.Region;
+                    x.City = ipInfo?.City;
+                    x.ISP = ipInfo?.ISP;
+                    x.IPInfoCode = Cipher.Hashing2Int(string.Join(";", ipInfo?.CountryCode, ipInfo?.Region, ipInfo?.City, ipInfo?.ISP));
+
+                    return x;
+                }).ToList();
             }
         }
 
@@ -464,6 +497,19 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return string.Empty;
+        }
+
+        private IEnumerable<IpInfoModel> GetIpInfos(IEnumerable<RawTransactionModel> transactions)
+        {
+            var ipAddressList = transactions.Where(x => x.IPId != -1 && !x.IsIPV6).Select(x => x.IPId).ToList();
+            var ipAddressJoined = string.Join(",", ipAddressList);
+            var ipInfoList = GetIpInfoList(ipAddressJoined);
+            return ipInfoList;
+        }
+
+        private IEnumerable<IpInfoModel> GetIpInfoList(string ipAddressList)
+        {
+            return ipdbServices.GetIpInfoList(ipAddressList);
         }
     }
 }

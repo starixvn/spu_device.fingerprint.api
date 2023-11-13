@@ -62,6 +62,9 @@
 
                 busConfigurator.UsingRabbitMq((context, rgx) =>
                 {
+                    rgx.ClearSerialization();
+                    rgx.UseRawJsonSerializer();
+
                     rgx.UseRateLimit(20, TimeSpan.FromSeconds(5));
 
                     rgx.ConfigureEndpoints(context);
