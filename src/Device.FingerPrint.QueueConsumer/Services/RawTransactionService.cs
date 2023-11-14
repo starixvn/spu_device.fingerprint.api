@@ -29,7 +29,7 @@
 
         Task<RawTransactionModel> GetTransactionAttribute(RawTransactionModel model);
 
-        void ClearRedisAsync(List<RawTransactionModel> transactions);
+        void ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
 
         void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub);
     }
@@ -191,7 +191,7 @@
             return model;
         }
 
-        public void ClearRedisAsync(List<RawTransactionModel> transactions)
+        public void ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
         {
             var groupByTrans = transactions.GroupBy(x => new
             {

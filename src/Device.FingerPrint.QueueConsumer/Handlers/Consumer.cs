@@ -64,16 +64,12 @@
 
         private async Task ProcessTransaction(Batch<MessageQueue> messages)
         {
-            var transactionModels = new List<RawTransactionModel>();
-
-            foreach (var message in messages)
+            var transactionModels = await Task.WhenAll(messages.Select(async x =>
             {
-                var transaction = rawTransactionService.TransformRawTransaction(message.Message);
-
+                var transaction = rawTransactionService.TransformRawTransaction(x.Message);
                 await rawTransactionService.GetTransactionAttribute(transaction);
-
-                transactionModels.Add(transaction);
-            }
+                return transaction;
+            }));
 
             var isExtraSub = appSettings.GetValue<bool>("Consumer:IsExtraSub");
 
@@ -91,7 +87,7 @@
             }
         }
 
-        private async Task HandleClearRedis(List<RawTransactionModel> transactions)
+        private async Task HandleClearRedis(IEnumerable<RawTransactionModel> transactions)
         {
             try
             {
@@ -125,7 +121,7 @@
             }
         }
 
-        private async Task PushTransactionToMonitorAsync(List<RawTransactionModel> transactions)
+        private async Task PushTransactionToMonitorAsync(IEnumerable<RawTransactionModel> transactions)
         {
             if (appSettings.GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor"))
             {
