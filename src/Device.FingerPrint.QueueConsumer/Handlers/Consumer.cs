@@ -81,7 +81,7 @@
 
             _ = HandleClearRedis(transactionModels);
 
-            if (isExtraSub)
+            if (!isExtraSub)
             {
                 _= PushTransactionToMonitorAsync(transactionModels);
             }
@@ -91,7 +91,7 @@
         {
             try
             {
-                rawTransactionService.ClearRedisAsync(transactions);
+                await rawTransactionService.ClearRedisAsync(transactions);
             }
             catch (Exception ex)
             {

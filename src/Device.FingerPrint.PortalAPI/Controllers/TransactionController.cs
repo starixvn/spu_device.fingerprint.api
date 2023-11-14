@@ -53,9 +53,8 @@
         {
             if (data != null)
             {
-                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                AddHeaderToRedis(hashKey);
-                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                AddHeaderToRedis(data.SessionKey);
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -65,8 +64,7 @@
         {
             if (data != null)
             {
-                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Headless), data.HeadlessBrowser, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Headless), data.HeadlessBrowser, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -76,8 +74,7 @@
         {
             if (data != null)
             {
-                var hashKey = GetHashKey(data.SubscriberId, data.SessionKey);
-                redisService.HashSetAndExpiryAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 

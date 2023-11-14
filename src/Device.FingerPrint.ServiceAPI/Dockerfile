@@ -10,6 +10,7 @@ COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
+COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
 
 COPY ["./src/Device.FingerPrint.ServiceAPI/Device.FingerPrint.ServiceAPI.csproj", "Device.FingerPrint.ServiceAPI/"]
 

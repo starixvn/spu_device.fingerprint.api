@@ -34,18 +34,6 @@ namespace Device.FingerPrint.Core
 
         IConfiguration Configuration { get; }
 
-        string RabitMQHost { get; }
-
-        ushort RabitMQPort { get; }
-
-        string RabitMQUserName { get; }
-
-        string RabitMQPassword { get; }
-
-        bool PushTransToMonitor { get; }
-
-        bool BotDBotComponentForHuman { get; }
-
         T GetValue<T>(string key);
     }
 
@@ -71,12 +59,6 @@ namespace Device.FingerPrint.Core
 
         private readonly string logTrailBaseUrl;
         private readonly string systemName;
-
-        private readonly string rabitMQHost;
-        private readonly ushort rabitMQPort;
-        private readonly string rabitMQVirtualHost;
-        private readonly string rabitMQUserName;
-        private readonly string rabitMQPassword;
 
         private readonly bool pushTransToMonitor;
         private readonly bool botDBotComponentForHuman;
@@ -112,20 +94,6 @@ namespace Device.FingerPrint.Core
             logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
-
-            rabitMQHost = GetValue<string>("RabbitMQ:Host");
-
-            rabitMQPort = GetValue<ushort>("RabbitMQ:Port");
-
-            rabitMQVirtualHost = GetValue<string>("RabbitMQ:VirtualHost");
-
-            rabitMQUserName = GetValue<string>("RabbitMQ:UserName");
-
-            rabitMQPassword = GetValue<string>("RabbitMQ:Password");
-
-            botDBotComponentForHuman = GetValue<bool>("Consumer:TurnOnBotComponentForHuman");
-
-            pushTransToMonitor = GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor");
         }
 
         public string ApiUrl => apiUrl;
@@ -155,21 +123,6 @@ namespace Device.FingerPrint.Core
         public string LogTrailBaseUrl => logTrailBaseUrl;
 
         public string SystemName => systemName;
-
-
-        public string RabitMQHost => rabitMQHost;
-
-        public ushort RabitMQPort => rabitMQPort;
-
-        public string RabitMQVirtualHost => rabitMQVirtualHost;
-
-        public string RabitMQUserName => rabitMQUserName;
-
-        public string RabitMQPassword => rabitMQPassword;
-
-        public bool BotDBotComponentForHuman => botDBotComponentForHuman;
-
-        public bool PushTransToMonitor => pushTransToMonitor;
 
         public T GetValue<T>(string key)
         {

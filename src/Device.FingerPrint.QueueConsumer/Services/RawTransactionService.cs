@@ -29,7 +29,7 @@
 
         Task<RawTransactionModel> GetTransactionAttribute(RawTransactionModel model);
 
-        void ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
+        Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
 
         void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub);
     }
@@ -191,20 +191,22 @@
             return model;
         }
 
-        public void ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
+        public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
         {
             var groupByTrans = transactions.GroupBy(x => new
             {
-                x.SubscriberId,
                 x.SessionKey
             });
 
+            var tasks = new List<Task>();
+
             foreach (var trans in groupByTrans)
             {
-                var hashKey = $"{trans.Key.SubscriberId}:{trans.Key.SessionKey}";
-
-                redisService.HashDeleteAsync(hashKey, RedisString.GetRedisKeyNames());
+                var task = redisService.HashDeleteAsync(trans.Key.SessionKey, RedisString.GetRedisKeyNames());
+                tasks.Add(task);
             }
+
+            await Task.WhenAll(tasks);
         }
 
         public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub)
@@ -472,7 +474,7 @@
 
         private string GetBotComponent(BotDModel botDModel, string flaggedCode)
         {
-            if (!appSettings.BotDBotComponentForHuman)
+            if (!appSettings.GetValue<bool>("Consumer:TurnOnBotComponentForHuman"))
             {
                 if (flaggedCode != Flagged.Human.ToString())
                 {

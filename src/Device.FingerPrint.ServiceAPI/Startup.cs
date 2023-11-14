@@ -77,11 +77,11 @@ namespace Device.FingerPrint.ServiceAPI
             services.AddOptions<RabbitMqTransportOptions>()
             .Configure(options =>
             {
-                options.Host = appSettings.RabitMQHost;
-                options.Port = appSettings.RabitMQPort;
-                options.User = appSettings.RabitMQUserName;
-                options.Pass = appSettings.RabitMQPassword;
-                options.VHost = appSettings.RabitMQVirtualHost;
+                options.Host = appSettings.GetValue<string>("RabbitMQ:Host");
+                options.Port = appSettings.GetValue<ushort>("RabbitMQ:Port");
+                options.User = appSettings.GetValue<string>("RabbitMQ:UserName");
+                options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
+                options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
             });
         }
 
