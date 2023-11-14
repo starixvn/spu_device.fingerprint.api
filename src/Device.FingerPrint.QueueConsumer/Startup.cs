@@ -102,14 +102,12 @@ namespace Device.FingerPrint.QueueConsumer
                     cfg.Options<BatchOptions>(options => options
                     .SetMessageLimit(appSettings.GetValue<int>("Consumer:BatchSizeLimit"))
                     .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:BatchTimeLimit"))
-                    .SetConcurrencyLimit(10));
-
+                    .SetConcurrencyLimit(appSettings.GetValue<int>("Consumer:BatchConcurrencyLimit")));
                 }).Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Name = appSettings.GetValue<string>("Consumer:Name");
                     e.PrefetchCount = appSettings.GetValue<int>("Consumer:PrefetchCount");
-                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("Consumer:ConcurrentMessageLimit");
                 });
 
 
@@ -117,8 +115,6 @@ namespace Device.FingerPrint.QueueConsumer
                 {
                     rgx.ClearSerialization();
                     rgx.UseRawJsonSerializer();
-
-                    rgx.UseRateLimit(20, TimeSpan.FromSeconds(5));
 
                     rgx.ConfigureEndpoints(context);
                 });

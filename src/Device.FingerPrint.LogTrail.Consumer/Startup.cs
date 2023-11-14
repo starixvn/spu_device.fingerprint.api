@@ -89,7 +89,7 @@
                 cfg.Options<BatchOptions>(options => options
                 .SetMessageLimit(appSettings.GetValue<int>("RabbitMQ:LogTrail:BatchSizeLimit"))
                 .SetTimeLimit(s: appSettings.GetValue<int>("RabbitMQ:LogTrail:BatchTimeLimit"))
-                .SetConcurrencyLimit(10));
+                .SetConcurrencyLimit(appSettings.GetValue<int>("RabbitMQ:LogTrail:BatchConcurrencyLimit")));
 
                 cfg.UseMessageRetry(retry => retry.Interval(
                     appSettings.GetValue<int>("RabbitMQ:LogTrail:RetryCount"),
@@ -102,7 +102,6 @@
                 e.ConfigureConsumeTopology = false;
                 e.Name = appSettings.GetValue<string>("RabbitMQ:LogTrail:ConsumerName");
                 e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail:PrefetchCount");
-                e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:LogTrail:ConcurrentMessageLimit");
             });
         }
 
@@ -113,7 +112,7 @@
                 cfg.Options<BatchOptions>(options => options
                 .SetMessageLimit(appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:BatchSizeLimit"))
                 .SetTimeLimit(s: appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:BatchTimeLimit"))
-                .SetConcurrencyLimit(10));
+                .SetConcurrencyLimit(appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:BatchConcurrencyLimit")));
 
                 cfg.UseMessageRetry(retry => retry.Interval(
                    appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:RetryCount"),

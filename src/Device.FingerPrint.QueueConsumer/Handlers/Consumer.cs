@@ -71,7 +71,7 @@
                 return transaction;
             }));
 
-            var isExtraSub = appSettings.GetValue<bool>("Consumer:IsExtraSub");
+            var isExtraSub = appSettings.IsExtraSub;
 
             rawTransactionService.TransformTransactionByIps(transactionModels, isExtraSub);
 

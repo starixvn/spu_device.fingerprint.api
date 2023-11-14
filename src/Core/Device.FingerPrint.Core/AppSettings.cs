@@ -32,6 +32,8 @@ namespace Device.FingerPrint.Core
         
         string SystemName {get; }
 
+        bool IsExtraSub { get; }
+
         IConfiguration Configuration { get; }
 
         T GetValue<T>(string key);
@@ -60,8 +62,7 @@ namespace Device.FingerPrint.Core
         private readonly string logTrailBaseUrl;
         private readonly string systemName;
 
-        private readonly bool pushTransToMonitor;
-        private readonly bool botDBotComponentForHuman;
+        private readonly bool isExtraSub;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -94,6 +95,8 @@ namespace Device.FingerPrint.Core
             logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
+
+            isExtraSub = GetValue<bool>("Consumer:IsExtraSub");
         }
 
         public string ApiUrl => apiUrl;
@@ -124,6 +127,8 @@ namespace Device.FingerPrint.Core
 
         public string SystemName => systemName;
 
+        public bool IsExtraSub => isExtraSub;
+
         public T GetValue<T>(string key)
         {
             try
@@ -148,5 +153,6 @@ namespace Device.FingerPrint.Core
         }
 
         public IConfiguration Configuration => configuration;
+
     }
 }
