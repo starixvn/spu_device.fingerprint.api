@@ -90,8 +90,6 @@
             }
 
             rawTransactionService.ClearRedisAsync(transactionModels);
-
-            await Task.Delay(10000);
         }
 
         private bool IsTransactionOfExtraSubs(string subscriber)
