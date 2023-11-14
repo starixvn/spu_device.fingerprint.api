@@ -21,7 +21,7 @@
 
         public LogEventService(string logTrailBaseUrl)
         {
-            this.logTrailBaseUrl = logTrailBaseUrl + "/api/job/pushLogTrailEvent";
+            this.logTrailBaseUrl = logTrailBaseUrl;
         }
 
         public async Task InsertLogEventAsync<T>(T content)
@@ -43,7 +43,7 @@
         {
             try
             {
-                var url = logTrailBaseUrl + "/api/job/pushLogTrailEvent";
+                var url = logTrailBaseUrl + "/api/job/pushMultipleLogTrailEvent";
                 var json = JsonConvert.SerializeObject(content);
 
                 await SendAsync(json, url);
