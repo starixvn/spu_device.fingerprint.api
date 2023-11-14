@@ -1,94 +1,101 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Core.Services;
-    using Device.FingerPrint.Features.IPDB.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
-    using Device.FingerPrint.QueueConsumer.Factory;
     using Device.FingerPrint.QueueConsumer.Services;
-    using EasyNetQ;
-    using EasyNetQ.Consumer;
     using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Hosting;
-    using Newtonsoft.Json;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading;
-    using System.Threading.Tasks;
+    using MassTransit;
 
-    public class Consumer : BackgroundService
+    public class Consumer : IConsumer<Batch<MessageQueue>>
     {
+        private readonly IMassTransitProducer massTransitProducer;
         private readonly IRawTransactionService rawTransactionService;
+        private readonly ILogTrailClientService logTrailClientService;
+        private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly IIPDBServices ipdbServices;
-        private readonly EasyNetQConnector monitorMQConnector;
-        private readonly ILogTrailClientService logTrailClientService;
-
-        private readonly DCSSubsTransactionFactory _dCSSubsTransactionFactory;
-        private readonly ExtraSubsTransactionFactory _extraSubsTransactionFactory;
-
-        private readonly List<RawTransactionModel> transDcsSub = new List<RawTransactionModel>();
-        private readonly List<RawTransactionModel> tranOfExtraSubs = new List<RawTransactionModel>();
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
         private const string defaultMethod = "Consumer";
 
-        public Consumer(IAppSettings appSettings
-                        , ITransactionService transactionService
-                        , ILogger logger
-                        , IIPDBServices ipdbServices
-                        , IRawTransactionService rawTransactionService
-                        , ILogTrailClientService logTrailClientService)
+        public Consumer(
+                IMassTransitProducer massTransitProducer,
+                IRawTransactionService rawTransactionService,
+                ILogTrailClientService logTrailClientService,
+                ITransactionService transactionService,
+                IAppSettings appSettings,
+                ILogger logger
+                )
         {
-            this.rawTransactionService = rawTransactionService;
+            this.massTransitProducer = massTransitProducer;
+            this.rawTransactionService  = rawTransactionService;
+            this.logTrailClientService = logTrailClientService;
+            this.transactionService = transactionService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.monitorMQConnector = MonitorMQBus();
-
-            _dCSSubsTransactionFactory = new DCSSubsTransactionFactory(appSettings, transactionService);
-            _extraSubsTransactionFactory = new ExtraSubsTransactionFactory(appSettings, transactionService, ipdbServices);
-            this.logTrailClientService = logTrailClientService;
-
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
         {
-            StartConsuming();
-
-            return Task.CompletedTask;
-        }
-
-        private void StartConsuming()
-        {
-            var easyNetQConnector = RabbitMQBus();
-            logger.Info("Start Consuming!");
-
             try
             {
-                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+                if (appSettings.GetValue<bool>("Consumer:Queue-Consume"))
                 {
-                    x.Add<MessageQueue>((message, info) =>
-                    {
-                        try
-                        {
-                            Task.Run(() => ProcessTransaction(message.Body)).Wait();
-                        }
-                        catch (Exception ex)
-                        {
-                            logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(message.Body));
-                        }
+                    await ProcessTransaction(context.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message + "\n" + JsonSerializer.Serialize(context.Message.Select(x => x.Message)));
+                throw;
+            }
+        }
 
-                        //InsertLogTrail(message.Body.SourceUrl, transaction.SubscriberId);
-                    });
-                });
+        private async Task ProcessTransaction(Batch<MessageQueue> messages)
+        {
+            var transactionModels = new List<RawTransactionModel>();
+
+            foreach (var message in messages)
+            {
+                var transaction = rawTransactionService.TransformRawTransaction(message.Message);
+
+                await rawTransactionService.GetTransactionAttribute(transaction);
+
+                transactionModels.Add(transaction);
+            }
+
+            var isExtraSub = appSettings.GetValue<bool>("Consumer:IsExtraSub");
+
+            rawTransactionService.TransformTransactionByIps(transactionModels, isExtraSub);
+
+            await transactionService.InsertRawTransaction(transactionModels, isExtraSub);
+
+            _ = InsertLogTrail(transactionModels);
+
+            _ = HandleClearRedis(transactionModels);
+
+            if (isExtraSub)
+            {
+                _= PushTransactionToMonitorAsync(transactionModels);
+            }
+        }
+
+        private async Task HandleClearRedis(List<RawTransactionModel> transactions)
+        {
+            try
+            {
+                rawTransactionService.ClearRedisAsync(transactions);
             }
             catch (Exception ex)
             {
@@ -96,93 +103,33 @@
             }
         }
 
-        private async Task ProcessTransaction(MessageQueue message)
+        private async Task InsertLogTrail(IEnumerable<RawTransactionModel> transactions)
         {
-            var transaction = rawTransactionService.TransformRawTransaction(message);
-            await rawTransactionService.GetTransactionAttribute(transaction);
-            var isTransOfExtraSubs = IsTransactionOfExtraSubs(transaction.SubscriberName);
-            if (isTransOfExtraSubs)
+            try
             {
-                HandleAddTransOfExtraSubs(transaction);
+                var logEvents = transactions.Select(x => new LogEventInfo
+                {
+                    EventDate = DateTime.Now.Date,
+                    SubscriberID = x.SubscriberId,
+                    SystemName = appSettings.SystemName,
+                    Source = "test source url",
+                    Destination = defaultDestination,
+                    Method = defaultMethod
+                });
+
+                await logTrailClientService.PostMultipleAsync(logEvents);
             }
-            else
+            catch (Exception ex)
             {
-                HandleAddTransOfDCSSubs(transaction);
-            }
-        }
-
-        private bool IsTransactionOfExtraSubs(string subscriber)
-        {
-            var extraSubs = appSettings.ExtraSubs;
-            if (appSettings.IsReadyDbExtra && !string.IsNullOrWhiteSpace(extraSubs))
-            {
-                return extraSubs.Split(';').Any(x => x.Equals(subscriber, StringComparison.CurrentCultureIgnoreCase));
-            }
-
-            return false;
-        }
-
-        private void HandleAddTransOfExtraSubs(RawTransactionModel tran)
-        {
-            tranOfExtraSubs.Add(tran);
-            _extraSubsTransactionFactory.HandleTransaction(tranOfExtraSubs);
-            //rawTransactionService.ClearRedis(tranOfExtraSubs);
-        }
-
-        private void HandleAddTransOfDCSSubs(RawTransactionModel tran)
-        {
-            transDcsSub.Add(tran);
-            _dCSSubsTransactionFactory.HandleTransaction(transDcsSub);
-
-            if (transDcsSub.Count >= appSettings.TransBatchSize)
-            {
-                PushTransactionToMonitor(transDcsSub);
-                //rawTransactionService.ClearRedis(transDcsSub);
-                transDcsSub.Clear();
+                logger.Error(ex.Message);
             }
         }
 
-        private EasyNetQConnector RabbitMQBus()
+        private async Task PushTransactionToMonitorAsync(List<RawTransactionModel> transactions)
         {
-            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
-                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
-                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
-                                      appSettings.Configuration["RabbitMQ:UserName"],
-                                      appSettings.Configuration["RabbitMQ:Password"]);
-
-            easyNetQConnector
-                    .CreateBus()
-                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Exchange"])
-                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Name"])
-                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:RoutingKey"])
-                    .Bind();
-
-            return easyNetQConnector;
-        }
-
-        private EasyNetQConnector MonitorMQBus()
-        {
-            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
-                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
-                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
-                                      appSettings.Configuration["RabbitMQ:UserName"],
-                                      appSettings.Configuration["RabbitMQ:Password"]);
-
-            easyNetQConnector
-                    .CreateBus()
-                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Monitor:Exchange"])
-                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Monitor:Name"])
-                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:Monitor:RoutingKey"])
-                    .Bind();
-
-            return easyNetQConnector;
-        }
-
-        private void PushTransactionToMonitor(List<RawTransactionModel> trans)
-        {
-            if (appSettings.PushTransToMonitor == 1)
+            if (appSettings.GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor"))
             {
-                var groupTrans = trans.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
+                var groupTrans = transactions.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
                                     .GroupBy(x => new { x.SubscriberId, x.SubscriberName, x.TransTime })
                                     .Select(x => new TransactionMonitoringModel
                                     {
@@ -194,35 +141,8 @@
 
                 if (groupTrans != null && groupTrans.Any())
                 {
-                    groupTrans.ToList().ForEach(x =>
-                    {
-                        var message = new Message<TransactionMonitoringModel>(x, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
-
-                        monitorMQConnector.AdvanceBus.Publish(monitorMQConnector.Exchange, monitorMQConnector.RoutingKey, true, message);
-                    });
+                    await massTransitProducer.SendBatchAsync(groupTrans.ToList(), appSettings.GetValue<string>("RabbitMQ:Monitor:Name"));
                 }
-            }
-        }
-
-        private async void InsertLogTrail(string sourceUrl, int subscriberId)
-        {
-            try
-            {
-                var logEventInfo = new LogEventInfo
-                {
-                    EventDate = DateTime.Now.Date,
-                    SubscriberID = subscriberId,
-                    SystemName = appSettings.SystemName,
-                    Source = sourceUrl,
-                    Destination = defaultDestination,
-                    Method = defaultMethod
-                };
-
-                await logTrailClientService.PostAsync(logEventInfo);
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message);
             }
         }
     }

@@ -1,4 +1,6 @@
-﻿namespace Device.FingerPrint.ServiceAPI.Services.RabbitMQ
+﻿
+
+namespace Device.FingerPrint.Queue
 {
     using System;
     using System.Collections.Generic;
@@ -6,17 +8,17 @@
     using System.Threading.Tasks;
     using MassTransit;
 
-    public interface IProducerService
+    public interface IMassTransitProducer
     {
         Task SendAsync<T>(T data, string address);
 
         Task SendBatchAsync<T>(IEnumerable<T> datas, string address) where T : class;
     }
-    public class ProducerService: IProducerService
+    public class MassTransitProducer : IMassTransitProducer
     {
         private readonly IBus bus;
 
-        public ProducerService(IBus bus)
+        public MassTransitProducer(IBus bus)
         {
             this.bus = bus;
         }

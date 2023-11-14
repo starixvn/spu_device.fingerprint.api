@@ -61,26 +61,33 @@
 
         private async Task SendAsync(string json, string url)
         {
-            if (string.IsNullOrWhiteSpace(url))
+            try
             {
-                throw new InvalidOperationException("Log Trail API URL is not set.");
-            }
-
-            using (var client = new HttpClient())
-            using (var request = new HttpRequestMessage(HttpMethod.Post, url))
-            {
-                using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
+                if (string.IsNullOrWhiteSpace(url))
                 {
-                    request.Content = stringContent;
-                    client.Timeout = TimeSpan.FromSeconds(10);
+                    throw new InvalidOperationException("Log Trail API URL is not set.");
+                }
 
-                    using (var response = await client
-                        .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
-                        .ConfigureAwait(false))
+                using (var client = new HttpClient())
+                using (var request = new HttpRequestMessage(HttpMethod.Post, url))
+                {
+                    using (var stringContent = new StringContent(json, Encoding.UTF8, "application/json"))
                     {
-                        response.EnsureSuccessStatusCode();
+                        request.Content = stringContent;
+                        client.Timeout = TimeSpan.FromSeconds(10);
+
+                        using (var response = await client
+                            .SendAsync(request, HttpCompletionOption.ResponseHeadersRead, new CancellationToken())
+                            .ConfigureAwait(false))
+                        {
+                            response.EnsureSuccessStatusCode();
+                        }
                     }
                 }
+            }
+            catch (Exception)
+            {
+                throw;
             }
         }
 

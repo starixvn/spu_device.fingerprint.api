@@ -7,7 +7,7 @@
     using Device.FingerPrint.Features.Offset.Services;
     using Device.FingerPrint.Features.SummaryTransaction.Services;
     using Device.FingerPrint.Features.Transaction.Services;
-    using Device.FingerPrint.ServiceAPI.Services.RabbitMQ;
+    using Device.FingerPrint.Queue;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -83,7 +83,7 @@
 
         private static void RegisterQueueService(this IServiceCollection services)
         {
-            services.AddSingleton<IProducerService, ProducerService>();
+            services.AddSingleton<IMassTransitProducer, MassTransitProducer>();
         }
     }
 }

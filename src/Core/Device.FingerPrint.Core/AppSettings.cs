@@ -28,23 +28,9 @@ namespace Device.FingerPrint.Core
 
         string JWTPassword { get; }
 
-        int TransBatchSize { get; }
-
         string LogTrailBaseUrl { get; }
         
-        int TransOfExtraSubsBatch { get; }
-
-        bool BotDBotComponentForHuman { get; }
-
         string SystemName {get; }
-
-        string ExtraSubs { get; }
-
-        bool IsReadyDbExtra { get; }
-
-        int PushTransToMonitor { get; }
-
-        int Interval { get; }
 
         IConfiguration Configuration { get; }
 
@@ -55,6 +41,10 @@ namespace Device.FingerPrint.Core
         string RabitMQUserName { get; }
 
         string RabitMQPassword { get; }
+
+        bool PushTransToMonitor { get; }
+
+        bool BotDBotComponentForHuman { get; }
 
         T GetValue<T>(string key);
     }
@@ -79,15 +69,6 @@ namespace Device.FingerPrint.Core
 
         private readonly string jWTPassword;
 
-        private readonly int transBatchSize;
-        private readonly int transOfExtraSubsBatch;
-        private readonly bool botDBotComponentForHuman;
-        private readonly string extraSubs;
-        private readonly bool isReadyDbExtra;
-        private readonly int pushTransToMonitor;
-
-        private readonly int interval;
-
         private readonly string logTrailBaseUrl;
         private readonly string systemName;
 
@@ -96,6 +77,9 @@ namespace Device.FingerPrint.Core
         private readonly string rabitMQVirtualHost;
         private readonly string rabitMQUserName;
         private readonly string rabitMQPassword;
+
+        private readonly bool pushTransToMonitor;
+        private readonly bool botDBotComponentForHuman;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -125,23 +109,9 @@ namespace Device.FingerPrint.Core
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
 
-            transBatchSize = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransBatchSize")) ? "0" : GetValue<string>("Consumer:TransBatchSize"));
-
-            transOfExtraSubsBatch = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:TransOfExtraSubs-Batch")) ? "0" : GetValue<string>("Consumer:TransOfExtraSubs-Batch"));
-
             logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
-            
-            botDBotComponentForHuman = !string.IsNullOrEmpty(GetValue<string>("Consumer:TurnOnBotComponentForHuman")) && Convert.ToBoolean(GetValue<string>("Consumer:TurnOnBotComponentForHuman"));
-
-            isReadyDbExtra = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsReadyDbExtra")) && Convert.ToBoolean(GetValue<string>("Consumer:IsReadyDbExtra"));
-
-            extraSubs = GetValue<string>("Consumer:ExtraSubs") ?? "CTMax;Velki;AgentCTMax;Sky;agentvelki;AgentSky";
-
-            pushTransToMonitor = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:PushTrans-To-Monitor")) ? "0" : GetValue<string>("Consumer:PushTrans-To-Monitor"));
-
-            interval = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Consumer:Interval")) ? "0" : GetValue<string>("Consumer:Interval"));
 
             rabitMQHost = GetValue<string>("RabbitMQ:Host");
 
@@ -152,6 +122,10 @@ namespace Device.FingerPrint.Core
             rabitMQUserName = GetValue<string>("RabbitMQ:UserName");
 
             rabitMQPassword = GetValue<string>("RabbitMQ:Password");
+
+            botDBotComponentForHuman = GetValue<bool>("Consumer:TurnOnBotComponentForHuman");
+
+            pushTransToMonitor = GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor");
         }
 
         public string ApiUrl => apiUrl;
@@ -178,23 +152,10 @@ namespace Device.FingerPrint.Core
 
         public string JWTPassword => jWTPassword;
 
-        public int TransBatchSize => transBatchSize;
-
         public string LogTrailBaseUrl => logTrailBaseUrl;
-        
-        public int TransOfExtraSubsBatch => transOfExtraSubsBatch;
 
-        public bool BotDBotComponentForHuman => botDBotComponentForHuman;
-        
         public string SystemName => systemName;
 
-        public string ExtraSubs => extraSubs;
-
-        public bool IsReadyDbExtra => isReadyDbExtra;
-
-        public int PushTransToMonitor => pushTransToMonitor;
-
-        public int Interval => interval;
 
         public string RabitMQHost => rabitMQHost;
 
@@ -206,6 +167,9 @@ namespace Device.FingerPrint.Core
 
         public string RabitMQPassword => rabitMQPassword;
 
+        public bool BotDBotComponentForHuman => botDBotComponentForHuman;
+
+        public bool PushTransToMonitor => pushTransToMonitor;
 
         public T GetValue<T>(string key)
         {

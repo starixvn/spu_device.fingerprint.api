@@ -5,6 +5,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Device.FingerPrint.Features.IPDB.Services;
     using Device.FingerPrint.Features.Monitor.Services;
     using Device.FingerPrint.Features.Transaction.Services;
+    using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Handlers;
     using Device.FingerPrint.QueueConsumer.Services;
     using Device.FingerPrint.Redis;
@@ -17,7 +18,6 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
     using MassTransit;
-    using MassTransit.Serialization;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
@@ -67,7 +67,9 @@ namespace Device.FingerPrint.QueueConsumer
                 return logTrailClientService;
             });
 
-            services.AddSingleton<QueueConsumer>();
+            services.AddSingleton<IMassTransitProducer, MassTransitProducer>();
+            services.AddSingleton<Consumer>();
+            
 
             services.AddHealthChecks();
              
@@ -95,25 +97,19 @@ namespace Device.FingerPrint.QueueConsumer
             {
                 busConfigurator.SetKebabCaseEndpointNameFormatter();
 
-                busConfigurator.AddConsumer<QueueConsumer>(cfg =>
+                busConfigurator.AddConsumer<Consumer>(cfg =>
                 {
                     cfg.Options<BatchOptions>(options => options
-                    .SetMessageLimit(appSettings.GetValue<int>("RabbitMQ:Newfps:BatchSizeLimit"))
-                    .SetTimeLimit(s: appSettings.GetValue<int>("RabbitMQ:Newfps:BatchTimeLimit"))
+                    .SetMessageLimit(appSettings.GetValue<int>("Consumer:BatchSizeLimit"))
+                    .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:BatchTimeLimit"))
                     .SetConcurrencyLimit(10));
 
-                    cfg.UseMessageRetry(retry => retry.Interval(
-                        appSettings.GetValue<int>("RabbitMQ:Newfps:RetryCount"),
-                        appSettings.GetValue<int>("RabbitMQ:Newfps:RetryInterval")
-                    ));
-
-                    cfg.UseInMemoryOutbox();
                 }).Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
-                    e.Name = appSettings.GetValue<string>("RabbitMQ:Newfps:ConsumerName");
-                    e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:Newfps:PrefetchCount");
-                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("RabbitMQ:Newfps:ConcurrentMessageLimit");
+                    e.Name = appSettings.GetValue<string>("Consumer:Name");
+                    e.PrefetchCount = appSettings.GetValue<int>("Consumer:PrefetchCount");
+                    e.ConcurrentMessageLimit = appSettings.GetValue<int>("Consumer:ConcurrentMessageLimit");
                 });
 
 
@@ -137,9 +133,6 @@ namespace Device.FingerPrint.QueueConsumer
                 options.Pass = appSettings.RabitMQPassword;
                 options.VHost = appSettings.RabitMQVirtualHost;
             });
-
-
-            //services.AddHostedService<Consumer>();
         }
         private void FanexDataConfig(IAppSettings appSettings)
         {

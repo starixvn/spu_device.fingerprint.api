@@ -1,24 +1,23 @@
-﻿using Device.FingerPrint.Core;
-using Device.FingerPrint.Core.Services;
-using Device.FingerPrint.Features.IPDB.Services;
-using Device.FingerPrint.Model;
-using Device.FingerPrint.Redis;
-using Fanex.DeviceDetector.Factory;
-using Fanex.DeviceDetector.Models;
-using Fanex.Logging;
-using Fanex.Oneyed.Infrastructure.Models;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.QueueConsumer.Services
+﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
+    using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Services;
+    using Device.FingerPrint.Features.IPDB.Services;
+    using Device.FingerPrint.Model;
+    using Device.FingerPrint.Redis;
+    using Fanex.DeviceDetector.Factory;
+    using Fanex.DeviceDetector.Models;
+    using Fanex.Logging;
+    using Fanex.Oneyed.Infrastructure.Models;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using System;
+    using System.Collections;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.RegularExpressions;
+    using System.Threading.Tasks;
+
     public interface IRawTransactionService
     {
 
@@ -32,7 +31,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         void ClearRedisAsync(List<RawTransactionModel> transactions);
 
-        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions);
+        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -142,7 +141,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
                 TransStatus = Core.Utilities.ConvertBitArray2Int(transBit),
                 LoginName = message.Account,
-                SubscriberName = GetSubscriberName(message.Subscriber),
+                SubscriberName = message.Subscriber,
                 SubscriberId = message.SubscriberId,
                 TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
                 IP = realIP,
@@ -208,24 +207,27 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
         }
 
-        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions)
+        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub)
         {
-            var ipInfoList = GetIpInfos(transactions);
-            if (ipInfoList != null && ipInfoList.Any())
+            if (isExtraSub)
             {
-                transactions = transactions.Select(x =>
+                var ipInfoList = GetIpInfos(transactions);
+                if (ipInfoList != null && ipInfoList.Any())
                 {
-                    var ipInfo = ipInfoList.FirstOrDefault(y => x.IPId == y.IP);
+                    transactions = transactions.Select(x =>
+                    {
+                        var ipInfo = ipInfoList.FirstOrDefault(y => x.IPId == y.IP);
 
-                    x.Country = ipInfo?.Country;
-                    x.CountryCode = ipInfo?.CountryCode;
-                    x.Region = ipInfo?.Region;
-                    x.City = ipInfo?.City;
-                    x.ISP = ipInfo?.ISP;
-                    x.IPInfoCode = Cipher.Hashing2Int(string.Join(";", ipInfo?.CountryCode, ipInfo?.Region, ipInfo?.City, ipInfo?.ISP));
+                        x.Country = ipInfo?.Country;
+                        x.CountryCode = ipInfo?.CountryCode;
+                        x.Region = ipInfo?.Region;
+                        x.City = ipInfo?.City;
+                        x.ISP = ipInfo?.ISP;
+                        x.IPInfoCode = Cipher.Hashing2Int(string.Join(";", ipInfo?.CountryCode, ipInfo?.Region, ipInfo?.City, ipInfo?.ISP));
 
-                    return x;
-                }).ToList();
+                        return x;
+                    }).ToList();
+                }
             }
         }
 
@@ -418,20 +420,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return new BotDModel();
-        }
-
-        private string GetSubscriberName(string subscriber)
-        {
-            var randomExtraSubs = appSettings.Configuration["Consumer:ExtraConfig:RandomExtraSubs"];
-            if (appSettings.IsReadyDbExtra && randomExtraSubs == "1")
-            {
-                var extraSubs = appSettings.ExtraSubs.Split(';');
-                var random = new Random();
-                var subIndex = random.Next(0, extraSubs.Length);
-                return extraSubs[subIndex];
-            }
-
-            return subscriber;
         }
 
         private static string ConvertNA2Empty(string data)

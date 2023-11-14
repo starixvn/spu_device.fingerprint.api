@@ -1,8 +1,8 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
     using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
-    using Device.FingerPrint.ServiceAPI.Services.RabbitMQ;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc;
     using System;
@@ -22,7 +22,7 @@
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IEvolutionJobServices evolutionJobServices;
         private readonly ILogger logger;
-        private readonly IProducerService producerService;
+        private readonly IMassTransitProducer massTransitProducer;
         private readonly IAppSettings appSettings;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
@@ -34,7 +34,7 @@
                             , IArchiveJobServices archiveJobServices
                             , IEvolutionJobServices evolutionJobServices
                             , ILogger logger
-                            , IProducerService producerService
+                            , IMassTransitProducer massTransitProducer
                             , IAppSettings appSettings
                             )
         {
@@ -47,7 +47,7 @@
             this.archiveJobServices = archiveJobServices;
             this.evolutionJobServices = evolutionJobServices;
             this.logger = logger;
-            this.producerService = producerService;
+            this.massTransitProducer = massTransitProducer;
             this.appSettings = appSettings;
         }
 
@@ -134,7 +134,7 @@
         {
             try
             {
-                await producerService.SendBatchAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                await massTransitProducer.SendBatchAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
             }
             catch (Exception ex)
             {
@@ -148,7 +148,7 @@
         {
             try
             {
-                await producerService.SendAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                await massTransitProducer.SendAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
             }
             catch (Exception ex)
             {
