@@ -14,6 +14,8 @@
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.Logging.Extensions;
     using Fanex.Oneyed.Infrastructure.Models;
     using MassTransit;
 
@@ -95,7 +97,7 @@
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message);
+                LogError(ex);
             }
         }
 
@@ -117,7 +119,7 @@
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message);
+                LogError(ex);
             }
         }
 
@@ -140,6 +142,17 @@
                     await massTransitProducer.SendBatchAsync(groupTrans.ToList(), appSettings.GetValue<string>("RabbitMQ:Monitor:Name"));
                 }
             }
+        }
+
+        private void LogError(Exception ex)
+        {
+            var logMessage = new LogMessage(ex.Message)
+                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .ToString();
+
+            logger.Error(logMessage);
         }
     }
 }
