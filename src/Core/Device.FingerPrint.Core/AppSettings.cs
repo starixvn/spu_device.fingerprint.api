@@ -96,7 +96,7 @@ namespace Device.FingerPrint.Core
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
 
-            isExtraSub = GetValue<bool>("Consumer:IsExtraSub");
+            isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
         }
 
         public string ApiUrl => apiUrl;
