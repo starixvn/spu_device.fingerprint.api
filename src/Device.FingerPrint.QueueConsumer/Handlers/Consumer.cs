@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
@@ -116,8 +115,6 @@
                     Destination = defaultDestination,
                     Method = defaultMethod
                 });
-
-                logger.Info("Start InsertLogTrail!" + JsonSerializer.Serialize(logEvents));
 
                 await logTrailClientService.PostMultipleAsync(logEvents);
             }
