@@ -77,17 +77,11 @@
 
             var isExtraSub = appSettings.IsExtraSub;
 
-            logger.Info("Start InsertRawTransaction!");
-
             rawTransactionService.TransformTransactionByIps(transactionModels, isExtraSub);
 
             await transactionService.InsertRawTransaction(transactionModels, isExtraSub);
 
-            logger.Info("End InsertRawTransaction!");
-
             _ = InsertLogTrail(transactionModels);
-
-            logger.Info("end InsertLogTrail!");
 
             _ = HandleClearRedis(transactionModels);
 
