@@ -42,22 +42,22 @@
 
         public async Task<T?> HashGetAsync<T>(string hashKey, string key)
         {
-            return await redisDatabase.HashGetAsync<T>(hashKey, key);
+            return await redisDatabase.HashGetAsync<T>(hashKey ?? string.Empty, key);
         }
 
         public Task<bool> HashExistAsync<T>(string hashKey, string key)
         {
-            return redisDatabase.HashExistsAsync(hashKey, key);
+            return redisDatabase.HashExistsAsync(hashKey ?? string.Empty, key);
         }
 
         public Task<bool> UpdateExpiryAsync(string key, DateTimeOffset expiresAt)
         {
-            return redisDatabase.UpdateExpiryAsync(key, expiresAt, CommandFlags.FireAndForget);
+            return redisDatabase.UpdateExpiryAsync(key ?? string.Empty, expiresAt, CommandFlags.FireAndForget);
         }
 
         public Task<long> HashDeleteAsync(string hashKey, string[] keys)
         {
-            return redisDatabase.HashDeleteAsync(hashKey, keys);    
+            return redisDatabase.HashDeleteAsync(hashKey ?? string.Empty, keys);    
         }
 
         public async Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt)

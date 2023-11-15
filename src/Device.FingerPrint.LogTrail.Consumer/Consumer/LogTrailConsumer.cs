@@ -46,8 +46,6 @@
                         };
                     });
 
-                    logger.Info("Start Log Trail Consuming!" + JsonSerializer.Serialize(rawLogEvent));
-
                     await capturingService.InserLogTrailEventAsync(rawLogEvent);
                 }
             }
