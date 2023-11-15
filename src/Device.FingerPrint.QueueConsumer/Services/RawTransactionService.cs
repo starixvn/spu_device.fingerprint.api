@@ -190,18 +190,13 @@
 
         public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            var groupByTrans = transactions.GroupBy(x => new
-            {
-                x.SessionKey
-            });
+            var groupByTrans = transactions
+                .Where(x => x.SessionKey != null)
+                .GroupBy(x => x.SessionKey);
 
-            var tasks = new List<Task>();
-
-            foreach (var trans in groupByTrans)
-            {
-                var task = redisService.HashDeleteAsync(trans.Key.SessionKey, RedisString.GetRedisKeyNames());
-                tasks.Add(task);
-            }
+            var tasks = groupByTrans
+                .Select(transGroup => redisService.HashDeleteAsync(transGroup.Key, RedisString.GetRedisKeyNames()))
+                .ToList();
 
             await Task.WhenAll(tasks);
         }

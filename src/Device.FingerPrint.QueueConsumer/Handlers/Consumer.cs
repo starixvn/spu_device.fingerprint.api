@@ -89,7 +89,7 @@
 
             logger.Info("end InsertLogTrail!");
 
-            //_ = HandleClearRedis(transactionModels);
+            _ = HandleClearRedis(transactionModels);
 
             if (!isExtraSub)
             {
