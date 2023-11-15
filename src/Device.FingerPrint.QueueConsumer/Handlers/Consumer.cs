@@ -85,8 +85,6 @@
 
             logger.Info("End InsertRawTransaction!");
 
-            logger.Info("Start InsertLogTrail!" + JsonSerializer.Serialize(transactionModels));
-
             _ = InsertLogTrail(transactionModels);
 
             logger.Info("end InsertLogTrail!");
@@ -124,6 +122,8 @@
                     Destination = defaultDestination,
                     Method = defaultMethod
                 });
+
+                logger.Info("Start InsertLogTrail!" + JsonSerializer.Serialize(logEvents));
 
                 await logTrailClientService.PostMultipleAsync(logEvents);
             }
