@@ -61,7 +61,7 @@
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message + "\n" + JsonSerializer.Serialize(context.Message.Select(x => x.Message)));
+                LogError(ex);
                 throw;
             }
         }
