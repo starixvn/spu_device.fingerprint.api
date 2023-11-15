@@ -62,11 +62,6 @@
 
                 busConfigurator.UsingRabbitMq((context, rgx) =>
                 {
-                    rgx.ClearSerialization();
-                    rgx.UseRawJsonSerializer();
-
-                    rgx.UseRateLimit(20, TimeSpan.FromSeconds(5));
-
                     rgx.ConfigureEndpoints(context);
                 });
             });
@@ -120,7 +115,10 @@
                 ));
 
                 cfg.UseInMemoryOutbox();
-            }).Endpoint(e => e.ConfigureConsumeTopology = false);
+            }).Endpoint(e => {
+                e.ConfigureConsumeTopology = false;
+                e.PrefetchCount = appSettings.GetValue<int>("RabbitMQ:LogTrail_Error:PrefetchCount");
+             });
         }
 
         private void FanexDataConfig(IAppSettings appSettings)
