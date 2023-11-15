@@ -125,8 +125,6 @@
                     Method = defaultMethod
                 });
 
-
-
                 await logTrailClientService.PostMultipleAsync(logEvents);
             }
             catch (Exception ex)

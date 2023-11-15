@@ -9,6 +9,7 @@
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using System.Linq;
     using Device.FingerPrint.Core.Model;
+    using System.Text.Json;
 
     public class LogTrailConsumer : IConsumer<Batch<LogEventInfo>>
     {
@@ -32,8 +33,6 @@
             {
                 if (appSettings.GetValue<bool>("RabbitMQ:LogTrail:Queue-Consume"))
                 {
-                    logger.Info("Start Log Trail Consuming!");
-
                     var rawLogEvent = context.Message.Select(x =>
                     {
                         return new LogEventInfo
@@ -46,6 +45,8 @@
                             Method = x.Message.Method,
                         };
                     });
+
+                    logger.Info("Start Log Trail Consuming!" + JsonSerializer.Serialize(rawLogEvent));
 
                     await capturingService.InserLogTrailEventAsync(rawLogEvent);
                 }
