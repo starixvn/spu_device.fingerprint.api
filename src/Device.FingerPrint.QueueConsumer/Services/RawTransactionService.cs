@@ -25,13 +25,11 @@
 
         FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo);
 
-        RawTransactionModel TransformRawTransaction(MessageQueue message);
-
-        Task<RawTransactionModel> GetTransactionAttribute(RawTransactionModel model);
+        Task<RawTransactionModel> TransformRawTransaction(MessageQueue message);
 
         Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
 
-        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub);
+        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -92,25 +90,15 @@
             return transactionAttributeService.GetUserAgentInfo(userAgent);
         }
 
-        public RawTransactionModel TransformRawTransaction(MessageQueue message)
+        public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
         {
             var invalidDevice = string.Empty;
             var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
             var deviceInfo = GetDeviceInfo(deviceCode);
             var url = Utilities.GetURLFromDeviceCode(message.Device);
             var userAgent = Utilities.GetUserAgentFromDeviceCode(message.Device);
-            var transBit = new BitArray(16);
 
-            if (!string.IsNullOrWhiteSpace(message?.BotD))
-            {
-                deviceInfo.BotD = TransformBotD(message.BotD);
-            }
-            var flaggedCode = deviceInfo.BotD?.Result?.Bot == true ? deviceInfo.BotD.Result.BotKind : string.Empty;
-            if (string.IsNullOrEmpty(flaggedCode))
-            {
-                var browserless = Browserless(userAgent, string.IsNullOrWhiteSpace(deviceInfo.DeviceNo));
-                flaggedCode = browserless.ToString();
-            }
+            var transBit = new BitArray(16);
             if (string.IsNullOrWhiteSpace(deviceInfo.DeviceNo) || deviceInfo.DeviceNo == "N/A")
             {
                 deviceInfo.DeviceNo = null;
@@ -135,7 +123,10 @@
             var ipConverted = realIP.Ip2Long();
 
             var botDModel = TransformBotdModel(message.BotD);
-            var result = new RawTransactionModel
+
+            var flaggedCode = GetFlaggedCode(message, deviceInfo.DeviceNo, userAgent);
+
+            var rawTransModel = new RawTransactionModel
             {
                 DeviceCode = deviceInfo.DeviceNo,
                 InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
@@ -161,10 +152,30 @@
                 BotComponent = GetBotComponent(botDModel, flaggedCode)
             };
 
-            return result;
+            await GetTransactionAttribute(rawTransModel);
+
+            return rawTransModel;
         }
 
-        public async Task<RawTransactionModel> GetTransactionAttribute(RawTransactionModel model)
+        private string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent)
+        {
+            if (!string.IsNullOrWhiteSpace(message?.BotD))
+            {
+                var botD = TransformBotD(message.BotD);
+                var flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
+                if (string.IsNullOrEmpty(flaggedCode))
+                {
+                    var browserless = Browserless(userAgent, string.IsNullOrWhiteSpace(deviceNo));
+                    flaggedCode = browserless.ToString();
+                }
+
+                return flaggedCode;
+            }
+
+            return string.Empty;
+        }
+
+        public async Task GetTransactionAttribute(RawTransactionModel model)
         {
             if (model != null)
             {
@@ -184,8 +195,6 @@
                 model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
                 model.CookieCode = cookie;
             }
-
-            return model;
         }
 
         public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
@@ -201,9 +210,9 @@
             await Task.WhenAll(tasks);
         }
 
-        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions, bool isExtraSub)
+        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions)
         {
-            if (isExtraSub)
+            if (appSettings.IsExtraSub)
             {
                 var ipInfoList = GetIpInfos(transactions);
                 if (ipInfoList != null && ipInfoList.Any())

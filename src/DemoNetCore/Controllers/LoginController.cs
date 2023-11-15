@@ -1,9 +1,5 @@
 ﻿using DemoNetCore.Models;
-using FPS.Client.NetStandard.Models;
-using FPS.Device.FingerPrint.Net.Standard.Client;
-using FPS.Device.FingerPrint.Net.Standard.Client.Model;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -49,7 +45,7 @@ namespace DemoNetCore.Controllers
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
 
-                FpsIntegrationVer115(loginModel.Username, "Login", "Demo Page Login", "Alpha", DateTime.Now);
+                FpsIntegrationVer115(loginModel.Username, "Login", "Demo Page Login", subscriberName, DateTime.Now);
                 return RedirectToAction("index", "home");
             }
 

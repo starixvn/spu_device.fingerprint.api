@@ -100,14 +100,14 @@ namespace Device.FingerPrint.QueueConsumer
                 busConfigurator.AddConsumer<Consumer>(cfg =>
                 {
                     cfg.Options<BatchOptions>(options => options
-                    .SetMessageLimit(appSettings.GetValue<int>("Consumer:BatchSizeLimit"))
-                    .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:BatchTimeLimit"))
-                    .SetConcurrencyLimit(appSettings.GetValue<int>("Consumer:BatchConcurrencyLimit")));
+                    .SetMessageLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchSizeLimit"))
+                    .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:Masstransit:BatchTimeLimit"))
+                    .SetConcurrencyLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchConcurrencyLimit")));
                 }).Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
                     e.Name = appSettings.GetValue<string>("Consumer:Name");
-                    e.PrefetchCount = appSettings.GetValue<int>("Consumer:PrefetchCount");
+                    e.PrefetchCount = appSettings.GetValue<int>("Consumer:Masstransit:PrefetchCount");
                 });
 
 

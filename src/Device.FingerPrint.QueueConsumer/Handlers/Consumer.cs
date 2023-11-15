@@ -1,9 +1,5 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Threading.Tasks;
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Core.Services;
@@ -13,10 +9,14 @@
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
-    using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Extensions;
+    using Fanex.Logging.Extensions.Database;
     using Fanex.Oneyed.Infrastructure.Models;
     using MassTransit;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
@@ -40,7 +40,7 @@
                 )
         {
             this.massTransitProducer = massTransitProducer;
-            this.rawTransactionService  = rawTransactionService;
+            this.rawTransactionService = rawTransactionService;
             this.logTrailClientService = logTrailClientService;
             this.transactionService = transactionService;
             this.appSettings = appSettings;
@@ -53,7 +53,7 @@
             {
                 logger.Info("Start Consuming!" + appSettings.IsExtraSub);
 
-                if (appSettings.GetValue<bool>("Consumer:Queue-Consume"))
+                if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
                     await ProcessTransaction(context.Message);
                 }
@@ -69,25 +69,26 @@
         {
             var transactionModels = await Task.WhenAll(messages.Select(async x =>
             {
-                var transaction = rawTransactionService.TransformRawTransaction(x.Message);
-                await rawTransactionService.GetTransactionAttribute(transaction);
-                return transaction;
+                return await rawTransactionService.TransformRawTransaction(x.Message);
             }));
 
-            var isExtraSub = appSettings.IsExtraSub;
+            rawTransactionService.TransformTransactionByIps(transactionModels);
 
-            rawTransactionService.TransformTransactionByIps(transactionModels, isExtraSub);
+            await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
 
-            await transactionService.InsertRawTransaction(transactionModels, isExtraSub);
+            AdditionalProcessingNotAwait(transactionModels);
+        }
 
-            _ = InsertLogTrail(transactionModels);
-
-            _ = HandleClearRedis(transactionModels);
-
-            if (!isExtraSub)
+        private void AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
+        {
+            var tasks = new List<Task>
             {
-                _= PushTransactionToMonitorAsync(transactionModels);
-            }
+                InsertLogTrail(transactionModels),
+                HandleClearRedis(transactionModels),
+                PushTransactionToMonitorAsync(transactionModels)
+            };
+
+            _ = Task.WhenAll(tasks);
         }
 
         private async Task HandleClearRedis(IEnumerable<RawTransactionModel> transactions)
@@ -126,7 +127,7 @@
 
         private async Task PushTransactionToMonitorAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            if (appSettings.GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor"))
+            if (appSettings.GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor") && !appSettings.IsExtraSub)
             {
                 var groupTrans = transactions.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
                                     .GroupBy(x => new { x.SubscriberId, x.SubscriberName, x.TransTime })
