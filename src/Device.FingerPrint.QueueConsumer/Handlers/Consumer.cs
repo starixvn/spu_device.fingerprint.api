@@ -52,7 +52,7 @@
         {
             try
             {
-                logger.Info("Start Consuming!", appSettings.IsExtraSub);
+                logger.Info("Start Consuming!" + appSettings.IsExtraSub);
 
                 if (appSettings.GetValue<bool>("Consumer:Queue-Consume"))
                 {
@@ -77,9 +77,13 @@
 
             var isExtraSub = appSettings.IsExtraSub;
 
+            logger.Info("Start InsertRawTransaction!");
+
             rawTransactionService.TransformTransactionByIps(transactionModels, isExtraSub);
 
             await transactionService.InsertRawTransaction(transactionModels, isExtraSub);
+
+            logger.Info("End InsertRawTransaction!");
 
             _ = InsertLogTrail(transactionModels);
 
