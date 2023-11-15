@@ -111,9 +111,7 @@
 
             HttpContext.Response.Headers.Add("ETag", new[] { cookie });
 
-            var redisKey = GetHashKey(subscriberId, sessionKey);
-
-            redisService.HashSetAndExpiryAsync(redisKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+            redisService.HashSetAndExpiryAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
         }
 
         [HttpGet("whoami")]
@@ -146,11 +144,5 @@
 
             redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
         }
-
-        private static string GetHashKey(int subscriberId, string sessionKey)
-        {
-            return $"{subscriberId}:{sessionKey}";
-        }
-
     }
 }
