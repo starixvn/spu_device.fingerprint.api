@@ -85,7 +85,11 @@
 
             logger.Info("End InsertRawTransaction!");
 
+            logger.Info("Start InsertLogTrail!" + JsonSerializer.Serialize(transactionModels));
+
             _ = InsertLogTrail(transactionModels);
+
+            logger.Info("end InsertLogTrail!");
 
             _ = HandleClearRedis(transactionModels);
 
@@ -120,6 +124,8 @@
                     Destination = defaultDestination,
                     Method = defaultMethod
                 });
+
+
 
                 await logTrailClientService.PostMultipleAsync(logEvents);
             }
