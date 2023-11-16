@@ -2,10 +2,6 @@ namespace Device.FingerPrint.QueueConsumer
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Services;
-    using Device.FingerPrint.Features.IPDB.Services;
-    using Device.FingerPrint.Features.Monitor.Services;
-    using Device.FingerPrint.Features.Transaction.Services;
-    using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Handlers;
     using Device.FingerPrint.QueueConsumer.Services;
     using Device.FingerPrint.Redis;
@@ -30,7 +26,6 @@ namespace Device.FingerPrint.QueueConsumer
     using StackExchange.Redis.Extensions.Core.Configuration;
     using StackExchange.Redis.Extensions.Core.Implementations;
     using StackExchange.Redis.Extensions.MsgPack;
-    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -47,17 +42,8 @@ namespace Device.FingerPrint.QueueConsumer
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+
             services.AddSingleton<IAppSettings>(appSettings);
-
-            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
-            services.AddSingleton<ITransactionService, TransactionService>();
-
-            services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
-            services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
-
-            services.AddSingleton<IIPDBDataAccess, IPDBDataAccess>();
-            services.AddSingleton<IIPDBServices, IPDBServices>();
-
             services.AddSingleton<ILogger, Logger>();
 
             services.AddSingleton<ILogTrailClientService>(serviceProvider =>
@@ -67,12 +53,9 @@ namespace Device.FingerPrint.QueueConsumer
                 return logTrailClientService;
             });
 
-            services.AddSingleton<IMassTransitProducer, MassTransitProducer>();
-            services.AddSingleton<Consumer>();
-            
-
             services.AddHealthChecks();
-             
+
+            services.RegisterService();
             FanexDataConfig(appSettings);
 
             LogManager

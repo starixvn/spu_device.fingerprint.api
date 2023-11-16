@@ -24,6 +24,7 @@
         private readonly IRawTransactionService rawTransactionService;
         private readonly ILogTrailClientService logTrailClientService;
         private readonly ITransactionService transactionService;
+        private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
 
@@ -35,14 +36,16 @@
                 IRawTransactionService rawTransactionService,
                 ILogTrailClientService logTrailClientService,
                 ITransactionService transactionService,
+                IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogger logger
-                )
+        )
         {
             this.massTransitProducer = massTransitProducer;
             this.rawTransactionService = rawTransactionService;
             this.logTrailClientService = logTrailClientService;
             this.transactionService = transactionService;
+            this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
         }
@@ -72,7 +75,7 @@
                 return await rawTransactionService.TransformRawTransaction(x.Message);
             }));
 
-            rawTransactionService.TransformTransactionByIps(transactionModels);
+            ipdbService.TransformTransactionByIps(transactionModels);
 
             await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
 

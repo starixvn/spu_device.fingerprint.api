@@ -1,100 +1,47 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Core.Services;
-    using Device.FingerPrint.Features.IPDB.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
-    using Fanex.DeviceDetector.Factory;
-    using Fanex.DeviceDetector.Models;
-    using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
 
     public interface IRawTransactionService
     {
-
-        UserAgentInfoModel ParseUserAgentInfo(string userAgent);
-
-        FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo);
-
         Task<RawTransactionModel> TransformRawTransaction(MessageQueue message);
 
         Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
-
-        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions);
     }
 
     public class RawTransactionService : IRawTransactionService
     {
-        private readonly IRawTransactionAttributeService transactionAttributeService;
-        private readonly ICrypto crypto;
-        private readonly IAppSettings appSettings;
+        private readonly IRawTransactionAttributeService rawTransactionAttributeService;
         private readonly IRedisService redisService;
-        private readonly IIPDBServices ipdbServices;
+        private readonly IDeviceService deviceService;
+        private readonly IBotDetectionService botDetectionService;
 
         public RawTransactionService(
-            ICrypto crypto,
-            IAppSettings appSettings,
             IRedisService redisService,
-            IRawTransactionAttributeService transactionAttributeService,
-            IIPDBServices ipdbServices
-            )
+            IRawTransactionAttributeService rawTransactionAttributeService,
+            IDeviceService deviceService,
+            IBotDetectionService botDetectionService
+        )
         {
-            this.transactionAttributeService = transactionAttributeService;
-            this.crypto = crypto;
-            this.appSettings = appSettings;
+            this.rawTransactionAttributeService = rawTransactionAttributeService;
             this.redisService = redisService;
-            this.ipdbServices = ipdbServices;
-        }
-
-        public FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo)
-        {
-            if (fpModel == null) return new FingerprintAttributeModel();
-
-            var result = new FingerprintAttributeModel
-            {
-                FingerPrintCode = fpModel.Id,
-                Attribute = fpModel.Attributes,
-            };
-
-            if (headerModel != null)
-            {
-                result.Accept = headerModel.Accept;
-                result.Encoding = headerModel.Encoding;
-                result.Headers = headerModel.Headers;
-
-                result.UserAgent = userAgentInfo.UserAgent;
-                result.BrowserName = userAgentInfo.ClientName;
-                result.BrowserVersion = userAgentInfo.ClientVersion;
-                result.OSName = userAgentInfo.OSName;
-            }
-
-            result.BrowserInstanceCode = HashBrowserInstanceCode(result);
-            result.BrowserFamilyCode = HashBrowserFamilyCode(result);
-
-            return result;
-        }
-
-        public UserAgentInfoModel ParseUserAgentInfo(string userAgent)
-        {
-            if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
-
-            return transactionAttributeService.GetUserAgentInfo(userAgent);
+            this.deviceService = deviceService;
+            this.botDetectionService = botDetectionService;
         }
 
         public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
         {
             var invalidDevice = string.Empty;
             var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
-            var deviceInfo = GetDeviceInfo(deviceCode);
+            var deviceInfo = deviceService.GetDeviceInfo(deviceCode);
             var url = Utilities.GetURLFromDeviceCode(message.Device);
             var userAgent = Utilities.GetUserAgentFromDeviceCode(message.Device);
 
@@ -114,7 +61,7 @@
                 }
             }
 
-            if (ContainsUnicodeCharacter(message.Account))
+            if (Utilities.ContainsUnicodeCharacter(message.Account))
             {
                 transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
             }
@@ -122,9 +69,9 @@
             var realIP = message.IP?.Trim();
             var ipConverted = realIP.Ip2Long();
 
-            var botDModel = TransformBotdModel(message.BotD);
+            var botDModel = botDetectionService.TransformBotdModel(message.BotD);
 
-            var flaggedCode = GetFlaggedCode(message, deviceInfo.DeviceNo, userAgent);
+            var flaggedCode = botDetectionService.GetFlaggedCode(message, deviceInfo.DeviceNo, userAgent);
 
             var rawTransModel = new RawTransactionModel
             {
@@ -140,61 +87,21 @@
                 FakeIP = message.FakeIP?.Trim(),
                 IsIPV6 = ipConverted.IsIpV6,
                 PluginID = 0,
-                URL = string.IsNullOrWhiteSpace(url) ? ConvertNA2Empty(SubStringUrl(deviceInfo.HRef)) : SubStringUrl(url),
+                URL = string.IsNullOrWhiteSpace(url) ? Utilities.ConvertNA2Empty(Utilities.SubStringUrl(deviceInfo.HRef)) : Utilities.SubStringUrl(url),
                 Action = message.Action,
                 ActionResult = message.ActionResult,
-                UserAgent = string.IsNullOrWhiteSpace(userAgent) ? ConvertNA2Empty(StripUnicodeCharactersFromString(deviceInfo.UserAgent)) : StripUnicodeCharactersFromString(userAgent),
+                UserAgent = string.IsNullOrWhiteSpace(userAgent) ? Utilities.ConvertNA2Empty(Utilities.StripUnicodeCharactersFromString(deviceInfo.UserAgent)) : Utilities.StripUnicodeCharactersFromString(userAgent),
                 FingerprintCode = deviceInfo.DeviceFPCode != "N/A" ? deviceInfo.DeviceFPCode : null,
-                FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? EncodeCapturedData(deviceInfo) : null,
+                FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? Utilities.EncodeCapturedData(deviceInfo) : null,
                 SessionKey = message.SessionKey,
                 FlaggedCode = flaggedCode,
-                BotDetection = GetBotDetectionTrue(botDModel),
-                BotComponent = GetBotComponent(botDModel, flaggedCode)
+                BotDetection = botDetectionService.GetBotDetectionTrue(botDModel),
+                BotComponent = botDetectionService.GetBotComponent(botDModel, flaggedCode)
             };
 
-            await GetTransactionAttribute(rawTransModel);
+            await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
 
             return rawTransModel;
-        }
-
-        private string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent)
-        {
-            if (!string.IsNullOrWhiteSpace(message?.BotD))
-            {
-                var botD = TransformBotD(message.BotD);
-                var flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
-                if (string.IsNullOrEmpty(flaggedCode))
-                {
-                    var browserless = Browserless(userAgent, string.IsNullOrWhiteSpace(deviceNo));
-                    flaggedCode = browserless.ToString();
-                }
-
-                return flaggedCode;
-            }
-
-            return string.Empty;
-        }
-
-        public async Task GetTransactionAttribute(RawTransactionModel model)
-        {
-            if (model != null)
-            {
-                var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                var cookieTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-
-                await Task.WhenAll(fingerPrintTask, headerTask, cookieTask);
-
-                var fingerPrint = fingerPrintTask.Result;
-                var header = headerTask.Result;
-                var cookie = cookieTask.Result;
-
-                model.RawUserAgent = model.UserAgent;
-                model.RawUserAgentInfo = ParseUserAgentInfo(model.UserAgent);
-
-                model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
-                model.CookieCode = cookie;
-            }
         }
 
         public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
@@ -210,297 +117,5 @@
             await Task.WhenAll(tasks);
         }
 
-        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions)
-        {
-            if (appSettings.IsExtraSub)
-            {
-                var ipInfoList = GetIpInfos(transactions);
-                if (ipInfoList != null && ipInfoList.Any())
-                {
-                    transactions = transactions.Select(x =>
-                    {
-                        var ipInfo = ipInfoList.FirstOrDefault(y => x.IPId == y.IP);
-
-                        x.Country = ipInfo?.Country;
-                        x.CountryCode = ipInfo?.CountryCode;
-                        x.Region = ipInfo?.Region;
-                        x.City = ipInfo?.City;
-                        x.ISP = ipInfo?.ISP;
-                        x.IPInfoCode = Cipher.Hashing2Int(string.Join(";", ipInfo?.CountryCode, ipInfo?.Region, ipInfo?.City, ipInfo?.ISP));
-
-                        return x;
-                    }).ToList();
-                }
-            }
-        }
-
-        private string HashBrowserInstanceCode(FingerprintAttributeModel model)
-        {
-            if (model == null) return string.Empty;
-
-            var json = JsonConvert.SerializeObject(new BrowserInstanceModel
-            {
-                OSName = model.OSName,
-                BrowserName = model.BrowserName,
-                BrowserVersion = model.BrowserVersion,
-                Accept = model.Accept,
-                Encoding = model.Encoding,
-                Headers = model.Headers,
-                UserAgent = model.UserAgent,
-                Platform = model.Platform
-            });
-
-            return crypto.GetMD5Hash(json);
-        }
-
-        private string HashBrowserFamilyCode(FingerprintAttributeModel model)
-        {
-            if (model == null) return string.Empty;
-
-            var json = JsonConvert.SerializeObject(new BrowserFamilyModel
-            {
-                OSName = model.OSName,
-                BrowserName = model.BrowserName,
-                Platform = model.Platform
-            });
-
-            return crypto.GetMD5Hash(json);
-        }
-
-        private DeviceInfoModel TransformEmptyDeviceInfo()
-        {
-            return new DeviceInfoModel
-            {
-                AppVersion = string.Empty,
-                CapturedDate = 0,
-                DeviceFPCode = string.Empty,
-                DeviceNo = string.Empty,
-                HRef = string.Empty,
-                NA = string.Empty,
-                Screen = new ScreenInfoModel
-                {
-                    ColorDepth = 0,
-                    Height = 0,
-                    Width = 0
-                },
-                TimeZone = string.Empty,
-                UserAgent = string.Empty,
-                InvalidDeviceId = true
-            };
-        }
-
-        private DeviceInfoModel TransformDeviceInfo(DeviceInfo deviceInfo)
-        {
-            var botD = new BotDModel();
-            try
-            {
-                if (deviceInfo.BotD?.Result != null)
-                {
-                    botD = new BotDModel
-                    {
-                        Result = new BotDResultModel
-                        {
-                            Bot = deviceInfo.BotD.Result.Bot,
-                            BotKind = deviceInfo.BotD.Result.BotKind
-                        },
-                        Detection = deviceInfo.BotD.Detection,
-                        Component = deviceInfo.BotD.Component
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.Error("Consumer TransformDeviceInfo: " + ex.Message + "\n" + JsonConvert.SerializeObject(deviceInfo));
-            }
-
-            return new DeviceInfoModel
-            {
-                AppVersion = deviceInfo.AppVersion,
-                CapturedDate = deviceInfo.CapturedDate,
-                DeviceFPCode = deviceInfo.DeviceCode,
-                DeviceNo = deviceInfo.DeviceId,
-                HRef = deviceInfo.HRef,
-                NA = deviceInfo.NA,
-                TimeZone = deviceInfo.TimeZone,
-                UserAgent = deviceInfo.UserAgent,
-                Screen = deviceInfo.Screen == null
-                    ? new ScreenInfoModel
-                    {
-                        ColorDepth = 0,
-                        Height = 0,
-                        Width = 0
-                    }
-                    : new ScreenInfoModel
-                    {
-                        ColorDepth = deviceInfo.Screen.ColorDepth,
-                        Height = deviceInfo.Screen.Height,
-                        Width = deviceInfo.Screen.Width
-                    },
-                BotD = botD
-            };
-        }
-
-        private DeviceInfoModel GetDeviceInfo(string deviceCode)
-        {
-            if (string.IsNullOrWhiteSpace(deviceCode))
-            {
-                return TransformEmptyDeviceInfo();
-            }
-
-            var deviceInfo = DeviceFactory.GetDeviceInfo(deviceCode);
-
-            if (deviceInfo != null)
-            {
-                return TransformDeviceInfo(deviceInfo);
-            }
-
-            return TransformEmptyDeviceInfo();
-        }
-
-        private BotDModel TransformBotD(string encodedBotD)
-        {
-            var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
-
-            if (!string.IsNullOrEmpty(botD))
-            {
-                return JsonConvert.DeserializeObject<BotDModel>(botD);
-            }
-
-            return new BotDModel();
-        }
-
-        private Flagged Browserless(string userAgent, bool emptyFP)
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(userAgent) && IsHeadless(userAgent))
-                {
-                    return Flagged.Headless;
-                }
-
-                if (emptyFP)
-                {
-                    return Flagged.EmptyDevice;
-                }
-
-                if (string.IsNullOrWhiteSpace(userAgent))
-                {
-                    return Flagged.EmptyUserAgent;
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.Error("Consumer CheckBrowserless: " + ex.Message + "\n" + JsonConvert.SerializeObject(userAgent));
-            }
-
-            return Flagged.Human;
-        }
-
-        private bool IsHeadless(string userAgent)
-        {
-            if (userAgent.Contains("Headless")) return true;
-
-            return false;
-        }
-
-        private static bool ContainsUnicodeCharacter(string input)
-        {
-            const int MaxAnsiCode = 255;
-
-            return input.Any(c => c > MaxAnsiCode);
-        }
-
-        private BotDModel TransformBotdModel(string encodedBotD)
-        {
-            if (!string.IsNullOrEmpty(encodedBotD))
-            {
-                var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
-
-                if (!string.IsNullOrEmpty(botD))
-                {
-                    return JsonConvert.DeserializeObject<BotDModel>(botD);
-                }
-            }
-
-            return new BotDModel();
-        }
-
-        private static string ConvertNA2Empty(string data)
-        {
-            return data != "N/A" ? data : null;
-        }
-
-        private static string SubStringUrl(string url)
-        {
-            return url.IndexOf('?') != -1 ? url.Substring(0, url.IndexOf('?')) : url;
-        }
-
-        private static string StripUnicodeCharactersFromString(string inputValue)
-        {
-            return Regex.Replace(inputValue, @"[^\u0000-\u007F]", string.Empty);
-        }
-
-        private static string EncodeCapturedData(DeviceInfoModel deviceInfo)
-        {
-            return Cipher.Encrypt(string.Format("{0}#{1}#{2}#{3}#{4}",
-                deviceInfo.Battery,
-                deviceInfo.CapturedDate,
-                deviceInfo.OSName,
-                deviceInfo.TimeZone,
-                deviceInfo.LocalIps));
-        }
-
-        private string GetBotDetectionTrue(BotDModel botDModel)
-        {
-            try
-            {
-                var detection = botDModel?.Detection;
-                if (!string.IsNullOrEmpty(detection))
-                {
-                    JObject jObject = JObject.Parse(detection);
-                    IEnumerable<string> filteredKeys = jObject.Properties()
-                        .Where(p => p.Value.Value<bool>("bot"))
-                        .Select(p => p.Name);
-
-                    return string.Join(",", filteredKeys);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.Error("Consumer GetBotDetectionTrue: " + ex.Message + "\n" + JsonConvert.SerializeObject(botDModel));
-            }
-
-            return string.Empty;
-        }
-
-        private string GetBotComponent(BotDModel botDModel, string flaggedCode)
-        {
-            if (!appSettings.GetValue<bool>("Consumer:TurnOnBotComponentForHuman"))
-            {
-                if (flaggedCode != Flagged.Human.ToString())
-                {
-                    return botDModel?.Component ?? string.Empty;
-                }
-            }
-            else
-            {
-                return botDModel?.Component ?? string.Empty;
-            }
-
-            return string.Empty;
-        }
-
-        private IEnumerable<IpInfoModel> GetIpInfos(IEnumerable<RawTransactionModel> transactions)
-        {
-            var ipAddressList = transactions.Where(x => x.IPId != -1 && !x.IsIPV6).Select(x => x.IPId).ToList();
-            var ipAddressJoined = string.Join(",", ipAddressList);
-            var ipInfoList = GetIpInfoList(ipAddressJoined);
-            return ipInfoList;
-        }
-
-        private IEnumerable<IpInfoModel> GetIpInfoList(string ipAddressList)
-        {
-            return ipdbServices.GetIpInfoList(ipAddressList);
-        }
     }
 }

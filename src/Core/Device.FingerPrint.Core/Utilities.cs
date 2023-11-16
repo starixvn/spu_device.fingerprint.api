@@ -9,6 +9,7 @@ using System.Text;
 using System.Xml.Serialization;
 using System.Xml;
 using Device.FingerPrint.Model;
+using System.Text.RegularExpressions;
 
 namespace Device.FingerPrint.Core
 {
@@ -266,6 +267,38 @@ namespace Device.FingerPrint.Core
             }
 
             return sb.ToString();
+        }
+
+        public static bool ContainsUnicodeCharacter(string input)
+        {
+            const int MaxAnsiCode = 255;
+
+            return input.Any(c => c > MaxAnsiCode);
+        }
+
+        public static string ConvertNA2Empty(string data)
+        {
+            return data != "N/A" ? data : null;
+        }
+
+        public static string SubStringUrl(string url)
+        {
+            return url.IndexOf('?') != -1 ? url.Substring(0, url.IndexOf('?')) : url;
+        }
+
+        public static string StripUnicodeCharactersFromString(string inputValue)
+        {
+            return Regex.Replace(inputValue, @"[^\u0000-\u007F]", string.Empty);
+        }
+
+        public static string EncodeCapturedData(DeviceInfoModel deviceInfo)
+        {
+            return Cipher.Encrypt(string.Format("{0}#{1}#{2}#{3}#{4}",
+                deviceInfo.Battery,
+                deviceInfo.CapturedDate,
+                deviceInfo.OSName,
+                deviceInfo.TimeZone,
+                deviceInfo.LocalIps));
         }
     }
 }
