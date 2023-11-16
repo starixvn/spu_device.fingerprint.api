@@ -76,7 +76,7 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v1.0.0 - Copyright (c) FingerprintJS, Inc, 2023 (https://fingerprint.com)
+     * FingerprintJS v1.0.1 - Copyright (c) FingerprintJS, Inc, 2023 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -87,7 +87,7 @@ var globalFP = (function (exports) {
      * Copyright 2015-present FingerprintJS, Inc.
      */
 
-    var version = "1.0.0";
+    var version = "1.0.1";
 
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
@@ -2981,7 +2981,7 @@ var globalFP = (function (exports) {
      * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
      */
     function getWebGLContext(cache) {
-        if (cache.webgl) {
+        if (cache && cache.webgl) {
             return cache.webgl.context;
         }
         var canvas = document.createElement('canvas');
@@ -2999,7 +2999,9 @@ var globalFP = (function (exports) {
                 break;
             }
         }
-        cache.webgl = { context: context };
+        if (cache) {
+            cache.webgl = { context: context };
+        }
         return context;
     }
     /**
@@ -3582,7 +3584,7 @@ var globalFP = (function (exports) {
         return canvas.toDataURL();
     }
 
-    const listAttributeHash = ["math", "fontPreferencePrint"];
+    const listAttributeHash = ["math", "fontPreferencePrint", "webGlExtensions"];
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
     }
@@ -3642,7 +3644,7 @@ var globalFP = (function (exports) {
                     ? `undefined`
                     : component.value);
             if (listAttributeHash.indexOf(componentKey) > -1) {
-                value = JSON.stringify(callback(value));
+                value = JSON.stringify(callback(JSON.stringify(value)));
             }
             if (hasError(component)) {
                 err += `${componentKey}: ${component.error},`;
