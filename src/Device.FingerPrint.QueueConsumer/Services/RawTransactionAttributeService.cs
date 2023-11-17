@@ -52,6 +52,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             {
                 FingerPrintCode = fpModel.Id,
                 Attribute = fpModel.Attributes,
+                Platform = fpModel.Platform
             };
 
             if (headerModel != null)

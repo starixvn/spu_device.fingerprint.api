@@ -59,16 +59,6 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("hl")]
-        public void Headless([FromBody] HeadlessParameter data)
-        {
-            if (data != null)
-            {
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Headless), data.HeadlessBrowser, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
-            }
-        }
-
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] FingerprintParameter data)
         {

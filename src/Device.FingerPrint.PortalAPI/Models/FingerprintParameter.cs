@@ -8,7 +8,5 @@ namespace Device.FingerPrint.PortalAPI.Models
 
         public string SessionKey { get; set; }
 
-        public int SubscriberId { get; set; }
-
     }
 }
