@@ -13,6 +13,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
+    using FPS.Device.FingerPrint.LoggerExtention.Standard.Client;
     using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -46,27 +47,22 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
 
-            services.AddSingleton<ILogTrailClientService>(serviceProvider =>
-            {
-                var logTrailClientService = new LogTrailClientService();
-                logTrailClientService.SetLogTrailBaseUrl(appSettings.LogTrailBaseUrl);
-                return logTrailClientService;
-            });
-
             services.AddHealthChecks();
 
             services.RegisterService();
             FanexDataConfig(appSettings);
 
             LogManager
-           .SetDefaultLogCategory("Device.FingerPrint.Consumer")
-           .Use(new List<ILogEngine>
-           {
-                    new SentryLogging(new SentryEngineOptions
-                    {
-                        Dsn = new Dsn(appSettings.SentryDsn)
-                    })
-           });
+               .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+               .Use(new List<ILogEngine>
+               {
+                        new SentryLogging(new SentryEngineOptions
+                        {
+                            Dsn = new Dsn(appSettings.SentryDsn)
+                        })
+               });
+
+            RegisterServiceSerilogExtention(services, appSettings);
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
@@ -113,6 +109,14 @@ namespace Device.FingerPrint.QueueConsumer
                 options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
             });
         }
+
+        private static void RegisterServiceSerilogExtention(IServiceCollection services, AppSettings appSettings)
+        {
+            var serilog = LoggerFactory.CreateLogger(appSettings.LogTrailBaseUrl);
+            var logContext = serilog.ForContext<Program>();
+            services.AddSingleton(serviceProvider => logContext);
+        }
+
         private void FanexDataConfig(IAppSettings appSettings)
         {
             var connections = Configuration

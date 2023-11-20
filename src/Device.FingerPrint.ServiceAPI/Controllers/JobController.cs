@@ -5,8 +5,10 @@
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -130,30 +132,30 @@
         }
 
         [HttpPost("pushMultipleLogTrailEvent")]
-        public async Task PushMultipleLogTrailEvent(IEnumerable<LogEventInfo> logEventInfos)
+        public async Task PushMultipleLogTrailEvent([FromBody] LogEvent[] body)
         {
             try
             {
-                await massTransitProducer.SendBatchAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                var logEvent = JsonConvert.DeserializeObject<IEnumerable<LogEventInfo>>(body.FirstOrDefault().RenderedMessage);
+                await massTransitProducer.SendBatchAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
             }
             catch (Exception ex)
             {
                 logger.Error(ex.Message);
-                throw;
             }
         }
 
         [HttpPost("pushLogTrailEvent")]
-        public async Task PushLogTrailEventAsync(LogEventInfo logEventInfos)
+        public async Task PushLogTrailEventAsync([FromBody] LogEvent[] body)
         {
             try
             {
-                await massTransitProducer.SendAsync(logEventInfos, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                var logEvent = JsonConvert.DeserializeObject<LogEventInfo>(body.FirstOrDefault().RenderedMessage);
+                await massTransitProducer.SendAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
             }
             catch (Exception ex)
             {
                 logger.Error(ex.Message);
-                throw;
             }
         }
 

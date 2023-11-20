@@ -2,7 +2,6 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
-    using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Model.TransactionMonitoring;
@@ -13,6 +12,7 @@
     using Fanex.Logging.Extensions.Database;
     using Fanex.Oneyed.Infrastructure.Models;
     using MassTransit;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -22,11 +22,11 @@
     {
         private readonly IMassTransitProducer massTransitProducer;
         private readonly IRawTransactionService rawTransactionService;
-        private readonly ILogTrailClientService logTrailClientService;
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
+        private readonly Serilog.ILogger serilog;
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
         private const string defaultMethod = "Consumer";
@@ -34,20 +34,20 @@
         public Consumer(
                 IMassTransitProducer massTransitProducer,
                 IRawTransactionService rawTransactionService,
-                ILogTrailClientService logTrailClientService,
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
-                ILogger logger
+                ILogger logger,
+                Serilog.ILogger serilog
         )
         {
             this.massTransitProducer = massTransitProducer;
             this.rawTransactionService = rawTransactionService;
-            this.logTrailClientService = logTrailClientService;
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
+            this.serilog = serilog;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -120,7 +120,8 @@
                     Method = defaultMethod
                 });
 
-                await logTrailClientService.PostMultipleAsync(logEvents);
+                var json = JsonConvert.SerializeObject(logEvents);
+                serilog.Information(json);
             }
             catch (Exception ex)
             {

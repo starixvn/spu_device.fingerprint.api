@@ -2,28 +2,27 @@
 {
     using System;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
     using Device.FingerPrint.Core.Model;
-    using Device.FingerPrint.Core.Services;
-    using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc.Filters;
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
     public class LogTrailAttribute : Attribute, IAsyncActionFilter
     {
         private readonly IAppSettings appSettings;
-        private readonly ILogger logger;
-        private readonly ILogTrailClientService logTrailClientService;
+        private readonly Fanex.Logging.ILogger logger;
+        private readonly Serilog.ILogger serilog;
 
         public LogTrailAttribute(
-            IAppSettings appSettings,
-            ILogger logger,
-            ILogTrailClientService logTrailClientService
+            Fanex.Logging.ILogger logger,
+            Serilog.ILogger serilog,
+            IAppSettings appSettings
             )
         {
-            this.appSettings = appSettings;
             this.logger = logger;
-            this.logTrailClientService = logTrailClientService;
+            this.serilog = serilog;
+            this.appSettings = appSettings;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -47,7 +46,9 @@
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
 
-                    await logTrailClientService.PostAsync(logEvent);
+                    var logEventJson = JsonSerializer.Serialize(logEvent);
+
+                    serilog.Information(logEventJson);
                 }
             }
             catch (Exception ex)
