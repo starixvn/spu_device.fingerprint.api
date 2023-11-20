@@ -136,8 +136,11 @@
         {
             try
             {
-                var logEvent = JsonConvert.DeserializeObject<IEnumerable<LogEventInfo>>(body.FirstOrDefault().RenderedMessage);
-                await massTransitProducer.SendBatchAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                if (body.Length > 0)
+                {
+                    var logEvent = JsonConvert.DeserializeObject<IEnumerable<LogEventInfo>>(body.FirstOrDefault().RenderedMessage);
+                    await massTransitProducer.SendBatchAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                }
             }
             catch (Exception ex)
             {
@@ -150,8 +153,11 @@
         {
             try
             {
-                var logEvent = JsonConvert.DeserializeObject<LogEventInfo>(body.FirstOrDefault().RenderedMessage);
-                await massTransitProducer.SendAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                if(body.Length > 0)
+                {
+                    var logEvent = JsonConvert.DeserializeObject<LogEventInfo>(body.FirstOrDefault().RenderedMessage);
+                    await massTransitProducer.SendAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                }
             }
             catch (Exception ex)
             {
