@@ -4,6 +4,8 @@ WORKDIR /src
 
 COPY ["./src/Device.FingerPrint.ServiceAPI", "Device.FingerPrint.ServiceAPI/"]
 
+COPY ["./src/FPS.Device.FingerPrint.LoggerExtention.Standard.Client", "FPS.Device.FingerPrint.LoggerExtention.Standard.Client/"]
+
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
 COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]

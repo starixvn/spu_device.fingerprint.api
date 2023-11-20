@@ -14,8 +14,4 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client\FPS.Device.FingerPrint.Net.Standard.Client.csproj" />
-  </ItemGroup>
-
 </Project>

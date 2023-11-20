@@ -31,7 +31,7 @@
                 response.EnsureSuccessStatusCode();
                 return response;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
