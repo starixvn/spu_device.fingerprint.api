@@ -7,26 +7,11 @@
 
     public class LoggerEvent : ILoggerEvent
     {
-        private static volatile LoggerEvent logTrail;
         private readonly ILogger logger;
-        private static object syncRoot = new object();
 
         public LoggerEvent(string url)
         {
             logger = LoggerFactory.CreateLogger(url);
-        }
-
-        public static ILoggerEvent Log(string url)
-        {
-            if (logTrail == null)
-            {
-                lock (syncRoot)
-                {
-                    logTrail = logTrail ?? new LoggerEvent(url);
-                }
-            }
-
-            return logTrail;
         }
 
         public void WriteEventInfo(string message) => Information(message);
@@ -45,6 +30,7 @@
         }
 
         public async Task WriteEventInfoAysnc(string message) => Information(message);
+
 
         public async Task WriteEventInfoAysnc<T>(T message)
         {
