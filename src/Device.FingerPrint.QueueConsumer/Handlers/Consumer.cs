@@ -29,7 +29,7 @@
         private readonly ILogEvent logEvent;
 
         private const string defaultDestination = "DCS_RawTrans";
-        private const string defaultSource = "Queue";
+        private const string defaultSource = "RabbitMQ";
         private const string defaultMethod = "Consumer";
 
         public Consumer(
