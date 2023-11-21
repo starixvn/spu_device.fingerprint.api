@@ -28,7 +28,8 @@
         private readonly ILogger logger;
         private readonly ILogEvent logEvent;
 
-        private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
+        private const string defaultDestination = "DCS_RawTrans";
+        private const string defaultSource = "Queue";
         private const string defaultMethod = "Consumer";
 
         public Consumer(
@@ -115,7 +116,7 @@
                     EventDate = DateTime.Now.Date,
                     SubscriberID = x.SubscriberId,
                     SystemName = appSettings.SystemName,
-                    Source = "test source url",
+                    Source = defaultSource,
                     Destination = defaultDestination,
                     Method = defaultMethod
                 });
