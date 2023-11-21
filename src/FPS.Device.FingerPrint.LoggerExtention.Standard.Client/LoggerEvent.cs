@@ -1,8 +1,8 @@
 ﻿namespace FPS.Device.FingerPrint.LoggerExtention.Standard.Client
 {
     using System.Collections.Generic;
-    using System.Text.Json;
     using System.Threading.Tasks;
+    using Newtonsoft.Json;
     using Serilog;
 
     public class LoggerEvent : ILoggerEvent
@@ -19,13 +19,13 @@
 
         public void WriteEventInfo<T>(T message)
         {
-            var json = JsonSerializer.Serialize(message);
+            var json = JsonConvert.SerializeObject(message);
             Information(json);
         }
 
         public void WriteMultipleEventInfo<T>(IEnumerable<T> messages)
         {
-            var json = JsonSerializer.Serialize(messages);
+            var json = JsonConvert.SerializeObject(messages);
             Information(json);
         }
 
@@ -34,13 +34,13 @@
 
         public async Task WriteEventInfoAysnc<T>(T message)
         {
-            var json = JsonSerializer.Serialize(message);
+            var json = JsonConvert.SerializeObject(message);
             Information(json);
         }
 
         public async Task WriteMultipleEventInfoAsync<T>(IEnumerable<T> messages)
         {
-            var json = JsonSerializer.Serialize(messages);
+            var json = JsonConvert.SerializeObject(messages);
             Information(json);
         }
 
