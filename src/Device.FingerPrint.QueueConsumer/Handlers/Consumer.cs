@@ -80,10 +80,10 @@
 
             await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
 
-            AdditionalProcessingNotAwait(transactionModels);
+            _ = AdditionalProcessingNotAwait(transactionModels);
         }
 
-        private void AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
+        private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
             var tasks = new List<Task>
             {
@@ -92,7 +92,7 @@
                 PushTransactionToMonitorAsync(transactionModels)
             };
 
-            _ = Task.WhenAll(tasks);
+            await Task.WhenAll(tasks);
         }
 
         private async Task HandleClearRedis(IEnumerable<RawTransactionModel> transactions)
