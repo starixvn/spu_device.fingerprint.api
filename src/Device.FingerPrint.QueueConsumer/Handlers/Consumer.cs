@@ -11,8 +11,8 @@
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Oneyed.Infrastructure.Models;
+    using FPS.Device.FingerPrint.LoggerExtention.Standard.Client;
     using MassTransit;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -26,7 +26,7 @@
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly Serilog.ILogger serilog;
+        private readonly ILoggerEvent loggerEvent;
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
         private const string defaultMethod = "Consumer";
@@ -38,7 +38,7 @@
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogger logger,
-                Serilog.ILogger serilog
+                ILoggerEvent loggerEvent
         )
         {
             this.massTransitProducer = massTransitProducer;
@@ -47,7 +47,7 @@
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.serilog = serilog;
+            this.loggerEvent = loggerEvent;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -120,8 +120,7 @@
                     Method = defaultMethod
                 });
 
-                var json = JsonConvert.SerializeObject(logEvents);
-                serilog.Information(json);
+                await loggerEvent.WriteMultipleEventInfoAsync(logEvents);
             }
             catch (Exception ex)
             {

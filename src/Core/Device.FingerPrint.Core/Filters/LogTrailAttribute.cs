@@ -5,6 +5,7 @@
     using System.Text.Json;
     using System.Threading.Tasks;
     using Device.FingerPrint.Core.Model;
+    using FPS.Device.FingerPrint.LoggerExtention.Standard.Client;
     using Microsoft.AspNetCore.Mvc.Filters;
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
@@ -12,17 +13,17 @@
     {
         private readonly IAppSettings appSettings;
         private readonly Fanex.Logging.ILogger logger;
-        private readonly Serilog.ILogger serilog;
+        private readonly ILoggerEvent loggerEvent;
 
         public LogTrailAttribute(
             Fanex.Logging.ILogger logger,
-            Serilog.ILogger serilog,
-            IAppSettings appSettings
+            IAppSettings appSettings,
+            ILoggerEvent loggerEvent
             )
         {
             this.logger = logger;
-            this.serilog = serilog;
             this.appSettings = appSettings;
+            this.loggerEvent = loggerEvent;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -46,9 +47,8 @@
                         Method = context.HttpContext.Request.Path.ToString(),
                     };
 
-                    var logEventJson = JsonSerializer.Serialize(logEvent);
 
-                    serilog.Information(logEventJson);
+                    await loggerEvent.WriteEventInfoAysnc(logEvent);
                 }
             }
             catch (Exception ex)

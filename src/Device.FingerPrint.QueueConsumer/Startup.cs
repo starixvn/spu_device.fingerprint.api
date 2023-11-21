@@ -62,7 +62,11 @@ namespace Device.FingerPrint.QueueConsumer
                         })
                });
 
-            RegisterServiceSerilogExtention(services, appSettings);
+            services.AddSingleton<ILoggerEvent>(serviceProvider =>
+            {
+                var logEvent = new LoggerEvent(appSettings.LogTrailBaseUrl);
+                return logEvent;
+            });
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
@@ -108,13 +112,6 @@ namespace Device.FingerPrint.QueueConsumer
                 options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
                 options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
             });
-        }
-
-        private static void RegisterServiceSerilogExtention(IServiceCollection services, AppSettings appSettings)
-        {
-            var serilog = LoggerFactory.CreateLogger(appSettings.LogTrailBaseUrl);
-            var logContext = serilog.ForContext<Program>();
-            services.AddSingleton(serviceProvider => logContext);
         }
 
         private void FanexDataConfig(IAppSettings appSettings)

@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
+    <ProjectReference Include="..\..\FPS.Device.FingerPrint.LoggerExtention.Standard.Client\FPS.Device.FingerPrint.LoggerExtention.Standard.Client.csproj" />
   </ItemGroup>
 
 </Project>

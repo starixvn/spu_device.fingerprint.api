@@ -2,7 +2,7 @@
 {
     using System.IO;
     using System.Net.Http;
-    using Serilog.Sinks.Http;
+    using global::Serilog.Sinks.Http;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Configuration;
     using System;
