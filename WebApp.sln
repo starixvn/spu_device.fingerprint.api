@@ -55,7 +55,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Redis", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.LogTrail.Consumer", "src\Device.FingerPrint.LogTrail.Consumer\Device.FingerPrint.LogTrail.Consumer.csproj", "{6BC55556-1848-4CB4-8F4E-9402064EAC0C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.Device.FingerPrint.LoggerExtention.Standard.Client", "src\FPS.Device.FingerPrint.LoggerExtention.Standard.Client\FPS.Device.FingerPrint.LoggerExtention.Standard.Client.csproj", "{B1843739-2B6E-4C0B-BFA5-AF7E313A43FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fanex.LogTrail.Service", "src\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj", "{B1843739-2B6E-4C0B-BFA5-AF7E313A43FD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

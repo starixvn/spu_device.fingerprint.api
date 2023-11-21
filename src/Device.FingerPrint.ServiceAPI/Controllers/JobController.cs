@@ -4,6 +4,7 @@
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
+    using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System;
@@ -131,32 +132,15 @@
             monitorJobServices.TestNotificationTelegram(message);
         }
 
-        [HttpPost("pushMultipleLogTrailEvent")]
-        public async Task PushMultipleLogTrailEvent([FromBody] LogEvent[] body)
-        {
-            try
-            {
-                if (body.Length > 0)
-                {
-                    var logEvent = JsonConvert.DeserializeObject<IEnumerable<LogEventInfo>>(body.FirstOrDefault().RenderedMessage);
-                    await massTransitProducer.SendBatchAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
-                }
-            }
-            catch (Exception ex)
-            {
-                logger.Error(ex.Message);
-            }
-        }
-
         [HttpPost("pushLogTrailEvent")]
-        public async Task PushLogTrailEventAsync([FromBody] LogEvent[] body)
+        public async Task PushLogTrailEventAsync([FromBody] LogEventModel[] body)
         {
             try
             {
                 if(body.Length > 0)
                 {
-                    var logEvent = JsonConvert.DeserializeObject<LogEventInfo>(body.FirstOrDefault().RenderedMessage);
-                    await massTransitProducer.SendAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                    var logEvent = JsonConvert.DeserializeObject<IEnumerable<LogEventInfo>>(body.FirstOrDefault().RenderedMessage);
+                    await massTransitProducer.SendBatchAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
                 }
             }
             catch (Exception ex)

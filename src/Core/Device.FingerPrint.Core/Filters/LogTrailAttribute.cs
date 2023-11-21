@@ -2,10 +2,9 @@
 {
     using System;
     using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
     using Device.FingerPrint.Core.Model;
-    using FPS.Device.FingerPrint.LoggerExtention.Standard.Client;
+    using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc.Filters;
 
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false)]
@@ -13,17 +12,17 @@
     {
         private readonly IAppSettings appSettings;
         private readonly Fanex.Logging.ILogger logger;
-        private readonly ILoggerEvent loggerEvent;
+        private readonly ILogEvent logEvent;
 
         public LogTrailAttribute(
             Fanex.Logging.ILogger logger,
             IAppSettings appSettings,
-            ILoggerEvent loggerEvent
+            ILogEvent logEvent
             )
         {
             this.logger = logger;
             this.appSettings = appSettings;
-            this.loggerEvent = loggerEvent;
+            this.logEvent = logEvent;
         }
 
         public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
@@ -37,7 +36,7 @@
                     var model = context.ActionArguments.FirstOrDefault().Value;
                     var urlAddress = new Uri(model.GetType().GetProperty("Url")?.GetValue(model, null)?.ToString());
 
-                    var logEvent = new LogEventInfo
+                    var logEventInfo = new LogEventInfo
                     {
                         SubscriberID = int.Parse(model.GetType().GetProperty("SubscriberId")?.GetValue(model, null).ToString()),
                         SystemName = appSettings.SystemName,
@@ -48,7 +47,7 @@
                     };
 
 
-                    await loggerEvent.WriteEventInfoAysnc(logEvent);
+                    logEvent.WriteEventInfo(logEventInfo);
                 }
             }
             catch (Exception ex)

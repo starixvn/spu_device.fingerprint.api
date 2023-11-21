@@ -1,4 +1,4 @@
-﻿namespace FPS.Device.FingerPrint.LoggerExtention.Standard.Client
+﻿namespace Fanex.LogTrail.Service
 {
     using System;
     using Serilog;

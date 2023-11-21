@@ -1,5 +1,4 @@
 ﻿using demoAPI.Models;
-using FPS.Device.FingerPrint.LogTrail.Net.Standard.Client;
 using FPS.Device.FingerPrint.Net.Framework.Client;
 using System;
 using System.Configuration;
@@ -122,14 +121,6 @@ namespace demoAPI.Controllers
                 Session["Username"] = loginModel.Username;
 
                 FpsIntegration(loginModel.Username);
-
-                var logEvent = new LogEventService("localhost:5008");
-                var logEventTrail = new LogEventInfo
-                {
-                    EventDate = DateTime.Now
-                };
-
-                await logEvent.InsertLogEventAsync(logEventTrail);
 
                 return RedirectToAction("index", "home");
             }

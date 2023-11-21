@@ -2,11 +2,10 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Title>FPS.Device.FingerPrint.LoggerExtention.Standard.Client</Title>
+    <Title>Fanex.LogTrail.Service</Title>
     <Authors>Teddy.Le</Authors>
     <Version>1.0.0-beta02</Version>
   </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Serilog.Sinks.Http" Version="8.0.0" />

@@ -1,15 +1,14 @@
-﻿namespace FPS.Device.FingerPrint.LoggerExtention.Standard.Client
+﻿namespace Fanex.LogTrail.Service
 {
     using System.Collections.Generic;
-    using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Serilog;
 
-    public class LoggerEvent : ILoggerEvent
+    public class LogEvent : ILogEvent
     {
         private readonly ILogger logger;
 
-        public LoggerEvent(string url)
+        public LogEvent(string url)
         {
             logger = LoggerFactory.CreateLogger(url);
         }
@@ -24,21 +23,6 @@
         }
 
         public void WriteMultipleEventInfo<T>(IEnumerable<T> messages)
-        {
-            var json = JsonConvert.SerializeObject(messages);
-            Information(json);
-        }
-
-        public async Task WriteEventInfoAysnc(string message) => Information(message);
-
-
-        public async Task WriteEventInfoAysnc<T>(T message)
-        {
-            var json = JsonConvert.SerializeObject(message);
-            Information(json);
-        }
-
-        public async Task WriteMultipleEventInfoAsync<T>(IEnumerable<T> messages)
         {
             var json = JsonConvert.SerializeObject(messages);
             Information(json);

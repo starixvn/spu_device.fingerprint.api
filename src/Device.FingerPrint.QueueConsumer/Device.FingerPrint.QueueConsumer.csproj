@@ -22,7 +22,7 @@
     <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
-    <ProjectReference Include="..\FPS.Device.FingerPrint.LoggerExtention.Standard.Client\FPS.Device.FingerPrint.LoggerExtention.Standard.Client.csproj" />
+    <ProjectReference Include="..\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj" />
   </ItemGroup>
 
   <ItemGroup>

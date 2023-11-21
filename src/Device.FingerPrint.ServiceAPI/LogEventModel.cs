@@ -1,9 +1,8 @@
 ﻿namespace Device.FingerPrint.ServiceAPI
 {
     using System;
-    using Device.FingerPrint.Core.Model;
 
-    public class LogEvent
+    public class LogEventModel
     {
         public DateTime Timestamp { get; set; }
 

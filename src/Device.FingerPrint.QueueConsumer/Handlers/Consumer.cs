@@ -10,8 +10,8 @@
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.Database;
+    using Fanex.LogTrail.Service;
     using Fanex.Oneyed.Infrastructure.Models;
-    using FPS.Device.FingerPrint.LoggerExtention.Standard.Client;
     using MassTransit;
     using System;
     using System.Collections.Generic;
@@ -26,7 +26,7 @@
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly ILoggerEvent loggerEvent;
+        private readonly ILogEvent logEvent;
 
         private const string defaultDestination = "Device.FingerPrint.QueueConsumer";
         private const string defaultMethod = "Consumer";
@@ -38,7 +38,7 @@
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogger logger,
-                ILoggerEvent loggerEvent
+                ILogEvent logEvent
         )
         {
             this.massTransitProducer = massTransitProducer;
@@ -47,7 +47,7 @@
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.loggerEvent = loggerEvent;
+            this.logEvent = logEvent;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -120,7 +120,7 @@
                     Method = defaultMethod
                 });
 
-                await loggerEvent.WriteMultipleEventInfoAsync(logEvents);
+                logEvent.WriteMultipleEventInfo(logEvents);
             }
             catch (Exception ex)
             {
