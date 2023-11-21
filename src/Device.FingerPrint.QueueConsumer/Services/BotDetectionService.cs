@@ -1,5 +1,6 @@
 ﻿using Device.FingerPrint.Core;
 using Device.FingerPrint.Model;
+using Fanex.DeviceDetector.Models;
 using Fanex.Logging;
 using Fanex.Oneyed.Infrastructure.Models;
 using Newtonsoft.Json;
@@ -32,20 +33,20 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent)
         {
+            var flaggedCode = string.Empty;
             if (!string.IsNullOrWhiteSpace(message?.BotD))
             {
                 var botD = TransformBotD(message.BotD);
-                var flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
-                if (string.IsNullOrEmpty(flaggedCode))
-                {
-                    var browserless = Browserless(userAgent, string.IsNullOrWhiteSpace(deviceNo));
-                    flaggedCode = browserless.ToString();
-                }
-
-                return flaggedCode;
+                flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
             }
 
-            return string.Empty;
+            if (string.IsNullOrEmpty(flaggedCode))
+            {
+                var browserless = Browserless(userAgent, string.IsNullOrWhiteSpace(deviceNo));
+                flaggedCode = browserless.ToString();
+            }
+
+            return flaggedCode;
         }
 
         public BotDModel TransformBotdModel(string encodedBotD)
