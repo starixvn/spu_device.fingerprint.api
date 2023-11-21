@@ -6,6 +6,8 @@ COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
+COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
+
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
 COPY ["./src/Device.FingerPrint.LogTrail.Consumer/Device.FingerPrint.LogTrail.Consumer.csproj", "Device.FingerPrint.LogTrail.Consumer/"]

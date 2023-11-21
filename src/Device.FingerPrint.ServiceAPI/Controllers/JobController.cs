@@ -4,7 +4,6 @@
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
-    using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc;
     using Newtonsoft.Json;
     using System;

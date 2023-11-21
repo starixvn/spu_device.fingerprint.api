@@ -12,7 +12,7 @@ COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
 
 COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
 
-COPY ["./src/FPS.Device.FingerPrint.LoggerExtention.Standard.Client", "FPS.Device.FingerPrint.LoggerExtention.Standard.Client/"]
+COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
 
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
