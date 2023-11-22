@@ -18,6 +18,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         // GET: TestingController
+        [HttpGet("whoami")]
         public ActionResult<WhoamiModel> Index()
         {
             return new WhoamiModel
