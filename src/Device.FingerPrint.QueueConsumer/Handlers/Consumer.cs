@@ -109,23 +109,29 @@
 
         private async Task InsertLogTrail(IEnumerable<RawTransactionModel> transactions)
         {
-            try
+            if (appSettings.IsEnableLogTrail)
             {
-                var logEvents = transactions.Select(x => new LogEventInfo
+                try
                 {
-                    EventDate = DateTime.Now.Date,
-                    SubscriberID = x.SubscriberId,
-                    SystemName = appSettings.SystemName,
-                    Source = defaultSource,
-                    Destination = defaultDestination,
-                    Method = defaultMethod
-                });
+                    var logEvents = transactions.Select(x => new LogEventInfo
+                    {
+                        EventDate = DateTime.Now.Date,
+                        SubscriberID = x.SubscriberId,
+                        SystemName = appSettings.SystemName,
+                        Source = defaultSource,
+                        Destination = defaultDestination,
+                        Method = defaultMethod
+                    });
 
-                logEvent.WriteMultipleEventInfo(logEvents);
-            }
-            catch (Exception ex)
-            {
-                LogError(ex);
+                    _ = Task.WhenAll(logEvents.Select(async log =>
+                    {
+                        await logEvent.WriteEventInfoAsync(log);
+                    }));
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex);
+                }
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace Fanex.LogTrail.Service
 {
-    using System.Collections.Generic;
+    using System.Threading.Tasks;
     using Newtonsoft.Json;
     using Serilog;
 
@@ -22,9 +22,9 @@
             Information(json);
         }
 
-        public void WriteMultipleEventInfo<T>(IEnumerable<T> messages)
+        public async Task WriteEventInfoAsync<T>(T message)
         {
-            var json = JsonConvert.SerializeObject(messages);
+            var json = JsonConvert.SerializeObject(message);
             Information(json);
         }
 

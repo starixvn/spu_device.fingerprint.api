@@ -32,6 +32,8 @@ namespace Device.FingerPrint.Core
         
         string SystemName {get; }
 
+        bool IsEnableLogTrail { get; }
+
         bool IsExtraSub { get; }
 
         IConfiguration Configuration { get; }
@@ -61,6 +63,7 @@ namespace Device.FingerPrint.Core
 
         private readonly string logTrailBaseUrl;
         private readonly string systemName;
+        private readonly bool isEnableLogTrail;
 
         private readonly bool isExtraSub;
 
@@ -96,6 +99,8 @@ namespace Device.FingerPrint.Core
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
 
+            isEnableLogTrail = !string.IsNullOrEmpty(GetValue<string>("LogTrail:IsEnable")) && Convert.ToBoolean(GetValue<string>("LogTrail:IsEnable"));
+
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
         }
 
@@ -126,6 +131,8 @@ namespace Device.FingerPrint.Core
         public string LogTrailBaseUrl => logTrailBaseUrl;
 
         public string SystemName => systemName;
+
+        public bool IsEnableLogTrail => isEnableLogTrail;
 
         public bool IsExtraSub => isExtraSub;
 

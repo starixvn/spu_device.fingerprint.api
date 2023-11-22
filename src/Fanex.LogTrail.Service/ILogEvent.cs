@@ -1,6 +1,6 @@
 ﻿namespace Fanex.LogTrail.Service
 {
-    using System.Collections.Generic;
+    using System.Threading.Tasks;
 
     public interface ILogEvent
     {
@@ -8,6 +8,6 @@
 
         void WriteEventInfo<T>(T message);
 
-        void WriteMultipleEventInfo<T>(IEnumerable<T> messages);
+        Task WriteEventInfoAsync<T>(T message);
     }
 }

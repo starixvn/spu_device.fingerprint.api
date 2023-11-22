@@ -4,11 +4,12 @@
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
+    using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -26,6 +27,7 @@
         private readonly ILogger logger;
         private readonly IMassTransitProducer massTransitProducer;
         private readonly IAppSettings appSettings;
+        private readonly ILogEvent logEvent;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -38,6 +40,7 @@
                             , ILogger logger
                             , IMassTransitProducer massTransitProducer
                             , IAppSettings appSettings
+                            , ILogEvent logEvent
                             )
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
@@ -51,6 +54,7 @@
             this.logger = logger;
             this.massTransitProducer = massTransitProducer;
             this.appSettings = appSettings;
+            this.logEvent = logEvent;
         }
 
         [HttpPost("deviceidentify")]
@@ -136,10 +140,10 @@
         {
             try
             {
-                if(body.Length > 0)
+                if (body.Length > 0)
                 {
-                    var logEvent = JsonConvert.DeserializeObject<IEnumerable<LogEventInfo>>(body.FirstOrDefault().RenderedMessage);
-                    await massTransitProducer.SendBatchAsync(logEvent, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                    var logEvents = body.Select(x => JsonSerializer.Deserialize<LogEventInfo>(x.RenderedMessage));
+                    _ = massTransitProducer.SendBatchAsync(logEvents, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
                 }
             }
             catch (Exception ex)
@@ -152,6 +156,31 @@
         public void HealthCheck()
         {
             logger.Info("I'm good!");
+        }
+
+        [HttpGet("testLogEvent")]
+        public async Task testLogEvent()
+        {
+            var tests = new List<LogEventInfo>();
+            for (int i = 0; i <= 10; i++)
+            {
+                var test = new LogEventInfo
+                {
+                    EventDate = DateTime.Now,
+                    SubscriberID = 2,
+                    SystemName = "Test SystemName",
+                    Source = "Test Source",
+                    Destination = "Test Destination",
+                    Method = "Test Method",
+                    Total = 0
+                };
+                tests.Add(test);
+            }
+
+            _ = Task.WhenAll(tests.Select(async x =>
+            {
+                await logEvent.WriteEventInfoAsync(x);
+            }));
         }
     }
 }
