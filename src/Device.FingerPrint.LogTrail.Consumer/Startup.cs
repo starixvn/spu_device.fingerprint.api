@@ -36,7 +36,7 @@
             FanexDataConfig(appSettings);
 
             LogManager
-              .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+              .SetDefaultLogCategory("Device.FingerPrint.LogTrailConsumer")
               .Use(new List<ILogEngine>
               {
                         new SentryLogging(new SentryEngineOptions

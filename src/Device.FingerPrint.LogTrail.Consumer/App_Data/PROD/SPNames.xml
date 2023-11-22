@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <Functions>
-  <Function Name="FPRawTransaction">
-    <Setting Key="FP_DCS_DC_Transform_RawTransOld_Insert" SpName="FP_DCS_DC_Transform_RawTransOld_Insert" DbName="MySQL.FPSTesting.fpsServiceAdmin"/>
-  </Function>
+    <Function Name="LogTrail">
+        <Setting Key="DCS_DT_Summary_LogTrail_Insert" SpName="DCS_DT_Summary_LogTrail_Insert" DbName="MySQL.DCS_DataTrace.ctsServiceAdmin"/>
+    </Function>
 </Functions>

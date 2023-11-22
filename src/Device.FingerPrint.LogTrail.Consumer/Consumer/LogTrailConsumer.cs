@@ -9,7 +9,6 @@
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using System.Linq;
     using Device.FingerPrint.Core.Model;
-    using System.Text.Json;
 
     public class LogTrailConsumer : IConsumer<Batch<LogEventInfo>>
     {
