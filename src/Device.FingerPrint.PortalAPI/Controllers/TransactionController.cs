@@ -1,19 +1,16 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Controllers
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Core.Filters;
     using Device.FingerPrint.Features.ClientTransaction.Services;
-    using Device.FingerPrint.Features.Subscriber.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
-    using Device.FingerPrint.PortalAPI.Services;
-    using Device.FingerPrint.PortalAPI.Ultilities;
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
+    using Newtonsoft.Json;
     using System;
     using System.Linq;
 
@@ -22,29 +19,17 @@
     public class TransactionController : ControllerBase
     {
         private readonly IRedisService redisService;
-        private readonly IEasyNetQService easyNetQService;    
-        private readonly ISubscriberServices subscriberServices;
         private readonly IClientTransactionService clientTransactionService;
-        private readonly ICrypto crypto;
-        private readonly ILogger logger;
         private readonly IAppSettings appSettings;
 
         public TransactionController(
             IAppSettings appSettings,
-            IRedisService redisService,           
-            IEasyNetQService easyNetQService,
-            ISubscriberServices subscriberServices,
-            IClientTransactionService clientTransactionService,           
-            ILogger logger,
-            ICrypto crypto)
+            IRedisService redisService,
+            IClientTransactionService clientTransactionService)
         {
-            this.redisService = redisService;           
-            this.easyNetQService = easyNetQService;
-            this.subscriberServices = subscriberServices;
-            this.clientTransactionService = clientTransactionService;           
+            this.redisService = redisService;
+            this.clientTransactionService = clientTransactionService;
             this.appSettings = appSettings;
-            this.crypto = crypto;
-            this.logger = logger;
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
@@ -66,6 +51,12 @@
             {
                 redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
+        }
+
+        [HttpPost("transaction")]
+        public void Transaction([FromBody] ClientTransactionModel data)
+        {
+            LogService.Warn("FPS Portal API Transaction: " + JsonConvert.SerializeObject(data));
         }
 
         [HttpPost("removeRedisByTag")]
