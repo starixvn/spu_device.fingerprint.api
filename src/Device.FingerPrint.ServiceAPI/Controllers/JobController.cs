@@ -192,11 +192,11 @@
             {
                 TransDate = DateTime.Now,
                 SubscriberID = 1,
-                SubscriberName = "Test",
-                TransTotal = 0,
+                SubscriberName = "Test123",
+                TransTotal = 10,
             };
 
-            await massTransitProducer.SendAsync(test, "queue:dcsTransQueue_dev");
+            await massTransitProducer.SendAsync(test, "queue:dcsTransQueue");
         }
     }
 }
