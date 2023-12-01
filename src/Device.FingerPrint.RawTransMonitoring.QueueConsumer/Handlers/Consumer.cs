@@ -30,6 +30,7 @@
             {
                 if (appSettings.IsConsumer)
                 {
+                    logger.Info("Start Consumer Raw Trans Monitoring!!!");
                     await transactionMonitoringService.SumRawTransactionAsync(context.Message.Select(x => x.Message));
                 }
             }
