@@ -1,16 +1,17 @@
-﻿using Device.FingerPrint.Core;
-using Device.FingerPrint.Model;
-using Fanex.DeviceDetector.Models;
-using Fanex.Logging;
-using Fanex.Oneyed.Infrastructure.Models;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 namespace Device.FingerPrint.QueueConsumer.Services
 {
+    using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Encoders;
+    using Device.FingerPrint.Model;
+    using Fanex.Logging;
+    using Fanex.Oneyed.Infrastructure.Models;
+    using Newtonsoft.Json;
+    using Newtonsoft.Json.Linq;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public interface IBotDetectionService
     {
         string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent);
@@ -53,7 +54,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (!string.IsNullOrEmpty(encodedBotD))
             {
-                var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
+                var botD = Base64.Decode(encodedBotD);
 
                 if (!string.IsNullOrEmpty(botD))
                 {
@@ -106,7 +107,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private BotDModel TransformBotD(string encodedBotD)
         {
-            var botD = Fanex.DI.Core.Encoders.Base64.Decode(encodedBotD);
+            var botD = Base64.Decode(encodedBotD);
 
             if (!string.IsNullOrEmpty(botD))
             {

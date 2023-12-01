@@ -55,8 +55,6 @@
         {
             try
             {
-                logger.Info("Start Consuming!" + appSettings.IsExtraSub);
-
                 if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
                     await ProcessTransaction(context.Message);

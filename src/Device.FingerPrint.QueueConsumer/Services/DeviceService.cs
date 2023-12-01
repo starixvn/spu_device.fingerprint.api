@@ -1,12 +1,13 @@
-﻿using Device.FingerPrint.Model;
-using Fanex.DeviceDetector.Factory;
-using Fanex.DeviceDetector.Models;
-using Fanex.Logging;
-using Newtonsoft.Json;
-using System;
-
-namespace Device.FingerPrint.QueueConsumer.Services
+﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
+    using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Encoders;
+    using Device.FingerPrint.Model;
+    using Device.FingerPrint.QueueConsumer.Models;
+    using Fanex.Logging;
+    using Newtonsoft.Json;
+    using System;
+
     public interface IDeviceService
     {
         DeviceInfoModel GetDeviceInfo(string deviceCode);
@@ -22,7 +23,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 return TransformEmptyDeviceInfo();
             }
 
-            var deviceInfo = DeviceFactory.GetDeviceInfo(deviceCode);
+            var deviceInfo = DecodeAndDeserializeDeviceInfo(deviceCode);
 
             if (deviceInfo != null)
             {
@@ -30,6 +31,40 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return TransformEmptyDeviceInfo();
+        }
+
+        private DeviceInfo DecodeAndDeserializeDeviceInfo(string deviceInfo)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(deviceInfo))
+                {
+                    return GenerateEmptyDeviceInfo();
+                }
+
+                string value = Base64.Decode(deviceInfo);
+                return JsonConvert.DeserializeObject<DeviceInfo>(value, JsonSerializerSettingsFactory.Instance);
+            }
+            catch (Exception exception)
+            {
+                LogService.Info($"DeviceInfo {deviceInfo} is invalid", exception);
+                return GenerateEmptyDeviceInfo();
+            }
+        }
+
+        private static DeviceInfo GenerateEmptyDeviceInfo()
+        {
+            return new DeviceInfo
+            {
+                DeviceCode = string.Empty,
+                AppVersion = string.Empty,
+                TimeZone = string.Empty,
+                UserAgent = string.Empty,
+                DeviceId = "N/A",
+                Screen = new DeviceScreen(),
+                HRef = string.Empty,
+                BotD = new BotD()
+            };
         }
 
         private DeviceInfoModel TransformDeviceInfo(DeviceInfo deviceInfo)
