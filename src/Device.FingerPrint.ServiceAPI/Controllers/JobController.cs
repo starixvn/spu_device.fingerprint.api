@@ -1,11 +1,13 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
     using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
     using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc;
+    using Serilog.Events;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -181,6 +183,20 @@
             {
                 await logEvent.WriteEventInfoAsync(x);
             }));
+        }
+
+        [HttpGet("testMassTrans")]
+        public async Task testMassTrans()
+        {
+            var test = new TransactionMonitoringModel
+            {
+                TransDate = DateTime.Now,
+                SubscriberID = 1,
+                SubscriberName = "Test",
+                TransTotal = 0,
+            };
+
+            await massTransitProducer.SendAsync(test, "queue:dcsTransQueue_dev");
         }
     }
 }
