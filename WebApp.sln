@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.LogTrail
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fanex.LogTrail.Service", "src\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj", "{B1843739-2B6E-4C0B-BFA5-AF7E313A43FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.RawTransMonitoring.QueueConsumer", "Device.FingerPrint.RawTransMonitoring.QueueConsumer\Device.FingerPrint.RawTransMonitoring.QueueConsumer.csproj", "{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.RawTransMonitoring.QueueConsumer", "src\Device.FingerPrint.RawTransMonitoring.QueueConsumer\Device.FingerPrint.RawTransMonitoring.QueueConsumer.csproj", "{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
