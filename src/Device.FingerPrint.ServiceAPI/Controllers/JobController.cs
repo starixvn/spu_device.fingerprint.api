@@ -145,7 +145,7 @@
                 if (body.Length > 0)
                 {
                     var logEvents = body.Select(x => JsonSerializer.Deserialize<LogEventInfo>(x.RenderedMessage));
-                    _ = massTransitProducer.SendBatchAsync(logEvents, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                    await massTransitProducer.SendBatchAsync(logEvents, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
                 }
             }
             catch (Exception ex)
@@ -158,45 +158,6 @@
         public void HealthCheck()
         {
             logger.Info("I'm good!");
-        }
-
-        [HttpGet("testLogEvent")]
-        public async Task testLogEvent()
-        {
-            var tests = new List<LogEventInfo>();
-            for (int i = 0; i <= 10; i++)
-            {
-                var test = new LogEventInfo
-                {
-                    EventDate = DateTime.Now,
-                    SubscriberID = 2,
-                    SystemName = "Test SystemName",
-                    Source = "Test Source",
-                    Destination = "Test Destination",
-                    Method = "Test Method",
-                    Total = 0
-                };
-                tests.Add(test);
-            }
-
-            _ = Task.WhenAll(tests.Select(async x =>
-            {
-                await logEvent.WriteEventInfoAsync(x);
-            }));
-        }
-
-        [HttpGet("testMassTrans")]
-        public async Task testMassTrans()
-        {
-            var test = new TransactionMonitoringModel
-            {
-                TransDate = DateTime.Now,
-                SubscriberID = 1,
-                SubscriberName = "Test123",
-                TransTotal = 10,
-            };
-
-            await massTransitProducer.SendAsync(test, "queue:dcsTransQueue");
         }
     }
 }
