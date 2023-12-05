@@ -35,6 +35,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.logger = logger;
         }
 
+        [HttpGet("scr/{subscriberName}")]
+        public ActionResult ScriptTemp(string subscriberName)
+        {
+            return new EmptyResult();
+        }
+
+
         [HttpGet("s/{subscriberName}")]
         [ETagFilter(200)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
