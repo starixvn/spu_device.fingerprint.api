@@ -56,7 +56,7 @@
         [HttpPost("transaction")]
         public void Transaction([FromBody] ClientTransactionModel data)
         {
-            LogService.Warn("FPS Portal API Transaction: " + JsonConvert.SerializeObject(data));
+            
         }
 
         [HttpPost("removeRedisByTag")]
