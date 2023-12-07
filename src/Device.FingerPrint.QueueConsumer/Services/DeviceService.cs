@@ -21,12 +21,7 @@
         {
             try
             {
-                if(message.Subscriber == "AgentSky" && (deviceCode == "null"  || deviceCode == "NULL"))
-                {
-                    LogService.Info("deviceCode" + deviceCode);
-                }
-
-                if (string.IsNullOrWhiteSpace(deviceCode))
+                if (string.IsNullOrWhiteSpace(deviceCode) || deviceCode.ToLower(System.Globalization.CultureInfo.CurrentCulture) == "null")
                 {
                     return TransformEmptyDeviceInfo();
                 }
