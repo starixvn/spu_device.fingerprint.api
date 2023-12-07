@@ -75,7 +75,7 @@
 
             var botDModel = botDetectionService.TransformBotdModel(message);
 
-            var flaggedCode = botDetectionService.GetFlaggedCode(message, deviceInfo.DeviceNo, userAgent);
+            var flaggedCode = botDetectionService.GetFlaggedCode(botDModel, deviceInfo.DeviceNo, userAgent);
 
             var rawTransModel = new RawTransactionModel
             {

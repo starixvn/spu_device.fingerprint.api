@@ -14,7 +14,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
     public interface IBotDetectionService
     {
-        string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent);
+        string GetFlaggedCode(BotDModel botD, string deviceNo, string userAgent);
 
         BotDModel TransformBotdModel(MessageQueue message);
 
@@ -32,14 +32,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.appSettings = appSettings;
         }
 
-        public string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent)
+        public string GetFlaggedCode(BotDModel botD, string deviceNo, string userAgent)
         {
-            var flaggedCode = string.Empty;
-            if (!string.IsNullOrWhiteSpace(message?.BotD))
-            {
-                var botD = TransformBotdModel(message);
-                flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
-            }
+            var flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
 
             if (string.IsNullOrEmpty(flaggedCode))
             {
