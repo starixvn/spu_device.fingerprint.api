@@ -21,6 +21,11 @@
         {
             try
             {
+                if(message.Subscriber == "AgentSky" && (deviceCode == "null"  || deviceCode == "NULL"))
+                {
+                    LogService.Info("deviceCode" + deviceCode);
+                }
+
                 if (string.IsNullOrWhiteSpace(deviceCode))
                 {
                     return TransformEmptyDeviceInfo();
