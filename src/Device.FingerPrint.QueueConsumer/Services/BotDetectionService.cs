@@ -4,6 +4,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Model;
+    using Device.FingerPrint.QueueConsumer.Models;
     using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
     using Newtonsoft.Json;
@@ -54,11 +55,18 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (!string.IsNullOrEmpty(encodedBotD))
             {
-                var botD = Base64.Decode(encodedBotD);
-
-                if (!string.IsNullOrEmpty(botD))
+                try
                 {
-                    return JsonConvert.DeserializeObject<BotDModel>(botD);
+                    var botD = Base64.Decode(encodedBotD);
+
+                    if (!string.IsNullOrEmpty(botD))
+                    {
+                        return JsonConvert.DeserializeObject<BotDModel>(botD);
+                    }
+                }
+                catch (Exception)
+                {
+                    throw;
                 }
             }
 

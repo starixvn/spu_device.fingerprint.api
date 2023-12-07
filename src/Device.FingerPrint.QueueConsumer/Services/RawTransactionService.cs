@@ -2,8 +2,12 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Model;
+    using Device.FingerPrint.QueueConsumer.Models;
     using Device.FingerPrint.Redis;
+    using DeviceDetectorNET.Class;
+    using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
+    using Newtonsoft.Json;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -39,69 +43,78 @@
 
         public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
         {
-            var invalidDevice = string.Empty;
-            var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
-            var deviceInfo = deviceService.GetDeviceInfo(deviceCode);
-            var url = Utilities.GetURLFromDeviceCode(message.Device);
-            var userAgent = Utilities.GetUserAgentFromDeviceCode(message.Device);
+            try
+            {
+                var invalidDevice = string.Empty;
+                var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
+                var deviceInfo = deviceService.GetDeviceInfo(deviceCode);
+                var url = Utilities.GetURLFromDeviceCode(message.Device);
+                var userAgent = Utilities.GetUserAgentFromDeviceCode(message.Device);
 
-            var transBit = new BitArray(16);
-            if (string.IsNullOrWhiteSpace(deviceInfo.DeviceNo) || deviceInfo.DeviceNo == "N/A")
-            {
-                deviceInfo.DeviceNo = null;
-                transBit.Set((int)TransStatusEnum.DeviceCodeIsEmpty, true);
-            }
-            else
-            {
-                if (!Utilities.IsGuidDeviceId(deviceInfo.DeviceNo) || deviceInfo.InvalidDeviceId)
+                var transBit = new BitArray(16);
+                if (string.IsNullOrWhiteSpace(deviceInfo.DeviceNo) || deviceInfo.DeviceNo == "N/A")
                 {
-                    invalidDevice = deviceCode;
                     deviceInfo.DeviceNo = null;
-                    transBit.Set((int)TransStatusEnum.InvalidDI, true);
+                    transBit.Set((int)TransStatusEnum.DeviceCodeIsEmpty, true);
                 }
+                else
+                {
+                    if (!Utilities.IsGuidDeviceId(deviceInfo.DeviceNo) || deviceInfo.InvalidDeviceId)
+                    {
+                        invalidDevice = deviceCode;
+                        deviceInfo.DeviceNo = null;
+                        transBit.Set((int)TransStatusEnum.InvalidDI, true);
+                    }
+                }
+
+                if (Utilities.ContainsUnicodeCharacter(message.Account))
+                {
+                    transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
+                }
+
+                var realIP = message.IP?.Trim();
+                var ipConverted = realIP.Ip2Long();
+
+                var botDModel = botDetectionService.TransformBotdModel(message.BotD);
+
+                var flaggedCode = botDetectionService.GetFlaggedCode(message, deviceInfo.DeviceNo, userAgent);
+
+                var rawTransModel = new RawTransactionModel
+                {
+                    DeviceCode = deviceInfo.DeviceNo,
+                    InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
+                    TransStatus = Core.Utilities.ConvertBitArray2Int(transBit),
+                    LoginName = message.Account,
+                    SubscriberName = message.Subscriber,
+                    SubscriberId = message.SubscriberId,
+                    TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
+                    IP = realIP,
+                    IPId = ipConverted.IpNumber,
+                    FakeIP = message.FakeIP?.Trim(),
+                    IsIPV6 = ipConverted.IsIpV6,
+                    PluginID = 0,
+                    URL = string.IsNullOrWhiteSpace(url) ? Utilities.ConvertNA2Empty(Utilities.SubStringUrl(deviceInfo.HRef)) : Utilities.SubStringUrl(url),
+                    Action = message.Action,
+                    ActionResult = message.ActionResult,
+                    UserAgent = string.IsNullOrWhiteSpace(userAgent) ? Utilities.ConvertNA2Empty(Utilities.StripUnicodeCharactersFromString(deviceInfo.UserAgent)) : Utilities.StripUnicodeCharactersFromString(userAgent),
+                    FingerprintCode = deviceInfo.DeviceFPCode != "N/A" ? deviceInfo.DeviceFPCode : null,
+                    FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? Utilities.EncodeCapturedData(deviceInfo) : null,
+                    SessionKey = message.SessionKey,
+                    FlaggedCode = flaggedCode,
+                    BotDetection = botDetectionService.GetBotDetectionTrue(botDModel),
+                    BotComponent = botDetectionService.GetBotComponent(botDModel, flaggedCode)
+                };
+
+                await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
+
+                return rawTransModel;
             }
-
-            if (Utilities.ContainsUnicodeCharacter(message.Account))
+            catch (Exception ex)
             {
-                transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
+                LogService.Info("Error TransformRawTransaction: " + ex.Message + "\n" + JsonConvert.SerializeObject(message));
+
+                throw;
             }
-
-            var realIP = message.IP?.Trim();
-            var ipConverted = realIP.Ip2Long();
-
-            var botDModel = botDetectionService.TransformBotdModel(message.BotD);
-
-            var flaggedCode = botDetectionService.GetFlaggedCode(message, deviceInfo.DeviceNo, userAgent);
-
-            var rawTransModel = new RawTransactionModel
-            {
-                DeviceCode = deviceInfo.DeviceNo,
-                InvalidDevice = string.IsNullOrWhiteSpace(invalidDevice) ? null : invalidDevice,
-                TransStatus = Core.Utilities.ConvertBitArray2Int(transBit),
-                LoginName = message.Account,
-                SubscriberName = message.Subscriber,
-                SubscriberId = message.SubscriberId,
-                TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
-                IP = realIP,
-                IPId = ipConverted.IpNumber,
-                FakeIP = message.FakeIP?.Trim(),
-                IsIPV6 = ipConverted.IsIpV6,
-                PluginID = 0,
-                URL = string.IsNullOrWhiteSpace(url) ? Utilities.ConvertNA2Empty(Utilities.SubStringUrl(deviceInfo.HRef)) : Utilities.SubStringUrl(url),
-                Action = message.Action,
-                ActionResult = message.ActionResult,
-                UserAgent = string.IsNullOrWhiteSpace(userAgent) ? Utilities.ConvertNA2Empty(Utilities.StripUnicodeCharactersFromString(deviceInfo.UserAgent)) : Utilities.StripUnicodeCharactersFromString(userAgent),
-                FingerprintCode = deviceInfo.DeviceFPCode != "N/A" ? deviceInfo.DeviceFPCode : null,
-                FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? Utilities.EncodeCapturedData(deviceInfo) : null,
-                SessionKey = message.SessionKey,
-                FlaggedCode = flaggedCode,
-                BotDetection = botDetectionService.GetBotDetectionTrue(botDModel),
-                BotComponent = botDetectionService.GetBotComponent(botDModel, flaggedCode)
-            };
-
-            await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
-
-            return rawTransModel;
         }
 
         public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)

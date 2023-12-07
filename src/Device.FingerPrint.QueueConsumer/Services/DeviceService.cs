@@ -45,10 +45,11 @@
                 string value = Base64.Decode(deviceInfo);
                 return JsonConvert.DeserializeObject<DeviceInfo>(value, JsonSerializerSettingsFactory.Instance);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                LogService.Info($"DeviceInfo {deviceInfo} is invalid", exception);
-                return GenerateEmptyDeviceInfo();
+                LogService.Info($"DeviceInfo {deviceInfo} is invalid");
+
+                throw;
             }
         }
 
