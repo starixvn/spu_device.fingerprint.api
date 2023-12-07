@@ -5,29 +5,37 @@
     using Device.FingerPrint.Model;
     using Device.FingerPrint.QueueConsumer.Models;
     using Fanex.Logging;
+    using Fanex.Oneyed.Infrastructure.Models;
     using Newtonsoft.Json;
     using System;
 
     public interface IDeviceService
     {
-        DeviceInfoModel GetDeviceInfo(string deviceCode);
+        DeviceInfoModel GetDeviceInfo(string deviceCode, MessageQueue message);
     }
 
     public class DeviceService : IDeviceService
     {
 
-        public DeviceInfoModel GetDeviceInfo(string deviceCode)
+        public DeviceInfoModel GetDeviceInfo(string deviceCode, MessageQueue message)
         {
-            if (string.IsNullOrWhiteSpace(deviceCode))
+            try
             {
-                return TransformEmptyDeviceInfo();
+                if (string.IsNullOrWhiteSpace(deviceCode))
+                {
+                    return TransformEmptyDeviceInfo();
+                }
+
+                var deviceInfo = DecodeAndDeserializeDeviceInfo(deviceCode);
+
+                if (deviceInfo != null)
+                {
+                    return TransformDeviceInfo(deviceInfo);
+                }
             }
-
-            var deviceInfo = DecodeAndDeserializeDeviceInfo(deviceCode);
-
-            if (deviceInfo != null)
+            catch (Exception ex)
             {
-                return TransformDeviceInfo(deviceInfo);
+                LogService.Info("Error GetDeviceInfo: " + ex.Message + "\n" + JsonConvert.SerializeObject(message));
             }
 
             return TransformEmptyDeviceInfo();
@@ -35,22 +43,14 @@
 
         private DeviceInfo DecodeAndDeserializeDeviceInfo(string deviceInfo)
         {
-            try
+            if (string.IsNullOrEmpty(deviceInfo))
             {
-                if (string.IsNullOrEmpty(deviceInfo))
-                {
-                    return GenerateEmptyDeviceInfo();
-                }
-
-                string value = Base64.Decode(deviceInfo);
-                return JsonConvert.DeserializeObject<DeviceInfo>(value, JsonSerializerSettingsFactory.Instance);
+                return GenerateEmptyDeviceInfo();
             }
-            catch (Exception)
-            {
-                LogService.Info($"DeviceInfo {deviceInfo} is invalid");
 
-                throw;
-            }
+            string value = Base64.Decode(deviceInfo);
+
+            return JsonConvert.DeserializeObject<DeviceInfo>(value, JsonSerializerSettingsFactory.Instance);
         }
 
         private static DeviceInfo GenerateEmptyDeviceInfo()

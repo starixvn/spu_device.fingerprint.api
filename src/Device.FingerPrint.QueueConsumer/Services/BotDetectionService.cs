@@ -4,7 +4,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Model;
-    using Device.FingerPrint.QueueConsumer.Models;
     using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
     using Newtonsoft.Json;
@@ -17,7 +16,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
     {
         string GetFlaggedCode(MessageQueue message, string deviceNo, string userAgent);
 
-        BotDModel TransformBotdModel(string encodedBotD);
+        BotDModel TransformBotdModel(MessageQueue message);
 
         string GetBotDetectionTrue(BotDModel botDModel);
 
@@ -38,7 +37,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             var flaggedCode = string.Empty;
             if (!string.IsNullOrWhiteSpace(message?.BotD))
             {
-                var botD = TransformBotD(message.BotD);
+                var botD = TransformBotdModel(message);
                 flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
             }
 
@@ -51,22 +50,22 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return flaggedCode;
         }
 
-        public BotDModel TransformBotdModel(string encodedBotD)
+        public BotDModel TransformBotdModel(MessageQueue message)
         {
-            if (!string.IsNullOrEmpty(encodedBotD))
+            if (!string.IsNullOrEmpty(message.BotD))
             {
                 try
                 {
-                    var botD = Base64.Decode(encodedBotD);
+                    var botD = Base64.Decode(message.BotD);
 
                     if (!string.IsNullOrEmpty(botD))
                     {
                         return JsonConvert.DeserializeObject<BotDModel>(botD);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    throw;
+                    LogService.Info("Error TransformBotdModel: " + ex.Message + "\n" + JsonConvert.SerializeObject(message));
                 }
             }
 
@@ -111,18 +110,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return string.Empty;
-        }
-
-        private BotDModel TransformBotD(string encodedBotD)
-        {
-            var botD = Base64.Decode(encodedBotD);
-
-            if (!string.IsNullOrEmpty(botD))
-            {
-                return JsonConvert.DeserializeObject<BotDModel>(botD);
-            }
-
-            return new BotDModel();
         }
 
         private Flagged Browserless(string userAgent, bool emptyFP)

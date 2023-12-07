@@ -56,8 +56,6 @@
         {
             try
             {
-                LogService.Info("Consume Service Start!");
-
                 if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
                     await ProcessTransaction(context.Message);
@@ -76,13 +74,10 @@
             {
                 return await rawTransactionService.TransformRawTransaction(x.Message);
             }));
-            LogService.Info("transactionModels: " + JsonConvert.SerializeObject(transactionModels));
 
             ipdbService.TransformTransactionByIps(transactionModels);
 
             await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
-
-            LogService.Info("InsertRawTransaction success: " + JsonConvert.SerializeObject(transactionModels));
 
             _ = AdditionalProcessingNotAwait(transactionModels);
         }
