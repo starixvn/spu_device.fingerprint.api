@@ -63,9 +63,10 @@ namespace Device.FingerPrint.PortalAPI
             services.AddCors(opt =>
             {
                 opt.AddDefaultPolicy(builder => builder
-                    .WithOrigins("*")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
+                    .AllowCredentials()
+                    .SetIsOriginAllowed(origin => true)
                     .SetPreflightMaxAge(TimeSpan.FromMinutes(30)));
             });
 
