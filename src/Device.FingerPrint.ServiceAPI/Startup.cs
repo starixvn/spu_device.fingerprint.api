@@ -6,7 +6,6 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
-using Fanex.LogTrail.Service;
 using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -16,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sentry;
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -48,12 +46,6 @@ namespace Device.FingerPrint.ServiceAPI
             services.AddHealthChecks();
 
             services.RegisterService(Configuration);
-
-            services.AddSingleton<ILogEvent>(serviceProvider =>
-            {
-                var logEvent = new LogEvent("http://fps_fp_job_api_web_service_LOCAL:5000/api/job/pushLogTrailEvent");
-                return logEvent;
-            });
 
 
             FanexDataConfig(appSettings);

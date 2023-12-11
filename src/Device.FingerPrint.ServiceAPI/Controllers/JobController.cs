@@ -1,15 +1,11 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
     using Device.FingerPrint.Core.Model;
-    using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
-    using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc;
-    using Serilog.Events;
     using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
@@ -29,7 +25,6 @@
         private readonly ILogger logger;
         private readonly IMassTransitProducer massTransitProducer;
         private readonly IAppSettings appSettings;
-        private readonly ILogEvent logEvent;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -42,7 +37,6 @@
                             , ILogger logger
                             , IMassTransitProducer massTransitProducer
                             , IAppSettings appSettings
-                            , ILogEvent logEvent
                             )
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
@@ -56,7 +50,6 @@
             this.logger = logger;
             this.massTransitProducer = massTransitProducer;
             this.appSettings = appSettings;
-            this.logEvent = logEvent;
         }
 
         [HttpPost("deviceidentify")]
@@ -150,7 +143,7 @@
             }
             catch (Exception ex)
             {
-                logger.Error(ex.Message);
+                LogService.Error("PushLogTrailEventAsync\n", ex);
             }
         }
 

@@ -13,7 +13,6 @@
     using Fanex.LogTrail.Service;
     using Fanex.Oneyed.Infrastructure.Models;
     using MassTransit;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
