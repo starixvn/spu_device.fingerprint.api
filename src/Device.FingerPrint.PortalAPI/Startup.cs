@@ -63,6 +63,7 @@ namespace Device.FingerPrint.PortalAPI
             services.AddCors(opt =>
             {
                 opt.AddDefaultPolicy(builder => builder
+                    .WithOrigins("https://alphafps.nexdev.net")
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials()
