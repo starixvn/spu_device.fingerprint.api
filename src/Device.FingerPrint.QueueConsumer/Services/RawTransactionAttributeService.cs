@@ -43,20 +43,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
                 model.CookieCode = cookie;
-
-                // Log info to test
-                var allowedUsers = new[] { "sutest01", "andy7" };
-
-                if (allowedUsers.Contains(model.LoginName))
-                {
-                    if (header != null)
-                    {
-                        await LogService.InfoAsync($"Transaction Info of {model.LoginName}\n" +
-                                                  $"HeaderCookie: {header.Cookie}\n" +
-                                                  $"RealIp: {header.RealIP}\n" +
-                                                  $"FakeIp: {header.FakeIP}");
-                    }
-                }
             }
         }
 
