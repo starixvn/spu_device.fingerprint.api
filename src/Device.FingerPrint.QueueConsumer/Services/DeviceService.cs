@@ -95,7 +95,7 @@
             return new DeviceInfoModel
             {
                 AppVersion = deviceInfo.AppVersion,
-                CapturedDate = deviceInfo.CapturedDate,
+                CapturedDate = (long)(deviceInfo.CapturedDate == null ? DateTime.Now.Ticks : deviceInfo.CapturedDate),
                 DeviceFPCode = deviceInfo.DeviceCode,
                 DeviceNo = deviceInfo.DeviceId,
                 HRef = deviceInfo.HRef,

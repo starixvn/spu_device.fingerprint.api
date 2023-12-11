@@ -18,7 +18,7 @@
 
         public string HRef { get; set; }
 
-        public long CapturedDate { get; set; }
+        public long? CapturedDate { get; set; }
 
         public string Version { get; set; }
 
