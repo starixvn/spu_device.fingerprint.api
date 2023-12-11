@@ -2,7 +2,6 @@ var fpNewCookie = (function (exports) {
     'use strict';
 
     var cookieKey = 'gfp';
-    var cookieDomain = '.nexdev.net';
     var storageHandlers = [localStorage, indexedDb, cookie, windowName];
     var isSet = false;
     var timeout = 200;
@@ -117,8 +116,7 @@ var fpNewCookie = (function (exports) {
                     let date = new Date();
                     date.setFullYear(date.getFullYear() + 1);
                     expires = '; expires=' + date.toUTCString();
-
-                    const setValue = key + '=' + (value || '') + expires + '; domain=' + cookieDomain +'; SameSite=None; Secure; path=/';
+                    const setValue = key + '=' + (value || '') + expires + '; SameSite=None; Secure; path=/';
                     document.cookie = setValue;
                     resolve(null);
                 }
