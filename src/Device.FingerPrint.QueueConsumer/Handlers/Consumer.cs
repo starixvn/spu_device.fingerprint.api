@@ -122,7 +122,7 @@
                         Method = defaultMethod
                     });
 
-                    _ = Task.WhenAll(logEvents.Select(async log =>
+                    await Task.WhenAll(logEvents.Select(async log =>
                     {
                         await logEvent.WriteEventInfoAsync(log);
                     }));
