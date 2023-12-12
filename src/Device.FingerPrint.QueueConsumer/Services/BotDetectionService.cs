@@ -136,7 +136,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private bool IsHeadless(string userAgent)
         {
-            if (userAgent.Contains("Headless")) return true;
+            if (userAgent.IndexOf("Headless", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                return true;
+            }
 
             return false;
         }

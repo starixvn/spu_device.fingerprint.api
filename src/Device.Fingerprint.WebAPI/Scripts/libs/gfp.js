@@ -3646,11 +3646,6 @@ var globalFP = (function (exports) {
             }
             else {
                 if (listAttributeHash.includes(componentKey)) {
-                    if (componentKey == "fontPreferencePrint") {
-                        console.log('component', component);
-                        console.log('component.value', JSON.stringify(component.value));
-                        console.log('callback', callback(JSON.stringify(component.value)));
-                    }
                     value = JSON.stringify(callback(JSON.stringify(component.value)));
                 }
                 else {
