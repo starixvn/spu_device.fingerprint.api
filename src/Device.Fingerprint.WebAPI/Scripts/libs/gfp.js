@@ -3630,26 +3630,35 @@ var globalFP = (function (exports) {
         }
         return "";
     }
-    function hasError(component) {
-        return 'error' in component;
-    }
     function componentsToJsonString(components, callback) {
+        const sortedKeys = Object.keys(components).sort();
         let result = "";
-        let err;
-        for (const componentKey of Object.keys(components).sort()) {
+        let err = "";
+        for (const componentKey of sortedKeys) {
             const component = components[componentKey];
-            let value = JSON.stringify(hasError(component)
-                ? "error"
-                : component.value == undefined
-                    ? `undefined`
-                    : component.value);
-            if (listAttributeHash.indexOf(componentKey) > -1) {
-                value = JSON.stringify(callback(JSON.stringify(value)));
-            }
-            if (hasError(component)) {
+            let value;
+            if ("error" in component) {
+                value = "error";
                 err += `${componentKey}: ${component.error},`;
             }
-            result += `${result ? "," : "{"}${`"${componentKey}"`.replace(/([:|\\])/g, "\\$1")}:${value}`;
+            else if (component.value === undefined) {
+                value = `"undefined"`;
+            }
+            else {
+                if (listAttributeHash.includes(componentKey)) {
+                    if (componentKey == "fontPreferencePrint") {
+                        console.log('component', component);
+                        console.log('component.value', JSON.stringify(component.value));
+                        console.log('callback', callback(JSON.stringify(component.value)));
+                    }
+                    value = JSON.stringify(callback(JSON.stringify(component.value)));
+                }
+                else {
+                    value = JSON.stringify(component.value);
+                }
+            }
+            const escapedComponentKey = `"${componentKey.replace(/([:|\\])/g, "\\$1")}"`;
+            result += `${result ? "," : "{"}${escapedComponentKey}:${value}`;
         }
         return `${result}}`;
     }
