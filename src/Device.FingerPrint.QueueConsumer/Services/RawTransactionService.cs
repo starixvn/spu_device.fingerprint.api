@@ -99,7 +99,7 @@
                 FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? Utilities.EncodeCapturedData(deviceInfo) : null,
                 SessionKey = message.SessionKey,
                 FlaggedCode = flaggedCode,
-                BotDetection = botDetectionService.GetBotDetectionTrue(botDModel),
+                BotDetection = botDModel?.Detection,
                 BotComponent = botDetectionService.GetBotComponent(botDModel, flaggedCode)
             };
 
