@@ -10,6 +10,7 @@
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using System;
+    using System.Collections.Generic;
     using System.Linq;
 
     [Route("api")]
@@ -31,12 +32,25 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("hd")]
+        public void Header([FromBody] BaseParameter data)
+        {
+            if (data != null)
+            {
+                var headerModel = GetHeaderValue();
+                if (headerModel != null)
+                {
+                    redisService.HashSetAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
+                }
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
         public void Cookie([FromBody] CookieParameter data)
         {
             if (data != null)
             {
-                AddHeaderToRedis(data.SessionKey);
                 redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
@@ -47,7 +61,7 @@
         {
             if (data != null)
             {
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -107,10 +121,11 @@
             };
         }
 
-        private void AddHeaderToRedis(string hashKey)
+        private HeaderModel GetHeaderValue()
         {
             var url = HttpContext.Request.Headers["Origin"].ToString();
-            var headerModel = new HeaderModel
+
+            return new HeaderModel
             {
                 Accept = HttpContext.Request.Headers["Accept"],
                 Encoding = HttpContext.Request.Headers["Accept-Encoding"],
@@ -120,8 +135,6 @@
                 SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : "",
                 Url = url
             };
-
-            redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
         }
     }
 }

@@ -2,11 +2,8 @@
 
 namespace Device.FingerPrint.PortalAPI.Models
 {
-    public class FingerprintParameter
+    public class FingerprintParameter : BaseParameter
     {
-        public FingerprintModel fingerprint { get; set; }
-
-        public string SessionKey { get; set; }
-
+        public FingerprintModel Fingerprint { get; set; }
     }
 }
