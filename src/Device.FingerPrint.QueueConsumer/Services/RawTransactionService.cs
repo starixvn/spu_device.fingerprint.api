@@ -100,8 +100,8 @@
                 SessionKey = message.SessionKey,
                 FlaggedCode = flaggedCode,
                 BotDetection = botDModel?.Detection,
-                BotComponent = botDetectionService.GetBotComponent(botDModel, flaggedCode)
-            };
+                BotComponent = botDModel?.Component ?? string.Empty
+        };
 
             await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
 

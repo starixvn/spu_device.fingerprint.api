@@ -19,8 +19,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
         BotDModel TransformBotdModel(MessageQueue message);
 
         string GetBotDetectionTrue(BotDModel botDModel);
-
-        string GetBotComponent(BotDModel botDModel, string flaggedCode);
     }
 
     public class BotDetectionService : IBotDetectionService
@@ -85,23 +83,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             catch (Exception ex)
             {
                 LogService.Error("Consumer GetBotDetectionTrue: " + ex.Message + "\n" + JsonConvert.SerializeObject(botDModel));
-            }
-
-            return string.Empty;
-        }
-
-        public string GetBotComponent(BotDModel botDModel, string flaggedCode)
-        {
-            if (!appSettings.GetValue<bool>("Consumer:TurnOnBotComponentForHuman"))
-            {
-                if (flaggedCode != Flagged.Human.ToString())
-                {
-                    return botDModel?.Component ?? string.Empty;
-                }
-            }
-            else
-            {
-                return botDModel?.Component ?? string.Empty;
             }
 
             return string.Empty;
