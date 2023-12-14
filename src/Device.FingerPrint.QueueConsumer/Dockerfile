@@ -1,13 +1,20 @@
-FROM hub.nexdev.net/base/dotnet/core/sdk:5.0.102-ca-patch-buster-slim AS builder
+FROM hub.nexdev.net/base/dotnet/core/sdk:7.0-alpine AS builder
 
 WORKDIR /src
 
 COPY ["./src/Device.FingerPrint.QueueConsumer", "Device.FingerPrint.QueueConsumer/"]
 
 COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
+
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
+
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
 
+COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
+
+COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
+
+COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
 COPY ["./src/Device.FingerPrint.QueueConsumer/Device.FingerPrint.QueueConsumer.csproj", "Device.FingerPrint.QueueConsumer/"]
 
@@ -21,7 +28,7 @@ COPY ./src/Device.FingerPrint.QueueConsumer .
 
 RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 
-FROM hub.nexdev.net/base/dotnet/core/aspnet:5.0-alpine AS base
+FROM hub.nexdev.net/base/dotnet/core/aspnet:7.0-alpine AS base
 
 WORKDIR /app
 

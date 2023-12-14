@@ -2,6 +2,7 @@
 using FPS.Device.FingerPrint.Net.Framework.Client;
 using System;
 using System.Configuration;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -113,7 +114,7 @@ namespace demoAPI.Controllers
         }
 
         [HttpPost]
-        public ActionResult OnPost(LoginModel loginModel)
+        public async Task<ActionResult> OnPostAsync(LoginModel loginModel)
         {
             if ((loginModel.Username == "test" || loginModel.Username == "test1" || loginModel.Username == "test2") && loginModel.Password == "1234aa")
             {
@@ -151,6 +152,11 @@ namespace demoAPI.Controllers
             Session.Clear();
 
             return RedirectToAction("");
+        }
+
+        public class LogEventInfo
+        {
+            public DateTime EventDate { get; set;}
         }
     }
 }

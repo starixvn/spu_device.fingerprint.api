@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.PortalAPI.Services;
+using Device.FingerPrint.Redis;
 using System;
 
 namespace Device.FingerPrint.PortalAPI.Ultilities

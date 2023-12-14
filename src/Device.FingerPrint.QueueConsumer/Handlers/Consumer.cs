@@ -1,122 +1,168 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
-    using Device.FingerPrint.Features.Transaction.Model;
+    using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
+    using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
-    using EasyNetQ;
-    using EasyNetQ.Consumer;
+    using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
-    using Microsoft.Extensions.Configuration;
-    using Microsoft.Extensions.Hosting;
-    using Newtonsoft.Json;
+    using Fanex.Logging.Extensions;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.LogTrail.Service;
+    using Fanex.Oneyed.Infrastructure.Models;
+    using MassTransit;
     using System;
     using System.Collections.Generic;
-    using System.Threading;
+    using System.Linq;
     using System.Threading.Tasks;
 
-    public class Consumer : BackgroundService
+    public class Consumer : IConsumer<Batch<MessageQueue>>
     {
+        private readonly IMassTransitProducer massTransitProducer;
+        private readonly IRawTransactionService rawTransactionService;
         private readonly ITransactionService transactionService;
+        private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
-        private readonly ILogger _logger;
+        private readonly ILogger logger;
+        private readonly ILogEvent logEvent;
 
-        private readonly List<TransactionEntity> listTransactionInsertModel;
+        private const string defaultDestination = "DCS_RawTrans";
+        private const string defaultSource = "RabbitMQ";
+        private const string defaultMethod = "Consumer";
 
-        public Consumer(IAppSettings appSettings
-                        , ITransactionService transactionService
-                        , ILogger logger)
+        public Consumer(
+                IMassTransitProducer massTransitProducer,
+                IRawTransactionService rawTransactionService,
+                ITransactionService transactionService,
+                IIPDBService ipdbService,
+                IAppSettings appSettings,
+                ILogger logger,
+                ILogEvent logEvent
+        )
         {
+            this.massTransitProducer = massTransitProducer;
+            this.rawTransactionService = rawTransactionService;
             this.transactionService = transactionService;
+            this.ipdbService = ipdbService;
             this.appSettings = appSettings;
-            this._logger = logger;
-
-            listTransactionInsertModel = new List<TransactionEntity>();
+            this.logger = logger;
+            this.logEvent = logEvent;
         }
 
-        private static TransactionEntity TranformTransactionEntity(TransactionModel model)
+        public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
         {
-            return new TransactionEntity
-            {
-                LoginName = model.LoginName,
-                ClientIP = model.ClientIP,
-                UserAgent = model.UserAgent,
-                UserAgentCode = model.UserAgentCode,
-                SessionKey = model.SessionKey,
-                SubscriberId = model.SubscriberId,
-                TransKey = model.TransKey,
-                TransTime = model.TransTime,
-                Url = model.Url,
-                Action = model.Action,
-                CustId = model.CustId,
-                SubAccId = model.SubAccId,
-                CookieCode = model.CookieCode,
-                FingerprintAttribute = model.FingerprintAttribute,
-                UserAgentInfo = model.UserAgentInfo,
-                BrowserInfo = model.BrowserInfo,
-                BrowserInfoAttribute = model.BrowserInfoAttribute
-            };
-        }
-
-        private void StartConsuming()
-        {
-            var easyNetQConnector = RabbitMQBus();
-            _logger.Info("Start Consuming!");
-
             try
             {
-                easyNetQConnector.AdvanceBus.Consume(easyNetQConnector.Queue, x =>
+                if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
-                    x.Add<TransactionModel>((message, info) =>
-                    {
-                        var transaction = TranformTransactionEntity(message.Body);
-                        listTransactionInsertModel.Add(transaction);
-
-                        if (listTransactionInsertModel.Count >= appSettings.TransBatchSize)
-                        {
-                            try
-                            {
-                                transactionService.InsertTransaction(listTransactionInsertModel);
-
-                                listTransactionInsertModel.Clear();
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.Error(ex.Message + "\n" + JsonConvert.SerializeObject(listTransactionInsertModel));
-                            }
-                        }
-                    });
-                });
+                    await ProcessTransaction(context.Message);
+                }
             }
             catch (Exception ex)
             {
-                _logger.Error(ex.Message);
+                LogError(ex);
+                throw;
             }
         }
 
-        private EasyNetQConnector RabbitMQBus()
+        private async Task ProcessTransaction(Batch<MessageQueue> messages)
         {
-            var easyNetQConnector = new EasyNetQConnector(appSettings.Configuration["RabbitMQ:Host"] + ":" + appSettings.Configuration["RabbitMQ:Port"],
-                                      appSettings.Configuration["RabbitMQ:VirtualHost"],
-                                      int.Parse(appSettings.Configuration["RabbitMQ:PrefetchCount"]),
-                                      appSettings.Configuration["RabbitMQ:UserName"],
-                                      appSettings.Configuration["RabbitMQ:Password"]);
+            var transactionModels = await Task.WhenAll(messages.Select(async x =>
+            {
+                return await rawTransactionService.TransformRawTransaction(x.Message);
+            }));
 
-            easyNetQConnector
-                    .CreateBus()
-                    .DeclareExchange(appSettings.Configuration["RabbitMQ:Exchange"])
-                    .DeclareQueue(appSettings.Configuration["RabbitMQ:Name"])
-                    .DeclareRoutingKey(appSettings.Configuration["RabbitMQ:RoutingKey"])
-                    .Bind();
+            ipdbService.TransformTransactionByIps(transactionModels);
 
-            return easyNetQConnector;
+            await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
+
+            _ = AdditionalProcessingNotAwait(transactionModels);
         }
 
-        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
-            StartConsuming();
+            var tasks = new List<Task>
+            {
+                InsertLogTrail(transactionModels),
+                HandleClearRedis(transactionModels),
+                PushTransactionToMonitorAsync(transactionModels)
+            };
 
-            return Task.CompletedTask;
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task HandleClearRedis(IEnumerable<RawTransactionModel> transactions)
+        {
+            try
+            {
+                await rawTransactionService.ClearRedisAsync(transactions);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex);
+            }
+        }
+
+        private async Task InsertLogTrail(IEnumerable<RawTransactionModel> transactions)
+        {
+            if (appSettings.IsEnableLogTrail)
+            {
+                try
+                {
+                    var logEvents = transactions.Select(x => new LogEventInfo
+                    {
+                        EventDate = DateTime.Now.Date,
+                        SubscriberID = x.SubscriberId,
+                        SystemName = appSettings.SystemName,
+                        Source = defaultSource,
+                        Destination = defaultDestination,
+                        Method = defaultMethod
+                    });
+
+                    await Task.WhenAll(logEvents.Select(async log =>
+                    {
+                        await logEvent.WriteEventInfoAsync(log);
+                    }));
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex);
+                }
+            }
+        }
+
+        private async Task PushTransactionToMonitorAsync(IEnumerable<RawTransactionModel> transactions)
+        {
+            if (appSettings.GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor") && !appSettings.IsExtraSub)
+            {
+                var groupTrans = transactions.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
+                                    .GroupBy(x => new { x.SubscriberId, x.SubscriberName, x.TransTime })
+                                    .Select(x => new TransactionMonitoringModel
+                                    {
+                                        SubscriberID = x.Key.SubscriberId,
+                                        SubscriberName = x.Key.SubscriberName,
+                                        TransDate = x.Key.TransTime,
+                                        TransTotal = x.Count()
+                                    });
+
+                if (groupTrans != null && groupTrans.Any())
+                {
+                    await massTransitProducer.SendBatchAsync(groupTrans.ToList(), appSettings.GetValue<string>("RabbitMQ:Monitor:Name"));
+                }
+            }
+        }
+
+        private void LogError(Exception ex)
+        {
+            var logMessage = new LogMessage(ex.Message)
+                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .ToString();
+
+            logger.Error(logMessage);
         }
     }
 }

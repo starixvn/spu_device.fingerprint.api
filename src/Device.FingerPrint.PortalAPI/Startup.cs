@@ -2,6 +2,7 @@ using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Middleware;
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
+using Device.FingerPrint.Redis;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
@@ -49,6 +50,13 @@ namespace Device.FingerPrint.PortalAPI
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
+
+            services.AddSingleton<ILogTrailClientService>(serviceProvider =>
+            {
+                var logTrailClientService = new LogTrailClientService();
+                logTrailClientService.SetLogTrailBaseUrl(appSettings.LogTrailBaseUrl);
+                return logTrailClientService;
+            });
 
             services.AddControllers();
 

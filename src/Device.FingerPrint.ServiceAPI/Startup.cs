@@ -6,6 +6,7 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
+using MassTransit;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +16,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Sentry;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Device.FingerPrint.ServiceAPI
@@ -28,7 +30,6 @@ namespace Device.FingerPrint.ServiceAPI
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
@@ -46,6 +47,7 @@ namespace Device.FingerPrint.ServiceAPI
 
             services.RegisterService(Configuration);
 
+
             FanexDataConfig(appSettings);
             // RegisterLogging(appSettings);
 
@@ -62,6 +64,26 @@ namespace Device.FingerPrint.ServiceAPI
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+
+            services.AddMassTransit(busConfigurator =>
+            {
+                busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                busConfigurator.UsingRabbitMq((context, cfx) =>
+                {
+                    cfx.ConfigureEndpoints(context);
+                });
+            });
+
+            services.AddOptions<RabbitMqTransportOptions>()
+            .Configure(options =>
+            {
+                options.Host = appSettings.GetValue<string>("RabbitMQ:Host");
+                options.Port = appSettings.GetValue<ushort>("RabbitMQ:Port");
+                options.User = appSettings.GetValue<string>("RabbitMQ:UserName");
+                options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
+                options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

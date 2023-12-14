@@ -2,11 +2,14 @@
 using Device.FingerPrint.Features.Transaction.Model;
 using Fanex.Data.Repository;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
+        Task InsertRawTransaction(string transJson, bool isTransOfDBExtra);
+
         void InsertTransaction(string transJson);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -40,6 +43,17 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public TransactionDataAccess()
         {
             repository = new DynamicRepository();
+        }
+
+        public async Task InsertRawTransaction(string transJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertRawTransactionCriteria
+            {
+                RawTransJson = transJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
         }
 
         public void InsertTransaction(string transJson)

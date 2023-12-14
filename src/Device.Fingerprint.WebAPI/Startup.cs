@@ -1,35 +1,30 @@
-using Device.Fingerprint.WebAPI.Middleware;
-using Device.Fingerprint.WebAPI.Services;
-using Device.FingerPrint.Core;
-using Device.FingerPrint.Core.Services;
-using Fanex.Data;
-using Fanex.Data.MySql;
-using Fanex.Logging;
-using Fanex.Logging.Extensions;
-using Fanex.Logging.Extensions.AspNetCore;
-using Fanex.Logging.Extensions.Database;
-using Fanex.Logging.Sentry;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpOverrides;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
-using Sentry;
-using StackExchange.Redis.Extensions.Core;
-using StackExchange.Redis.Extensions.Core.Abstractions;
-using StackExchange.Redis.Extensions.Core.Configuration;
-using StackExchange.Redis.Extensions.Core.Implementations;
-using StackExchange.Redis.Extensions.MsgPack;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Device.Fingerprint.WebAPI
 {
+    using Device.Fingerprint.WebAPI.Middleware;
+    using Device.Fingerprint.WebAPI.Services;
+    using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Services;
+    using Fanex.Data;
+    using Fanex.Data.MySql;
+    using Fanex.Logging;
+    using Fanex.Logging.Extensions;
+    using Fanex.Logging.Extensions.AspNetCore;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.Logging.Sentry;
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+    using Microsoft.AspNetCore.Hosting;
+    using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpOverrides;
+    using Microsoft.Extensions.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
+    using Microsoft.OpenApi.Models;
+    using Sentry;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     public class Startup
     {
         public Startup(IConfiguration configuration)
@@ -81,7 +76,7 @@ namespace Device.Fingerprint.WebAPI
             services.AddSwaggerGen(swagger =>
             {
                 swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });               
-                
+
             });
             #endregion
 
@@ -116,7 +111,7 @@ namespace Device.Fingerprint.WebAPI
            {
                      new SentryLogging(new SentryEngineOptions
                      {
-                         Dsn = new Dsn(appSettings.SentryDsn)
+                         Dsn = appSettings.SentryDsn
                      })
            });
 
@@ -133,10 +128,13 @@ namespace Device.Fingerprint.WebAPI
                 app.UseDeveloperExceptionPage();
 
             }
-
+           
             app.UseSwagger();
 
-            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1");                
+            });
 
             app.UseStaticFiles();
 

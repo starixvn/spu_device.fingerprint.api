@@ -12,6 +12,8 @@ namespace Device.FingerPrint.Model
 
         public string ClientIP { get; set; }
 
+        public string FakeIP { get; set; }
+
         public string UserAgent { get; set; }
 
         public string UserAgentCode { get; set; }           
@@ -34,8 +36,8 @@ namespace Device.FingerPrint.Model
 
         public UserAgentInfoModel UserAgentInfo { get; set; }
 
-        public BrowserInfoModel BrowserInfo { get; set; }
+        public string BotD { get; set; }
 
-        public BrowserInfoAttributeModel BrowserInfoAttribute { get; set; }
+        public string SourceUrl { get; set; }
     }
 }

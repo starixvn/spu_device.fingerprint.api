@@ -1,5 +1,4 @@
-﻿using FPS.Device.FingerPrint.Net.Standard.Client;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;

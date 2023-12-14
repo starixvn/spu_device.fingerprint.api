@@ -1,9 +1,5 @@
 ﻿using DemoNetCore.Models;
-using FPS.Client.NetStandard.Models;
-using FPS.Device.FingerPrint.Net.Standard.Client;
-using FPS.Device.FingerPrint.Net.Standard.Client.Model;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -30,7 +26,7 @@ namespace DemoNetCore.Controllers
         // GET: Login
         public ActionResult Index()
         {
-            ViewBag.GetAPIUrl = String.Format("{0}/api/scr/{1}", string.IsNullOrEmpty(getAPIUrl) ? string.Empty : getAPIUrl, subscriberName);
+            ViewBag.GetAPIUrl = String.Format("{0}/api/s/{1}", string.IsNullOrEmpty(getAPIUrl) ? string.Empty : getAPIUrl, subscriberName);
             ViewBag.GetActivatorUrl = getActivatorUrl;
 
             if (HttpContext.Session.GetString("Username") == null)
@@ -39,7 +35,7 @@ namespace DemoNetCore.Controllers
             }
             return Redirect("Home");
         }
-        
+
 
         [HttpPost]
         public ActionResult OnPost(LoginModel loginModel)
@@ -49,22 +45,7 @@ namespace DemoNetCore.Controllers
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
 
-                var fpsService = new TransactionServices(subscriberName, postAPIUrl);
-
-                fpsService.CheckTransaction(new TransactionModel
-                {
-                    SessionKey = HttpContext.Request.Form["__fdi"].ToString(),
-                    Action = "Login",
-                    CustId = 0,
-                    LoginName = loginModel.Username,
-                    LoginTime = DateTime.Now,
-                    SubAccId = 0,
-                    UserAgent = HttpContext.Request.Headers["User-Agent"].ToString(),
-                    Url = HttpContext.Request.GetDisplayUrl(),
-                    ClientIp = HttpContext.Connection.RemoteIpAddress.ToString()
-                });
-
-                FpsIntegrationVer105(loginModel.Username, "Login", "Demo Page Login", "Alpha", DateTime.Now);
+                FpsIntegrationVer115(loginModel.Username, "Login", "Demo Page Login", subscriberName, DateTime.Now);
                 return RedirectToAction("index", "home");
             }
 
@@ -80,28 +61,96 @@ namespace DemoNetCore.Controllers
         }
 
 
-        private void FpsIntegrationVer105(string account, string action, string actionResult, string subscriber, DateTime loginTime)
+        private void FpsIntegrationVer115(string account, string action, string actionResult, string subscriber, DateTime loginTime)
         {
             var fpsAPI = configuration.GetSection("FPS_API").Value;
-            var fpsService = new FPS.Client.NetStandard.Service(fpsAPI, HttpContext.Request);
-            var httpRequestData = new HttpRequestModel()
-            {
-                AcceptTypes = Request.Headers["Accept"].ToString() ?? string.Empty,
-                UserAgent = Request.Headers["User-Agent"].ToString() ?? string.Empty,              
-                Di = Request.Form["__di"].ToString(),
-                Token = Request.Form["__tk"].ToString(),
-                Url = Request.Scheme.ToString() + "://" + Request.Host.ToString(),
-                DebugInfo = Request.Form["detecas-analysis"].ToString(),
-                CaptchaResult = Request.Form["captcha_result"].ToString(),
-                Account = account,
-                Action = action,
-                ActionResult= actionResult,
-                Bi = Request.Form["__bi"].ToString(),
-                LoginTime= loginTime,
-                Subscriber= subscriber                
-            };
+            var fpsService = new FPS.Client.NetStandard.Service(); // (fpsAPI, HttpContext.Request);
+            fpsService.InitialRequest(fpsAPI, HttpContext.Request).CheckTransaction(account, subscriber, action, loginTime);
+        }
 
-            fpsService.CheckTransaction(httpRequestData);
+        private string GetHeaderIP(string param)
+        {
+            var headerVal = HttpContext.Request.Headers[param].ToString();
+            if (!string.IsNullOrEmpty(headerVal))
+            {
+                return headerVal;
+            }
+
+            return string.Empty;
+        }
+
+        private string GetXForWarded()
+        {
+            var proxyIP = GetHeaderIP("X-Forwarded-For");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Originating-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-Addr");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = HttpContext.Request.Host.ToString();
+            }
+
+            return proxyIP;
+        }
+
+        private string GetRealIp()
+        {
+            var proxyIP = GetHeaderIP("X-Actual-IP");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                var clientIps = GetXForWarded();
+
+                if (!string.IsNullOrEmpty(clientIps))
+                {
+                    var ips = clientIps.Split(new char[] { ',' });
+
+                    if (ips.Length > 1)
+                    {
+                        return ips[1];
+                    }
+
+                    return ips[0];
+                }
+                else
+                {
+                    return HttpContext.Request.Host.ToString();
+                }
+            }
+            else
+            {
+                return proxyIP.Split(new char[] { ',' })[0];
+            }
+        }
+
+        private string GetFakeIp()
+        {
+            var proxyIP = GetXForWarded();
+
+            if (!string.IsNullOrEmpty(proxyIP))
+            {
+                var ips = proxyIP.Split(new char[] { ',' });
+
+                if (ips[0] != GetRealIp())
+                {
+                    return ips[0];
+                }
+            }
+
+            return string.Empty;
         }
     }
 }

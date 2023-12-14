@@ -20,25 +20,29 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        private readonly ISubscriberServices subscriberServices;
-        //private readonly IRedisService redisService;
+        private readonly ISubscriberServices subscriberServices;        
         private readonly ILogger logger;
         
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            ISubscriberServices subscriberServices,
-            //IRedisService redisService,
+            ISubscriberServices subscriberServices,            
             ILogger logger)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
-            this.subscriberServices = subscriberServices;
-            //this.redisService = redisService;
+            this.subscriberServices = subscriberServices;            
             this.logger = logger;
         }
 
         [HttpGet("scr/{subscriberName}")]
+        public ActionResult ScriptTemp(string subscriberName)
+        {
+            return new EmptyResult();
+        }
+
+
+        [HttpGet("s/{subscriberName}")]
         [ETagFilter(200)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public ActionResult Script(string subscriberName)
@@ -47,7 +51,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
-                if (appSettings.Environment == "PROD")
+                if (appSettings.Environment == "PROD" || appSettings.Environment == "LOCAL")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/fp.min.js";
                 }
@@ -79,13 +83,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }        
 
-        [HttpGet("scr/{version}/ce")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]            
-        public ActionResult CookieScript(string version)
+        [HttpGet("s/ce/{version}")]
+        public ActionResult CookieScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO" || appSettings.Environment == "LOCAL")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
             }
@@ -100,9 +103,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
         
-        [HttpGet("scr/{version}/hl")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult HeadlessBrowserScript(string version)
+        [HttpGet("s/hl/{version}")]
+        public ActionResult HeadlessBrowserScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
 
@@ -123,30 +125,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/{version}/bi")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult BrowserInfoScript(string version)
-        {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.js";
-
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/browserInfo.min.js";
-            }
-
-            var bundleFile = new BundleFile(scriptPath);
-
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-            {
-                return new JavascriptResult(bundleFile.Content);
-            }
-
-            return new EmptyResult();
-        }
-
-        [HttpGet("scr/{version}/fp")]
-       // [ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult FingerPrintScript(string version)
+        [HttpGet("s/fp/{version}")]
+        public ActionResult FingerPrintScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
 
@@ -165,33 +145,27 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("scr/{version}/crt")]
-        //[ResponseCache(Duration = 86400, Location = ResponseCacheLocation.Any, VaryByQueryKeys = new string[] { "version" })]
-        public ActionResult CryptScript(string version)
+        [HttpGet("s/crt/{version}")]
+        public ActionResult CryptScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/crypt.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
 
             if (!string.IsNullOrWhiteSpace(bundleFile.Content))
             {
-                var newContent = bundleFile.Content
-                    .Replace("__keyIV__", appSettings.CryptoIV)
-                    .Replace("__keySalt__", appSettings.CryptoSalt)
-                    .Replace("__keyPass__", appSettings.CryptoPassword);
-
-                return new JavascriptResult(newContent);
+                return new JavascriptResult(bundleFile.Content);
             }
 
             return new EmptyResult();
         }
 
-        [HttpGet("scr/gjt")]
+        [HttpGet("s/gjt")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult<string> GetJWT()
         {
@@ -219,6 +193,101 @@ namespace Device.Fingerprint.WebAPI.Controllers
             // Method intentionally left empty.
             // 
             logger.Info("I'm good.");
-        }        
+        }
+
+        [HttpGet("getClientIP")]
+        public string GetClientIP()
+        {
+            var realIp = GetRealIp();
+            var fakeIp = GetFakeIp();
+
+            var result = "RealIP: " + realIp + "\nFakeIP: " + fakeIp;
+            return result; 
+        }
+
+        private string GetFakeIp()
+        {
+            var proxyIP = GetXForWarded();
+
+            if (!string.IsNullOrEmpty(proxyIP))
+            {
+                var ips = proxyIP.Split(new char[] { ',' });
+
+                if (ips[0] != GetRealIp())
+                {
+                    return ips[0];
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private string GetHeaderIP(string param)
+        {
+            var headerVal = HttpContext.Request.Headers[param].ToString();
+            if (!string.IsNullOrEmpty(headerVal))
+            {
+                return headerVal;
+            }
+
+            return string.Empty;
+        }
+
+        private string GetXForWarded()
+        {
+            var proxyIP = GetHeaderIP("X-Forwarded-For");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Originating-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-Addr");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = HttpContext.Request.Host.ToString();
+            }
+
+            return proxyIP;
+        }
+
+        private string GetRealIp()
+        {
+            var proxyIP = GetHeaderIP("X-Actual-IP");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                var clientIps = GetXForWarded();
+
+                if (!string.IsNullOrEmpty(clientIps))
+                {
+                    var ips = clientIps.Split(new char[] { ',' });
+
+                    if (ips.Length > 1)
+                    {
+                        return ips[1];
+                    }
+
+                    return ips[0];
+                }
+                else
+                {
+                    return HttpContext.Request.Host.ToString();
+                }
+            }
+            else
+            {
+                return proxyIP.Split(new char[] { ',' })[0];
+            }
+        }
     }
 }

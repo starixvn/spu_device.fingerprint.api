@@ -19,6 +19,8 @@ namespace Device.FingerPrint.ServiceAPI
         string TelegramProxy { get; }
 
         string RatioUrl { get; }
+
+        T GetValue<T>(string key);
     }
 
     public class AppSettings : IAppSettings
@@ -26,11 +28,17 @@ namespace Device.FingerPrint.ServiceAPI
         private readonly IConfiguration configuration;
 
         private readonly string apiUrl;
+
         private readonly string spName;
+
         private readonly string encryptPassword;
+
         private readonly string sentryDsn;
+
         private readonly string environment;
+
         private readonly string telegramProxy;
+
         private readonly string ratioUrl;
 
         public AppSettings(IConfiguration configuration)

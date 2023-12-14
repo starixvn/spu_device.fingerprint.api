@@ -2,6 +2,11 @@
 
 <Functions>
   <Function Name="Transaction">
-    <Setting Key="FPS_FP_Transform_Transaction_Insert" SpName="FPS_FP_Transform_Transaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+    <Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+    <Setting Key="DCS_ET_Transform_RawTrans_Insert" SpName="DCS_ET_Transform_RawTrans_Insert" DbName="MySQL.DCS_Extra.ctsServiceAdmin"/>
+    <Setting Key="FPS_FP_Transform_Transaction_Insert" SpName="FPS_FP_Transform_Transaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsServiceAdmin"/>
   </Function>
+	<Function Name="IPInfo">
+		<Setting Key="GetLocationByIPList" SpName="GetLocationByIPList" DbName="SQL.FPS.IPDB.fpsWinService" Timeout="600"></Setting>
+	</Function>
 </Functions>

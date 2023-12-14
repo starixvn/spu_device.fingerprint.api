@@ -12,20 +12,24 @@ namespace Device.FingerPrint.PortalAPI.Services
 
     public class EasyNetQService : IEasyNetQService
     {
-        private EasyNetQConnector _easyNetQConnector;
         private readonly IConfiguration _configuration;
 
         public EasyNetQService(IConfiguration _configuration)
         {
             this._configuration = _configuration;
-
-            InitialConnection();
         }
 
-        private void InitialConnection()
+        public void PushData<T>(T model)
         {
+            var message = new Message<T>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
 
-            _easyNetQConnector = new EasyNetQConnector(_configuration["RabbitMQ:Host"] + ":" + _configuration["RabbitMQ:Port"],
+            var easyNetQConnector = RabbitMQBus();
+            easyNetQConnector.AdvanceBus.Publish(easyNetQConnector.Exchange, easyNetQConnector.RoutingKey, true, message);
+        }
+
+        private EasyNetQConnector RabbitMQBus()
+        {
+            var _easyNetQConnector = new EasyNetQConnector(_configuration["RabbitMQ:Host"] + ":" + _configuration["RabbitMQ:Port"],
                                       _configuration["RabbitMQ:VirtualHost"],
                                       int.Parse(_configuration["RabbitMQ:PrefetchCount"].ToString()),
                                       _configuration["RabbitMQ:UserName"],
@@ -36,13 +40,7 @@ namespace Device.FingerPrint.PortalAPI.Services
                     .DeclareQueue(_configuration["RabbitMQ:Name"])
                     .DeclareRoutingKey(_configuration["RabbitMQ:RoutingKey"])
                     .Bind();
-        }
-
-        public void PushData<T>(T model)
-        {
-            var message = new Message<T>(model, new MessageProperties() { DeliveryMode = 2, Priority = 9 });
-
-            _easyNetQConnector.AdvanceBus.Publish(_easyNetQConnector.Exchange, _easyNetQConnector.RoutingKey, true, message);
+            return _easyNetQConnector;
         }
     }
 }

@@ -1,10 +1,15 @@
-﻿using Device.FingerPrint.ServiceAPI.Services;
-using Fanex.Logging;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.ServiceAPI.Controllers
+﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
+    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Queue;
+    using Device.FingerPrint.ServiceAPI.Services;
+    using Fanex.Logging;
+    using Microsoft.AspNetCore.Mvc;
+    using System;
+    using System.Linq;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     [ApiController]
     [Route("api/job")]
     public class JobController : ControllerBase
@@ -18,6 +23,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
         private readonly IArchiveJobServices archiveJobServices;
         private readonly IEvolutionJobServices evolutionJobServices;
         private readonly ILogger logger;
+        private readonly IMassTransitProducer massTransitProducer;
+        private readonly IAppSettings appSettings;
 
         public JobController(IDeviceIdentifyJobServices deviceIdentifyServices
                             , ITransactionJobServices transactionServices
@@ -27,7 +34,10 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
                             , IFPTransactionJobService fPTransactionJobService
                             , IArchiveJobServices archiveJobServices
                             , IEvolutionJobServices evolutionJobServices
-                            , ILogger logger)
+                            , ILogger logger
+                            , IMassTransitProducer massTransitProducer
+                            , IAppSettings appSettings
+                            )
         {
             this.deviceIdentifyServices = deviceIdentifyServices;
             this.transactionServices = transactionServices;
@@ -38,6 +48,8 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             this.archiveJobServices = archiveJobServices;
             this.evolutionJobServices = evolutionJobServices;
             this.logger = logger;
+            this.massTransitProducer = massTransitProducer;
+            this.appSettings = appSettings;
         }
 
         [HttpPost("deviceidentify")]
@@ -118,11 +130,26 @@ namespace Device.FingerPrint.ServiceAPI.Controllers
             monitorJobServices.TestNotificationTelegram(message);
         }
 
+        [HttpPost("pushLogTrailEvent")]
+        public async Task PushLogTrailEventAsync([FromBody] LogEventModel[] body)
+        {
+            try
+            {
+                if (body.Length > 0)
+                {
+                    var logEvents = body.Select(x => JsonSerializer.Deserialize<LogEventInfo>(x.RenderedMessage));
+                    await massTransitProducer.SendBatchAsync(logEvents, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
+                }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error("PushLogTrailEventAsync\n", ex);
+            }
+        }
+
         [HttpGet("hc")]
         public void HealthCheck()
         {
-            // Method intentionally left empty.
-            // 
             logger.Info("I'm good!");
         }
     }

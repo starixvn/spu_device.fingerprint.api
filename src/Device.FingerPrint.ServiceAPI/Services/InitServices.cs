@@ -7,6 +7,7 @@
     using Device.FingerPrint.Features.Offset.Services;
     using Device.FingerPrint.Features.SummaryTransaction.Services;
     using Device.FingerPrint.Features.Transaction.Services;
+    using Device.FingerPrint.Queue;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
 
@@ -22,7 +23,7 @@
             RegisterArchiveService(services);
             RegisterOffset(services);
             RegisterEvolution(services);
-
+            RegisterQueueService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -80,5 +81,9 @@
             services.AddSingleton<IEvolutionJobServices, EvolutionJobServices>();
         }
 
+        private static void RegisterQueueService(this IServiceCollection services)
+        {
+            services.AddSingleton<IMassTransitProducer, MassTransitProducer>();
+        }
     }
 }

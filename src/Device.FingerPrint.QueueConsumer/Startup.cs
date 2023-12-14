@@ -1,15 +1,20 @@
 namespace Device.FingerPrint.QueueConsumer
 {
-    using Device.FingerPrint.Features.Monitor.Services;
-    using Device.FingerPrint.Features.Transaction.Services;
+    using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.QueueConsumer.Handlers;
+    using Device.FingerPrint.QueueConsumer.Services;
+    using Device.FingerPrint.Redis;
     using Fanex.Data;
     using Fanex.Data.MySql;
+    using Fanex.Data.SqlServer;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
+    using Fanex.LogTrail.Service;
+    using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
@@ -17,6 +22,11 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
+    using StackExchange.Redis.Extensions.Core;
+    using StackExchange.Redis.Extensions.Core.Abstractions;
+    using StackExchange.Redis.Extensions.Core.Configuration;
+    using StackExchange.Redis.Extensions.Core.Implementations;
+    using StackExchange.Redis.Extensions.MsgPack;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -33,36 +43,77 @@ namespace Device.FingerPrint.QueueConsumer
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+
             services.AddSingleton<IAppSettings>(appSettings);
-
-            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
-            services.AddSingleton<ITransactionService, TransactionService>();
-
-            services.AddSingleton<ITransactionReportDataAccess, TransactionReportDataAccess>();
-            services.AddSingleton<ITransactionReportServices, TransactionReportServices>();
-
             services.AddSingleton<ILogger, Logger>();
 
             services.AddHealthChecks();
-             
+
+            services.RegisterService();
             FanexDataConfig(appSettings);
 
             LogManager
-           .SetDefaultLogCategory("Device.FingerPrint.Consumer")
-           .Use(new List<ILogEngine>
-           {
-                    new SentryLogging(new SentryEngineOptions
-                    {
-                        Dsn = new Dsn(appSettings.SentryDsn)
-                    })
-           });
+               .SetDefaultLogCategory("Device.FingerPrint.Consumer")
+               .Use(new List<ILogEngine>
+               {
+                        new SentryLogging(new SentryEngineOptions
+                        {
+                            Dsn = new Dsn(appSettings.SentryDsn)
+                        })
+               });
+
+            services.AddSingleton<ILogEvent>(serviceProvider =>
+            {
+                var logEvent = new LogEvent(appSettings.LogTrailBaseUrl);
+                return logEvent;
+            });
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-            services.AddHostedService<Consumer>();
+            RegisterRedis(services);
+
+            InitService(services);
+
+            services.AddMassTransit(busConfigurator =>
+            {
+                busConfigurator.SetKebabCaseEndpointNameFormatter();
+
+                busConfigurator.AddConsumer<Consumer>(cfg =>
+                {
+                    cfg.Options<BatchOptions>(options => options
+                    .SetMessageLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchSizeLimit"))
+                    .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:Masstransit:BatchTimeLimit"))
+                    .SetConcurrencyLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchConcurrencyLimit")));
+                }).Endpoint(e =>
+                {
+                    e.ConfigureConsumeTopology = false;
+                    e.Name = appSettings.GetValue<string>("Consumer:Name");
+                    e.PrefetchCount = appSettings.GetValue<int>("Consumer:Masstransit:PrefetchCount");
+                });
+
+
+                busConfigurator.UsingRabbitMq((context, rgx) =>
+                {
+                    rgx.ClearSerialization();
+                    rgx.UseRawJsonSerializer();
+
+                    rgx.ConfigureEndpoints(context);
+                });
+            });
+
+            services.AddOptions<RabbitMqTransportOptions>()
+            .Configure(options =>
+            {
+                options.Host = appSettings.GetValue<string>("RabbitMQ:Host");
+                options.Port = appSettings.GetValue<ushort>("RabbitMQ:Port");
+                options.User = appSettings.GetValue<string>("RabbitMQ:UserName");
+                options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
+                options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
+            });
         }
+
         private void FanexDataConfig(IAppSettings appSettings)
         {
             var connections = Configuration
@@ -78,6 +129,7 @@ namespace Device.FingerPrint.QueueConsumer
               .StartNewSession()
               .Use(connections)
               .WithMySql()
+              .WithSqlServer()
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
         }
@@ -98,6 +150,25 @@ namespace Device.FingerPrint.QueueConsumer
             });
 
             app.UseRouting();
+        }
+
+        private void RegisterRedis(IServiceCollection services)
+        {
+            var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+
+            services.AddSingleton(redisConfiguration);
+
+            services.AddSingleton<IRedisClient, RedisClient>();
+            services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
+            services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
+            services.AddSingleton<IRedisService, RedisService>();
+        }
+
+        private void InitService(IServiceCollection services)
+        {
+            services.AddSingleton<IRawTransactionService, RawTransactionService>();
+            services.AddSingleton<IRawTransactionAttributeService, RawTransactionAttributeService>();
+            services.AddSingleton<ICrypto, Crypto>();
         }
     }
 }

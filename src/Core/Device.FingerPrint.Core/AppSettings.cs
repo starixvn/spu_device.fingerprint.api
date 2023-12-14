@@ -28,6 +28,17 @@ namespace Device.FingerPrint.Core
 
         string JWTPassword { get; }
 
+        string LogTrailBaseUrl { get; }
+        
+        string SystemName {get; }
+
+        bool IsEnableLogTrail { get; }
+
+        bool IsExtraSub { get; }
+
+        IConfiguration Configuration { get; }
+
+        T GetValue<T>(string key);
     }
 
     public class AppSettings : IAppSettings
@@ -48,7 +59,13 @@ namespace Device.FingerPrint.Core
         private readonly bool ignoreClientTransLogs;
         private readonly long redisExpired;
 
-        private readonly string jWTPassword;    
+        private readonly string jWTPassword;
+
+        private readonly string logTrailBaseUrl;
+        private readonly string systemName;
+        private readonly bool isEnableLogTrail;
+
+        private readonly bool isExtraSub;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -77,6 +94,14 @@ namespace Device.FingerPrint.Core
             redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
+
+            logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
+
+            systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
+
+            isEnableLogTrail = !string.IsNullOrEmpty(GetValue<string>("LogTrail:IsEnable")) && Convert.ToBoolean(GetValue<string>("LogTrail:IsEnable"));
+
+            isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
         }
 
         public string ApiUrl => apiUrl;
@@ -103,6 +128,14 @@ namespace Device.FingerPrint.Core
 
         public string JWTPassword => jWTPassword;
 
+        public string LogTrailBaseUrl => logTrailBaseUrl;
+
+        public string SystemName => systemName;
+
+        public bool IsEnableLogTrail => isEnableLogTrail;
+
+        public bool IsExtraSub => isExtraSub;
+
         public T GetValue<T>(string key)
         {
             try
@@ -125,5 +158,8 @@ namespace Device.FingerPrint.Core
 
             return schedulerSection.Get<T>();
         }
+
+        public IConfiguration Configuration => configuration;
+
     }
 }
