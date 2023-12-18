@@ -1,7 +1,6 @@
 ﻿
 namespace Device.FingerPrint.QueueConsumer.Services
 {
-    using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Model;
     using Fanex.Logging;
@@ -23,13 +22,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
     public class BotDetectionService : IBotDetectionService
     {
-        private readonly IAppSettings appSettings;
-
-        public BotDetectionService(IAppSettings appSettings)
-        {
-            this.appSettings = appSettings;
-        }
-
         public string GetFlaggedCode(BotDModel botD, string deviceNo, string userAgent)
         {
             var flaggedCode = botD?.Result?.Bot == true ? botD.Result.BotKind : string.Empty;
@@ -88,7 +80,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return string.Empty;
         }
 
-        private Flagged Browserless(string userAgent, bool emptyFP)
+        private static Flagged Browserless(string userAgent, bool emptyFP)
         {
             try
             {
@@ -115,14 +107,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return Flagged.Human;
         }
 
-        private bool IsHeadless(string userAgent)
+        private static bool IsHeadless(string userAgent)
         {
-            if (userAgent.IndexOf("Headless", StringComparison.OrdinalIgnoreCase) >= 0)
-            {
-                return true;
-            }
-
-            return false;
+            return userAgent.ToLower().Contains("headless");
         }
     }
 }

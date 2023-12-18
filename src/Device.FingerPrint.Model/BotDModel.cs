@@ -7,6 +7,8 @@
         public string Detection { get; set; }
 
         public string Component { get; set; }
+
+        public bool IsVer3 { get; set; } = false;
     }
 
     public class BotDResultModel

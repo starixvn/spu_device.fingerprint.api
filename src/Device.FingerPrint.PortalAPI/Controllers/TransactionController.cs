@@ -10,7 +10,6 @@
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using System;
-    using System.Collections.Generic;
     using System.Linq;
 
     [Route("api")]
@@ -37,11 +36,7 @@
         {
             if (data != null)
             {
-                var headerModel = GetHeaderValue();
-                if (headerModel != null)
-                {
-                    redisService.HashSetAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
-                }
+                AddHeaderToRedis(data.SessionKey);
             }
         }
 
@@ -52,6 +47,7 @@
             if (data != null)
             {
                 redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                AddHeaderToRedis(data.SessionKey);
             }
         }
 
@@ -119,6 +115,15 @@
                 ServerName = Environment.MachineName,
                 ServerTime = DateTime.Now
             };
+        }
+
+        private void AddHeaderToRedis(string sessionKey)
+        {
+            var headerModel = GetHeaderValue();
+            if (headerModel != null)
+            {
+                redisService.HashSetAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
+            }
         }
 
         private HeaderModel GetHeaderValue()
