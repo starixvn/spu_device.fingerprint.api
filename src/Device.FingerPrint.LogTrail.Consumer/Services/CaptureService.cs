@@ -7,7 +7,7 @@
 
     public interface ICapturingService
     {
-        Task<int> InserLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos);
+        Task<int> InsertLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos);
     }
 
     public class CaptureService : ICapturingService
@@ -19,12 +19,13 @@
             this.logTrailServices = logTrailServices;
         }
 
-        public async Task<int> InserLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos)
+        public async Task<int> InsertLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos)
         {
             var groupMessage = logEventInfos.GroupBy(x => new
             {
                 x.EventDate.Date,
                 x.SubscriberID,
+                x.EventCode,
                 x.SystemName,
                 x.Source,
                 x.Destination,
@@ -33,6 +34,7 @@
             {
                 EventDate = group.Key.Date,
                 SubscriberID = group.Key.SubscriberID,
+                EventCode = group.Key.EventCode,
                 SystemName = group.Key.SystemName,
                 Source = group.Key.Source,
                 Destination = group.Key.Destination,

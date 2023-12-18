@@ -2,6 +2,7 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Model.TransactionMonitoring;
@@ -27,10 +28,12 @@
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
         private readonly ILogEvent logEvent;
+        private readonly ICrypto crypto;
 
         private const string defaultDestination = "DCS_RawTrans";
         private const string defaultSource = "RabbitMQ";
-        private const string defaultMethod = "Consumer";
+        private const string defaultMethodTransformRawTran = "TransformRawTran";
+        private const string defaultMethodInsertTran = "InsertTran";
 
         public Consumer(
                 IMassTransitProducer massTransitProducer,
@@ -39,7 +42,8 @@
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogger logger,
-                ILogEvent logEvent
+                ILogEvent logEvent,
+                ICrypto crypto
         )
         {
             this.massTransitProducer = massTransitProducer;
@@ -49,6 +53,7 @@
             this.appSettings = appSettings;
             this.logger = logger;
             this.logEvent = logEvent;
+            this.crypto = crypto;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -60,9 +65,8 @@
                     await ProcessTransaction(context.Message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                LogError(ex);
                 throw;
             }
         }
@@ -71,21 +75,69 @@
         {
             var transactionModels = await Task.WhenAll(messages.Select(async x =>
             {
-                return await rawTransactionService.TransformRawTransaction(x.Message);
+                return await ProcessTransformRawTran(x.Message);
             }));
 
-            ipdbService.TransformTransactionByIps(transactionModels);
-
-            await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
+            await ProcessInsertRawTransaction(transactionModels);
 
             _ = AdditionalProcessingNotAwait(transactionModels);
+        }
+
+        private async Task<RawTransactionModel> ProcessTransformRawTran(MessageQueue message)
+        {
+            var eventCode = GetEventCode(message.SubscriberId, defaultMethodTransformRawTran);
+
+            try
+            {
+                var rawTransactions = await rawTransactionService.TransformRawTransaction(message);
+
+                _ = InsertLogTrail(rawTransactions.SubscriberId, eventCode, defaultMethodTransformRawTran);
+
+                return rawTransactions;
+            }
+            catch (Exception ex)
+            {
+                LogError($"{ex.Message} \r\n EventCode = {eventCode}", ex);
+                throw;
+            }
+        }
+
+        private async Task ProcessInsertRawTransaction(RawTransactionModel[] transactionModels)
+        {
+            List<string> eventCodes = null;
+
+            try
+            {
+                eventCodes = transactionModels.Select(x => GetEventCode(x.SubscriberId, defaultMethodInsertTran)).ToList();
+
+                ipdbService.TransformTransactionByIps(transactionModels);
+
+                await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
+
+                _= InsertLogTrails(transactionModels.ToList(), eventCodes);
+            }
+            catch (Exception ex)
+            {
+                LogError($"{ex.Message} \r\n EventCode = {string.Join(", ", eventCodes)}", ex);
+                throw;
+            }
+        }
+
+        private async Task InsertLogTrails(List<RawTransactionModel> transactionModels, List<string> eventCodes)
+        {
+            for (int i = 0; i < transactionModels.Count(); i++)
+            {
+                var transaction = transactionModels[i];
+                var eventCode = eventCodes[i];
+
+                await InsertLogTrail(transaction.SubscriberId, eventCode, defaultMethodInsertTran);
+            }
         }
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
             var tasks = new List<Task>
             {
-                InsertLogTrail(transactionModels),
                 HandleClearRedis(transactionModels),
                 PushTransactionToMonitorAsync(transactionModels)
             };
@@ -101,34 +153,32 @@
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                LogError(ex.Message, ex);
             }
         }
 
-        private async Task InsertLogTrail(IEnumerable<RawTransactionModel> transactions)
+        private async Task InsertLogTrail(int subscriberId, string eventCode, string method)
         {
             if (appSettings.IsEnableLogTrail)
             {
                 try
                 {
-                    var logEvents = transactions.Select(x => new LogEventInfo
+                    var logEventInfor = new LogEventInfo
                     {
                         EventDate = DateTime.Now.Date,
-                        SubscriberID = x.SubscriberId,
+                        SubscriberID = subscriberId,
+                        EventCode = eventCode,
                         SystemName = appSettings.SystemName,
                         Source = defaultSource,
                         Destination = defaultDestination,
-                        Method = defaultMethod
-                    });
+                        Method = method
+                    };
 
-                    await Task.WhenAll(logEvents.Select(async log =>
-                    {
-                        await logEvent.WriteEventInfoAsync(log);
-                    }));
+                    await logEvent.WriteEventInfoAsync(logEventInfor);
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    LogError(ex.Message, ex);
                 }
             }
         }
@@ -154,15 +204,21 @@
             }
         }
 
-        private void LogError(Exception ex)
+        private void LogError(string message, Exception ex)
         {
-            var logMessage = new LogMessage(ex.Message)
+            var logMessage = new LogMessage(message)
                    .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
                    .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
                    .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
                    .ToString();
 
             logger.Error(logMessage);
+        }
+
+        private string GetEventCode(int subscriberId, string method)
+        {
+            var uniqueEvent = string.Concat(DateTime.Now.ToString("yyyy/MM/dd"), subscriberId, appSettings.SystemName, defaultSource, defaultDestination, method);
+            return crypto.GetMD5Hash(uniqueEvent);
         }
     }
 }

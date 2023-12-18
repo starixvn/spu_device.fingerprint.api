@@ -7,6 +7,8 @@
 
         public int SubscriberID { get; set; }
 
+        public string EventCode { get; set; }
+
         public string SystemName { get; set; }
 
         public string Source { get; set; }

@@ -38,6 +38,7 @@
                         {
                             EventDate = x.Message.EventDate,
                             SubscriberID = x.Message.SubscriberID,
+                            EventCode = x.Message.EventCode,
                             SystemName = x.Message.SystemName,
                             Source = x.Message.Source,
                             Destination = x.Message.Destination,
@@ -45,7 +46,7 @@
                         };
                     });
 
-                    await capturingService.InserLogTrailEventAsync(rawLogEvent);
+                    await capturingService.InsertLogTrailEventAsync(rawLogEvent);
                 }
             }
             catch (Exception ex)

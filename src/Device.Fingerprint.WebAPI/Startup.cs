@@ -20,7 +20,6 @@ namespace Device.Fingerprint.WebAPI
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.OpenApi.Models;
-    using Sentry;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -42,6 +41,7 @@ namespace Device.Fingerprint.WebAPI
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
+            services.AddSingleton<ICrypto, Crypto>();
 
             services.AddCors(opt =>
             {
