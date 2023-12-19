@@ -23,9 +23,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISubscriberServices subscriberServices;        
         private readonly ILogger logger;
 
-        private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
-
-
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -72,7 +69,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                         var refererUrl = referer != null ? referer.ToString() : HttpContext.Request.GetDisplayUrl();
                         var scheme = new Uri(refererUrl).Scheme;
-                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme, base64Key);
+                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
 
                         return new JavascriptResult(bundleContent.Content);
                     }
