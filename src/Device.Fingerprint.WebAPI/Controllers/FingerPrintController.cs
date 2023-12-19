@@ -22,7 +22,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;        
         private readonly ILogger logger;
-        
+
+        private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
+
+
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -69,7 +72,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                         var refererUrl = referer != null ? referer.ToString() : HttpContext.Request.GetDisplayUrl();
                         var scheme = new Uri(refererUrl).Scheme;
-                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme);
+                        var bundleContent = new BundleContent(subscribers.SubscriberId, bundleFile.Content, appSettings, sessionKey, scheme, base64Key);
 
                         return new JavascriptResult(bundleContent.Content);
                     }
@@ -133,6 +136,26 @@ namespace Device.Fingerprint.WebAPI.Controllers
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.min.js";
+            }
+
+            var bundleFile = new BundleFile(scriptPath);
+
+            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+            {
+                return new JavascriptResult(bundleFile.Content);
+            }
+
+            return new EmptyResult();
+        }
+
+        [HttpGet("s/b64/{version}")]
+        public ActionResult Base64Script()
+        {
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/base64.js";
+
+            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            {
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/base64.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
