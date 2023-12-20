@@ -22,18 +22,14 @@
   <ItemGroup>
     <None Remove="Scripts\fp.js" />
     <None Remove="Scripts\fp.min.js" />
-    <None Remove="Scripts\libs\base64.js" />
-    <None Remove="Scripts\libs\base64.min.js" />
     <None Remove="Scripts\libs\cookie.min.js" />
     <None Remove="Scripts\libs\cookie1.js" />
-    <None Remove="Scripts\libs\crypt.js" />
-	<None Remove="Scripts\libs\crypt.min.js" />
+    <None Remove="Scripts\libs\fpCookie.js" />
+    <None Remove="Scripts\libs\fpCookie.min.js" />
     <None Remove="Scripts\libs\gfp.js" />
     <None Remove="Scripts\libs\gfp.min.js" />
     <None Remove="Scripts\libs\headlessBrowser.js" />
 	<None Remove="Scripts\libs\headlessBrowser.min.js" />
-	<None Remove="Scripts\libs\newCookie.js" />
-	<None Remove="Scripts\libs\newCookie.min.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -45,12 +41,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\fp.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Scripts\libs\base64.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Scripts\libs\base64.min.js">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\libs\gfp.js">
@@ -65,22 +55,16 @@
 	  <Content Include="Scripts\libs\headlessBrowser.min.js">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Scripts\libs\crypt.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\crypt.min.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\md5.js">
+	  <Content Include="Scripts\libs\encrypt.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Scripts\libs\md5.min.js">
+	  <Content Include="Scripts\libs\encrypt.min.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Scripts\libs\newCookie.js">
+	  <Content Include="Scripts\libs\fpCookie.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Scripts\libs\newCookie.min.js">
+	  <Content Include="Scripts\libs\fpCookie.min.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
   </ItemGroup>
@@ -112,7 +96,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Scripts\libs\crypt.js" />
     <Resource Include="Scripts\libs\headlessBrowser.js" />
   </ItemGroup>
 

@@ -22,7 +22,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;        
         private readonly ILogger logger;
-
+        
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -86,11 +86,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [HttpGet("s/ce/{version}")]
         public ActionResult CookieScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/fpCookie.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO" || appSettings.Environment == "LOCAL")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/fpCookie.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
@@ -145,34 +145,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("s/b64/{version}")]
-        public ActionResult Base64Script()
-        {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/base64.js";
-
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/base64.min.js";
-            }
-
-            var bundleFile = new BundleFile(scriptPath);
-
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-            {
-                return new JavascriptResult(bundleFile.Content);
-            }
-
-            return new EmptyResult();
-        }
-
         [HttpGet("s/crt/{version}")]
         public ActionResult CryptScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/md5.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
