@@ -4,6 +4,7 @@
     using System.Linq;
     using System.Threading.Tasks;
     using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Model.LogEvent;
     using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Mvc.Filters;
 

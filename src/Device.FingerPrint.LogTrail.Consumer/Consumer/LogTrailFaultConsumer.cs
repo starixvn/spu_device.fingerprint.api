@@ -5,7 +5,7 @@
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Extensions;
     using MassTransit;
-    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Model.LogEvent;
 
     public class LogTrailFaultConsumer : IConsumer<Batch<Fault<LogEventInfo>>>
     {
@@ -26,14 +26,18 @@
             {
                 logger.Info("Start Consuming log trail fault !");
 
-                var rawLogEvent = context.Message.Select(x =>
+                var logEventInfos = context.Message.Select(x =>
                 {
                     var message = x.Message.Message;
+                    
                     return new LogEventInfo
                     {
                         EventDate = message.EventDate,
                         SubscriberID = message.SubscriberID,
+                        LoginName = message.LoginName,
+                        TransTime = message.TransTime,
                         EventCode = message.EventCode,
+                        EventCodeDetail = message.EventCodeDetail,
                         SystemName = message.SystemName,
                         Source = message.Source,
                         Destination = message.Destination,
@@ -41,7 +45,9 @@
                     };
                 });
 
-                await capturingService.InsertLogTrailEventAsync(rawLogEvent);
+                await capturingService.InsertLogTrailEventAsync(logEventInfos);
+
+                await capturingService.InsertLogTrailEventDetailAsync(logEventInfos);
             }
             catch (Exception ex)
             {

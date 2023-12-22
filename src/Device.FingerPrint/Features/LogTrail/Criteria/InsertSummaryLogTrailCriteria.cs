@@ -1,4 +1,4 @@
-﻿namespace Device.FingerPrint.Features.LogTrail.Criterias
+﻿namespace Device.FingerPrint.Features.LogTrail.Criteria
 {
     using Fanex.Data.Repository;
     using Fanex.Data;
@@ -14,5 +14,4 @@
 
         public override bool IsValid() => !string.IsNullOrEmpty(RawLogEvent);
     }
-
 }

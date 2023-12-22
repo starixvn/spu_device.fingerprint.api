@@ -1,13 +1,14 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Model.LogEvent;
     using Device.FingerPrint.Core.Services;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Services;
+    using Device.FingerPrint.QueueConsumer.Utility;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.Database;
@@ -29,11 +30,6 @@
         private readonly ILogger logger;
         private readonly ILogEvent logEvent;
         private readonly ICrypto crypto;
-
-        private const string defaultDestination = "DCS_RawTrans";
-        private const string defaultSource = "RabbitMQ";
-        private const string defaultMethodTransformRawTran = "TransformRawTran";
-        private const string defaultMethodInsertTran = "InsertTran";
 
         public Consumer(
                 IMassTransitProducer massTransitProducer,
@@ -85,19 +81,20 @@
 
         private async Task<RawTransactionModel> ProcessTransformRawTran(MessageQueue message)
         {
-            var eventCode = GetEventCode(message.SubscriberId, defaultMethodTransformRawTran);
+            var eventCode = GetEventCode(message.SubscriberId, LogEventCode.MethodTransformRawTran);
+            var eventCodeDetail = GetEventCode(message.SubscriberId, LogEventCode.MethodTransformRawTran, message.Account);
 
             try
             {
                 var rawTransactions = await rawTransactionService.TransformRawTransaction(message);
 
-                _ = InsertLogTrail(rawTransactions.SubscriberId, eventCode, defaultMethodTransformRawTran);
+                _ = InsertLogTrail(rawTransactions, eventCode, eventCodeDetail, LogEventCode.MethodTransformRawTran);
 
                 return rawTransactions;
             }
             catch (Exception ex)
             {
-                LogError($"{ex.Message} \r\n EventCode = {eventCode}", ex);
+                LogError($"{ex.Message} \r\n Event Code = {eventCode} \r\n Event Code Detail = {eventCodeDetail}", ex);
                 throw;
             }
         }
@@ -105,32 +102,35 @@
         private async Task ProcessInsertRawTransaction(RawTransactionModel[] transactionModels)
         {
             List<string> eventCodes = null;
+            List<string> eventCodesDetail = null;
 
             try
             {
-                eventCodes = transactionModels.Select(x => GetEventCode(x.SubscriberId, defaultMethodInsertTran)).ToList();
+                eventCodes = transactionModels.Select(x => GetEventCode(x.SubscriberId, LogEventCode.MethodInsertTran)).ToList();
+                eventCodesDetail = transactionModels.Select(x => GetEventCode(x.SubscriberId, LogEventCode.MethodInsertTran, x.LoginName)).ToList();
 
                 ipdbService.TransformTransactionByIps(transactionModels);
 
                 await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
 
-                _= InsertLogTrails(transactionModels.ToList(), eventCodes);
+                _= InsertLogTrails(transactionModels.ToList(), eventCodes, eventCodesDetail);
             }
             catch (Exception ex)
             {
-                LogError($"{ex.Message} \r\n EventCode = {string.Join(", ", eventCodes)}", ex);
+                LogError($"{ex.Message} \r\n Event Code = {string.Join(", ", eventCodes)} \r\n Event Code Detail = {string.Join(", ", eventCodesDetail)}", ex);
                 throw;
             }
         }
 
-        private async Task InsertLogTrails(List<RawTransactionModel> transactionModels, List<string> eventCodes)
+        private async Task InsertLogTrails(List<RawTransactionModel> transactionModels, List<string> eventCodes, List<string> eventCodesDetails)
         {
-            for (int i = 0; i < transactionModels.Count(); i++)
+            for (int i = 0; i <= transactionModels.Count(); i++)
             {
                 var transaction = transactionModels[i];
                 var eventCode = eventCodes[i];
+                var eventCodesDetail = eventCodesDetails[i];
 
-                await InsertLogTrail(transaction.SubscriberId, eventCode, defaultMethodInsertTran);
+                await InsertLogTrail(transaction, eventCode, eventCodesDetail, LogEventCode.MethodInsertTran);
             }
         }
 
@@ -157,7 +157,7 @@
             }
         }
 
-        private async Task InsertLogTrail(int subscriberId, string eventCode, string method)
+        private async Task InsertLogTrail(RawTransactionModel transactionModel, string eventCode, string eventCodeDetail,string method)
         {
             if (appSettings.IsEnableLogTrail)
             {
@@ -166,11 +166,14 @@
                     var logEventInfor = new LogEventInfo
                     {
                         EventDate = DateTime.Now.Date,
-                        SubscriberID = subscriberId,
+                        SubscriberID = transactionModel.SubscriberId,
+                        LoginName = transactionModel.LoginName,
+                        TransTime = DateTime.Now,
                         EventCode = eventCode,
+                        EventCodeDetail = eventCodeDetail,
                         SystemName = appSettings.SystemName,
-                        Source = defaultSource,
-                        Destination = defaultDestination,
+                        Source = LogEventCode.Source,
+                        Destination = LogEventCode.Destination,
                         Method = method
                     };
 
@@ -215,10 +218,10 @@
             logger.Error(logMessage);
         }
 
-        private string GetEventCode(int subscriberId, string method)
+        private string GetEventCode(int subscriberId, string method, string loginName = null)
         {
-            var uniqueEvent = string.Concat(DateTime.Now.ToString("yyyy/MM/dd"), subscriberId, appSettings.SystemName, defaultSource, defaultDestination, method);
-            return crypto.GetMD5Hash(uniqueEvent);
+            var eventCode = string.Concat(DateTime.Now.ToString("yyyy/MM/dd"), subscriberId, appSettings.SystemName, LogEventCode.Source, LogEventCode.Destination, method, loginName);
+            return crypto.GetMD5Hash(eventCode);
         }
     }
 }

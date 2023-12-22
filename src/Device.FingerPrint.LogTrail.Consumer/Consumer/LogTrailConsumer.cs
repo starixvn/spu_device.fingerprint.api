@@ -8,7 +8,8 @@
     using MassTransit;
     using Device.FingerPrint.LogTrail.Consumer.Services;
     using System.Linq;
-    using Device.FingerPrint.Core.Model;
+    using System.Text.Json;
+    using Device.FingerPrint.Core.Model.LogEvent;
 
     public class LogTrailConsumer : IConsumer<Batch<LogEventInfo>>
     {
@@ -32,13 +33,16 @@
             {
                 if (appSettings.GetValue<bool>("RabbitMQ:LogTrail:Queue-Consume"))
                 {
-                    var rawLogEvent = context.Message.Select(x =>
+                    var logEventInfos = context.Message.Select(x =>
                     {
                         return new LogEventInfo
                         {
                             EventDate = x.Message.EventDate,
                             SubscriberID = x.Message.SubscriberID,
+                            LoginName = x.Message.LoginName,
+                            TransTime = x.Message.TransTime,
                             EventCode = x.Message.EventCode,
+                            EventCodeDetail = x.Message.EventCodeDetail,
                             SystemName = x.Message.SystemName,
                             Source = x.Message.Source,
                             Destination = x.Message.Destination,
@@ -46,7 +50,9 @@
                         };
                     });
 
-                    await capturingService.InsertLogTrailEventAsync(rawLogEvent);
+                    await capturingService.InsertLogTrailEventAsync(logEventInfos);
+
+                    await capturingService.InsertLogTrailEventDetailAsync(logEventInfos);
                 }
             }
             catch (Exception ex)

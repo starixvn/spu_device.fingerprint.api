@@ -3,5 +3,6 @@
 <Functions>
     <Function Name="LogTrail">
         <Setting Key="DCS_DT_Summary_LogTrail_Insert" SpName="DCS_DT_Summary_LogTrail_Insert" DbName="MySQL.DCS_DataTrace.ctsServiceAdmin"/>
+        <Setting Key="DCS_DT_LogTrail_Detail_Insert" SpName="DCS_DT_LogTrail_Detail_Insert" DbName="MySQL.DCS_DataTrace.ctsServiceAdmin"/>
     </Function>
 </Functions>

@@ -2,12 +2,14 @@
 {
     using System.Text.Json;
     using System.Threading.Tasks;
-    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Model.LogEvent;
     using Device.FingerPrint.Features.LogTrail.Services;
 
     public interface ICapturingService
     {
         Task<int> InsertLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos);
+
+        Task<int> InsertLogTrailEventDetailAsync(IEnumerable<LogEventInfo> logEventInfos);
     }
 
     public class CaptureService : ICapturingService
@@ -21,29 +23,44 @@
 
         public async Task<int> InsertLogTrailEventAsync(IEnumerable<LogEventInfo> logEventInfos)
         {
-            var groupMessage = logEventInfos.GroupBy(x => new
-            {
-                x.EventDate.Date,
-                x.SubscriberID,
-                x.EventCode,
-                x.SystemName,
-                x.Source,
-                x.Destination,
-                x.Method
-            }).Select(group => new LogEventInfo
-            {
-                EventDate = group.Key.Date,
-                SubscriberID = group.Key.SubscriberID,
-                EventCode = group.Key.EventCode,
-                SystemName = group.Key.SystemName,
-                Source = group.Key.Source,
-                Destination = group.Key.Destination,
-                Method = group.Key.Method,
-                Total = group.Count()
-            });
+            var logEventSummary = logEventInfos.GroupBy(x => new { x.EventCode })
+                                    .Select(group => new LogEventEntity
+                                    {
+                                        EventDate = group.First().EventDate,
+                                        SubscriberID = group.First().SubscriberID,
+                                        EventCode = group.Key.EventCode,
+                                        SystemName = group.First().SystemName,
+                                        Source = group.First().Source,
+                                        Destination = group.First().Destination,
+                                        Method = group.First().Method,
+                                        Total = group.Count()
+                                    });
 
-            var rawLogEvent = JsonSerializer.Serialize(groupMessage);
+            var rawLogEvent = JsonSerializer.Serialize(logEventSummary);
+
             return await logTrailServices.InsertSummaryLogTrailAsync(rawLogEvent);
+        }
+
+        public async Task<int> InsertLogTrailEventDetailAsync(IEnumerable<LogEventInfo> logEventInfos)
+        {
+            var logEventDetails = logEventInfos.GroupBy(x => new { x.EventCodeDetail })
+                                    .Select(group => new LogEventDetail
+                                    {
+                                        EventDate = group.First().EventDate,
+                                        SubscriberID = group.First().SubscriberID,
+                                        LoginName = group.First().LoginName,
+                                        TransTime = group.First().TransTime,
+                                        EventCode = group.Key.EventCodeDetail,
+                                        SystemName = group.First().SystemName,
+                                        Source = group.First().Source,
+                                        Destination = group.First().Destination,
+                                        Method = group.First().Method,
+                                        Total = group.Count()
+                                    });
+
+            var rawLogEvent = JsonSerializer.Serialize(logEventDetails);
+
+            return await logTrailServices.InsertLogTrailDetailAsync(rawLogEvent);
         }
     }
 }

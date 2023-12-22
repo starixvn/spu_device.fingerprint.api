@@ -51,13 +51,6 @@ namespace Device.FingerPrint.PortalAPI
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
 
-            services.AddSingleton<ILogTrailClientService>(serviceProvider =>
-            {
-                var logTrailClientService = new LogTrailClientService();
-                logTrailClientService.SetLogTrailBaseUrl(appSettings.LogTrailBaseUrl);
-                return logTrailClientService;
-            });
-
             services.AddControllers();
 
             services.AddCors(opt =>

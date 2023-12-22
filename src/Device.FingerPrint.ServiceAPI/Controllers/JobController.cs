@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
-    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Model.LogEvent;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;

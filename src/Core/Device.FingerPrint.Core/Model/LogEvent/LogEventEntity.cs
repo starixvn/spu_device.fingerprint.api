@@ -1,7 +1,8 @@
-﻿namespace Device.FingerPrint.Core.Model
+﻿namespace Device.FingerPrint.Core.Model.LogEvent
 {
     using System;
-    public class LogEventInfo
+
+    public class LogEventEntity
     {
         public DateTime EventDate { get; set; }
 

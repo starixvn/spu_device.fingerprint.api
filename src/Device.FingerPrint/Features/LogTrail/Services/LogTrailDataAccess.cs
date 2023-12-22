@@ -2,12 +2,14 @@
 namespace Device.FingerPrint.Features.LogTrail.Services
 {
     using System.Threading.Tasks;
-    using Device.FingerPrint.Features.LogTrail.Criterias;
+    using Device.FingerPrint.Features.LogTrail.Criteria;
     using Fanex.Data.Repository;
 
     public interface ILogTrailDataAccess
     {
         Task<int> InsertSummaryLogTrailAsync(string rawLogEvent);
+
+        Task<int> InsertLogTrailDetailAsync(string rawLogEvent);
     }
     public class LogTrailDataAccess : ILogTrailDataAccess
     {
@@ -21,6 +23,16 @@ namespace Device.FingerPrint.Features.LogTrail.Services
         public async Task<int> InsertSummaryLogTrailAsync(string rawLogEvent)
         {
             var criteria = new InsertSummaryLogTrailCriteria
+            {
+                RawLogEvent = rawLogEvent
+            };
+
+            return await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task<int> InsertLogTrailDetailAsync(string rawLogEvent)
+        {
+            var criteria = new InsertLogTrailDetailCriteria
             {
                 RawLogEvent = rawLogEvent
             };
