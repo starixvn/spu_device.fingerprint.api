@@ -5,7 +5,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
     using Device.FingerPrint.Model;
     using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
-    using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -64,10 +63,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 var detection = botDModel?.Detection;
                 if (!string.IsNullOrEmpty(detection))
                 {
-                    JObject jObject = JObject.Parse(detection);
-                    IEnumerable<string> filteredKeys = jObject.Properties()
-                        .Where(p => p.Value.Value<bool>("bot"))
-                        .Select(p => p.Name);
+                    JsonDocument jsonDocument = JsonDocument.Parse(detection);
+
+                    IEnumerable<string> filteredKeys = jsonDocument.RootElement.EnumerateObject()
+                            .Where(p => p.Value.TryGetProperty("bot", out var botProperty) && botProperty.ValueKind == JsonValueKind.True)
+                            .Select(p => p.Name);
 
                     return string.Join(",", filteredKeys);
                 }
