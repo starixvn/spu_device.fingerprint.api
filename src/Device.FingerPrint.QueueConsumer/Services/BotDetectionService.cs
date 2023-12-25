@@ -5,11 +5,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
     using Device.FingerPrint.Model;
     using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
-    using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
 
     public interface IBotDetectionService
     {
@@ -45,12 +45,12 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                     if (!string.IsNullOrEmpty(botD))
                     {
-                        return JsonConvert.DeserializeObject<BotDModel>(botD);
+                        return JsonSerializer.Deserialize<BotDModel>(botD);
                     }
                 }
                 catch (Exception ex)
                 {
-                    LogService.Info("Error TransformBotdModel: " + ex.Message + "\n" + JsonConvert.SerializeObject(message));
+                    LogService.Info("Error TransformBotdModel: " + ex.Message + "\n" + JsonSerializer.Serialize(message));
                 }
             }
 
@@ -74,7 +74,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
             catch (Exception ex)
             {
-                LogService.Error("Consumer GetBotDetectionTrue: " + ex.Message + "\n" + JsonConvert.SerializeObject(botDModel));
+                LogService.Error("Consumer GetBotDetectionTrue: " + ex.Message + "\n" + JsonSerializer.Serialize(botDModel));
             }
 
             return string.Empty;
@@ -101,7 +101,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
             catch (Exception ex)
             {
-                LogService.Error("Consumer CheckBrowserless: " + ex.Message + "\n" + JsonConvert.SerializeObject(userAgent));
+                LogService.Error("Consumer CheckBrowserless: " + ex.Message + "\n" + JsonSerializer.Serialize(userAgent));
             }
 
             return Flagged.Human;

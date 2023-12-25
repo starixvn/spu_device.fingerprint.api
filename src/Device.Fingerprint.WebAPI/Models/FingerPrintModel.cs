@@ -1,326 +1,325 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-
-namespace Device.Fingerprint.WebAPI.Models
+﻿namespace Device.Fingerprint.WebAPI.Models
 {
+    using System.Collections.Generic;
+    using System.Text.Json.Serialization;
+
     public class CanvasPrint
     {
-        [JsonProperty("winding")]
+        [JsonPropertyName("winding")]
         public bool Winding { get; set; }
 
-        [JsonProperty("geometry")]
+        [JsonPropertyName("geometry")]
         public string Geometry { get; set; }
 
-        [JsonProperty("text")]
+        [JsonPropertyName("text")]
         public string Text { get; set; }
     }
 
     public class FontPreferencePrint
     {
-        [JsonProperty("default")]
+        [JsonPropertyName("default")]
         public double Default { get; set; }
 
-        [JsonProperty("apple")]
+        [JsonPropertyName("apple")]
         public double Apple { get; set; }
 
-        [JsonProperty("serif")]
+        [JsonPropertyName("serif")]
         public double Serif { get; set; }
 
-        [JsonProperty("sans")]
+        [JsonPropertyName("sans")]
         public double Sans { get; set; }
 
-        [JsonProperty("min")]
+        [JsonPropertyName("min")]
         public double Min { get; set; }
 
-        [JsonProperty("system")]
+        [JsonPropertyName("system")]
         public double System { get; set; }
     }
 
     public class Math
     {
-        [JsonProperty("acos")]
+        [JsonPropertyName("acos")]
         public double Acos { get; set; }
 
-        [JsonProperty("acosh")]
+        [JsonPropertyName("acosh")]
         public double Acosh { get; set; }
 
-        [JsonProperty("acoshPf")]
+        [JsonPropertyName("acoshPf")]
         public double AcoshPf { get; set; }
 
-        [JsonProperty("asin")]
+        [JsonPropertyName("asin")]
         public double Asin { get; set; }
 
-        [JsonProperty("asinh")]
+        [JsonPropertyName("asinh")]
         public double Asinh { get; set; }
 
-        [JsonProperty("asinhPf")]
+        [JsonPropertyName("asinhPf")]
         public double AsinhPf { get; set; }
 
-        [JsonProperty("atanh")]
+        [JsonPropertyName("atanh")]
         public double Atanh { get; set; }
 
-        [JsonProperty("atanhPf")]
+        [JsonPropertyName("atanhPf")]
         public double AtanhPf { get; set; }
 
-        [JsonProperty("atan")]
+        [JsonPropertyName("atan")]
         public double Atan { get; set; }
 
-        [JsonProperty("sin")]
+        [JsonPropertyName("sin")]
         public double Sin { get; set; }
 
-        [JsonProperty("sinh")]
+        [JsonPropertyName("sinh")]
         public double Sinh { get; set; }
 
-        [JsonProperty("sinhPf")]
+        [JsonPropertyName("sinhPf")]
         public double SinhPf { get; set; }
 
-        [JsonProperty("cos")]
+        [JsonPropertyName("cos")]
         public double Cos { get; set; }
 
-        [JsonProperty("cosh")]
+        [JsonPropertyName("cosh")]
         public double Cosh { get; set; }
 
-        [JsonProperty("coshPf")]
+        [JsonPropertyName("coshPf")]
         public double CoshPf { get; set; }
 
-        [JsonProperty("tan")]
+        [JsonPropertyName("tan")]
         public double Tan { get; set; }
 
-        [JsonProperty("tanh")]
+        [JsonPropertyName("tanh")]
         public double Tanh { get; set; }
 
-        [JsonProperty("tanhPf")]
+        [JsonPropertyName("tanhPf")]
         public double TanhPf { get; set; }
 
-        [JsonProperty("exp")]
+        [JsonPropertyName("exp")]
         public double Exp { get; set; }
 
-        [JsonProperty("expm1")]
+        [JsonPropertyName("expm1")]
         public double Expm1 { get; set; }
 
-        [JsonProperty("expm1Pf")]
+        [JsonPropertyName("expm1Pf")]
         public double Expm1Pf { get; set; }
 
-        [JsonProperty("log1p")]
+        [JsonPropertyName("log1p")]
         public double Log1p { get; set; }
 
-        [JsonProperty("log1pPf")]
+        [JsonPropertyName("log1pPf")]
         public double Log1pPf { get; set; }
 
-        [JsonProperty("powPI")]
+        [JsonPropertyName("powPI")]
         public double PowPI { get; set; }
     }
 
     public class MimeType
     {
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         public string Type { get; set; }
 
-        [JsonProperty("suffixes")]
+        [JsonPropertyName("suffixes")]
         public string Suffixes { get; set; }
     }
 
     public class Plugin
     {
-        [JsonProperty("name")]
+        [JsonPropertyName("name")]
         public string Name { get; set; }
 
-        [JsonProperty("description")]
+        [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        [JsonProperty("mimeTypes")]
+        [JsonPropertyName("mimeTypes")]
         public List<MimeType> MimeTypes { get; set; }
     }
 
     public class ScreenPrint
     {
-        [JsonProperty("currentResolution")]
+        [JsonPropertyName("currentResolution")]
         public string CurrentResolution { get; set; }
 
-        [JsonProperty("pixelDepth")]
+        [JsonPropertyName("pixelDepth")]
         public int PixelDepth { get; set; }
     }
     public class LanguagesPrint
     {
-        [JsonProperty("language")]
+        [JsonPropertyName("language")]
         public string Language { get; set; }
 
-        [JsonProperty("languages")]
+        [JsonPropertyName("languages")]
         public string Languages { get; set; }
 
-        [JsonProperty("userLanguage")]
+        [JsonPropertyName("userLanguage")]
         public string UserLanguage { get; set; }
 
-        [JsonProperty("browserLanguage")]
+        [JsonPropertyName("browserLanguage")]
         public string BrowserLanguage { get; set; }
 
-        [JsonProperty("systemLanguage")]
+        [JsonPropertyName("systemLanguage")]
         public string SystemLanguage { get; set; }
     }
 
     public class TouchSupport
     {
-        [JsonProperty("maxTouchPoints")]
+        [JsonPropertyName("maxTouchPoints")]
         public int MaxTouchPoints { get; set; }
 
-        [JsonProperty("touchEvent")]
+        [JsonPropertyName("touchEvent")]
         public bool TouchEvent { get; set; }
 
-        [JsonProperty("touchStart")]
+        [JsonPropertyName("touchStart")]
         public bool TouchStart { get; set; }
     }
 
     public class AttributeModel
     {
-        [JsonProperty("audio")]
+        [JsonPropertyName("audio")]
         public double Audio { get; set; }
 
-        [JsonProperty("canvasPrint")]
+        [JsonPropertyName("canvasPrint")]
         public CanvasPrint CanvasPrint { get; set; }
 
-        [JsonProperty("colorDepth")]
+        [JsonPropertyName("colorDepth")]
         public int ColorDepth { get; set; }
 
-        [JsonProperty("colorGamut")]
+        [JsonPropertyName("colorGamut")]
         public string ColorGamut { get; set; }
 
-        [JsonProperty("contrast")]
+        [JsonPropertyName("contrast")]
         public object Contrast { get; set; }
 
-        [JsonProperty("cookiesEnabled")]
+        [JsonPropertyName("cookiesEnabled")]
         public bool CookiesEnabled { get; set; }
 
-        [JsonProperty("cpuClass")]
+        [JsonPropertyName("cpuClass")]
         public object CpuClass { get; set; }
 
-        [JsonProperty("deviceMemory")]
+        [JsonPropertyName("deviceMemory")]
         public object DeviceMemory { get; set; }
 
-        [JsonProperty("domBlockers")]
+        [JsonPropertyName("domBlockers")]
         public object DomBlockers { get; set; }
 
-        [JsonProperty("fontPreferencePrint")]
+        [JsonPropertyName("fontPreferencePrint")]
         public FontPreferencePrint FontPreferencePrint { get; set; }
 
-        [JsonProperty("fonts")]
+        [JsonPropertyName("fonts")]
         public List<string> Fonts { get; set; }
 
-        [JsonProperty("forcedColors")]
+        [JsonPropertyName("forcedColors")]
         public bool ForcedColors { get; set; }
 
-        [JsonProperty("hardwareConcurrency")]
+        [JsonPropertyName("hardwareConcurrency")]
         public int HardwareConcurrency { get; set; }
 
-        [JsonProperty("hdr")]
+        [JsonPropertyName("hdr")]
         public object Hdr { get; set; }
 
-        [JsonProperty("indexedDB")]
+        [JsonPropertyName("indexedDB")]
         public bool IndexedDB { get; set; }
 
-        [JsonProperty("invertedColors")]
+        [JsonPropertyName("invertedColors")]
         public object InvertedColors { get; set; }
 
-        [JsonProperty("languagesPrint")]
+        [JsonPropertyName("languagesPrint")]
         public LanguagesPrint LanguagesPrint { get; set; }
 
-        [JsonProperty("localStorage")]
+        [JsonPropertyName("localStorage")]
         public bool LocalStorage { get; set; }
 
-        [JsonProperty("math")]
+        [JsonPropertyName("math")]
         public Math Math { get; set; }
 
-        [JsonProperty("monochrome")]
+        [JsonPropertyName("monochrome")]
         public int Monochrome { get; set; }
 
-        [JsonProperty("openDatabase")]
+        [JsonPropertyName("openDatabase")]
         public bool OpenDatabase { get; set; }
 
-        [JsonProperty("osCpu")]
+        [JsonPropertyName("osCpu")]
         public object OsCpu { get; set; }
 
-        [JsonProperty("platform")]
+        [JsonPropertyName("platform")]
         public string Platform { get; set; }
 
-        [JsonProperty("plugins")]
+        [JsonPropertyName("plugins")]
         public List<Plugin> Plugins { get; set; }
 
-        [JsonProperty("reducedMotion")]
+        [JsonPropertyName("reducedMotion")]
         public bool ReducedMotion { get; set; }
 
-        [JsonProperty("screenPrint")]
+        [JsonPropertyName("screenPrint")]
         public ScreenPrint ScreenPrint { get; set; }
 
-        [JsonProperty("sessionStorage")]
+        [JsonPropertyName("sessionStorage")]
         public bool SessionStorage { get; set; }
 
-        [JsonProperty("timezone")]
+        [JsonPropertyName("timezone")]
         public string Timezone { get; set; }
 
-        [JsonProperty("touchSupport")]
+        [JsonPropertyName("touchSupport")]
         public TouchSupport TouchSupport { get; set; }
 
-        [JsonProperty("vendor")]
+        [JsonPropertyName("vendor")]
         public string Vendor { get; set; }
 
-        [JsonProperty("vendorFlavors")]
+        [JsonPropertyName("vendorFlavors")]
         public List<string> VendorFlavors { get; set; }
     }
 
     public class DefenderAttributesModel
     {
-        [JsonProperty("cv")]
+        [JsonPropertyName("cv")]
         public bool CheckCanvasDefender { get; set; }
 
-        [JsonProperty("gl")]
+        [JsonPropertyName("gl")]
         public bool CheckWebGLDefender { get; set; }
 
-        [JsonProperty("fd")]
+        [JsonPropertyName("fd")]
         public bool CheckFontDefender { get; set; }
 
-        [JsonProperty("ac")]
+        [JsonPropertyName("ac")]
         public bool CheckAudioContextDefender { get; set; }
     }
     public class FingerPrintMoreAttributeModel
     {
-        [JsonProperty("di")]
+        [JsonPropertyName("di")]
         public string FingerPrintCode { get; set; }        
     }
 
     public class FingerPrintModel : FingerPrintMoreAttributeModel
     {
-        [JsonProperty("subs")]
+        [JsonPropertyName("subs")]
         public int SubscriberId { get; set; }
 
-        [JsonProperty("fk")]
+        [JsonPropertyName("fk")]
         public string SessionKey { get; set; }
 
-        [JsonProperty("ckc")]
+        [JsonPropertyName("ckc")]
         public string CookieCode { get; set; }
 
-        [JsonProperty("url")]
+        [JsonPropertyName("url")]
         public string Url { get; set; }
 
-        [JsonProperty("da")]
+        [JsonPropertyName("da")]
         public DefenderAttributesModel DefenderAttributes { get; set; }
     }
 
 
     public class FingerPrintAttributesModel : FingerPrintMoreAttributeModel
     {
-        [JsonProperty("attr")]
+        [JsonPropertyName("attr")]
         public string Attributes { get; set; }
 
-        [JsonProperty("acpt")]
+        [JsonPropertyName("acpt")]
         public string Accept { get; set; }
 
-        [JsonProperty("enc")]
+        [JsonPropertyName("enc")]
         public string Encoding { get; set; }
 
-        [JsonProperty("hk")]
+        [JsonPropertyName("hk")]
         public string HeaderKeys { get; set; }
 
-        [JsonProperty("pf")]
+        [JsonPropertyName("pf")]
         public string Platform { get; set; }
     }
 }

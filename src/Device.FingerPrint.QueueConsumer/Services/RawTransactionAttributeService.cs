@@ -1,14 +1,12 @@
-﻿using Device.FingerPrint.Core.Services;
-using Device.FingerPrint.Model;
-using Device.FingerPrint.Redis;
-using DeviceDetectorNET;
-using Fanex.Logging;
-using Newtonsoft.Json;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.QueueConsumer.Services
+﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
+    using Device.FingerPrint.Core.Services;
+    using Device.FingerPrint.Model;
+    using Device.FingerPrint.Redis;
+    using DeviceDetectorNET;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     public interface IRawTransactionAttributeService
     {
         Task GetTransactionAttribute(RawTransactionModel model);
@@ -89,7 +87,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (model == null) return string.Empty;
 
-            var json = JsonConvert.SerializeObject(new BrowserFamilyModel
+            var json = JsonSerializer.Serialize(new BrowserFamilyModel
             {
                 OSName = model.OSName,
                 BrowserName = model.BrowserName,
@@ -103,7 +101,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (model == null) return string.Empty;
 
-            var json = JsonConvert.SerializeObject(new BrowserInstanceModel
+            var json = JsonSerializer.Serialize(new BrowserInstanceModel
             {
                 OSName = model.OSName,
                 BrowserName = model.BrowserName,

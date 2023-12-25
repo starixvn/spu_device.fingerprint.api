@@ -1,11 +1,11 @@
-﻿using Device.FingerPrint.Features.FPDevices.Entities;
-using Device.FingerPrint.Model;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Device.FingerPrint.Features.FPDevices.Services
+﻿namespace Device.FingerPrint.Features.FPDevices.Services
 {
+    using Device.FingerPrint.Features.FPDevices.Entities;
+    using Device.FingerPrint.Model;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text.Json;
+
     public interface IFPDeviceServices
     {
         IEnumerable<FPStagingTransIdEntity> GetStagingTransIdForDevice(int size, int noOfBatch);
@@ -37,7 +37,7 @@ namespace Device.FingerPrint.Features.FPDevices.Services
 
             if (stagingTransId != null && stagingTransId.Any())
             {
-                var transIdJson = JsonConvert.SerializeObject(stagingTransId);
+                var transIdJson = JsonSerializer.Serialize(stagingTransId);
 
                 return _deviceDataAcess.UpdateDevice(transIdJson);
             }

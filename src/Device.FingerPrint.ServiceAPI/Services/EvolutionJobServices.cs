@@ -1,15 +1,15 @@
-﻿using Device.FingerPrint.Features.Transaction.Model;
-using Device.FingerPrint.Features.Transaction.Services;
-using Device.FingerPrint.Model;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.ServiceAPI.Services
+﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
+    using Device.FingerPrint.Features.Transaction.Model;
+    using Device.FingerPrint.Features.Transaction.Services;
+    using Device.FingerPrint.Model;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Net.Http;
+    using System.Text.Json;
+    using System.Threading.Tasks;
+
     struct ValuePair
     {
         public object Source;
@@ -70,7 +70,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         // FPS Evolution
                         if (evolutionModel != null && evolutionModel.Any())
                         {
-                            var transJson = JsonConvert.SerializeObject(evolutionModel);
+                            var transJson = JsonSerializer.Serialize(evolutionModel);
                             transactionService.EvolutionRecoverDevice(transJson);
                         }
                     });
@@ -222,8 +222,8 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if((string.IsNullOrEmpty(source.Fonts) || string.IsNullOrEmpty(destination.Fonts)) && source.Fonts != destination.Fonts)
                 return false;
 
-            var arr1 = JsonConvert.DeserializeObject<string[]>(source.Fonts);
-            var arr2 = JsonConvert.DeserializeObject<string[]>(destination.Fonts);
+            var arr1 = JsonSerializer.Deserialize<string[]>(source.Fonts);
+            var arr2 = JsonSerializer.Deserialize<string[]>(destination.Fonts);
 
             if (!arr1.All(arr2.Contains) && !arr2.All(arr1.Contains))
                 return false;
@@ -310,7 +310,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
             if ((string.IsNullOrEmpty(source) || string.IsNullOrEmpty(destination)) && source != destination) return false;
 
             var param = new { source, destination };
-            var content = new StringContent(JsonConvert.SerializeObject(param), System.Text.Encoding.UTF8, "application/json");
+            var content = new StringContent(JsonSerializer.Serialize(param), System.Text.Encoding.UTF8, "application/json");
             var client = new HttpClient();
             var response = await client.PostAsync(this.appSetting.RatioUrl, content);
 

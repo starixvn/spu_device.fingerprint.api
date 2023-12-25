@@ -1,13 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Newtonsoft.Json;
-using System;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-
-namespace Device.Fingerprint.WebAPI.Services
+﻿namespace Device.Fingerprint.WebAPI.Services
 {
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.Filters;
+    using System;
+    using System.Linq;
+    using System.Security.Cryptography;
+    using System.Text;
+    using System.Text.Json;
+
     public class ETagFilterAttribute : Attribute, IActionFilter
     {
         private readonly int[] _statusCodes;
@@ -30,7 +30,7 @@ namespace Device.Fingerprint.WebAPI.Services
                 if (_statusCodes.Contains(context.HttpContext.Response.StatusCode))
                 {
                     //I just serialize the result to JSON, could do something less costly
-                    var content = JsonConvert.SerializeObject(context.Result);
+                    var content = JsonSerializer.Serialize(context.Result);
 
                     var etag = ETagGenerator.GetETag(context.HttpContext.Request.Path.ToString(), Encoding.UTF8.GetBytes(content));
 

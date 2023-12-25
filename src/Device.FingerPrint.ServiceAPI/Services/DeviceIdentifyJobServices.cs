@@ -1,16 +1,16 @@
-﻿using Device.FingerPrint.Features.Transaction.Model;
-using Device.FingerPrint.Features.Transaction.Services;
-using Fanex.Logging;
-using Fanex.Logging.Extensions.Database;
-using Fanex.Logging.Extensions;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.ServiceAPI.Services
+﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
+    using Device.FingerPrint.Features.Transaction.Model;
+    using Device.FingerPrint.Features.Transaction.Services;
+    using Fanex.Logging;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.Logging.Extensions;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using System.Text.Json;
+
     public interface IDeviceIdentifyJobServices
     {
         Task<bool> DeviceIdentify(int batchSize, int numberOfBatch);
@@ -102,7 +102,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
 
         private Task ProcessDeviceIdentify(IEnumerable<DeviceIdentifyEntity> rawTrans, int groupId)
         {
-            var rawTransJson = JsonConvert.SerializeObject(rawTrans);
+            var rawTransJson = JsonSerializer.Serialize(rawTrans);
 
             return Task.Run(() =>
             {

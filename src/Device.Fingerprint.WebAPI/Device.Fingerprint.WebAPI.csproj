@@ -88,7 +88,6 @@
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Sentry.AspNetCore" Version="3.40.1" />
     <PackageReference Include="StackExchange.Redis.Extensions.AspNetCore" Version="9.1.0" />
     <PackageReference Include="StackExchange.Redis.Extensions.Core" Version="9.1.0" />

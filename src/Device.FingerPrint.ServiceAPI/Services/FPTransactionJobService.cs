@@ -4,10 +4,10 @@
     using Fanex.Logging;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Extensions;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using System.Text.Json;
 
     public interface IFPTransactionJobService
     {
@@ -54,7 +54,7 @@
                     }
                     catch (Exception ex)
                     {
-                        var transIdJson = JsonConvert.SerializeObject(trans);
+                        var transIdJson = JsonSerializer.Serialize(trans);
 
                         var logMessage = new LogMessage(ex.Message)
                                        .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))

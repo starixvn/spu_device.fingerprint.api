@@ -1,15 +1,15 @@
-﻿using Device.FingerPrint.Features.FPDevices.Services;
-using Fanex.Logging;
-using Fanex.Logging.Extensions.Database;
-using Fanex.Logging.Extensions;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.ServiceAPI.Services
+﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
+    using Device.FingerPrint.Features.FPDevices.Services;
+    using Fanex.Logging;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.Logging.Extensions;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using System.Text.Json;
+
     public interface IFPDeviceJobService
     {
         Task<bool> Execute(int size, int numberOfBatch);
@@ -55,7 +55,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                         }
                         catch (Exception ex)
                         {
-                            var transIdJson = JsonConvert.SerializeObject(trans);
+                            var transIdJson = JsonSerializer.Serialize(trans);
 
                             var logMessage = new LogMessage(ex.Message)
                                        .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))

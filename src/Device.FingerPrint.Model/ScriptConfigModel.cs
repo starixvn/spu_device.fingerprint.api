@@ -1,28 +1,28 @@
-﻿using Newtonsoft.Json;
-
-namespace Device.FingerPrint.Model
+﻿namespace Device.FingerPrint.Model
 {
+    using System.Text.Json.Serialization;
+
     public class ScriptConfigModel
     {
-        [JsonProperty("ek")]
+        [JsonPropertyName("ek")]
         public string EncryptedKey { get; set; }
 
-        [JsonProperty("tk")]
+        [JsonPropertyName("tk")]
         public string Token { get; set; }
 
-        [JsonProperty("iv")]
+        [JsonPropertyName("iv")]
         public string IV { get; set; }
 
-        [JsonProperty("sa")]
+        [JsonPropertyName("sa")]
         public string Salt { get; set; }
 
-        [JsonProperty("acpt")]
+        [JsonPropertyName("acpt")]
         public string Accept { get; set; }
 
-        [JsonProperty("enc")]
+        [JsonPropertyName("enc")]
         public string Encoding { get; set; }
 
-        [JsonProperty("hk")]
+        [JsonPropertyName("hk")]
         public string HeaderKeys { get; set; }
 
     }

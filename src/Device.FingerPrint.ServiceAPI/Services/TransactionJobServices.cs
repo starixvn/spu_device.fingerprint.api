@@ -1,15 +1,15 @@
-﻿using Device.FingerPrint.Features.Transaction.Services;
-using Fanex.Logging;
-using Fanex.Logging.Extensions.Database;
-using Fanex.Logging.Extensions;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Device.FingerPrint.ServiceAPI.Services
+﻿namespace Device.FingerPrint.ServiceAPI.Services
 {
+    using Device.FingerPrint.Features.Transaction.Services;
+    using Fanex.Logging;
+    using Fanex.Logging.Extensions.Database;
+    using Fanex.Logging.Extensions;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading.Tasks;
+    using System.Text.Json;
+
     public interface ITransactionJobServices
     {
         Task<bool> MergeTrans(int batchSize, int numberOfBatch, int retry);
@@ -41,7 +41,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 {
                     tasks.Add(Task.Run(() =>
                     {
-                        var mergeTransJson = JsonConvert.SerializeObject(trans);
+                        var mergeTransJson = JsonSerializer.Serialize(trans);
 
                         try
                         {
@@ -73,7 +73,7 @@ namespace Device.FingerPrint.ServiceAPI.Services
                 {
                     tasks.Add(Task.Run(() =>
                     {
-                        var mergeTransJson = JsonConvert.SerializeObject(trans);
+                        var mergeTransJson = JsonSerializer.Serialize(trans);
                         try
                         {
                             transactionService.ForceMergeTransaction(mergeTransJson);
