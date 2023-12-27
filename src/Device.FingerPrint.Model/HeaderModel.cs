@@ -15,6 +15,10 @@
         public string SecChUaMobile { get; set; }
 
         public string Url { get; set; }
+
+        public string RealIP { get; set; }
+
+        public string FakeIP { get; set; }
     }
 
     public class ParseUserAgentModel

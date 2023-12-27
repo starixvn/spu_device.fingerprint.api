@@ -2,12 +2,8 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Model;
-    using Device.FingerPrint.QueueConsumer.Models;
     using Device.FingerPrint.Redis;
-    using DeviceDetectorNET.Class;
-    using Fanex.Logging;
     using Fanex.Oneyed.Infrastructure.Models;
-    using Newtonsoft.Json;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -76,6 +72,7 @@
             var botDModel = botDetectionService.TransformBotdModel(message);
 
             var flaggedCode = botDetectionService.GetFlaggedCode(botDModel, deviceInfo.DeviceNo, userAgent);
+            var botDetection = botDModel?.IsVer3 == true ? botDModel?.Detection : botDetectionService.GetBotDetectionTrue(botDModel);
 
             var rawTransModel = new RawTransactionModel
             {
@@ -99,8 +96,8 @@
                 FingerprintMoreInfo = deviceInfo.DeviceFPCode != "N/A" ? Utilities.EncodeCapturedData(deviceInfo) : null,
                 SessionKey = message.SessionKey,
                 FlaggedCode = flaggedCode,
-                BotDetection = botDetectionService.GetBotDetectionTrue(botDModel),
-                BotComponent = botDetectionService.GetBotComponent(botDModel, flaggedCode)
+                BotDetection = botDetection,
+                BotComponent = botDModel?.Component ?? string.Empty
             };
 
             await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);

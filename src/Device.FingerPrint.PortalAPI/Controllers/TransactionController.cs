@@ -31,13 +31,23 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("hd")]
+        public void Header([FromBody] BaseParameter data)
+        {
+            if (data != null)
+            {
+                AddHeaderToRedis(data.SessionKey);
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
         public void Cookie([FromBody] CookieParameter data)
         {
             if (data != null)
             {
-                AddHeaderToRedis(data.SessionKey);
                 redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                AddHeaderToRedis(data.SessionKey);
             }
         }
 
@@ -47,7 +57,7 @@
         {
             if (data != null)
             {
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -107,10 +117,20 @@
             };
         }
 
-        private void AddHeaderToRedis(string hashKey)
+        private void AddHeaderToRedis(string sessionKey)
+        {
+            var headerModel = GetHeaderValue();
+            if (headerModel != null)
+            {
+                redisService.HashSetAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
+            }
+        }
+
+        private HeaderModel GetHeaderValue()
         {
             var url = HttpContext.Request.Headers["Origin"].ToString();
-            var headerModel = new HeaderModel
+
+            return new HeaderModel
             {
                 Accept = HttpContext.Request.Headers["Accept"],
                 Encoding = HttpContext.Request.Headers["Accept-Encoding"],
@@ -118,10 +138,95 @@
                 SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
                 SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
                 SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : "",
-                Url = url
+                Url = url,
+                RealIP = GetRealIp(),
+                FakeIP = GetFakeIp()
             };
+        }
 
-            redisService.HashSetAsync(hashKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
+        private string GetFakeIp()
+        {
+            var proxyIP = GetXForWarded();
+
+            if (!string.IsNullOrEmpty(proxyIP))
+            {
+                var ips = proxyIP.Split(new char[] { ',' });
+
+                if (ips[0] != GetRealIp())
+                {
+                    return ips[0];
+                }
+            }
+
+            return string.Empty;
+        }
+
+        private string GetHeaderIP(string param)
+        {
+            var headerVal = HttpContext.Request.Headers[param].ToString();
+            if (!string.IsNullOrEmpty(headerVal))
+            {
+                return headerVal;
+            }
+
+            return string.Empty;
+        }
+
+        private string GetXForWarded()
+        {
+            var proxyIP = GetHeaderIP("X-Forwarded-For");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Originating-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-IP");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = GetHeaderIP("X-Remote-Addr");
+            }
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                proxyIP = HttpContext.Request.Host.ToString();
+            }
+
+            return proxyIP;
+        }
+
+        private string GetRealIp()
+        {
+            var proxyIP = GetHeaderIP("X-Actual-IP");
+
+            if (string.IsNullOrEmpty(proxyIP))
+            {
+                var clientIps = GetXForWarded();
+
+                if (!string.IsNullOrEmpty(clientIps))
+                {
+                    var ips = clientIps.Split(new char[] { ',' });
+
+                    if (ips.Length > 1)
+                    {
+                        return ips[1];
+                    }
+
+                    return ips[0];
+                }
+                else
+                {
+                    return HttpContext.Request.Host.ToString();
+                }
+            }
+            else
+            {
+                return proxyIP.Split(new char[] { ',' })[0];
+            }
         }
     }
 }

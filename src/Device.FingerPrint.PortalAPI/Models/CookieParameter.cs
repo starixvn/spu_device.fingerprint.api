@@ -1,9 +1,7 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Models
 {
-    public class CookieParameter
+    public class CookieParameter : BaseParameter
     {
         public string Cookie { get; set; }
-
-        public string SessionKey { get; set; }
     }
 }
