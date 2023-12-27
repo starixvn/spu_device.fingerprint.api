@@ -1,6 +1,7 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Controllers
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
@@ -11,6 +12,8 @@
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Linq;
+    using System.Net;
+    using System.Text.Json;
 
     [Route("api")]
     [ApiController]
@@ -19,6 +22,7 @@
         private readonly IRedisService redisService;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IAppSettings appSettings;
+        private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
 
         public TransactionController(
             IAppSettings appSettings,
@@ -28,6 +32,45 @@
             this.redisService = redisService;
             this.clientTransactionService = clientTransactionService;
             this.appSettings = appSettings;
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("hd/{version}")]
+        public void Header([FromBody] string data)
+        {
+            if (data != null)
+            {
+                var decodeData = Base64.Decode(data, base64Key);
+                var header = JsonSerializer.Deserialize<BaseParameter>(decodeData);
+                AddHeaderToRedis(header.SessionKey);
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("ce/{version}")]
+        public void Cookie([FromBody] string data)
+        {
+            if (data != null)
+            {
+                var decodeData = Base64.Decode(data, base64Key);
+                var cookie = JsonSerializer.Deserialize<CookieParameter>(decodeData);
+                
+                AddHeaderToRedis(cookie.SessionKey);
+                redisService.HashSetAndExpiryAsync(cookie.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("fp/{version}")]
+        public void FingerPrint([FromBody] string data)
+        {
+            if (data != null)
+            {
+                var decodeData = Base64.Decode(data, base64Key);
+                var fingerprint = JsonSerializer.Deserialize<FingerprintParameter>(decodeData);
+
+                redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+            }
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
@@ -46,8 +89,8 @@
         {
             if (data != null)
             {
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
                 AddHeaderToRedis(data.SessionKey);
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -61,11 +104,6 @@
             }
         }
 
-        [HttpPost("transaction")]
-        public void Transaction([FromBody] ClientTransactionModel data)
-        {
-
-        }
 
         [HttpPost("removeRedisByTag")]
         public void RemoveRedisByTag([FromForm] string tag)
