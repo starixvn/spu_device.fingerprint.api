@@ -12,6 +12,7 @@
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Linq;
+    using System.Net;
     using System.Text.Json;
 
     [Route("api")]
@@ -35,11 +36,13 @@
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hd")]
-        public void Header([FromBody] BaseParameter data)
+        public void Header([FromBody] string data)
         {
             if (data != null)
             {
-                AddHeaderToRedis(data.SessionKey);
+                var decodeData = Base64.Decode(data, base64Key);
+                var header = JsonSerializer.Deserialize<BaseParameter>(decodeData);
+                AddHeaderToRedis(header.SessionKey);
             }
         }
 
