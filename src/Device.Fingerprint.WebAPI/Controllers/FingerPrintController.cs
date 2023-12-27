@@ -146,13 +146,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("s/crt/{version}")]
-        public ActionResult CryptScript()
+        public ActionResult CryptScript(string version)
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
+            var scriptName = version.Contains("beta") ? "encrypt" : "md5";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);

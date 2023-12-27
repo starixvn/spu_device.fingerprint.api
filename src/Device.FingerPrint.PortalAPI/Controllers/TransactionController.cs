@@ -44,7 +44,7 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("ce")]
+        [HttpPost("ce/{version}")]
         public void Cookie([FromBody] string data)
         {
             if (data != null)
@@ -58,7 +58,7 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("fp")]
+        [HttpPost("fp/{version}")]
         public void FingerPrint([FromBody] string data)
         {
             if (data != null)
@@ -69,6 +69,28 @@
                 redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("ce")]
+        public void Cookie([FromBody] CookieParameter data)
+        {
+            if (data != null)
+            {
+                AddHeaderToRedis(data.SessionKey);
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("fp")]
+        public void FingerPrint([FromBody] FingerprintParameter data)
+        {
+            if (data != null)
+            {
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+            }
+        }
+
 
         [HttpPost("removeRedisByTag")]
         public void RemoveRedisByTag([FromForm] string tag)
