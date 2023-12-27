@@ -86,11 +86,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [HttpGet("s/ce/{version}")]
         public ActionResult CookieScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/fpCookie.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
             if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO" || appSettings.Environment == "LOCAL")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/fpCookie.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);

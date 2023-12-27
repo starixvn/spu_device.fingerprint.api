@@ -24,14 +24,14 @@
     <None Remove="Scripts\fp.min.js" />
     <None Remove="Scripts\libs\cookie.min.js" />
     <None Remove="Scripts\libs\cookie1.js" />
-    <None Remove="Scripts\libs\fpCookie.js" />
-    <None Remove="Scripts\libs\fpCookie.min.js" />
     <None Remove="Scripts\libs\gfp.js" />
     <None Remove="Scripts\libs\gfp.min.js" />
     <None Remove="Scripts\libs\headlessBrowser.js" />
 	<None Remove="Scripts\libs\headlessBrowser.min.js" />
 	<None Remove="Scripts\libs\md5.js" />
 	<None Remove="Scripts\libs\md5.min.js" />
+	<None Remove="Scripts\libs\newCookie.js" />
+	<None Remove="Scripts\libs\newCookie.min.js" />
   </ItemGroup>
 
   <ItemGroup>
@@ -63,10 +63,10 @@
 	  <Content Include="Scripts\libs\encrypt.min.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Scripts\libs\fpCookie.js">
+	  <Content Include="Scripts\libs\newCookie.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Scripts\libs\fpCookie.min.js">
+	  <Content Include="Scripts\libs\newCookie.min.js">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Scripts\libs\md5.js">

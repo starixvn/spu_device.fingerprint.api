@@ -1,4 +1,4 @@
-var fpCookie = (function (exports) {
+var fpNewCookie = (function (exports) {
     'use strict';
 
     var cookieKey = 'gfp';
