@@ -66,7 +66,7 @@
                 var decodeData = Base64.Decode(data, base64Key);
                 var fingerprint = JsonSerializer.Deserialize<FingerprintParameter>(decodeData);
 
-                redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
@@ -87,7 +87,7 @@
         {
             if (data != null)
             {
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
