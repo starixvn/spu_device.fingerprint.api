@@ -35,7 +35,7 @@
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
-        [HttpPost("hd")]
+        [HttpPost("hd/{version}")]
         public void Header([FromBody] string data)
         {
             if (data != null)
@@ -70,6 +70,16 @@
                 var fingerprint = JsonSerializer.Deserialize<FingerprintParameter>(decodeData);
 
                 redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("hd")]
+        public void Header([FromBody] BaseParameter data)
+        {
+            if (data != null)
+            {
+                AddHeaderToRedis(data.SessionKey);
             }
         }
 
