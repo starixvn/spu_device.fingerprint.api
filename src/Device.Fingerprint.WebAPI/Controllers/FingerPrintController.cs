@@ -151,7 +151,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             var scriptName = version.Contains("beta") ? "encrypt" : "md5";
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.js";
 
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            if (appSettings.Environment.ToUpper() == "UAT" || appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.min.js";
             }
