@@ -76,7 +76,7 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v1.0.1 - Copyright (c) FingerprintJS, Inc, 2023 (https://fingerprint.com)
+     * FingerprintJS v1.0.2 - Copyright (c) FingerprintJS, Inc, 2023 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -87,7 +87,7 @@ var globalFP = (function (exports) {
      * Copyright 2015-present FingerprintJS, Inc.
      */
 
-    var version = "1.0.1";
+    var version = "1.0.2";
 
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
@@ -1954,6 +1954,9 @@ var globalFP = (function (exports) {
                 return isIPad() ? 'iPad' : 'iPhone';
             }
         }
+        if (platform.length > 45) {
+            return 'Android';
+        }
         return platform;
     }
 
@@ -3638,8 +3641,8 @@ var globalFP = (function (exports) {
             const component = components[componentKey];
             let value;
             if ("error" in component) {
-                value = "error";
-                err += `${componentKey}: ${component.error},`;
+                value = `"error"`;
+                err += `${componentKey}: "${component.error}",`;
             }
             else if (component.value === undefined) {
                 value = `"undefined"`;
@@ -3719,7 +3722,7 @@ var globalFP = (function (exports) {
             let properties = componentsToJsonString(customComponents, callback);
             return Promise.resolve({
                 Id: visitorId,
-                Properties: properties,
+                Properties: properties
             });
         });
     }
