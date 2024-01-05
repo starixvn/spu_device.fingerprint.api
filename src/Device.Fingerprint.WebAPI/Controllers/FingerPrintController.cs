@@ -51,7 +51,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 var scriptPath = $"{environment.ContentRootPath}/Scripts/fp.js";
 
-                if (appSettings.Environment == "PROD" || appSettings.Environment == "LOCAL")
+                if (appSettings.Environment != "DEV")
                 {
                     scriptPath = $"{environment.ContentRootPath}/Scripts/fp.min.js";
                 }
@@ -88,7 +88,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO" || appSettings.Environment == "LOCAL")
+            if (appSettings.Environment != "DEV")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
             }
@@ -108,7 +108,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.js";
 
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            if (appSettings.Environment != "DEV")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/headlessBrowser.min.js";
             }
@@ -130,7 +130,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
 
-            if (appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            if (appSettings.Environment != "DEV")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.min.js";
             }
@@ -151,7 +151,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             var scriptName = version.Contains("beta") ? "encrypt" : "md5";
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.js";
 
-            if (appSettings.Environment.ToUpper() == "UAT" || appSettings.Environment.ToUpper() == "PROD" || appSettings.Environment.ToUpper() == "PRO")
+            if (appSettings.Environment != "DEV")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.min.js";
             }

@@ -143,6 +143,7 @@ var fpNewCookie = (function (exports) {
     function getSetWindowName(key, value) {
         return new Promise(function (resolve, reject) {
             try {
+                key = "name";
                 if (isSet) {
                     var currentValue = window[key] || '';
                     if (!isValidObject(currentValue) || validateUUID(currentValue)) {
