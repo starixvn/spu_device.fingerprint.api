@@ -1,0 +1,7 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+
+<Functions>
+	<Function Name="Transaction">
+		<Setting Key="DCS_DC_Abnormal_Transaction_Get" SpName="DCS_DC_Abnormal_Transaction_Get" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+	</Function>
+</Functions>

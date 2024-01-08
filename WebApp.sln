@@ -51,7 +51,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.LogTrail
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Fanex.LogTrail.Service", "src\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj", "{B1843739-2B6E-4C0B-BFA5-AF7E313A43FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.RawTransMonitoring.QueueConsumer", "src\Device.FingerPrint.RawTransMonitoring.QueueConsumer\Device.FingerPrint.RawTransMonitoring.QueueConsumer.csproj", "{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.RawTransMonitoring.QueueConsumer", "src\Device.FingerPrint.RawTransMonitoring.QueueConsumer\Device.FingerPrint.RawTransMonitoring.QueueConsumer.csproj", "{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleApp", "ConsoleApp", "{05758466-22D4-4220-A10B-41C318C025FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.RawTransaction.Insert", "src\FPS.RawTransaction.Insert\FPS.RawTransaction.Insert.csproj", "{CFCE674A-2DE9-419B-9670-BAFEE91B606F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +143,10 @@ Global
 		{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{84C84B3C-7C9E-49D4-AD6B-66911162F4B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFCE674A-2DE9-419B-9670-BAFEE91B606F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFCE674A-2DE9-419B-9670-BAFEE91B606F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFCE674A-2DE9-419B-9670-BAFEE91B606F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFCE674A-2DE9-419B-9670-BAFEE91B606F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -164,6 +172,7 @@ Global
 		{6BC55556-1848-4CB4-8F4E-9402064EAC0C} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
 		{B1843739-2B6E-4C0B-BFA5-AF7E313A43FD} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{84C84B3C-7C9E-49D4-AD6B-66911162F4B9} = {0C21901F-35FB-4596-BB44-DE9851EE94C3}
+		{CFCE674A-2DE9-419B-9670-BAFEE91B606F} = {05758466-22D4-4220-A10B-41C318C025FF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}
