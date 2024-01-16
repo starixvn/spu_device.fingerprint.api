@@ -189,7 +189,7 @@
             return new HeaderModel
             {
                 Accept = HttpContext.Request.Headers["Accept"],
-                Encoding = HttpContext.Request.Headers["Accept-Encoding"],
+                Encoding = NormalizeAcceptEncoding(HttpContext.Request.Headers["Accept-Encoding"]),
                 Headers = string.Join(" ", HttpContext.Request.Headers.Keys),
                 SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
                 SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
@@ -283,6 +283,16 @@
             {
                 return proxyIP.Split(new char[] { ',' })[0];
             }
+        }
+
+        static string NormalizeAcceptEncoding(string acceptEncoding)
+        {
+            var normalizedFormats = acceptEncoding
+                .Split(',')
+                .Select(format => format.Trim())
+                .Where(format => !string.Equals(format, "br", StringComparison.OrdinalIgnoreCase));
+
+            return string.Join(", ", normalizedFormats);
         }
     }
 }
