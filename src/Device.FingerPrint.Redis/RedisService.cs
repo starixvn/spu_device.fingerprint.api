@@ -10,7 +10,7 @@
 
         Task<T?> HashGetAsync<T>(string hashKey, string key);        
 
-        Task<bool> HashSetAsync<T>(string hashKey, string key, T value);
+        Task<bool> HashSetAsync<T>(string hashKey, string key, T value, bool isForceUpdate);
 
         Task<bool> HashExistAsync<T>(string hashKey, string key);
 
@@ -18,14 +18,12 @@
 
         Task<long> HashDeleteAsync(string hashKey, string[] keys);
 
-        Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt);
+        Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt, bool isForceUpdate = false);
     }
 
     public class RedisService : IRedisService
     {
         private readonly IRedisDatabase redisDatabase;
-
-        private const bool isSetNotExist = true;
 
         public RedisService(IRedisClient redisClient)
         {
@@ -35,9 +33,9 @@
         public IRedisDatabase RedisDatabase => redisDatabase;
 
 
-        public Task<bool> HashSetAsync<T>(string hashKey, string key, T value)
+        public Task<bool> HashSetAsync<T>(string hashKey, string key, T value, bool isForceUpdate)
         {
-            return redisDatabase.HashSetAsync<T>(hashKey, key, value, nx: isSetNotExist, flag: CommandFlags.FireAndForget);
+            return redisDatabase.HashSetAsync<T>(hashKey, key, value, nx: !isForceUpdate, flag: CommandFlags.FireAndForget);
         }       
 
         public async Task<T?> HashGetAsync<T>(string hashKey, string key)
@@ -60,9 +58,9 @@
             return redisDatabase.HashDeleteAsync(hashKey ?? string.Empty, keys);    
         }
 
-        public async Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt)
+        public async Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt, bool isForceUpdate = false)
         {
-            await HashSetAsync(hashKey, key, value);
+            await HashSetAsync(hashKey, key, value, isForceUpdate);
 
             await UpdateExpiryAsync(hashKey, expiresAt);
         }

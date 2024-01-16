@@ -6,6 +6,7 @@
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
     using Device.FingerPrint.Redis;
+    using DeviceDetectorNET.Class.Device;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
@@ -14,6 +15,7 @@
     using System.Linq;
     using System.Net;
     using System.Text.Json;
+    using System.Threading.Tasks;
 
     [Route("api")]
     [ApiController]
@@ -48,28 +50,44 @@
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce/{version}")]
-        public void Cookie([FromBody] string data)
+        public async Task Cookie([FromBody] string data)
         {
             if (data != null)
             {
                 var decodeData = Base64.Decode(data, base64Key);
                 var cookie = JsonSerializer.Deserialize<CookieParameter>(decodeData);
-                
+
+                if (cookie != null)
+                {
+                    var cookieValue = cookie.Cookie;
+                    var cookieRedis = await redisService.HashGetAsync<string>(cookie.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
+                    var isForceUpdate = cookieRedis != null && cookieRedis != cookieValue;
+
+                    await redisService.HashSetAndExpiryAsync(cookie.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), isForceUpdate);
+                }
+
                 AddHeaderToRedis(cookie.SessionKey);
-                redisService.HashSetAndExpiryAsync(cookie.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
         [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp/{version}")]
-        public void FingerPrint([FromBody] string data)
+        public async Task FingerPrint([FromBody] string data)
         {
             if (data != null)
             {
                 var decodeData = Base64.Decode(data, base64Key);
                 var fingerprint = JsonSerializer.Deserialize<FingerprintParameter>(decodeData);
 
-                redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                if(fingerprint != null)
+                {
+                    var fingerprintCode = fingerprint.Fingerprint?.Id;
+
+                    var fingerPrintRedis = await redisService.HashGetAsync<FingerprintModel>(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
+                    var isForceUpdate = fingerPrintRedis != null && fingerPrintRedis.Id != fingerprintCode;
+
+                    await redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), isForceUpdate);
+                }
             }
         }
 
@@ -160,7 +178,7 @@
             var headerModel = GetHeaderValue();
             if (headerModel != null)
             {
-                redisService.HashSetAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel);
+                redisService.HashSetAndExpiryAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
             }
         }
 
