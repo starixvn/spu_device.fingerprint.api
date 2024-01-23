@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Features.Subscriber.Services;
+using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using FPS.RawTransaction.Insert;
@@ -18,12 +19,12 @@ class Program
         var services = new ServiceCollection();
         services.AddSingleton<IFileReaderService, FileReaderService>();
 
-        services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
-        services.AddSingleton<ISubscriberServices, SubscriberServices>();
+        services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
+        services.AddSingleton<ITransactionService, TransactionService>();
 
         services.AddSingleton<BusinessLogicService>();
 
-        //FanexDataConfig(configuration);
+        FanexDataConfig(configuration);
 
         var serviceProvider = services.BuildServiceProvider();
         var businessLogicService = serviceProvider.GetService<BusinessLogicService>();
@@ -31,13 +32,13 @@ class Program
         businessLogicService?.RunBusinessLogic(configuration["FilePath"]);
     }
 
-    private void FanexDataConfig(IConfiguration configuration)
+    private static void FanexDataConfig(IConfiguration configuration)
     {
         var appSettings = new AppSettings(configuration);
-        var connections = configuration
-                              .GetSection("AppConfig:Connections")
-                              .GetChildren()
-                              .AsEnumerable()
+        var connections = configuration?
+                              .GetSection("AppConfig:Connections")?
+                              .GetChildren()?
+                              .AsEnumerable()?
                               .ToDictionary(
                                        x => x.GetValue<string>("Name"),
                                        y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))

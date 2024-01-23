@@ -55,7 +55,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.RawTrans
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleApp", "ConsoleApp", "{05758466-22D4-4220-A10B-41C318C025FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FPS.RawTransaction.Insert", "src\FPS.RawTransaction.Insert\FPS.RawTransaction.Insert.csproj", "{CFCE674A-2DE9-419B-9670-BAFEE91B606F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.RawTransaction.Insert", "src\FPS.RawTransaction.Insert\FPS.RawTransaction.Insert.csproj", "{CFCE674A-2DE9-419B-9670-BAFEE91B606F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

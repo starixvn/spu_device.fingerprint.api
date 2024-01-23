@@ -1,41 +1,71 @@
-﻿using Device.FingerPrint.Features.Subscriber.Services;
+﻿using Device.FingerPrint.Features.Transaction.Services;
+using Device.FingerPrint.Model;
+using Newtonsoft.Json;
 
 namespace FPS.RawTransaction.Insert.Services
 {
     public class BusinessLogicService
     {
-        private readonly IFileReaderService _fileReaderService;
-        private readonly ISubscriberServices _subscriberServices;
+        private readonly IFileReaderService fileReaderService;
+        private readonly ITransactionService transactionService;
 
-        public BusinessLogicService(IFileReaderService fileReaderService, ISubscriberServices subscriberServices)
+        public BusinessLogicService(IFileReaderService fileReaderService, ITransactionService transactionService)
         {
-            _fileReaderService = fileReaderService;
-            _subscriberServices = subscriberServices;
+            this.fileReaderService = fileReaderService;
+            this.transactionService = transactionService;
         }
 
-        public void RunBusinessLogic(string? filePath)
+        public async void RunBusinessLogic(string? filePath)
         {
-            var subscribers = _subscriberServices.GetSubscriberByName("Alpha");
-            if (_fileReaderService != null)
+            try
             {
-                if (filePath != null)
+                if (fileReaderService != null)
                 {
-                    string content = _fileReaderService.ReadFileContent(filePath);
+                    if (filePath != null)
+                    {
+                        string content = fileReaderService.ReadFileContent(filePath);
 
-                    Console.WriteLine("\nNội dung của tệp tin:\n");
-                    Console.WriteLine(content);
+                        string[] lines = content.Split('\n');
+
+                        var transactionModels = new List<RawTransactionModel>();
+                        for (int i = 0; i < lines.Length; i++)
+                        {
+                            try
+                            {
+                                string line = lines[i];
+                                var transactionModel = JsonConvert.DeserializeObject<RawTransactionModel>(line);
+                                if (transactionModel != null)
+                                {
+                                    transactionModels.Add(transactionModel);
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"\nError Line {i + 1}, message: {ex.Message}\n\n");
+                            }
+                        }
+
+                        if (transactionModels.Count > 0)
+                        {
+                            await transactionService.InsertRawTransaction(transactionModels, false);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("FilePath is null.");
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("FilePath is null.");
+                    Console.WriteLine("Could not retrieve IFileReaderService.");
                 }
-            }
-            else
-            {
-                Console.WriteLine("Could not retrieve IFileReaderService.");
-            }
 
-            Console.ReadLine();
+                Console.ReadLine();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: ${ex.Message}");
+            }
         }
     }
 }
