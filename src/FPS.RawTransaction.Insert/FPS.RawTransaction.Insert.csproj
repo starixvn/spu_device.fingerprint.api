@@ -15,6 +15,10 @@
 		<PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
+  </ItemGroup>
+
 	<ItemGroup>
 		<None Update="appsettings.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

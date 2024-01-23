@@ -1,42 +1,13 @@
-﻿using FPS.RawTransaction.Insert.Services;
+﻿using Device.FingerPrint.Features.Subscriber.Services;
+using Fanex.Data;
+using Fanex.Data.MySql;
+using FPS.RawTransaction.Insert;
+using FPS.RawTransaction.Insert.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 class Program
 {
-    private readonly IFileReaderService _fileReaderService;
-
-    public Program(IFileReaderService fileReaderService)
-    {
-        _fileReaderService = fileReaderService;
-    }
-
-    public void Run(string? filePath)
-    {
-        if (_fileReaderService != null)
-        {
-            if (filePath != null)
-            {
-                string content = _fileReaderService.ReadFileContent(filePath);
-
-                Console.WriteLine("\nNội dung của tệp tin:\n");
-                Console.WriteLine(content);
-            }
-            else
-            {
-                Console.WriteLine("FilePath is null.");
-            }
-        }
-        else
-        {
-            Console.WriteLine("Could not retrieve IFileReaderService.");
-        }
-
-        //var subscribers = subscriberServices.GetSubscriberList();
-
-        Console.ReadLine();
-    }
-
     static void Main()
     {
         var configuration = new ConfigurationBuilder()
@@ -46,11 +17,37 @@ class Program
 
         var services = new ServiceCollection();
         services.AddSingleton<IFileReaderService, FileReaderService>();
-        services.AddSingleton<Program>();
+
+        services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
+        services.AddSingleton<ISubscriberServices, SubscriberServices>();
+
+        services.AddSingleton<BusinessLogicService>();
+
+        //FanexDataConfig(configuration);
 
         var serviceProvider = services.BuildServiceProvider();
-        var program = serviceProvider.GetService<Program>();
+        var businessLogicService = serviceProvider.GetService<BusinessLogicService>();
 
-        program?.Run(configuration["FilePath"]);
+        businessLogicService?.RunBusinessLogic(configuration["FilePath"]);
+    }
+
+    private void FanexDataConfig(IConfiguration configuration)
+    {
+        var appSettings = new AppSettings(configuration);
+        var connections = configuration
+                              .GetSection("AppConfig:Connections")
+                              .GetChildren()
+                              .AsEnumerable()
+                              .ToDictionary(
+                                       x => x.GetValue<string>("Name"),
+                                       y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+                               );
+
+        DbSettingProviderManager
+          .StartNewSession()
+          .Use(connections)
+          .WithMySql()
+          .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
+          .Run();
     }
 }

@@ -2,6 +2,6 @@
 
 <Functions>
 	<Function Name="Transaction">
-		<Setting Key="DCS_DC_Abnormal_Transaction_Get" SpName="DCS_DC_Abnormal_Transaction_Get" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="FPS_FP_Core_SubscriberInfoByName_Get" SpName="FPS_FP_Core_SubscriberInfoByName_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
 	</Function>
 </Functions>
