@@ -1,6 +1,8 @@
 ﻿using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
+using System.Linq;
+using System.Numerics;
 
 namespace FPS.RawTransaction.Insert.Services
 {
@@ -15,56 +17,79 @@ namespace FPS.RawTransaction.Insert.Services
             this.transactionService = transactionService;
         }
 
-        public async void RunBusinessLogic(string? filePath)
+        public void RunBusinessLogic(string? filePath)
         {
             try
             {
-                if (fileReaderService != null)
-                {
-                    if (filePath != null)
-                    {
-                        string content = fileReaderService.ReadFileContent(filePath);
-
-                        string[] lines = content.Split('\n');
-
-                        var transactionModels = new List<RawTransactionModel>();
-                        for (int i = 0; i < lines.Length; i++)
-                        {
-                            try
-                            {
-                                string line = lines[i];
-                                var transactionModel = JsonConvert.DeserializeObject<RawTransactionModel>(line);
-                                if (transactionModel != null)
-                                {
-                                    transactionModels.Add(transactionModel);
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Console.WriteLine($"\nError Line {i + 1}, message: {ex.Message}\n\n");
-                            }
-                        }
-
-                        if (transactionModels.Count > 0)
-                        {
-                            await transactionService.InsertRawTransaction(transactionModels, false);
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("FilePath is null.");
-                    }
-                }
-                else
+                if (fileReaderService == null)
                 {
                     Console.WriteLine("Could not retrieve IFileReaderService.");
+                    return;
+                }
+                if (filePath == null)
+                {
+                    Console.WriteLine("FilePath is null.");
+                    return;
                 }
 
-                Console.ReadLine();
+                try
+                {
+                    string content = fileReaderService.ReadFileContent(filePath);
+
+                    string[] lines = content.Split('\n');
+
+                    var transactionModels = new List<RawTransactionModel>();
+                    var listErrorLine = new List<int>();
+                    var listErrorMessage = new List<string>();
+
+                    for (int i = 0; i < lines.Length; i++)
+                    {
+                        try
+                        {
+                            string line = lines[i];
+                            var transactionModel = JsonConvert.DeserializeObject<RawTransactionModel>(line);
+                            if (transactionModel != null)
+                            {
+                                transactionModels.Add(transactionModel);
+                            }
+                        }
+                        catch (JsonException ex)
+                        {
+                            listErrorLine.Add(i+1);
+                            listErrorMessage.Add($"\nError deserializing JSON on Line {i + 1}, message: {ex.Message}\n");
+                        }
+                    }
+
+                    if (listErrorLine.Count > 0)
+                    {
+                        Console.WriteLine($"Error list: {string.Join(", ", listErrorLine)}");
+                        Console.WriteLine($"\n==== Detail ====");
+                        Console.WriteLine(string.Join("\n", listErrorMessage));
+                        Console.WriteLine($"\nPlease adjust the data before proceeding!");
+                        
+                        //do
+                        //{
+                        //    Console.Write("Do you want to continue insert? (Y/N): ");
+                        //} while (Console.ReadKey().Key == ConsoleKey.Y);
+                    }
+                    else if (transactionModels.Count > 0)
+                    {
+                        transactionService.InsertRawTransaction(transactionModels, false).Wait();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error processing file: {ex.Message}");
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: ${ex.Message}");
+                Console.WriteLine($"Unexpected error: {ex.Message}");
+            }
+            finally
+            {
+                Console.WriteLine("Press any key to exit...");
+                Console.ReadKey();
             }
         }
     }
