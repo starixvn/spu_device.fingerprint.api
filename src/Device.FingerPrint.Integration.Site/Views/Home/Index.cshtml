@@ -9,41 +9,26 @@
 
                 <hr class="sidebar-divider">
 
-                <div class="sidebar-heading">
-                    UAT
+                <div class="sidebar-heading cursor-pointer" onclick="scrollToSection('section-1')">
+                    Front-end
                 </div>
-
-                <li class="nav-item">
-                    <div class="nav-link" onclick="scrollToSection('section1')" data-target="#collapseTwo"
-                         aria-expanded="true" aria-controls="collapseTwo">
-                        <i class="fas fa-angle-double-right"></i>
-                        <span>Front-end</span>
-                    </div>
-                    <a class="nav-link" onclick="scrollToSection('section2')" data-target="#collapseTwo"
-                       aria-expanded="true" aria-controls="collapseTwo">
-                        <i class="fas fa-angle-double-right"></i>
-                        <span>Back-end</span>
-                    </a>
-                </li>
                 <!-- Divider -->
                 <hr class="sidebar-divider">
 
                 <!-- Heading -->
-                <div class="sidebar-heading">
-                    PROD
+                <div class="sidebar-heading cursor-pointer" onclick="scrollToSection('section-2')">
+                    Back-end
                 </div>
 
                 <li class="nav-item">
-                    <a class="nav-link" onclick="scrollToSection('section3')" data-target="#collapseTwo"
-                       aria-expanded="true" aria-controls="collapseTwo">
+                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section3')">
                         <i class="fas fa-angle-double-right"></i>
                         <span>Front-end</span>
-                    </a>
-                    <a class="nav-link" href="#" data-target="#collapseTwo"
-                       aria-expanded="true" aria-controls="collapseTwo">
+                    </div>
+                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section4')">
                         <i class="fas fa-angle-double-right"></i>
                         <span>Back-end</span>
-                    </a>
+                    </div>
                 </li>
 
                 <!-- Divider -->
@@ -57,39 +42,21 @@
             </div>
         </div>
         <div class="col-10 offset-2" id="main">
-            <h1>Main Area</h1> ...
-
             <div id="content-wrapper" class="d-flex flex-column">
                 <div id="content" class="h-100 d-inline-block">
                     <div class="container-fluid">
+
+                        <section id="section-1">
+                            <h1 class="h3 my-3 text-gray-800">UAT Environment</h1>
+                        </section>
                         <section id="section1">
                             <div class="row">
-                                <div class="card shadow mb-4">
+                                <div class="card shadow mb-4 w-100">
                                     <div class="card-header py-3">
-                                        <h6 class="m-0 font-weight-bold text-primary">Development Approach 1</h6>
+                                        <h6 class="m-0 font-weight-bold text-primary">Front-End</h6>
                                     </div>
                                     <div class="card-body">
-                                        <p>
-                                            SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                            CSS bloat and poor page performance. Custom CSS classes are used to create
-                                            custom components and custom utility classes.
-                                            SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                            CSS bloat and poor page performance. Custom CSS classes are used to create
-                                            custom components and custom utility classes.
-                                            SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                            CSS bloat and poor page performance. Custom CSS classes are used to create
-                                            custom components and custom utility classes.
-                                            SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                            CSS bloat and poor page performance. Custom CSS classes are used to create
-                                            custom components and custom utility classes.
-                                            SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                            CSS bloat and poor page performance. Custom CSS classes are used to create
-                                            custom components and custom utility classes.
-                                        </p>
-                                        <p class="mb-0">
-                                            Before working with this theme, you should become familiar with the
-                                            Bootstrap framework, especially the utility classes.
-                                        </p>
+                                        <pre class="tag-pre"><code class="language-html">&lt;script type="text/javascript" src="//scqa2.detecas.com/activator.ashx" async="" defer=""&gt;&lt;/script&gt;</code></pre>
                                     </div>
                                 </div>
                             </div>
@@ -128,6 +95,9 @@
                             </div>
                         </section>
 
+                        <section id="section-2">
+                            <h1 class="h3 my-3 text-gray-800">PROD Environment</h1>
+                        </section>
                         <section id="section3">
                             <div class="row">
                                 <div class="card shadow mb-4">
@@ -235,288 +205,6 @@
     </div>
 </div>
 
-
-<hr/>
-    @* <!-- Page Wrapper -->
-    <div id="wrapper">
-
-        <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-
-            <!-- Sidebar - Brand -->
-            <div class="sidebar-brand d-flex align-items-center justify-content-center">
-                <div class="sidebar-brand-text mx-3">FPS Integration Site</div>
-            </div>
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                UAT
-            </div>
-
-            <li class="nav-item">
-                <div class="nav-link" onclick="scrollToSection('section1')" data-target="#collapseTwo"
-                   aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-angle-double-right"></i>
-                    <span>Front-end</span>
-                </div>
-                <a class="nav-link" onclick="scrollToSection('section2')" data-target="#collapseTwo"
-                   aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-angle-double-right"></i>
-                    <span>Back-end</span>
-                </a>
-            </li>
-            <!-- Divider -->
-            <hr class="sidebar-divider">
-
-            <!-- Heading -->
-            <div class="sidebar-heading">
-                PROD
-            </div>
-
-            <li class="nav-item">
-                <a class="nav-link" onclick="scrollToSection('section3')" data-target="#collapseTwo"
-                   aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-angle-double-right"></i>
-                    <span>Front-end</span>
-                </a>
-                <a class="nav-link" href="#" data-target="#collapseTwo"
-                   aria-expanded="true" aria-controls="collapseTwo">
-                    <i class="fas fa-angle-double-right"></i>
-                    <span>Back-end</span>
-                </a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler (Sidebar) -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
-            </div>
-
-        </ul>
-        <!-- End of Sidebar -->
-        <!-- Content Wrapper -->
-        <div id="content-wrapper" class="d-flex flex-column">
-            <div id="content" class="h-100 d-inline-block">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Development Approach 1</h6>
-                            </div>
-                            <div class="card-body">
-                                <section id="section1">
-                                    <p>
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                    </p>
-                                    <p class="mb-0">
-                                        Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.
-                                    </p>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Development Approach 2</h6>
-                            </div>
-                            <div class="card-body">
-                                <section id="section2">
-                                    <p>
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                    </p>
-                                    <p class="mb-0">
-                                        Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                    </p>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Development Approach 3</h6>
-                            </div>
-                            <div class="card-body">
-                                <section id="section3">
-                                    <p>
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                    </p>
-                                    <p class="mb-0">
-                                        Before working with this theme, you should become familiar with the
-                                        Bootstrap framework, especially the utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                        SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                        CSS bloat and poor page performance. Custom CSS classes are used to create
-                                        custom components and custom utility classes.
-                                    </p>
-                                </section>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Development Approach 4</h6>
-                            </div>
-                            <div class="card-body">
-                                <p>
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                </p>
-                                <p class="mb-0">
-                                    Before working with this theme, you should become familiar with the
-                                    Bootstrap framework, especially the utility classes.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="card shadow mb-4">
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Development Approach 5</h6>
-                            </div>
-                            <div class="card-body">
-                                <p>
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                    SB Admin 2 makes extensive use of Bootstrap 4 utility classes in order to reduce
-                                    CSS bloat and poor page performance. Custom CSS classes are used to create
-                                    custom components and custom utility classes.
-                                </p>
-                                <p class="mb-0">
-                                    Before working with this theme, you should become familiar with the
-                                    Bootstrap framework, especially the utility classes.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- /.container-fluid -->
-
-            </div>
-            <!-- End of Main Content -->
-            <!-- Footer -->
-            <footer class="sticky-footer bg-white">
-                <div class="container my-auto">
-                    <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; 2021 - Device.FingerPrint.Integration.Site</span>
-                    </div>
-                </div>
-            </footer>
-            <!-- End of Footer -->
-
-        </div>
-        <!-- End of Content Wrapper -->
-
-    </div>
-    <!-- End of Page Wrapper -->
-    <!-- Scroll to Top Button-->
-    <a class="scroll-to-top rounded" href="#page-top">
-        <i class="fas fa-angle-up"></i>
-    </a>
-
-    <!-- Logout Modal-->
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-         aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-                <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <a class="btn btn-primary" href="login.html">Logout</a>
-                </div>
-            </div>
-        </div>
-    </div>
-
- *@
 <script>
     function scrollToSection(sectionId) {
         var section = document.getElementById(sectionId);
