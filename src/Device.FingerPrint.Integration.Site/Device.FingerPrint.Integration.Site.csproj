@@ -1,8 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="wwwroot\Upload\scriptCode.txt" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Fanex.Data" Version="4.2.2" />
@@ -23,6 +27,9 @@
 
   <ItemGroup>
     <Content Update="appsettings.LOCAL.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Update="wwwroot\Upload\scriptCode.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

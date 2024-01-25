@@ -4,6 +4,18 @@
     var frontend = ViewBag.FrontEnd;
 }
 
+<style>
+    .grid-container {
+        display: flex;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px; /* Khoảng trống giữa các cột */
+    }
+
+    .grid-item {
+        display: flex;
+        padding: 16px;
+    }
+</style>
 <div class="text-center row">
     <div class="col-md-12">
         <section>
@@ -11,34 +23,52 @@
                 @Html.AntiForgeryToken()
                 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
-                <div class="d-flex">
-                    <div class="font-weight-bold align-self-center">
-                        Choose Subscriber:
+                <div class="grid-container">
+                    <div class="grid-item">
+                        <div class="font-weight-bold align-self-center">
+                            Choose Subscriber:
+                        </div>
+                        <div class="ml-2">
+                            @Html.DropDownListFor(m => m.SubscriberId, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
+                        </div>
                     </div>
-                    <div class="ml-2">
-                        @Html.DropDownListFor(m => m.SubscriberId, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
-                    </div>
-                    <div class="ml-2">
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                    <div class="grid-item">
+                        <div class="ml-2">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
                     </div>
                 </div>
             </form>
+
             <div class="d-flex mt-2 control-label text-left border bg-info">
                 <div class="mr-auto p-2 text-white">
-                    Front-end
+                    Front-end PROD
                 </div>
                 <div class="p-2">
-                    <button class="btn-copy-front-end" data-clipboard-target="#front-end">
-                        @*<span class="tooltiptext" id="myTooltip">Copied</span>*@
+                    <button class="btn-copy-front-end-prod" data-clipboard-target="#front-end-prod">
                         <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
                     </button>
                 </div>
             </div>
-            <pre class="tag-pre"><code class="language-html" id="front-end">@ViewBag.FrontEnd</code></pre>
+            <pre class="tag-pre"><code class="language-html" id="front-end-prod">@ViewBag.FrontEndProd</code></pre>
 
             <div class="d-flex mt-2 control-label text-left border bg-info">
                 <div class="mr-auto p-2 text-white">
-                    Back-end
+                    Front-end UAT
+                </div>
+                <div class="p-2">
+                    <button class="btn-copy-front-end-uat" data-clipboard-target="#front-end-uat">
+                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                    </button>
+                </div>
+            </div>
+            <pre class="tag-pre"><code class="language-html" id="front-end-uat">@ViewBag.FrontEndUat</code></pre>
+
+
+
+            <div class="d-flex mt-2 control-label text-left border bg-info">
+                <div class="mr-auto p-2 text-white">
+                    .Net Standard
                 </div>
                 <div class="p-2">
                     <button class="btn-copy-back-end" data-clipboard-target="#back-end">
@@ -46,7 +76,41 @@
                     </button>
                 </div>
             </div>
-            <pre class="tag-pre"><code class="csharp" id="back-end">@ViewBag.BackEnd</code></pre>
+            <pre class="tag-pre"><code class="language-csharp" id="back-end">@ViewBag.BackEndNetStandard</code></pre>
+
+
+            <div class="d-flex mt-2 control-label text-left border bg-info">
+                <div class="mr-auto p-2 text-white">
+                    .Net Core
+                </div>
+                <div class="p-2">
+                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
+                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                    </button>
+                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
+                        <img width="13" src="~/assets/download-svgrepo-com.svg" alt="Copy to clipboard">
+                    </button>
+                </div>
+            </div>
+            <pre class="tag-pre"><code class="language-csharp" id="back-end">@ViewBag.BackEndNetCore</code></pre>
+
+
+            <div class="d-flex mt-2 control-label text-left border bg-info">
+                <div class="mr-auto p-2 text-white">
+                    .Net Framework
+                </div>
+                <div class="p-2">
+                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
+                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                    </button>
+                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
+                        <a href="@Url.Action("DownloadScriptFile", "Home")" class="btn-link">
+                            <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard"> Download Script
+                        </a>
+                    </button>
+                </div>
+            </div>
+            <pre class="tag-pre"><code class="language-csharp" id="back-end">@ViewBag.BackEndNetFramework</code></pre>
 
         </section>
     </div>
@@ -58,35 +122,67 @@
 
 <script>
 
-    // Tooltip frontend
-    $('.btn-copy-front-end').tooltip({
+    // Tooltip frontend PROD
+    $('.btn-copy-front-end-prod').tooltip({
         trigger: 'click',
         placement: 'bottom'
     });
 
-    function setTooltipFrontEnd(message) {
-        $('.btn-copy-front-end').tooltip('hide')
+    function setTooltipFrontEndProd(message) {
+        $('.btn-copy-front-end-prod').tooltip('hide')
             .attr('data-original-title', message)
             .tooltip('show');
     }
 
-    function hideTooltipFrontEnd() {
+    function hideTooltipFrontEndProd() {
         setTimeout(function () {
-            $('.btn-copy-front-end').tooltip('hide');
+            $('.btn-copy-front-end-prod').tooltip('hide');
         }, 1000);
     }
 
-    var clipboardFrontEnd = new ClipboardJS('.btn-copy-front-end');
+    var clipboardFrontEndProd = new ClipboardJS('.btn-copy-front-end-prod');
 
-    clipboardFrontEnd.on('success', function (e) {
-        setTooltipFrontEnd('Copied!');
-        hideTooltipFrontEnd();
+    clipboardFrontEndProd.on('success', function (e) {
+        setTooltipFrontEndProd('Copied!');
+        hideTooltipFrontEndProd();
 
     });
 
-    clipboardFrontEnd.on('error', function (e) {
-        setTooltipFrontEnd('Failed!');
-        hideTooltipFrontEnd();
+    clipboardFrontEndProd.on('error', function (e) {
+        setTooltipFrontEndProd('Failed!');
+        hideTooltipFrontEndProd();
+
+    });
+
+    // Tooltip frontend UAT
+    $('.btn-copy-front-end-uat').tooltip({
+        trigger: 'click',
+        placement: 'bottom'
+    });
+
+    function setTooltipFrontEndUAT(message) {
+        $('.btn-copy-front-end-uat').tooltip('hide')
+            .attr('data-original-title', message)
+            .tooltip('show');
+    }
+
+    function hideTooltipFrontEndUAT() {
+        setTimeout(function () {
+            $('.btn-copy-front-end-uat').tooltip('hide');
+        }, 1000);
+    }
+
+    var clipboardFrontEndUAT = new ClipboardJS('.btn-copy-front-end-uat');
+
+    clipboardFrontEndUAT.on('success', function (e) {
+        setTooltipFrontEndUAT('Copied!');
+        hideTooltipFrontEndUAT();
+
+    });
+
+    clipboardFrontEndUAT.on('error', function (e) {
+        setTooltipFrontEndUAT('Failed!');
+        hideTooltipFrontEndUAT();
 
     });
 
@@ -124,5 +220,4 @@
         hideTooltipBackEnd();
 
     });
-
 </script>

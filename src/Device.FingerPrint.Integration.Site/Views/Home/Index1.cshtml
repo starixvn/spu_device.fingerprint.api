@@ -1,0 +1,149 @@
+﻿@model SubscriberModel
+@{
+  ViewData["Title"] = "Home Page";
+  var frontend = ViewBag.FrontEnd;
+}
+
+<div class="text-center row">
+  <div class="col-md-12">
+    <section>
+      <form method="post" role="form" class="form-horizontal" action="@Url.Action("OnPost")">
+        @Html.AntiForgeryToken()
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+        <div class="d-flex">
+          <div class="font-weight-bold align-self-center">
+            Choose Subscriber:
+          </div>
+          <div class="ml-2">
+            @Html.DropDownListFor(m => m.SubscriberId, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
+          </div>
+          @{
+            List<SelectListItem> environments = ViewBag.Environments;
+          }
+          @Html.DropDownList("Environment", environments, "Chọn môi trường")
+          <div class="ml-2">
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </div>
+        </div>
+      </form>
+
+      <div class="d-flex mt-2 control-label text-left border bg-info">
+        <div class="mr-auto p-2 text-white">
+          Front-end PROD
+        </div>
+        <div class="p-2">
+          <button class="btn-copy-front-end" data-clipboard-target="#front-end">
+            @*<span class="tooltiptext" id="myTooltip">Copied</span>*@
+            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+          </button>
+        </div>
+      </div>
+      <pre class="tag-pre"><code class="language-html" id="front-end">@ViewBag.FrontEndProd</code></pre>
+
+
+      <div class="d-flex mt-2 control-label text-left border bg-info">
+        <div class="mr-auto p-2 text-white">
+          Front-end UAT
+        </div>
+        <div class="p-2">
+          <button class="btn-copy-front-end" data-clipboard-target="#front-end">
+            @*<span class="tooltiptext" id="myTooltip">Copied</span>*@
+            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+          </button>
+        </div>
+      </div>
+      <pre class="tag-pre"><code class="language-html" id="front-end">@ViewBag.FrontEndUat</code></pre>
+
+
+
+      <div class="d-flex mt-2 control-label text-left border bg-info">
+        <div class="mr-auto p-2 text-white">
+          Back-end
+        </div>
+        <div class="p-2">
+          <button class="btn-copy-back-end" data-clipboard-target="#back-end">
+            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+          </button>
+        </div>
+      </div>
+      <pre class="tag-pre"><code class="csharp" id="back-end">@ViewBag.BackEnd</code></pre>
+
+    </section>
+  </div>
+</div>
+
+<script>
+  new ClipboardJS('.btn-copy');
+</script>
+
+<script>
+
+  // Tooltip frontend
+  $('.btn-copy-front-end').tooltip({
+    trigger: 'click',
+    placement: 'bottom'
+  });
+
+  function setTooltipFrontEnd(message) {
+    $('.btn-copy-front-end').tooltip('hide')
+      .attr('data-original-title', message)
+      .tooltip('show');
+  }
+
+  function hideTooltipFrontEnd() {
+    setTimeout(function () {
+      $('.btn-copy-front-end').tooltip('hide');
+    }, 1000);
+  }
+
+  var clipboardFrontEnd = new ClipboardJS('.btn-copy-front-end');
+
+  clipboardFrontEnd.on('success', function (e) {
+    setTooltipFrontEnd('Copied!');
+    hideTooltipFrontEnd();
+
+  });
+
+  clipboardFrontEnd.on('error', function (e) {
+    setTooltipFrontEnd('Failed!');
+    hideTooltipFrontEnd();
+
+  });
+
+
+
+  // Tooltip backend
+
+  $('.btn-copy-back-end').tooltip({
+    trigger: 'click',
+    placement: 'bottom'
+  });
+
+  function setTooltipBackEnd(message) {
+    $('.btn-copy-back-end').tooltip('hide')
+      .attr('data-original-title', message)
+      .tooltip('show');
+  }
+
+  function hideTooltipBackEnd() {
+    setTimeout(function () {
+      $('.btn-copy-back-end').tooltip('hide');
+    }, 1000);
+  }
+
+  var clipboardBackEnd = new ClipboardJS('.btn-copy-back-end');
+
+  clipboardBackEnd.on('success', function (e) {
+    setTooltipBackEnd('Copied!');
+    hideTooltipBackEnd();
+
+  });
+
+  clipboardBackEnd.on('error', function (e) {
+    setTooltipBackEnd('Failed!');
+    hideTooltipBackEnd();
+
+  });
+
+</script>

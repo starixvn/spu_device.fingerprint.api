@@ -23,6 +23,7 @@ namespace Device.FingerPrint.Integration.Site
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+
             services.AddSingleton<IAppSettings>(appSettings);
             services.RegisterService();
             services.AddControllersWithViews();
