@@ -38,15 +38,15 @@ namespace Device.FingerPrint.Integration.Site.Controllers
 
         public IActionResult Index()
         {
-            ViewData["SubscriberList"] = _subscriberList;
-            ViewData["Environments"] = _environments;
+            //ViewData["SubscriberList"] = _subscriberList;
+            //ViewData["Environments"] = _environments;
 
-            ViewData["FrontEndProd"] = string.Empty;
-            ViewData["FrontEndUat"] = string.Empty;
+            //ViewData["FrontEndProd"] = GetScriptFrontEndProd();
+            //ViewData["FrontEndUat"] = GetScriptFrontEndUat();
 
-            ViewData["BackEndNetStandard"] = string.Empty;
-            ViewData["BackEndNetCore"] = string.Empty;
-            ViewData["BackEndNetFramework"] = string.Empty;
+            //ViewData["BackEndNetStandard"] = GetScriptBackEndNetStandard();
+            //ViewData["BackEndNetCore"] = GetScriptBackEndNetCore();
+            //ViewData["BackEndNetFramework"] = GetScriptBackEndNetFramework();
             return View();
         }
 
@@ -134,9 +134,9 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
             return strResult;
         }
 
-        public IActionResult DownloadScriptFile()
+        public IActionResult DownloadFile(string fileName)
         {
-            string relativePath = "Upload/FPS.Client.zip";
+            string relativePath = "Upload/" + fileName;
             string filePath = Path.Combine(hostingEnvironment.WebRootPath, relativePath);
 
             if (System.IO.File.Exists(filePath))
