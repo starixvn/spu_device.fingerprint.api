@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -37,8 +38,15 @@ namespace Device.FingerPrint.Integration.Site.Controllers
 
         public IActionResult Index()
         {
-            ViewBag.SubscriberList = _subscriberList;
-            ViewBag.Environments = _environments;
+            ViewData["SubscriberList"] = _subscriberList;
+            ViewData["Environments"] = _environments;
+
+            ViewData["FrontEndProd"] = string.Empty;
+            ViewData["FrontEndUat"] = string.Empty;
+
+            ViewData["BackEndNetStandard"] = string.Empty;
+            ViewData["BackEndNetCore"] = string.Empty;
+            ViewData["BackEndNetFramework"] = string.Empty;
             return View();
         }
 
@@ -64,15 +72,15 @@ namespace Device.FingerPrint.Integration.Site.Controllers
         [HttpPost]
         public IActionResult OnPost(string SubscriberId, string Environment)
         {
-            ViewBag.SubscriberList = _subscriberList;
-            ViewBag.Environments = _environments;
+            ViewData["SubscriberList"] = _subscriberList;
+            ViewData["Environments"] = _environments;
 
-            ViewBag.FrontEndProd = GetScriptFrontEndProd();
-            ViewBag.FrontEndUat = GetScriptFrontEndUat();
+            ViewData["FrontEndProd"] = GetScriptFrontEndProd();
+            ViewData["FrontEndUat"] = GetScriptFrontEndUat();
 
-            ViewBag.BackEndNetStandard = GetScriptBackEndNetStandard();
-            ViewBag.BackEndNetCore = GetScriptBackEndNetCore();
-            ViewBag.BackEndNetFramework = GetScriptBackEndNetFramework();
+            ViewData["BackEndNetStandard"] = GetScriptBackEndNetStandard();
+            ViewData["BackEndNetCore"] = GetScriptBackEndNetCore();
+            ViewData["BackEndNetFramework"] = GetScriptBackEndNetFramework();
             return View("Index");
         }
 

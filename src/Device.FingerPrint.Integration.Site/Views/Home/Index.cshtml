@@ -1,7 +1,7 @@
 ﻿@model SubscriberModel
 @{
     ViewData["Title"] = "Home Page";
-    var frontend = ViewBag.FrontEnd;
+    var frontend = ViewData["FrontEnd"] as dynamic;
 }
 
 <style>
@@ -16,6 +16,7 @@
         padding: 16px;
     }
 </style>
+
 <div class="text-center row">
     <div class="col-md-12">
         <section>
@@ -29,7 +30,7 @@
                             Choose Subscriber:
                         </div>
                         <div class="ml-2">
-                            @Html.DropDownListFor(m => m.SubscriberId, ViewBag.SubscriberList as SelectList, new { @class = "form-control" })
+                            @Html.DropDownListFor(m => m.SubscriberId, ViewData["SubscriberList"] as SelectList, new { @class = "form-control" })
                         </div>
                     </div>
                     <div class="grid-item">
@@ -40,184 +41,88 @@
                 </div>
             </form>
 
-            <div class="d-flex mt-2 control-label text-left border bg-info">
-                <div class="mr-auto p-2 text-white">
-                    Front-end PROD
+            @foreach (var frontEnd in new[] { ("Prod", "FrontEndProd"), ("UAT", "FrontEndUat") })
+            {
+                var frontEndValue = ViewData[frontEnd.Item2];
+                <div class="d-flex mt-2 control-label text-left border bg-info">
+                    <div class="mr-auto p-2 text-white">
+                        Front-end @frontEnd.Item1
+                    </div>
+                    <div class="p-2">
+                        <button class="btn-copy-front-end-@frontEnd.Item1" data-clipboard-target="#front-end-@frontEnd.Item2">
+                            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                        </button>
+                    </div>
                 </div>
-                <div class="p-2">
-                    <button class="btn-copy-front-end-prod" data-clipboard-target="#front-end-prod">
-                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
-                    </button>
-                </div>
-            </div>
-            <pre class="tag-pre"><code class="language-html" id="front-end-prod">@ViewBag.FrontEndProd</code></pre>
+                <pre class="tag-pre"><code class="language-html" id="front-end-@frontEnd.Item2">@frontEndValue</code></pre>
+            }
 
-            <div class="d-flex mt-2 control-label text-left border bg-info">
-                <div class="mr-auto p-2 text-white">
-                    Front-end UAT
+            @foreach (var backEnd in new[] { ("Standard", "BackEndNetStandard"), ("Core", "BackEndNetCore"), ("Framework", "BackEndNetFramework") })
+            {
+                var backEndValue = ViewData[backEnd.Item2];
+                <div class="d-flex mt-2 control-label text-left border bg-info">
+                    <div class="mr-auto p-2 text-white">
+                        Back-end @backEnd.Item1
+                    </div>
+                    <div class="p-2">
+                        <button class="btn-copy-back-end-@backEnd.Item1" data-clipboard-target="#back-end-@backEnd.Item2">
+                            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                        </button>
+                        @if (backEnd.Item2 == "BackEndNetFramework")
+                        {
+                            <button class="btn-copy-back-end" data-clipboard-target="#back-end-@backEnd.Item2">
+                                <a href="@Url.Action("DownloadScriptFile", "Home")" class="btn-link">
+                                    <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard"> Download Script
+                                </a>
+                            </button>
+                        }
+                    </div>
                 </div>
-                <div class="p-2">
-                    <button class="btn-copy-front-end-uat" data-clipboard-target="#front-end-uat">
-                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
-                    </button>
-                </div>
-            </div>
-            <pre class="tag-pre"><code class="language-html" id="front-end-uat">@ViewBag.FrontEndUat</code></pre>
-
-
-
-            <div class="d-flex mt-2 control-label text-left border bg-info">
-                <div class="mr-auto p-2 text-white">
-                    .Net Standard
-                </div>
-                <div class="p-2">
-                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
-                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
-                    </button>
-                </div>
-            </div>
-            <pre class="tag-pre"><code class="language-csharp" id="back-end">@ViewBag.BackEndNetStandard</code></pre>
-
-
-            <div class="d-flex mt-2 control-label text-left border bg-info">
-                <div class="mr-auto p-2 text-white">
-                    .Net Core
-                </div>
-                <div class="p-2">
-                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
-                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
-                    </button>
-                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
-                        <img width="13" src="~/assets/download-svgrepo-com.svg" alt="Copy to clipboard">
-                    </button>
-                </div>
-            </div>
-            <pre class="tag-pre"><code class="language-csharp" id="back-end">@ViewBag.BackEndNetCore</code></pre>
-
-
-            <div class="d-flex mt-2 control-label text-left border bg-info">
-                <div class="mr-auto p-2 text-white">
-                    .Net Framework
-                </div>
-                <div class="p-2">
-                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
-                        <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
-                    </button>
-                    <button class="btn-copy-back-end" data-clipboard-target="#back-end">
-                        <a href="@Url.Action("DownloadScriptFile", "Home")" class="btn-link">
-                            <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard"> Download Script
-                        </a>
-                    </button>
-                </div>
-            </div>
-            <pre class="tag-pre"><code class="language-csharp" id="back-end">@ViewBag.BackEndNetFramework</code></pre>
-
+                <pre class="tag-pre"><code class="language-csharp" id="back-end-@backEnd.Item2">@backEndValue</code></pre>
+            }
         </section>
     </div>
 </div>
 
 <script>
-    new ClipboardJS('.btn-copy');
+    new ClipboardJS('.btn-copy-front-end, .btn-copy-back-end');
 </script>
 
 <script>
+    function initializeTooltip(selector, targetSelector) {
+        $(selector).tooltip({
+            trigger: 'click',
+            placement: 'bottom'
+        });
 
-    // Tooltip frontend PROD
-    $('.btn-copy-front-end-prod').tooltip({
-        trigger: 'click',
-        placement: 'bottom'
-    });
+        function setTooltip(message) {
+            $(selector).tooltip('hide')
+                .attr('data-original-title', message)
+                .tooltip('show');
+        }
 
-    function setTooltipFrontEndProd(message) {
-        $('.btn-copy-front-end-prod').tooltip('hide')
-            .attr('data-original-title', message)
-            .tooltip('show');
+        function hideTooltip() {
+            setTimeout(function () {
+                $(selector).tooltip('hide');
+            }, 1000);
+        }
+
+        var clipboard = new ClipboardJS(selector);
+
+        clipboard.on('success', function (e) {
+            setTooltip('Copied!');
+            hideTooltip();
+        });
+
+        clipboard.on('error', function (e) {
+            setTooltip('Failed!');
+            hideTooltip();
+        });
     }
 
-    function hideTooltipFrontEndProd() {
-        setTimeout(function () {
-            $('.btn-copy-front-end-prod').tooltip('hide');
-        }, 1000);
-    }
-
-    var clipboardFrontEndProd = new ClipboardJS('.btn-copy-front-end-prod');
-
-    clipboardFrontEndProd.on('success', function (e) {
-        setTooltipFrontEndProd('Copied!');
-        hideTooltipFrontEndProd();
-
-    });
-
-    clipboardFrontEndProd.on('error', function (e) {
-        setTooltipFrontEndProd('Failed!');
-        hideTooltipFrontEndProd();
-
-    });
-
-    // Tooltip frontend UAT
-    $('.btn-copy-front-end-uat').tooltip({
-        trigger: 'click',
-        placement: 'bottom'
-    });
-
-    function setTooltipFrontEndUAT(message) {
-        $('.btn-copy-front-end-uat').tooltip('hide')
-            .attr('data-original-title', message)
-            .tooltip('show');
-    }
-
-    function hideTooltipFrontEndUAT() {
-        setTimeout(function () {
-            $('.btn-copy-front-end-uat').tooltip('hide');
-        }, 1000);
-    }
-
-    var clipboardFrontEndUAT = new ClipboardJS('.btn-copy-front-end-uat');
-
-    clipboardFrontEndUAT.on('success', function (e) {
-        setTooltipFrontEndUAT('Copied!');
-        hideTooltipFrontEndUAT();
-
-    });
-
-    clipboardFrontEndUAT.on('error', function (e) {
-        setTooltipFrontEndUAT('Failed!');
-        hideTooltipFrontEndUAT();
-
-    });
-
-    
-
-    // Tooltip backend
-
-    $('.btn-copy-back-end').tooltip({
-        trigger: 'click',
-        placement: 'bottom'
-    });
-
-    function setTooltipBackEnd(message) {
-        $('.btn-copy-back-end').tooltip('hide')
-            .attr('data-original-title', message)
-            .tooltip('show');
-    }
-
-    function hideTooltipBackEnd() {
-        setTimeout(function () {
-            $('.btn-copy-back-end').tooltip('hide');
-        }, 1000);
-    }
-
-    var clipboardBackEnd = new ClipboardJS('.btn-copy-back-end');
-
-    clipboardBackEnd.on('success', function (e) {
-        setTooltipBackEnd('Copied!');
-        hideTooltipBackEnd();
-
-    });
-
-    clipboardBackEnd.on('error', function (e) {
-        setTooltipBackEnd('Failed!');
-        hideTooltipBackEnd();
-
-    });
+    initializeTooltip('.btn-copy-front-end-Prod', '.btn-copy-front-end-Prod');
+    initializeTooltip('.btn-copy-front-end-UAT', '.btn-copy-front-end-UAT');
+    initializeTooltip('.btn-copy-back-end-Standard', '.btn-copy-back-end-Standard');
+    initializeTooltip('.btn-copy-back-end-Core', '.btn-copy-back-end-Core');
+    initializeTooltip('.btn-copy-back-end-Framework', '.btn-copy-back-end-Framework');
 </script>
