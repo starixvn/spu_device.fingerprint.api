@@ -3,6 +3,7 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.PortalAPI
@@ -21,6 +22,14 @@ namespace Device.FingerPrint.PortalAPI
             try
             {
                 await _next(httpContext);
+            }
+            catch(IOException ex)
+            {
+                var logMessage = new LogMessage(ex.Message)
+                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .ToString();
+
+                await _logger.ErrorAsync(logMessage);
             }
             catch (Exception ex)
             {

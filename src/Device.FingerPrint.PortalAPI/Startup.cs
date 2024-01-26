@@ -178,7 +178,7 @@ namespace Device.FingerPrint.PortalAPI
             app.UseMiddleware<JWTMiddleware>();
             app.UseMiddleware<ExceptionMiddleware>();                       
 
-            if(env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL")
+            if(env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("AppConfig:Environment", "UAT") == "UAT")
             {
                 app.UseSwagger();
 
