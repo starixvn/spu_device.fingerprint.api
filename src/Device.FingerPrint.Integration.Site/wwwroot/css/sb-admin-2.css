@@ -19,6 +19,7 @@
   --orange: #fd7e14;
   --yellow: #f6c23e;
   --green: #1cc88a;
+  --prism-green: #a6e22e;
   --teal: #20c9a6;
   --cyan: #36b9cc;
   --white: #fff;
@@ -39,6 +40,10 @@
   --breakpoint-xl: 1200px;
   --font-family-sans-serif: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.prism-green {
+  color: var(--prism-green);
 }
 
 *,
@@ -64,7 +69,7 @@ body {
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
-  color: #858796;
+  color: #2c2d35;
   text-align: left;
   background-color: #fff;
 }
@@ -4525,7 +4530,7 @@ input[type="button"].btn-block {
 .card-body {
   flex: 1 1 auto;
   min-height: 1px;
-  padding: 1.25rem;
+  /*padding: 1.25rem;*/
 }
 
 .card-title {
