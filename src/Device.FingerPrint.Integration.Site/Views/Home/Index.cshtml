@@ -9,13 +9,16 @@
 
                 <hr class="sidebar-divider">
 
+                <div class="sidebar-heading cursor-pointer pb-2" onclick="scrollToSection('section-top')">
+                    RestAPI
+                </div>
+                <hr class="sidebar-divider">
+
                 <div class="sidebar-heading cursor-pointer pb-2" onclick="scrollToSection('section-1')">
                     Front-end
                 </div>
-                <!-- Divider -->
                 <hr class="sidebar-divider">
 
-                <!-- Heading -->
                 <div class="sidebar-heading cursor-pointer" onclick="scrollToSection('section-2')">
                     Back-end
                 </div>
@@ -45,10 +48,123 @@
 
             </div>
         </div>
-        <div class="col-10 offset-2" id="main">
+        <div class="col-10 offset-2 outer-container" id="main">
+            <section id="section-top">
+                <div class="m-4 p-3 navbar-light bg-white shadow">
+                    <div class="row">
+                        <div class="col-4">
+                            SessionKey: 5bf20a56f37a4b1f9ad37b6c4aec7f12
+                        </div>
+                        <div class="col-8">
+                            Ip Address: 10.23.10.16
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            User Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36
+                        </div>
+                    </div>
+                </div>
+            </section>
             <div id="content-wrapper" class="d-flex flex-column">
                 <div id="content" class="h-100 d-inline-block">
                     <div class="container-fluid">
+                        <section>
+                            <h1 class="h3 my-3 text-gray-800">RestAPI</h1>
+                            <ul>
+                                <li>
+                                    <span class="text-primary">Endpoint</span>: /FPS/CheckTransaction
+                                </li>
+                                <li>
+                                    <span class="text-primary">Method</span>: POST
+                                </li>
+                                <li>
+                                    <span class="font-weight-bold">Object model</span>:
+                                </li>
+                                <li style="list-style-type:none">
+                                    <ul>
+                                        <li>
+                                            <span class="text-primary">Account</span> → Login name
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">Subscriber</span> → Subscriber Name which provided from FPS team
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">SubscriberDate</span> → Get NOW date
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">DI</span> → Get value from hidden element “__di”, default empty value
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">BI</span> → Get value from hidden element “__bi”, default empty value
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">IP</span> → Get client IP
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">UserAgent</span> → Get UserAgent from http header
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">DetecasAnalysis</span> → Get value from hidden element “detecas-analysis”, default empty value
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">Action</span> → “Login”
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">ActionResult</span> → “Successfull”
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">AcceptsTypes</span> → Get value from http header “Accept”
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">SessionKey</span> → Get value from hidden element “__fdi”, default empty value
+                                        </li>
+                                        <li>
+                                            <span class="text-primary">Token</span> → Get value from hidden element “tk”, default empty value
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <div class="col-12 font-weight-bold pb-2">
+                                Ex: Please refer to RestAPI Example:
+                            </div>
+                            <div class="card-body">
+                                <pre class="tag-pre"><code class="language-javascript">
+var data = JSON.stringify({
+  "Account": "TestJo0101",
+  "Subscriber": "Alpha",
+  "SubscriberDate": "11/21/2023 4:47:40 PM",
+  "DI": "eyJuYSI6Ik4vQSIsImRldmljZUNvZGUiOiI0ODdjYTU4YjNlM2IyY2RhMTczZDUyYTJhODU4MWNlMTFjMWY2NGQ1OzZhMzUwYjE3ZTZjODVhMWI2NjYxZGI3NTQwOTdkYjVlIiwiYXBwVmVyc2lvbiI6IjUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTE5LjAuMC4wIFNhZmFyaS81MzcuMzYiLCJ0aW1lWm9uZSI6Ii00MjAiLCJ1c2VyQWdlbnQiOiJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTE5LjAuMC4wIFNhZmFyaS81MzcuMzYiLCJzY3JlZW4iOnsid2lkdGgiOjE5MjAsImhlaWdodCI6MTA4MCwiY29sb3JEZXB0aCI6MjR9LCJkZXZpY2VJZCI6IjJmNDRmZTIzNDJmZTQ5NTk5Y2RmZDRkNWI1MTJmZmJmIiwiaHJlZiI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0Mzk1LyIsImNhcHR1cmVkRGF0ZSI6IjYzODM2MTQyNTkyMTgzNzc0NSIsImdlb2xvY2F0aW9uIjoiIiwidmVyc2lvbiI6IjIuMC4xNyJ9",
+  "BI": "eyJyZXN1bHQiOnsiYm90IjpmYWxzZX0sImRldGVjdGlvbiI6IntcImRldGVjdEFwcFZlcnNpb25cIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3REb2N1bWVudEF0dHJpYnV0ZXNcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RFcnJvclRyYWNlXCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0RXZhbExlbmd0aEluY29uc2lzdGVuY3lcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RGdW5jdGlvbkJpbmRcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RMYW5ndWFnZXNMZW5ndGhJbmNvbnNpc3RlbmN5XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0UGx1Z2luc0FycmF5XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0UGx1Z2luc0xlbmd0aEluY29uc2lzdGVuY3lcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RQcm9jZXNzXCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0VXNlckFnZW50XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0V2ViRHJpdmVyXCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0V2ViR0xcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RXaW5kb3dFeHRlcm5hbFwiOntcImJvdFwiOmZhbHNlfSxcImRldGVjdFdpbmRvd1NpemVcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RNaW1lVHlwZXNDb25zaXN0ZW50XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0UHJvZHVjdFN1YlwiOntcImJvdFwiOmZhbHNlfSxcImRldGVjdFZtRnJvbU1lbW9yeVNjcmVlbkRpbWVuc2lvbnNcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3REaXN0aW5jdGl2ZVByb3BlcnRpZXNcIjp7XCJib3RcIjpmYWxzZX19IiwiY29tcG9uZW50Ijoie1wicHJvY2Vzc1wiOntcInN0YXRlXCI6LTEsXCJlcnJvclwiOlwiQm90ZEVycm9yOiB3aW5kb3cucHJvY2VzcyBpcyB1bmRlZmluZWRcIn0sXCJ1c2VyQWdlbnRcIjp7XCJ2YWx1ZVwiOlwiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzExOS4wLjAuMCBTYWZhcmkvNTM3LjM2XCIsXCJzdGF0ZVwiOjB9LFwiYXBwVmVyc2lvblwiOntcInZhbHVlXCI6XCI1LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzExOS4wLjAuMCBTYWZhcmkvNTM3LjM2XCIsXCJzdGF0ZVwiOjB9LFwid2luZG93U2l6ZVwiOntcInZhbHVlXCI6e1wib3V0ZXJXaWR0aFwiOjE5MTgsXCJvdXRlckhlaWdodFwiOjEwMzAsXCJpbm5lcldpZHRoXCI6MTkyMCxcImlubmVySGVpZ2h0XCI6OTU1fSxcInN0YXRlXCI6MH0sXCJwbHVnaW5zTGVuZ3RoXCI6e1widmFsdWVcIjo1LFwic3RhdGVcIjowfSxcInBsdWdpbnNBcnJheVwiOntcInZhbHVlXCI6dHJ1ZSxcInN0YXRlXCI6MH0sXCJlcnJvclRyYWNlXCI6e1widmFsdWVcIjpcIlR5cGVFcnJvcjogQ2Fubm90IHJlYWQgcHJvcGVydGllcyBvZiBudWxsIChyZWFkaW5nICcwJylcXG4gICAgYXQgbmkgKGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MTo3Nzk4KVxcbiAgICBhdCBpLjxhbm9ueW1vdXM+IChodHRwczovL3NjcWEyLmRldGVjYXMuY29tL2FjdGl2YXRvci5hc2h4OjE6MTU0NzUpXFxuICAgIGF0IHMgKGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MToxMzY5KVxcbiAgICBhdCBPYmplY3QubmV4dCAoaHR0cHM6Ly9zY3FhMi5kZXRlY2FzLmNvbS9hY3RpdmF0b3IuYXNoeDoxOjY0MSlcXG4gICAgYXQgaHR0cHM6Ly9zY3FhMi5kZXRlY2FzLmNvbS9hY3RpdmF0b3IuYXNoeDoxOjU3NVxcbiAgICBhdCBuZXcgUHJvbWlzZSAoPGFub255bW91cz4pXFxuICAgIGF0IHMgKGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MTozNjkpXFxuICAgIGF0IGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MToxNTMxNFxcbiAgICBhdCBBcnJheS5tYXAgKDxhbm9ueW1vdXM+KVxcbiAgICBhdCBpLjxhbm9ueW1vdXM+IChodHRwczovL3NjcWEyLmRldGVjYXMuY29tL2FjdGl2YXRvci5hc2h4OjE6MTUyOTEpXCIsXCJzdGF0ZVwiOjB9LFwicHJvZHVjdFN1YlwiOntcInZhbHVlXCI6XCIyMDAzMDEwN1wiLFwic3RhdGVcIjowfSxcIndpbmRvd0V4dGVybmFsXCI6e1widmFsdWVcIjpcIltvYmplY3QgRXh0ZXJuYWxdXCIsXCJzdGF0ZVwiOjB9LFwibWltZVR5cGVzQ29uc2lzdGVudFwiOntcInZhbHVlXCI6dHJ1ZSxcInN0YXRlXCI6MH0sXCJldmFsTGVuZ3RoXCI6e1widmFsdWVcIjozMyxcInN0YXRlXCI6MH0sXCJ3ZWJHTFwiOntcInZhbHVlXCI6e1widmVuZG9yXCI6XCJXZWJLaXRcIixcInJlbmRlcmVyXCI6XCJXZWJLaXQgV2ViR0xcIn0sXCJzdGF0ZVwiOjB9LFwid2ViRHJpdmVyXCI6e1widmFsdWVcIjpmYWxzZSxcInN0YXRlXCI6MH0sXCJsYW5ndWFnZXNcIjp7XCJ2YWx1ZVwiOltbXCJlbi1VU1wiXV0sXCJzdGF0ZVwiOjB9LFwiZG9jdW1lbnRFbGVtZW50S2V5c1wiOntcInZhbHVlXCI6W1wiY2xhc3NcIixcInN0eWxlXCJdLFwic3RhdGVcIjowfSxcImZ1bmN0aW9uQmluZFwiOntcInZhbHVlXCI6XCJmdW5jdGlvbiBiaW5kKCkgeyBbbmF0aXZlIGNvZGVdIH1cIixcInN0YXRlXCI6MH0sXCJkZXZpY2VNZW1vcnlcIjp7XCJ2YWx1ZVwiOjgsXCJzdGF0ZVwiOjB9LFwic2NyZWVuRGltZW5zaW9uc1wiOntcInZhbHVlXCI6e1wid2lkdGhcIjoxOTIwLFwiaGVpZ2h0XCI6MTA4MH0sXCJzdGF0ZVwiOjB9LFwiZGlzdGluY3RpdmVQcm9wc1wiOntcInZhbHVlXCI6e1wiYXdlc29taXVtXCI6ZmFsc2UsXCJjZWZcIjpmYWxzZSxcImNlZnNoYXJwXCI6ZmFsc2UsXCJjb2FjaGpzXCI6ZmFsc2UsXCJmbWluZXJcIjpmYWxzZSxcImdlYlwiOmZhbHNlLFwibmlnaHRtYXJlanNcIjpmYWxzZSxcInBoYW50b21hc1wiOmZhbHNlLFwicGhhbnRvbWpzXCI6ZmFsc2UsXCJyaGlub1wiOmZhbHNlLFwic2VsZW5pdW1cIjpmYWxzZSxcIndlYmRyaXZlcmlvXCI6ZmFsc2UsXCJ3ZWJkcml2ZXJcIjpmYWxzZSxcImhlYWRsZXNzX2Nocm9tZVwiOmZhbHNlfSxcInN0YXRlXCI6MH0sXCJicm93c2VySW5mb1wiOntcInZhbHVlXCI6e1wiYnJvd3NlckVuZ2luZUtpbmRcIjpcImNocm9taXVtXCIsXCJicm93c2VyS2luZFwiOlwiY2hyb21lXCIsXCJpc0FuZHJvaWRcIjpmYWxzZSxcImlzRGVza3RvcFNhZmFyaVwiOmZhbHNlLFwiaXNDaHJvbWl1bTg2T3JOZXdlclwiOnRydWV9LFwic3RhdGVcIjowfX0ifQ==",
+  "IP": "127.0.0.1",
+  "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+  "DetecasAnalysis": "{\"startTime\":1700560192636,\"version\":\"2.0.17\",\"exceptions\":[],\"executions\":[],\"storages\":[],\"devices\":[],\"enable\":true}",
+  "Action": "Login",
+  "ActionResult": "Successfull",
+  "AcceptsTypes": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  "SessionKey": "f622fa1a8eb347a694fa6e965905b7b3",
+  "Token": "",
+  "Url": "http://www.ultra88.com"
+});
+
+var xhr = new XMLHttpRequest();
+xhr.withCredentials = true;
+
+xhr.addEventListener("readystatechange", function() {
+  if(this.readyState === 4) {
+    console.log(this.responseText);
+  }
+});
+
+xhr.open("POST", "http://api.detecas.com/FPS/CheckTransaction");
+xhr.setRequestHeader("Content-Type", "application/json");
+
+xhr.send(data);
+                                </code></pre>
+                            </div>
+                        </section>
+
+                        <hr/>
 
                         <section id="section-1">
                             <h1 class="h3 my-3 text-gray-800">Front-end</h1>
@@ -191,68 +307,6 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                                 </li>
                             </ul>
                         </div>
-
-                        <section id="section-rest-api">
-                            <h1 class="h3 my-3 text-gray-800">RestAPI Description:</h1>
-                            <ul>
-                                <li>
-                                    Endpoint: /FPS/CheckTransaction
-                                </li>
-                                <li>
-                                    Method: POST
-                                </li>
-                                <li>
-                                    Object model:
-                                </li>
-                                <li>
-                                    <ul>
-                                        <li>
-                                            Account → Login name
-                                        </li>
-                                        <li>
-                                            Subscriber → Subscriber Name which provided from FPS team
-                                        </li>
-                                        <li>
-                                            SubscriberDate → Get NOW date
-                                        </li>
-                                        <li>
-                                            DI → Get value from hidden element “__di”, default empty value
-                                        </li>
-                                        <li>
-                                            BI → Get value from hidden element “__bi”, default empty value
-                                        </li>
-                                        <li>
-                                            IP → Get client IP
-                                        </li>
-                                        <li>
-                                            UserAgent → Get UserAgent from http header
-                                        </li>
-                                        <li>
-                                            DetecasAnalysis → Get value from hidden element “detecas-analysis”, default empty value
-                                        </li>
-                                        <li>
-                                            Action → “Login”
-                                        </li>
-                                        <li>
-                                            ActionResult → “Successfull”
-                                        </li>
-                                        <li>
-                                            AcceptsTypes → Get value from http header “Accept”
-                                        </li>
-                                        <li>
-                                            SessionKey → Get value from hidden element “__fdi”, default empty value
-                                        </li>
-                                        <li>
-                                            Token → Get value from hidden element “tk”, default empty value
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                            <div class="col-12 font-weight-bold">
-                                Ex: Please refer to 
-                                <a href="@Url.Action("DownloadFile", "Home", new { fileName = "RestAPI.Example.txt" })" class="btn-link">RestAPI.Example.txt</a>
-                            </div>
-                        </section>
                     </div>
                     <!-- /.container-fluid -->
 
