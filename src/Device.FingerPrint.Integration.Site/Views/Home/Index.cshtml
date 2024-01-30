@@ -1,14 +1,10 @@
-﻿﻿@{
-    ViewData["Title"] = "Home Page";
-    var ipAddress = Context.Request.HttpContext.Connection.RemoteIpAddress;
-}
-<div class="container-fluid">
+﻿<div class="container-fluid">
     <div class="row">
-        <div class="col-2 px-1 bg-dark position-fixed" id="sticky-sidebar">
+        <div class="col-2 px-1 position-fixed" id="sticky-sidebar">
             <div class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
                 <div class="sidebar-brand d-flex align-items-center justify-content-center">
-                    <div class="sidebar-brand-text mx-3">FPS Integration Site</div>
+                    <div class="sidebar-brand-text">FPS Integration Site</div>
                 </div>
                 <hr class="sidebar-divider">
 
@@ -50,7 +46,7 @@
                             SessionKey: <span id="id-session-key" class="text-primary"></span>
                         </div>
                         <div class="col-8">
-                            Ip Address: <span id="id-ip-address" class="text-primary">@ipAddress</span>
+                            Ip Address: <span id="id-ip-address" class="text-primary">@Context.Request.HttpContext.Connection.RemoteIpAddress</span>
                         </div>
                     </div>
                     <div class="row">
@@ -197,7 +193,7 @@ var data = JSON.stringify({
   "SubscriberDate": "11/21/2023 4:47:40 PM",
   "DI": "__di__",
   "BI": "__bi__",
-  "IP": "@ipAddress",
+  "IP": "@Context.Request.HttpContext.Connection.RemoteIpAddress",
   "UserAgent": "__useragent__",
   "DetecasAnalysis": "__detecasAnalysis__",
   "Action": "Login",

@@ -11,8 +11,9 @@ namespace Device.FingerPrint.Integration.Site.Controllers
     {
         private readonly IWebHostEnvironment hostingEnvironment;
 
-        public HomeController()
+        public HomeController(IWebHostEnvironment hostingEnvironment)
         {
+            this.hostingEnvironment = hostingEnvironment;
         }
 
         public IActionResult Index()
