@@ -11285,3 +11285,8 @@ body.sidebar-toggled footer.sticky-footer {
 .cursor-pointer{
   cursor: pointer;
 }
+
+    .cursor-pointer:hover {
+        color: #fff;
+        text-decoration: underline;
+    }

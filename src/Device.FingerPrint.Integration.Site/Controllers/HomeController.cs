@@ -2,6 +2,7 @@
 using Device.FingerPrint.Integration.Site.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Hosting;
@@ -21,12 +22,14 @@ namespace Device.FingerPrint.Integration.Site.Controllers
         private readonly IWebHostEnvironment hostingEnvironment;
         private readonly ISubscriberServices subscriberServices;
         private readonly IAppSettings appSettings;
-        
+        private readonly IHttpContextAccessor _httpContextAccessor;
+
         private readonly SelectList _subscriberList;
         private readonly List<SelectListItem> _environments;
 
-        public HomeController(ILogger<HomeController> logger, IWebHostEnvironment hostingEnvironment, ISubscriberServices subscriberServices, IAppSettings appSettings)
+        public HomeController(IHttpContextAccessor httpContextAccessor, ILogger<HomeController> logger, IWebHostEnvironment hostingEnvironment, ISubscriberServices subscriberServices, IAppSettings appSettings)
         {
+            _httpContextAccessor = httpContextAccessor;
             _logger = logger;
             this.hostingEnvironment = hostingEnvironment;
             this.subscriberServices = subscriberServices;
@@ -38,6 +41,8 @@ namespace Device.FingerPrint.Integration.Site.Controllers
 
         public IActionResult Index()
         {
+            var ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            ViewData["ipAddress"] = ipAddress == "::1" ? "127.0.0.1" : ipAddress;
             //ViewData["SubscriberList"] = _subscriberList;
             //ViewData["Environments"] = _environments;
 

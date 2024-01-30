@@ -26,6 +26,9 @@ namespace Device.FingerPrint.Integration.Site
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.RegisterService();
+
+            services.AddHttpContextAccessor();
+
             services.AddControllersWithViews();
             FanexDataConfig(appSettings);
         }
