@@ -1,142 +1,23 @@
-﻿using Device.FingerPrint.Features.Subscriber.Services;
-using Device.FingerPrint.Integration.Site.Models;
+﻿using Device.FingerPrint.Integration.Site.Models;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Formats.Tar;
 using System.IO;
-using System.Text;
 
 namespace Device.FingerPrint.Integration.Site.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
         private readonly IWebHostEnvironment hostingEnvironment;
-        private readonly ISubscriberServices subscriberServices;
-        private readonly IAppSettings appSettings;
-        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        private readonly SelectList _subscriberList;
-        private readonly List<SelectListItem> _environments;
-
-        public HomeController(IHttpContextAccessor httpContextAccessor, ILogger<HomeController> logger, IWebHostEnvironment hostingEnvironment, ISubscriberServices subscriberServices, IAppSettings appSettings)
+        public HomeController()
         {
-            _httpContextAccessor = httpContextAccessor;
-            _logger = logger;
-            this.hostingEnvironment = hostingEnvironment;
-            this.subscriberServices = subscriberServices;
-            this.appSettings = appSettings;
-
-            _subscriberList = GetSubscriberList();
-            _environments = GetEnvironmentList();
         }
 
         public IActionResult Index()
         {
-            var ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            ViewData["ipAddress"] = ipAddress == "::1" ? "127.0.0.1" : ipAddress;
-            //ViewData["SubscriberList"] = _subscriberList;
-            //ViewData["Environments"] = _environments;
-
-            //ViewData["FrontEndProd"] = GetScriptFrontEndProd();
-            //ViewData["FrontEndUat"] = GetScriptFrontEndUat();
-
-            //ViewData["BackEndNetStandard"] = GetScriptBackEndNetStandard();
-            //ViewData["BackEndNetCore"] = GetScriptBackEndNetCore();
-            //ViewData["BackEndNetFramework"] = GetScriptBackEndNetFramework();
             return View();
-        }
-
-        private SelectList GetSubscriberList()
-        {
-            var subscribers = subscriberServices.GetSubscriberList();
-            var selectList = new SelectList(subscribers, "SubscriberId", "SubscriberName");
-            return selectList;
-        }
-
-        public List<SelectListItem> GetEnvironmentList()
-        {
-            // Logic để lấy danh sách môi trường từ cơ sở dữ liệu hoặc bất kỳ nguồn dữ liệu nào khác
-            var environments = new List<SelectListItem>
-            {
-                new() { Text = "PROD", Value = "PROD" },
-                new() { Text = "UAT", Value = "UAT" }
-            };
-
-            return environments;
-        }
-
-        [HttpPost]
-        public IActionResult OnPost(string SubscriberId, string Environment)
-        {
-            ViewData["SubscriberList"] = _subscriberList;
-            ViewData["Environments"] = _environments;
-
-            ViewData["FrontEndProd"] = GetScriptFrontEndProd();
-            ViewData["FrontEndUat"] = GetScriptFrontEndUat();
-
-            ViewData["BackEndNetStandard"] = GetScriptBackEndNetStandard();
-            ViewData["BackEndNetCore"] = GetScriptBackEndNetCore();
-            ViewData["BackEndNetFramework"] = GetScriptBackEndNetFramework();
-            return View("Index");
-        }
-
-
-        private string GetScriptFrontEndProd()
-        {
-            string strResult = @"<script type=""text/javascript"" src=""//sc.detecas.com/di/activator.ashx"" async="""" defer=""""></script>";
-            return strResult;
-        }
-
-        private string GetScriptFrontEndUat()
-        {
-            string strResult = @"<script type=""text/javascript"" src=""//scqa2.detecas.com/activator.ashx"" async="""" defer=""""></script>";
-            return strResult;
-        }
-
-
-        private string GetScriptBackEndNetStandard()
-        {
-            string strResult = @"// Install/Update new SDK (FPS.Client.NetStandard)
-// Change to new code
-<a href=""@Url.Action(""DownloadScriptFile"", ""Download"")"">Download Script</a>
-var fpsClient = new FPS.Client.NetStandard.Service();
-
-fpsClient.InitialRequest({fpsAPI}, {httpRequest})
-         .CheckTransaction({loginName}, {subscriberName}, {action}, {loginTime});";
-            return strResult;
-        }
-
-        private string GetScriptBackEndNetCore()
-        {
-            string strResult = @"// Install/Update new SDK (FPS.Client.NetCore)
-// Change to new code
-
-var fpsClient = new FPS.Client.NetCore.Service();
-
-fpsClient.InitialRequest({fpsAPI}, {httpRequest})
-        .CheckTransaction({loginName}, {subscriberName}, {action}, {loginTime});";
-            return strResult;
-        }
-
-        private string GetScriptBackEndNetFramework()
-        {
-            string strResult = @"// Install/Update new SDK (FPS.Client)
-// Change to new code
-
-var fpsClient = new FPS.Client.Service();
-
-fpsClient.InitialRequest({fpsAPI}, {httpRequest})
-         .CheckTransaction({loginName}, {subscriberName}, {action}, {loginTime});";
-            return strResult;
         }
 
         public IActionResult DownloadFile(string fileName)
