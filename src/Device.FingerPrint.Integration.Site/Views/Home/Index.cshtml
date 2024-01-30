@@ -1,7 +1,7 @@
-﻿@{
+﻿﻿@{
     ViewData["Title"] = "Home Page";
+    var ipAddress = Context.Request.HttpContext.Connection.RemoteIpAddress;
 }
-
 <div class="container-fluid">
     <div class="row">
         <div class="col-2 px-1 bg-dark position-fixed" id="sticky-sidebar">
@@ -14,29 +14,29 @@
                 <hr class="sidebar-divider">
 
                 <div class="sidebar-heading cursor-pointer pb-2" onclick="scrollToSection('section-top')">
+                    Client-Side Integration
+                </div>
+                <hr class="sidebar-divider">
+
+                <div class="sidebar-heading cursor-pointer pb-2" onclick="scrollToSection('section-rest-api')">
                     Rest API
                 </div>
                 <hr class="sidebar-divider">
 
-                <div class="sidebar-heading cursor-pointer pb-2" onclick="scrollToSection('section-1')">
-                    Front-end
-                </div>
-                <hr class="sidebar-divider">
-
-                <div class="sidebar-heading cursor-pointer" onclick="scrollToSection('section-2')">
-                    Back-end
+                <div class="sidebar-heading cursor-pointer" onclick="scrollToSection('section-server-side')">
+                    Server-Side Integration
                 </div>
 
                 <div class="nav-item">
-                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section-2')">
+                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section-server-side')">
                         <i class="fas fa-angle-double-right"></i>
                         <span>.Net Standard</span>
                     </div>
-                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section-3')">
+                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section-net-core')">
                         <i class="fas fa-angle-double-right"></i>
                         <span>.Net Core</span>
                     </div>
-                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section-4')">
+                    <div class="nav-link cursor-pointer" onclick="scrollToSection('section-net-framework')">
                         <i class="fas fa-angle-double-right"></i>
                         <span>.Net Framework</span>
                     </div>
@@ -44,7 +44,7 @@
 
                 <!-- Sidebar Toggler (Sidebar) -->
                 @* <div class="text-center d-none d-md-inline">
-                    <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
                 </div> *@
 
             </div>
@@ -57,7 +57,7 @@
                             SessionKey: <span id="id-session-key"></span>
                         </div>
                         <div class="col-8">
-                            Ip Address: <span id="id-ip-address">@ViewData["ipAddress"]</span>
+                            Ip Address: <span id="id-ip-address">@ipAddress</span>
                         </div>
                     </div>
                     <div class="row">
@@ -70,11 +70,79 @@
             <div id="content-wrapper" class="d-flex flex-column">
                 <div id="content" class="h-100 d-inline-block">
                     <div class="container-fluid">
+
+                        @* Client-Side Integration *@
+
                         <section>
+                            <h1 class="h3 my-3 text-gray-800">Client-Side Integration</h1>
+                        </section>
+                        <section>
+                            <div class="row ml-0">
+                                <div class="card shadow mb-4 w-100">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">HTML</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <pre class="tag-pre"><code class="language-javascript">&lt;script type="text/javascript" src="{activatorLink}" async="" defer=""&gt;&lt;/script&gt;</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <p class="col-12">
+                                    With <span class="text-primary">{activatorLink}</span> is:
+                                </p>
+                                <ul>
+                                    <li>
+                                        PROD: <span class="text-primary">//sc.detecas.com/di/activator.ashx</span>
+                                    </li>
+                                    <li>
+                                        UAT: <span class="text-primary">//scqa2.detecas.com/activator.ashx</span>
+                                    </li>
+                                    <li>
+                                        LOCAL: <span class="text-primary">//fps-di.nexdev.net/activator.ashx</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </section>
+
+                        <hr />
+
+                        @* Rest API *@
+
+                        <section id="section-rest-api">
                             <h1 class="h3 my-3 text-gray-800">Rest API</h1>
                             <ul>
                                 <li>
                                     <span class="text-primary">Endpoint</span>: /FPS/CheckTransaction
+                                </li>
+                                <li style="list-style-type:none">
+                                    <ul>
+                                        <li>
+                                            PROD
+                                            <ul>
+                                                <li>
+                                                    Internal network: <span class="text-primary">http://fpsapi.nebula.prod/</span>
+                                                </li>
+                                                <li>
+                                                    External network: <span class="text-primary">http://api.detecas.com/</span>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            UAT
+                                            <ul>
+                                                <li>
+                                                    Internal network: <span class="text-primary">http://api-uat.nebula.prod/api.detecas.com/</span>
+                                                </li>
+                                                <li>
+                                                    External network: <span class="text-primary">http://scqa1.detecas.com/api.detecas.com/</span>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            LOCAL: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
+                                        </li>
+                                    </ul>
                                 </li>
                                 <li>
                                     <span class="text-primary">Method</span>: POST
@@ -130,22 +198,22 @@
                                 Ex: Please refer to RestAPI Example:
                             </div>
                             <div class="card-body">
-                                <pre class="tag-pre"><code class="language-javascript">
+                                <pre class="tag-pre"><code class="language-javascript" id="id-code-content">
 var data = JSON.stringify({
   "Account": "TestJo0101",
-  "Subscriber": "Alpha",
+  "Subscriber": "SubTest",
   "SubscriberDate": "11/21/2023 4:47:40 PM",
-  "DI": "eyJuYSI6Ik4vQSIsImRldmljZUNvZGUiOiI0ODdjYTU4YjNlM2IyY2RhMTczZDUyYTJhODU4MWNlMTFjMWY2NGQ1OzZhMzUwYjE3ZTZjODVhMWI2NjYxZGI3NTQwOTdkYjVlIiwiYXBwVmVyc2lvbiI6IjUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTE5LjAuMC4wIFNhZmFyaS81MzcuMzYiLCJ0aW1lWm9uZSI6Ii00MjAiLCJ1c2VyQWdlbnQiOiJNb3ppbGxhLzUuMCAoV2luZG93cyBOVCAxMC4wOyBXaW42NDsgeDY0KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTE5LjAuMC4wIFNhZmFyaS81MzcuMzYiLCJzY3JlZW4iOnsid2lkdGgiOjE5MjAsImhlaWdodCI6MTA4MCwiY29sb3JEZXB0aCI6MjR9LCJkZXZpY2VJZCI6IjJmNDRmZTIzNDJmZTQ5NTk5Y2RmZDRkNWI1MTJmZmJmIiwiaHJlZiI6Imh0dHBzOi8vbG9jYWxob3N0OjQ0Mzk1LyIsImNhcHR1cmVkRGF0ZSI6IjYzODM2MTQyNTkyMTgzNzc0NSIsImdlb2xvY2F0aW9uIjoiIiwidmVyc2lvbiI6IjIuMC4xNyJ9",
-  "BI": "eyJyZXN1bHQiOnsiYm90IjpmYWxzZX0sImRldGVjdGlvbiI6IntcImRldGVjdEFwcFZlcnNpb25cIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3REb2N1bWVudEF0dHJpYnV0ZXNcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RFcnJvclRyYWNlXCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0RXZhbExlbmd0aEluY29uc2lzdGVuY3lcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RGdW5jdGlvbkJpbmRcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RMYW5ndWFnZXNMZW5ndGhJbmNvbnNpc3RlbmN5XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0UGx1Z2luc0FycmF5XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0UGx1Z2luc0xlbmd0aEluY29uc2lzdGVuY3lcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RQcm9jZXNzXCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0VXNlckFnZW50XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0V2ViRHJpdmVyXCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0V2ViR0xcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RXaW5kb3dFeHRlcm5hbFwiOntcImJvdFwiOmZhbHNlfSxcImRldGVjdFdpbmRvd1NpemVcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3RNaW1lVHlwZXNDb25zaXN0ZW50XCI6e1wiYm90XCI6ZmFsc2V9LFwiZGV0ZWN0UHJvZHVjdFN1YlwiOntcImJvdFwiOmZhbHNlfSxcImRldGVjdFZtRnJvbU1lbW9yeVNjcmVlbkRpbWVuc2lvbnNcIjp7XCJib3RcIjpmYWxzZX0sXCJkZXRlY3REaXN0aW5jdGl2ZVByb3BlcnRpZXNcIjp7XCJib3RcIjpmYWxzZX19IiwiY29tcG9uZW50Ijoie1wicHJvY2Vzc1wiOntcInN0YXRlXCI6LTEsXCJlcnJvclwiOlwiQm90ZEVycm9yOiB3aW5kb3cucHJvY2VzcyBpcyB1bmRlZmluZWRcIn0sXCJ1c2VyQWdlbnRcIjp7XCJ2YWx1ZVwiOlwiTW96aWxsYS81LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzExOS4wLjAuMCBTYWZhcmkvNTM3LjM2XCIsXCJzdGF0ZVwiOjB9LFwiYXBwVmVyc2lvblwiOntcInZhbHVlXCI6XCI1LjAgKFdpbmRvd3MgTlQgMTAuMDsgV2luNjQ7IHg2NCkgQXBwbGVXZWJLaXQvNTM3LjM2IChLSFRNTCwgbGlrZSBHZWNrbykgQ2hyb21lLzExOS4wLjAuMCBTYWZhcmkvNTM3LjM2XCIsXCJzdGF0ZVwiOjB9LFwid2luZG93U2l6ZVwiOntcInZhbHVlXCI6e1wib3V0ZXJXaWR0aFwiOjE5MTgsXCJvdXRlckhlaWdodFwiOjEwMzAsXCJpbm5lcldpZHRoXCI6MTkyMCxcImlubmVySGVpZ2h0XCI6OTU1fSxcInN0YXRlXCI6MH0sXCJwbHVnaW5zTGVuZ3RoXCI6e1widmFsdWVcIjo1LFwic3RhdGVcIjowfSxcInBsdWdpbnNBcnJheVwiOntcInZhbHVlXCI6dHJ1ZSxcInN0YXRlXCI6MH0sXCJlcnJvclRyYWNlXCI6e1widmFsdWVcIjpcIlR5cGVFcnJvcjogQ2Fubm90IHJlYWQgcHJvcGVydGllcyBvZiBudWxsIChyZWFkaW5nICcwJylcXG4gICAgYXQgbmkgKGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MTo3Nzk4KVxcbiAgICBhdCBpLjxhbm9ueW1vdXM+IChodHRwczovL3NjcWEyLmRldGVjYXMuY29tL2FjdGl2YXRvci5hc2h4OjE6MTU0NzUpXFxuICAgIGF0IHMgKGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MToxMzY5KVxcbiAgICBhdCBPYmplY3QubmV4dCAoaHR0cHM6Ly9zY3FhMi5kZXRlY2FzLmNvbS9hY3RpdmF0b3IuYXNoeDoxOjY0MSlcXG4gICAgYXQgaHR0cHM6Ly9zY3FhMi5kZXRlY2FzLmNvbS9hY3RpdmF0b3IuYXNoeDoxOjU3NVxcbiAgICBhdCBuZXcgUHJvbWlzZSAoPGFub255bW91cz4pXFxuICAgIGF0IHMgKGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MTozNjkpXFxuICAgIGF0IGh0dHBzOi8vc2NxYTIuZGV0ZWNhcy5jb20vYWN0aXZhdG9yLmFzaHg6MToxNTMxNFxcbiAgICBhdCBBcnJheS5tYXAgKDxhbm9ueW1vdXM+KVxcbiAgICBhdCBpLjxhbm9ueW1vdXM+IChodHRwczovL3NjcWEyLmRldGVjYXMuY29tL2FjdGl2YXRvci5hc2h4OjE6MTUyOTEpXCIsXCJzdGF0ZVwiOjB9LFwicHJvZHVjdFN1YlwiOntcInZhbHVlXCI6XCIyMDAzMDEwN1wiLFwic3RhdGVcIjowfSxcIndpbmRvd0V4dGVybmFsXCI6e1widmFsdWVcIjpcIltvYmplY3QgRXh0ZXJuYWxdXCIsXCJzdGF0ZVwiOjB9LFwibWltZVR5cGVzQ29uc2lzdGVudFwiOntcInZhbHVlXCI6dHJ1ZSxcInN0YXRlXCI6MH0sXCJldmFsTGVuZ3RoXCI6e1widmFsdWVcIjozMyxcInN0YXRlXCI6MH0sXCJ3ZWJHTFwiOntcInZhbHVlXCI6e1widmVuZG9yXCI6XCJXZWJLaXRcIixcInJlbmRlcmVyXCI6XCJXZWJLaXQgV2ViR0xcIn0sXCJzdGF0ZVwiOjB9LFwid2ViRHJpdmVyXCI6e1widmFsdWVcIjpmYWxzZSxcInN0YXRlXCI6MH0sXCJsYW5ndWFnZXNcIjp7XCJ2YWx1ZVwiOltbXCJlbi1VU1wiXV0sXCJzdGF0ZVwiOjB9LFwiZG9jdW1lbnRFbGVtZW50S2V5c1wiOntcInZhbHVlXCI6W1wiY2xhc3NcIixcInN0eWxlXCJdLFwic3RhdGVcIjowfSxcImZ1bmN0aW9uQmluZFwiOntcInZhbHVlXCI6XCJmdW5jdGlvbiBiaW5kKCkgeyBbbmF0aXZlIGNvZGVdIH1cIixcInN0YXRlXCI6MH0sXCJkZXZpY2VNZW1vcnlcIjp7XCJ2YWx1ZVwiOjgsXCJzdGF0ZVwiOjB9LFwic2NyZWVuRGltZW5zaW9uc1wiOntcInZhbHVlXCI6e1wid2lkdGhcIjoxOTIwLFwiaGVpZ2h0XCI6MTA4MH0sXCJzdGF0ZVwiOjB9LFwiZGlzdGluY3RpdmVQcm9wc1wiOntcInZhbHVlXCI6e1wiYXdlc29taXVtXCI6ZmFsc2UsXCJjZWZcIjpmYWxzZSxcImNlZnNoYXJwXCI6ZmFsc2UsXCJjb2FjaGpzXCI6ZmFsc2UsXCJmbWluZXJcIjpmYWxzZSxcImdlYlwiOmZhbHNlLFwibmlnaHRtYXJlanNcIjpmYWxzZSxcInBoYW50b21hc1wiOmZhbHNlLFwicGhhbnRvbWpzXCI6ZmFsc2UsXCJyaGlub1wiOmZhbHNlLFwic2VsZW5pdW1cIjpmYWxzZSxcIndlYmRyaXZlcmlvXCI6ZmFsc2UsXCJ3ZWJkcml2ZXJcIjpmYWxzZSxcImhlYWRsZXNzX2Nocm9tZVwiOmZhbHNlfSxcInN0YXRlXCI6MH0sXCJicm93c2VySW5mb1wiOntcInZhbHVlXCI6e1wiYnJvd3NlckVuZ2luZUtpbmRcIjpcImNocm9taXVtXCIsXCJicm93c2VyS2luZFwiOlwiY2hyb21lXCIsXCJpc0FuZHJvaWRcIjpmYWxzZSxcImlzRGVza3RvcFNhZmFyaVwiOmZhbHNlLFwiaXNDaHJvbWl1bTg2T3JOZXdlclwiOnRydWV9LFwic3RhdGVcIjowfX0ifQ==",
-  "IP": "127.0.0.1",
-  "UserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
-  "DetecasAnalysis": "{\"startTime\":1700560192636,\"version\":\"2.0.17\",\"exceptions\":[],\"executions\":[],\"storages\":[],\"devices\":[],\"enable\":true}",
+  "DI": "__di__",
+  "BI": "__bi__",
+  "IP": "@ipAddress",
+  "UserAgent": "__useragent__",
+  "DetecasAnalysis": "__detecasAnalysis__",
   "Action": "Login",
   "ActionResult": "Successfull",
   "AcceptsTypes": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
-  "SessionKey": "f622fa1a8eb347a694fa6e965905b7b3",
+  "SessionKey": "__sessionKey__",
   "Token": "",
-  "Url": "http://www.ultra88.com"
+  "Url": "__url__"
 });
 
 var xhr = new XMLHttpRequest();
@@ -165,57 +233,30 @@ xhr.send(data);
                             </div>
                         </section>
 
-                        <hr/>
+                        <hr />
 
-                        <section id="section-1">
-                            <h1 class="h3 my-3 text-gray-800">Front-end</h1>
-                        </section>
-                        <section>
-                            <div class="row">
-                                <div class="card shadow mb-4 w-100">
-                                    <div class="card-header py-3">
-                                        <h6 class="m-0 font-weight-bold text-primary">Html</h6>
-                                    </div>
-                                    <div class="card-body">
-                                        <pre class="tag-pre"><code class="language-javascript">&lt;script type="text/javascript" src="{activatorLink}" async="" defer=""&gt;&lt;/script&gt;</code></pre>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <p class="col-12">
-                                    With <span class="text-primary">{activatorLink}</span> is:
-                                </p>
-                                <ul>
-                                    <li>
-                                        PROD: <span class="text-primary">//sc.detecas.com/di/activator.ashx</span>
-                                    </li>
-                                    <li>
-                                        UAT: <span class="text-primary">//scqa2.detecas.com/activator.ashx</span>
-                                    </li>
-                                    <li>
-                                        LOCAL: <span class="text-primary">//fps-di.nexdev.net/activator.ashx</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </section>
 
-                        <hr/>
-                        <section id="section-2">
-                            <h1 class="h3 my-3 text-gray-800">Back-end</h1>
+                        @* BACK END *@
+                        <section id="section-server-side">
+                            <h1 class="h3 my-3 text-gray-800">Server-Side Integration</h1>
                         </section>
                         <section>
                             <div class="row">
                                 <p class="col-12">
-                                    Install/Update new SDK
+                                    Step1: Install/Update new SDK
                                 </p>
                                 <p class="col-12">
-                                    Change to new code
+                                    Step2: Change to new code
                                 </p>
                             </div>
-                            <div class="row">
+                            <div class="row ml-0">
                                 <div class="card shadow mb-4 w-100">
-                                    <div class="card-header py-3">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                         <h6 class="m-0 font-weight-bold text-primary">.Net Standard</h6>
+
+                                        <a href="@Url.Action("DownloadFile", "Home", new { fileName = "FPS.Client.NetStandard.zip" })" class="btn-link">
+                                            (Download File SDK <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard">)
+                                        </a>
                                     </div>
                                     <div class="card-body">
                                         <pre class="tag-pre">
@@ -230,11 +271,15 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                         </section>
 
 
-                        <section id="section-3">
+                        <section id="section-net-core">
                             <div class="row">
                                 <div class="card shadow mb-4 w-100">
-                                    <div class="card-header py-3">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                         <h6 class="m-0 font-weight-bold text-primary">.Net NetCore</h6>
+
+                                        <a href="@Url.Action("DownloadFile", "Home", new { fileName = "FPS.Client.NetCore.zip" })" class="btn-link">
+                                            (Download File SDK <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard">)
+                                        </a>
                                     </div>
                                     <div class="card-body">
                                         <pre class="tag-pre">
@@ -248,11 +293,15 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                             </div>
                         </section>
 
-                        <section id="section-4">
+                        <section id="section-net-framework">
                             <div class="row">
                                 <div class="card shadow mb-4 w-100">
-                                    <div class="card-header py-3">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
                                         <h6 class="m-0 font-weight-bold text-primary">.Net Framework</h6>
+
+                                        <a href="@Url.Action("DownloadFile", "Home", new { fileName = "FPS.Client.zip" })" class="btn-link">
+                                            (Download File SDK <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard">)
+                                        </a>
                                     </div>
                                     <div class="card-body">
                                         <pre class="tag-pre">
@@ -271,20 +320,34 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                                 With <span class="text-primary">{fpsAPI}</span> is:
                             </p>
                             <ul>
-                                <li>
-                                    PROD (internal network): <span class="text-primary">http://fpsapi.nebula.prod/</span>
-                                </li>
-                                <li>
-                                    UAT (internal network): <span class="text-primary">http://api-uat.nebula.prod/api.detecas.com/</span>
-                                </li>
-                                <li>
-                                    PROD (external network): <span class="text-primary">http://api.detecas.com/</span>
-                                </li>
-                                <li>
-                                    UAT (external network): <span class="text-primary">http://scqa1.detecas.com/api.detecas.com/</span>
-                                </li>
-                                <li>
-                                    LOCAL: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
+                                <li style="list-style-type:none">
+                                    <ul>
+                                        <li>
+                                            <b>PROD</b>
+                                            <ul>
+                                                <li>
+                                                    Internal network: <span class="text-primary">http://fpsapi.nebula.prod/</span>
+                                                </li>
+                                                <li>
+                                                    External network: <span class="text-primary">http://api.detecas.com/</span>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <b>UAT</b>
+                                            <ul>
+                                                <li>
+                                                    Internal network: <span class="text-primary">http://api-uat.nebula.prod/api.detecas.com/</span>
+                                                </li>
+                                                <li>
+                                                    External network: <span class="text-primary">http://scqa1.detecas.com/api.detecas.com/</span>
+                                                </li>
+                                            </ul>
+                                        </li>
+                                        <li>
+                                            <b>LOCAL</b>: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
+                                        </li>
+                                    </ul>
                                 </li>
                             </ul>
                         </div>
@@ -309,34 +372,58 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                             </ul>
                         </div>
                     </div>
-                    <!-- /.container-fluid -->
-
                 </div>
-                </div>
+            </div>
         </div>
     </div>
 </div>
-<script async="" defer="" src="https://sc.detecas.com/di/activator.ashx"></script>
+<script async="" defer="" src="//sc.detecas.com/di/activator.ashx"></script>
 
 <script>
     function scrollToSection(sectionId) {
         var section = document.getElementById(sectionId);
         window.scrollTo({
-            top: section.offsetTop - 0,
+            top: section.offsetTop - 20,
             behavior: 'smooth'
         });
     }
 
     window.onload = function () {
         var sessionKeyElement = document.getElementById("id-session-key");
-        var fdiValue = document.getElementById("__fdi");
+
+        var fdiValueElement = document.getElementById("__fdi");
+        var diHiddenElement = document.getElementById("__di");
+        var biHiddenElement = document.getElementById("__bi");
+        var detecasAnalysisElement = document.getElementById("detecas-analysis");
         var userAgentElement = document.getElementById("id-user-agent");
 
-        if (sessionKeyElement && fdiValue) {
-            sessionKeyElement.innerHTML = fdiValue.value;
+        if (sessionKeyElement && fdiValueElement) {
+            sessionKeyElement.innerHTML = fdiValueElement.value;
         }
-        if (userAgentElement){
+        if (userAgentElement) {
             userAgentElement.innerHTML = navigator.userAgent;
+        }
+
+        var contentElement = document.getElementById("id-code-content");
+        if (contentElement) {
+            var contentHtml = contentElement.innerHTML;
+
+            if (diHiddenElement) {
+                contentHtml = contentHtml.replace("__di__", diHiddenElement.value);
+            }
+            if (biHiddenElement) {
+                contentHtml = contentHtml.replace("__bi__", biHiddenElement.value);
+            }
+            if (detecasAnalysisElement) {
+                contentHtml = contentHtml.replace("__detecasAnalysis__", detecasAnalysisElement.value);
+            }
+            if (fdiValueElement) {
+                contentHtml = contentHtml.replace("__sessionKey__", fdiValueElement.value);
+            }
+
+            contentHtml = contentHtml.replace("__useragent__", navigator.userAgent);
+            contentHtml = contentHtml.replace("__url__", window.location.href);
+            contentElement.innerHTML = contentHtml;
         }
     };
 </script>
