@@ -190,20 +190,6 @@
     <Content Include="Content\bootstrap-theme.css.map" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj">
-      <Project>{884087D5-DA40-4735-B5B8-5A9FA15D71AA}</Project>
-      <Name>Device.FingerPrint.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.csproj">
-      <Project>{9BC5666D-C456-4AEF-AC8D-6B42D042FAA9}</Project>
-      <Name>FPS.Device.FingerPrint.LogTrail.Net.Standard.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Framework.Client\FPS.Device.FingerPrint.Net.Framework.Client.csproj">
-      <Project>{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}</Project>
-      <Name>FPS.Device.FingerPrint.Net.Framework.Client</Name>
-    </ProjectReference>
-  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
