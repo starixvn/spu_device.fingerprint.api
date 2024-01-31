@@ -1,4 +1,13 @@
-﻿<div class="container-fluid">
+﻿@{
+    ViewBag.Title = "FPS API Guide";
+    var hideLocalField = false;
+
+    if (Context.Request.Host.Host.Contains("nexdev") || Context.Request.Host.Value.Contains("localhost"))
+    {
+        hideLocalField = true;
+    }
+}
+<div class="container-fluid">
     <div class="row">
         <div class="col-2 px-1 position-fixed" id="sticky-sidebar">
             <div class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
@@ -84,11 +93,15 @@
                                         PROD: <span class="text-primary">//sc.detecas.com/di/activator.ashx</span>
                                     </li>
                                     <li>
-                                        UAT: <span class="text-primary">//scqa2.detecas.com/activator.ashx</span>
+                                        STAGGING: <span class="text-primary">//scqa2.detecas.com/activator.ashx</span>
                                     </li>
-                                    <li>
-                                        LOCAL: <span class="text-primary">//fps-di.nexdev.net/activator.ashx</span>
-                                    </li>
+
+                                    @if (hideLocalField)
+                                    {
+                                        <li>
+                                            LOCAL: <span class="text-primary">//fps-di.nexdev.net/activator.ashx</span>
+                                        </li>
+                                    }
                                 </ul>
                             </div>
                         </section>
@@ -117,7 +130,7 @@
                                             </ul>
                                         </li>
                                         <li>
-                                            UAT
+                                            STAGGING
                                             <ul>
                                                 <li>
                                                     Internal network: <span class="text-primary">http://api-uat.nebula.prod/api.detecas.com/</span>
@@ -127,9 +140,12 @@
                                                 </li>
                                             </ul>
                                         </li>
-                                        <li>
-                                            LOCAL: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
-                                        </li>
+                                        @if (hideLocalField)
+                                        {
+                                            <li>
+                                                LOCAL: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
+                                            </li>
+                                        }
                                     </ul>
                                 </li>
                                 <li>
@@ -322,7 +338,7 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                                             </ul>
                                         </li>
                                         <li>
-                                            <b>UAT</b>
+                                            <b>STAGGING</b>
                                             <ul>
                                                 <li>
                                                     Internal network: <span class="text-primary">http://api-uat.nebula.prod/api.detecas.com/</span>
@@ -332,9 +348,12 @@ fpsClient.InitialRequest({fpsAPI}, {httpRequest})
                                                 </li>
                                             </ul>
                                         </li>
-                                        <li>
-                                            <b>LOCAL</b>: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
-                                        </li>
+                                        @if (hideLocalField)
+                                        {
+                                            <li>
+                                                <b>LOCAL</b>: <span class="text-primary">https://fps-newapi.nexdev.net/</span>
+                                            </li>
+                                        }
                                     </ul>
                                 </li>
                             </ul>
