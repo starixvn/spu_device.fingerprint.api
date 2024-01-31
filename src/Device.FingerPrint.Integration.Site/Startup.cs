@@ -1,12 +1,8 @@
-using Device.FingerPrint.Integration.Site.Services;
-using Fanex.Data;
-using Fanex.Data.MySql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Linq;
 
 namespace Device.FingerPrint.Integration.Site
 {
@@ -23,10 +19,10 @@ namespace Device.FingerPrint.Integration.Site
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
+
             services.AddSingleton<IAppSettings>(appSettings);
-            services.RegisterService();
+
             services.AddControllersWithViews();
-            FanexDataConfig(appSettings);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -55,25 +51,6 @@ namespace Device.FingerPrint.Integration.Site
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
-        }
-
-        private void FanexDataConfig(IAppSettings appSettings)
-        {
-            var connections = Configuration
-                                  .GetSection("AppConfig:Connections")
-                                  .GetChildren()
-                                  .AsEnumerable()
-                                  .ToDictionary(
-                                           x => x.GetValue<string>("Name"),
-                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-                                   );
-
-            DbSettingProviderManager
-              .StartNewSession()
-              .Use(connections)
-              .WithMySql()
-              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-              .Run();
         }
     }
 }

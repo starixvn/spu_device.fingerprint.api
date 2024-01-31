@@ -1,0 +1,135 @@
+﻿@model SubscriberModel
+@{
+    ViewData["Title"] = "Home Page";
+    var frontend = ViewData["FrontEnd"] as dynamic;
+}
+
+<style>
+    .grid-container {
+        display: flex;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px; /* Khoảng trống giữa các cột */
+    }
+
+    .grid-item {
+        display: flex;
+        padding: 16px;
+    }
+</style>
+<ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-prod" type="button" role="tab" aria-controls="pills-prod" aria-selected="true">PROD</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">UAT</button>
+    </li>
+</ul>
+<div class="tab-content" id="pills-tabContent">
+    <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">home...</div>
+    <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">profile...</div>
+    <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">contact...</div>
+</div>
+
+<div class="text-center row">
+    <div class="col-md-12">
+        <section>
+            @* <form method="post" role="form" class="form-horizontal" action="@Url.Action("OnPost")">
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+            <div class="grid-container">
+            <div class="grid-item">
+            <div class="font-weight-bold align-self-center">
+            Choose Subscriber:
+            </div>
+            <div class="ml-2">
+            @Html.DropDownListFor(m => m.SubscriberId, ViewData["SubscriberList"] as SelectList, new { @class = "form-control" })
+            </div>
+            </div>
+            <div class="grid-item">
+            <div class="ml-2">
+            <button type="submit" class="btn btn-primary">Submit</button>
+            </div>
+            </div>
+            </div>
+            </form> *@
+
+            @foreach (var frontEnd in new[] { ("Prod", "FrontEndProd"), ("UAT", "FrontEndUat") })
+            {
+                var frontEndValue = ViewData[frontEnd.Item2];
+                <div class="d-flex mt-2 control-label text-left border bg-info">
+                    <div class="mr-auto p-2 text-white">
+                        Front-end @frontEnd.Item1
+                    </div>
+                    <div class="p-2">
+                        <button class="btn-copy-front-end-@frontEnd.Item1" data-clipboard-target="#front-end-@frontEnd.Item2">
+                            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                        </button>
+                    </div>
+                </div>
+                <pre class="tag-pre"><code class="language-html" id="front-end-@frontEnd.Item2">@frontEndValue</code></pre>
+            }
+
+            @foreach (var backEnd in new[] { ("Standard", "BackEndNetStandard", "FPS.Client.NetStandard.zip"), ("Core", "BackEndNetCore", "FPS.Client.NetCore.zip"), ("Framework", "BackEndNetFramework", "FPS.Client.zip") })
+            {
+                var backEndValue = ViewData[backEnd.Item2];
+                <div class="d-flex mt-2 control-label text-left border bg-info">
+                    <div class="mr-auto p-2 text-white">
+                        Back-end @backEnd.Item1
+                    </div>
+                    <div class="p-2">
+                        <button class="btn-copy-back-end-@backEnd.Item1" data-clipboard-target="#back-end-@backEnd.Item2">
+                            <img width="13" src="~/assets/clippy.svg" alt="Copy to clipboard">
+                        </button>
+
+                        <button class="btn-copy-back-end" data-clipboard-target="#back-end-@backEnd.Item2">
+                            <a href="@Url.Action("DownloadFile", "Home", new { fileName = backEnd.Item3 })" class="btn-link">
+                                <img width="13" src="~/assets/download-alt-svgrepo-com.svg" alt="Copy to clipboard"> Download File
+                            </a>
+                        </button>
+                    </div>
+                </div>
+                <pre class="tag-pre"><code class="language-csharp" id="back-end-@backEnd.Item2">@backEndValue</code></pre>
+            }
+        </section>
+    </div>
+</div>
+
+<script>
+    function initializeTooltip(selector, targetSelector) {
+        $(selector).tooltip({
+            trigger: 'click',
+            placement: 'bottom'
+        });
+
+        function setTooltip(message) {
+            $(selector).tooltip('hide')
+                .attr('data-original-title', message)
+                .tooltip('show');
+        }
+
+        function hideTooltip() {
+            setTimeout(function () {
+                $(selector).tooltip('hide');
+            }, 1000);
+        }
+
+        var clipboard = new ClipboardJS(selector);
+
+        clipboard.on('success', function (e) {
+            setTooltip('Copied!');
+            hideTooltip();
+        });
+
+        clipboard.on('error', function (e) {
+            setTooltip('Failed!');
+            hideTooltip();
+        });
+    }
+
+    initializeTooltip('.btn-copy-front-end-Prod', '.btn-copy-front-end-Prod');
+    initializeTooltip('.btn-copy-front-end-UAT', '.btn-copy-front-end-UAT');
+    initializeTooltip('.btn-copy-back-end-Standard', '.btn-copy-back-end-Standard');
+    initializeTooltip('.btn-copy-back-end-Core', '.btn-copy-back-end-Core');
+    initializeTooltip('.btn-copy-back-end-Framework', '.btn-copy-back-end-Framework');
+</script>

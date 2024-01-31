@@ -1,75 +1,58 @@
-﻿using Device.FingerPrint.Features.Subscriber.Services;
-using Device.FingerPrint.Integration.Site.Models;
+﻿using Device.FingerPrint.Integration.Site.Models;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.IO;
 
 namespace Device.FingerPrint.Integration.Site.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
-        private readonly ISubscriberServices subscriberServices;
-        private readonly IAppSettings appSettings;
+        private readonly IWebHostEnvironment hostingEnvironment;
 
-        public HomeController(ILogger<HomeController> logger, ISubscriberServices subscriberServices, IAppSettings appSettings)
+        public HomeController(IWebHostEnvironment hostingEnvironment)
         {
-            _logger = logger;
-            this.subscriberServices = subscriberServices;
-            this.appSettings = appSettings;
+            this.hostingEnvironment = hostingEnvironment;
         }
 
         public IActionResult Index()
         {
-            ViewBag.SubscriberList = GetSubscriberList();
             return View();
         }
 
-        private SelectList GetSubscriberList()
+        public IActionResult DownloadFile(string fileName)
         {
-            var subscribers = subscriberServices.GetSubscriberList();
-            var selectList = new SelectList(subscribers, "SubscriberId", "SubscriberName");
-            return selectList;
-        }
+            string relativePath = "Upload/" + fileName;
+            string filePath = Path.Combine(hostingEnvironment.WebRootPath, relativePath);
 
-        [HttpPost]
-        public IActionResult OnPost(string SubscriberId)
-        {
-            ViewBag.SubscriberList = GetSubscriberList();
-            ViewBag.FrontEnd = GetScriptFrontEnd();
-            ViewBag.BackEnd = GetScriptBackEnd(SubscriberId);
-            return View("Index");
-        }
-
-        private string GetScriptFrontEnd()
-        {
-            string strResult = @"<input type=""hidden"" id=""__sk"" name=""__sk"" value=""@Session[""fpsSessionKey""]"" />
-<script async defer src=""@ViewBag.fpsScript"" type=""text / javascript""></script>";
-            return strResult;
-        }
-
-        private string GetScriptBackEnd(string SubscriberId)
-        {
-            string strResult = @"private void FpsIntegration(string loginName)
-    {
-            if (Session[""fpsSessionKey""] == null)
+            if (System.IO.File.Exists(filePath))
             {
-                var subscriberId = " + SubscriberId + @";
-                var apiUrl = """ + appSettings.ApiUrl + @""";
-                var fpsService = new FpsService(subscriberId, apiUrl);
+                string fileExtension = Path.GetExtension(filePath);
+                string contentType = GetContentType(fileExtension);
 
-                ViewBag.fpsScript = fpsService.GetScriptUrl();
-
-                var fpsSessionKey = fpsService.GenerateSessionKey();
-
-                fpsService.InsertTransaction(loginName, fpsSessionKey);
-
-                Session[""fpsSessionKey""] = fpsSessionKey;
+                return PhysicalFile(filePath, contentType, Path.GetFileName(filePath));
+            }
+            else
+            {
+                return Content("File does not exist.");
             }
         }
-            ";
-            return strResult;
+
+        private string GetContentType(string fileExtension)
+        {
+            switch (fileExtension)
+            {
+                case ".txt":
+                    return "text/plain";
+                case ".pdf":
+                    return "application/pdf";
+                case ".zip":
+                    return "application/zip";
+                // Thêm các trường hợp khác tùy thuộc vào định dạng tệp của bạn
+                default:
+                    return "application/octet-stream";
+            }
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
