@@ -117,7 +117,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -129,14 +128,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\bootstrap-theme.css" />
-    <Content Include="Content\bootstrap-theme.min.css" />
-    <Content Include="Content\bootstrap.css" />
-    <Content Include="Content\bootstrap.min.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
-    <Content Include="Content\Site.css" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <None Include="Scripts\jquery-3.7.1.intellisense.js" />
@@ -180,29 +174,16 @@
     <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff2" />
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="Content\bootstrap.min.css.map" />
-    <Content Include="Content\bootstrap.css.map" />
-    <Content Include="Content\bootstrap-theme.min.css.map" />
-    <Content Include="Content\bootstrap-theme.css.map" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj">
-      <Project>{884087D5-DA40-4735-B5B8-5A9FA15D71AA}</Project>
-      <Name>Device.FingerPrint.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client\FPS.Device.FingerPrint.LogTrail.Net.Standard.Client.csproj">
-      <Project>{9BC5666D-C456-4AEF-AC8D-6B42D042FAA9}</Project>
-      <Name>FPS.Device.FingerPrint.LogTrail.Net.Standard.Client</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\FPS.Device.FingerPrint.Net.Framework.Client\FPS.Device.FingerPrint.Net.Framework.Client.csproj">
-      <Project>{4B33BC79-D598-4521-9906-5D9DC8BFFE3A}</Project>
-      <Name>FPS.Device.FingerPrint.Net.Framework.Client</Name>
-    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

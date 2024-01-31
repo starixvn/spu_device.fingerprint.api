@@ -6,11 +6,6 @@ namespace demoAPI.Controllers
     {
         public ActionResult Index()
         {
-            if (Session["Username"] == null)
-            {
-                return Redirect("Login");
-            }
-
             return View();
         }
     }

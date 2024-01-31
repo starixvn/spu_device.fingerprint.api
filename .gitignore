@@ -14,3 +14,4 @@ src/Device.FingerPrint.Kafka/DockerCompose/*
 
 /src/FingerPrintEvolutionWebAPI/env/*
 /src/FingerPrintEvolutionWebAPI/__pycache__/*
+/src/demoAPI/.vs/*
