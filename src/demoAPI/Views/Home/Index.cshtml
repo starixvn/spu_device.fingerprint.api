@@ -164,13 +164,13 @@
 											<span class="text-primary">Subscriber</span> → Subscriber Name which provided from FPS team
 										</li>
 										<li>
-											<span class="text-primary">SubscriberDate</span> → Get NOW date
+											<span class="text-primary">SubscriberDate</span> → Get <b>NOW</b> date
 										</li>
 										<li>
-											<span class="text-primary">DI</span> → Get value from hidden element “__di”, default empty value
+											<span class="text-primary">DI</span> → Get value from hidden element <b>“__di”</b>, default empty value
 										</li>
 										<li>
-											<span class="text-primary">BI</span> → Get value from hidden element “__bi”, default empty value
+											<span class="text-primary">BI</span> → Get value from hidden element <b>“__bi”</b>, default empty value
 										</li>
 										<li>
 											<span class="text-primary">IP</span> → Get client IP
@@ -179,22 +179,25 @@
 											<span class="text-primary">UserAgent</span> → Get UserAgent from http header
 										</li>
 										<li>
-											<span class="text-primary">DetecasAnalysis</span> → Get value from hidden element “detecas-analysis”, default empty value
+											<span class="text-primary">DetecasAnalysis</span> → Get value from hidden element <b>“detecas-analysis”</b>, default empty value
 										</li>
 										<li>
-											<span class="text-primary">Action</span> → “Login”
+											<span class="text-primary">Action</span> → <b>“Login”</b>
 										</li>
 										<li>
-											<span class="text-primary">ActionResult</span> → “Successfull”
+											<span class="text-primary">ActionResult</span> → <b>“Successfull”</b>
+										</li>
+										@*<li>
+											<span class="text-primary">AcceptsTypes</span> → Get value from http header <b>“Accept”</b>
+										</li>*@
+										<li>
+											<span class="text-primary">SessionKey</span> → Get value from hidden element <b>“__fdi”</b>, default empty value
 										</li>
 										<li>
-											<span class="text-primary">AcceptsTypes</span> → Get value from http header “Accept”
+											<span class="text-primary">Token</span> → Get value from hidden element <b>“tk”</b>, default empty value
 										</li>
 										<li>
-											<span class="text-primary">SessionKey</span> → Get value from hidden element “__fdi”, default empty value
-										</li>
-										<li>
-											<span class="text-primary">Token</span> → Get value from hidden element “tk”, default empty value
+											<span class="text-primary">Url</span> → Get current url 
 										</li>
 									</ul>
 								</li>
@@ -204,7 +207,7 @@
 							</div>
 							<div class="card-body">
 								<pre class="tag-pre"><code class="language-javascript" id="id-code-content">
-	var data = JSON.stringify({
+	var data = {
 	"Account": "TestJo0101",
 	"Subscriber": "SubTest",
 	"SubscriberDate": "11/21/2023 4:47:40 PM",
@@ -215,25 +218,11 @@
 	"DetecasAnalysis": "__detecasAnalysis__",
 	"Action": "Login",
 	"ActionResult": "Successfull",
-	"AcceptsTypes": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
 	"SessionKey": "__sessionKey__",
 	"Token": "",
 	"Url": "__url__"
-	});
+	};
 
-	var xhr = new XMLHttpRequest();
-	xhr.withCredentials = true;
-
-	xhr.addEventListener("readystatechange", function() {
-	if(this.readyState === 4) {
-	console.log(this.responseText);
-	}
-	});
-
-	xhr.open("POST", "http://api.detecas.com/FPS/CheckTransaction");
-	xhr.setRequestHeader("Content-Type", "application/json");
-
-	xhr.send(data);
 </code></pre>
 							</div>
 						</section>
