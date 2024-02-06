@@ -41,6 +41,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("s/ssk")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult<string> GetSessionKey()
+        {
+            return Ok(Session.Generate());
+        }
 
         [HttpGet("s/{subscriberName}")]
         [ETagFilter(200)]
