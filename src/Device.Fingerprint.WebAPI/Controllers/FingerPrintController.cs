@@ -20,18 +20,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        private readonly ISubscriberServices subscriberServices;        
+        private readonly ISubscriberServices subscriberServices;
         private readonly ILogger logger;
-        
+
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            ISubscriberServices subscriberServices,            
+            ISubscriberServices subscriberServices,
             ILogger logger)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
-            this.subscriberServices = subscriberServices;            
+            this.subscriberServices = subscriberServices;
             this.logger = logger;
         }
 
@@ -41,6 +41,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
+        [HttpGet("s/ssk")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult<string> GetSessionKey()
+        {
+            return Ok(Session.Generate());
+        }
 
         [HttpGet("s/{subscriberName}")]
         [ETagFilter(200)]
@@ -81,7 +87,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
 
             return new EmptyResult();
-        }        
+        }
 
         [HttpGet("s/ce/{version}")]
         public ActionResult CookieScript()
@@ -102,7 +108,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             return new EmptyResult();
         }
-        
+
         [HttpGet("s/hl/{version}")]
         public ActionResult HeadlessBrowserScript()
         {
@@ -172,8 +178,22 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             var JWTService = new JWTService(appSettings);
 
-            return Ok(JWTService.GenerateJwtToken());            
-        }        
+            return Ok(JWTService.GenerateJwtToken());
+        }
+
+        [HttpGet("s/tok")]
+        [ResponseCache(NoStore = true, Duration = 0)]
+        public ActionResult GetToken()
+        {
+            var JWTService = new JWTService(appSettings);
+
+            return Ok(new
+            {
+                tk = JWTService.GenerateJwtToken(),
+                ss = Session.Generate()
+            });
+        }
+
 
         [HttpGet("getsubscriber/{subscriberName}")]
         public ActionResult<SubscriberModel> GetSubscriberByName(string subscriberName)
@@ -203,7 +223,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             var fakeIp = GetFakeIp();
 
             var result = "RealIP: " + realIp + "\nFakeIP: " + fakeIp;
-            return result; 
+            return result;
         }
 
         private string GetFakeIp()
