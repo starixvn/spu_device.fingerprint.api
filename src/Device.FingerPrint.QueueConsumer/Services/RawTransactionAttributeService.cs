@@ -9,6 +9,7 @@ using Fanex.Logging;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
+using Device.FingerPrint.Core;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -22,12 +23,14 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private readonly ICrypto crypto;
         private readonly IRedisService redisService;
         private readonly ILogInfoServices logInfoServices;
+        private readonly IAppSettings appSettings;
 
-        public RawTransactionAttributeService(ICrypto crypto, IRedisService redisService, ILogInfoServices logInfoServices)
+        public RawTransactionAttributeService(ICrypto crypto, IRedisService redisService, ILogInfoServices logInfoServices, IAppSettings appSettings)
         {
             this.crypto = crypto;
             this.redisService = redisService;
             this.logInfoServices = logInfoServices;
+            this.appSettings = appSettings;
         }
 
         public async Task GetTransactionAttribute(RawTransactionModel model)
@@ -50,13 +53,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
                 model.CookieCode = cookie;
 
-                if (string.IsNullOrEmpty(model.SessionKey))
+                // Log Info Consumer
+                if (appSettings.GetValue<bool>("Consumer:LogInfo"))
                 {
-                    LogSessionKeyEmpty(model);
-                }
-                else if (fingerPrint == null && cookie == null && header == null)
-                {
-                    LogRedisValueEmpty(model);
+                    if (string.IsNullOrEmpty(model.SessionKey))
+                    {
+                        LogSessionKeyEmpty(model);
+                    }
+                    else if (fingerPrint == null && cookie == null && header == null)
+                    {
+                        LogRedisValueEmpty(model);
+                    }
                 }
 
                 // Log info to test
