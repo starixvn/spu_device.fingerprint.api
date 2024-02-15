@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Features.IPDB.Services;
+using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Monitor.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Queue;
@@ -16,6 +17,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             RegisterMassTransitService(services);
             RegisterIPDBService(services);
             RegisterBotDetectionService(services);
+            RegisterLogInfoService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -48,6 +50,12 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private static void RegisterBotDetectionService(this IServiceCollection services)
         {
             services.AddSingleton<IBotDetectionService, BotDetectionService>();
+        }
+
+        private static void RegisterLogInfoService(this IServiceCollection services)
+        {
+            services.AddSingleton<ILogInfoDataAccess, LogInfoDataAccess>();
+            services.AddSingleton<ILogInfoServices, LogInfoServices>();
         }
     }
 }
