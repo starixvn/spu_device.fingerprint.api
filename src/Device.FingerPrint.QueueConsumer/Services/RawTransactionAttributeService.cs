@@ -1,11 +1,15 @@
 ﻿using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Features.LogInfo.Model;
+using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Model;
+using Device.FingerPrint.Model.Enums;
 using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
 using Fanex.Logging;
 using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
+using Device.FingerPrint.Core;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -18,10 +22,15 @@ namespace Device.FingerPrint.QueueConsumer.Services
     {
         private readonly ICrypto crypto;
         private readonly IRedisService redisService;
+        private readonly ILogInfoServices logInfoServices;
+        private readonly IAppSettings appSettings;
 
-        public RawTransactionAttributeService(ICrypto crypto, IRedisService redisService) { 
+        public RawTransactionAttributeService(ICrypto crypto, IRedisService redisService, ILogInfoServices logInfoServices, IAppSettings appSettings)
+        {
             this.crypto = crypto;
             this.redisService = redisService;
+            this.logInfoServices = logInfoServices;
+            this.appSettings = appSettings;
         }
 
         public async Task GetTransactionAttribute(RawTransactionModel model)
@@ -43,6 +52,19 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
                 model.CookieCode = cookie;
+
+                // Log Info Consumer
+                if (appSettings.GetValue<bool>("Consumer:LogInfo"))
+                {
+                    if (string.IsNullOrEmpty(model.SessionKey))
+                    {
+                        LogSessionKeyEmpty(model);
+                    }
+                    else if (fingerPrint == null && cookie == null && header == null)
+                    {
+                        LogRedisValueEmpty(model);
+                    }
+                }
 
                 // Log info to test
                 var allowedUsers = new[] { "sutest01", "andy7" };
@@ -168,5 +190,39 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             return userAgentInfo;
         }
+
+        #region Log Info
+        private void LogSessionKeyEmpty(RawTransactionModel model)
+        {
+            var logType = (int)LogType.SessionKeyEmpty;
+            if (model.SessionKey == null)
+            {
+                logType = (int)LogType.SessionKeyNull;
+            }
+
+            var logInfoModel = TransformToLogInfoModel(model, logType);
+            logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
+        }
+
+        private void LogRedisValueEmpty(RawTransactionModel model)
+        {
+            var logInfoModel = TransformToLogInfoModel(model, (int)LogType.RedisValueEmpty);
+            logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
+        }
+
+        private LogInfoModel TransformToLogInfoModel(RawTransactionModel model, int logType)
+        {
+            return new LogInfoModel
+            {
+                LogType = logType,
+                SessionKey = model.SessionKey,
+                LoginName = model.LoginName,
+                SubscriberName = model.SubscriberName,
+                TransTime = model.TransTime,
+                URL = model.URL,
+                UserAgent = model.UserAgent
+            };
+        }
+        #endregion
     }
 }
