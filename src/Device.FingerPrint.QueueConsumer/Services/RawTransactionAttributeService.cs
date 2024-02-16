@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
 using Device.FingerPrint.Core;
+using System;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -54,7 +55,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 model.CookieCode = cookie;
 
                 // Log Info Consumer
-                if (appSettings.GetValue<bool>("Consumer:LogInfo"))
+                var subscriberName = model.SubscriberName;
+                if (appSettings.GetValue<bool>("Consumer:LogInfo") 
+                    && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
                 {
                     if (string.IsNullOrEmpty(model.SessionKey))
                     {
