@@ -181,6 +181,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("s/tok")]
+        [HttpPost("s/tok")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult GetToken()
         {
