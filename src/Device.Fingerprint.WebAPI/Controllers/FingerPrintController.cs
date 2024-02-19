@@ -154,12 +154,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [HttpGet("s/crt/{version}")]
         public ActionResult CryptScript(string version)
         {
-            var scriptName = version.Contains("beta") ? "encrypt" : "md5";
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
 
             if (appSettings.Environment != "DEV")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
