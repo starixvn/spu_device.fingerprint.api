@@ -48,8 +48,7 @@ namespace Device.Fingerprint.WebAPI
                 opt.AddDefaultPolicy(builder => builder
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .SetPreflightMaxAge(TimeSpan.FromMinutes(30)));
+                    .AllowAnyHeader());
             });
 
             services.AddResponseCaching();
