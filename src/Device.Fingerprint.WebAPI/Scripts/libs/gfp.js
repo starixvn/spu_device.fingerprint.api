@@ -76,7 +76,7 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v1.0.2 - Copyright (c) FingerprintJS, Inc, 2023 (https://fingerprint.com)
+     * FingerprintJS v1.0.2 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -3466,12 +3466,12 @@ var globalFP = (function (exports) {
     }
     function webglId(callback) {
         try {
-            const n1 = getWebglFp();
-            const m1 = JSON.stringify(n1).replace(/,?"[0-9]+":/g, "");
-            const hash1 = callback(m1);
-            const n2 = getWebglFp();
-            const m2 = JSON.stringify(n2).replace(/,?"[0-9]+":/g, "");
-            const hash2 = callback(m2);
+            var n1 = getWebglFp();
+            var m1 = JSON.stringify(n1).replace(/,?"[0-9]+":/g, "");
+            var hash1 = callback(m1);
+            var n2 = getWebglFp();
+            var m2 = JSON.stringify(n2).replace(/,?"[0-9]+":/g, "");
+            var hash2 = callback(m2);
             if (hash1 == hash2) {
                 return hash1;
             }
@@ -3484,7 +3484,7 @@ var globalFP = (function (exports) {
     }
 
     function checkFunctionCode(func, expectedName) {
-        const reg = new RegExp("^\\s*function " +
+        var reg = new RegExp("^\\s*function " +
             expectedName +
             "\\s*\\(\\)\\s*\\{\\s*\\[native code\\]\\s*\\}\\s*$");
         if (!func.toString().match(reg)) {
@@ -3497,29 +3497,29 @@ var globalFP = (function (exports) {
     }
 
     function getCanvas(callback) {
-        const start = new Date();
+        var start = new Date();
         if (!isFnCanvasDefender()) {
-            let result = getCanvasFingerprint();
+            var result = getCanvasFingerprint();
             if (result.geometry != "unstable") {
-                const hash = callback(JSON.stringify(result));
+                var hash = callback(JSON.stringify(result));
                 return { value: hash, duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
             }
         }
         return { value: "unstable", duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
     }
     function getCanvasFingerprint() {
-        let winding = false;
-        let geometry;
-        let text;
-        const [canvas, context] = makeCanvasContext();
+        var winding = false;
+        var geometry;
+        var text;
+        var _a = makeCanvasContext(), canvas = _a[0], context = _a[1];
         if (!isSupported(canvas, context)) {
             geometry = text = ''; // The value will be 'unsupported' in v3.4
         }
         else {
             winding = doesSupportWinding(context);
             renderTextImage(canvas, context);
-            const textImage1 = canvasToString(canvas);
-            const textImage2 = canvasToString(canvas);
+            var textImage1 = canvasToString(canvas);
+            var textImage2 = canvasToString(canvas);
             if (textImage1 !== textImage2) {
                 geometry = text = 'unstable';
             }
@@ -3529,10 +3529,10 @@ var globalFP = (function (exports) {
                 geometry = canvasToString(canvas);
             }
         }
-        return { winding, geometry, text };
+        return { winding: winding, geometry: geometry, text: text };
     }
     function makeCanvasContext() {
-        const canvas = document.createElement('canvas');
+        var canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
         return [canvas, canvas.getContext('2d')];
@@ -3554,7 +3554,7 @@ var globalFP = (function (exports) {
         context.fillRect(100, 1, 62, 20);
         context.fillStyle = '#069';
         context.font = '11pt "Times New Roman"';
-        const printedText = `Cwm fjordbank gly ${String.fromCharCode(55357, 56835) /* 😃 */}`;
+        var printedText = "Cwm fjordbank gly " + String.fromCharCode(55357, 56835) /* 😃 */;
         context.fillText(printedText, 2, 15);
         context.fillStyle = 'rgba(102, 204, 0, 0.2)';
         context.font = '18pt Arial';
@@ -3566,11 +3566,12 @@ var globalFP = (function (exports) {
         canvas.height = 110;
         // Canvas blending
         context.globalCompositeOperation = 'multiply';
-        for (const [color, x, y] of [
+        for (var _i = 0, _a = [
             ['#f2f', 40, 40],
             ['#2ff', 80, 40],
             ['#ff2', 60, 80],
-        ]) {
+        ]; _i < _a.length; _i++) {
+            var _b = _a[_i], color = _b[0], x = _b[1], y = _b[2];
             context.fillStyle = color;
             context.beginPath();
             context.arc(x, y, 40, 0, Math.PI * 2, true);
@@ -3587,45 +3588,45 @@ var globalFP = (function (exports) {
         return canvas.toDataURL();
     }
 
-    const listAttributeHash = ["math", "fontPreferencePrint", "webGlExtensions"];
+    var listAttributeHash = ["math", "fontPreferencePrint", "webGlExtensions"];
     function getDevicePixelRatio() {
         return window.devicePixelRatio;
     }
     function getCurrentResolution() {
-        let ratio = getDevicePixelRatio();
+        var ratio = getDevicePixelRatio();
         return screen.width * ratio + "x" + screen.height * ratio;
     }
     function getPixelDepth() {
         return screen.pixelDepth;
     }
     function getScreenPrint() {
-        const start = Date.now();
-        const result = {
+        var start = Date.now();
+        var result = {
             currentResolution: getCurrentResolution(),
             pixelDepth: getPixelDepth(),
         };
         return { value: result, duration: Date.now() - start };
     }
     function getWebGL(callback) {
-        const start = new Date();
-        const result = webglId(callback);
+        var start = new Date();
+        var result = webglId(callback);
         return { value: result, duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
     }
     function getDoNotTrack() {
-        const start = Date.now();
-        let result = navigator.doNotTrack;
+        var start = Date.now();
+        var result = navigator.doNotTrack;
         return { value: result, duration: Date.now() - start };
     }
     function getWebGLRenderer(webgl) {
-        const start = Date.now();
+        var start = Date.now();
         if (webgl && webgl.value == "unstable") {
             return { value: "unstable", duration: Date.now() - start };
         }
         return { value: getGLRenderer(), duration: Date.now() - start };
     }
     function getGLRenderer() {
-        const canvas = document.createElement("canvas");
-        const gl = canvas.getContext("webgl");
+        var canvas = document.createElement("canvas");
+        var gl = canvas.getContext("webgl");
         if (gl &&
             typeof gl.getExtension === "function" &&
             gl.getExtension("WEBGL_debug_renderer_info") != null) {
@@ -3634,18 +3635,19 @@ var globalFP = (function (exports) {
         return "";
     }
     function componentsToJsonString(components, callback) {
-        const sortedKeys = Object.keys(components).sort();
-        let result = "";
-        let err = "";
-        for (const componentKey of sortedKeys) {
-            const component = components[componentKey];
-            let value;
+        var sortedKeys = Object.keys(components).sort();
+        var result = "";
+        var err = "";
+        for (var _i = 0, sortedKeys_1 = sortedKeys; _i < sortedKeys_1.length; _i++) {
+            var componentKey = sortedKeys_1[_i];
+            var component = components[componentKey];
+            var value = void 0;
             if ("error" in component) {
-                value = `"error"`;
-                err += `${componentKey}: "${component.error}",`;
+                value = "\"error\"";
+                err += componentKey + ": \"" + component.error + "\",";
             }
             else if (component.value === undefined) {
-                value = `"undefined"`;
+                value = "\"undefined\"";
             }
             else {
                 if (listAttributeHash.includes(componentKey)) {
@@ -3655,27 +3657,37 @@ var globalFP = (function (exports) {
                     value = JSON.stringify(component.value);
                 }
             }
-            const escapedComponentKey = `"${componentKey.replace(/([:|\\])/g, "\\$1")}"`;
-            result += `${result ? "," : "{"}${escapedComponentKey}:${value}`;
+            var escapedComponentKey = "\"" + componentKey.replace(/([:|\\])/g, "\\$1") + "\"";
+            result += "" + (result ? "," : "{") + escapedComponentKey + ":" + value;
         }
-        return `${result}}`;
+        return result + "}";
     }
-    async function getFontPreference() {
-        const start = Date.now();
-        const font = await sources.fontPreferences();
-        const result = {
-            default: font["default"],
-            apple: font["apple"],
-            serif: font["serif"],
-            sans: font["sans"],
-            min: font["min"],
-            system: font["system"],
-        };
-        return { value: result, duration: Date.now() - start };
+    function getFontPreference() {
+        return __awaiter(this, void 0, void 0, function () {
+            var start, font, result;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        start = Date.now();
+                        return [4 /*yield*/, sources.fontPreferences()];
+                    case 1:
+                        font = _a.sent();
+                        result = {
+                            default: font["default"],
+                            apple: font["apple"],
+                            serif: font["serif"],
+                            sans: font["sans"],
+                            min: font["min"],
+                            system: font["system"],
+                        };
+                        return [2 /*return*/, { value: result, duration: Date.now() - start }];
+                }
+            });
+        });
     }
     function getLanguages() {
-        const start = Date.now();
-        const result = {
+        var start = Date.now();
+        var result = {
             language: window.navigator.language,
             languages: window.navigator.languages.join(","),
             userLanguage: window.navigator["userLanguage"],
@@ -3697,34 +3709,37 @@ var globalFP = (function (exports) {
         };
     }
     function getFP(callback) {
-        let visitorId;
-        const fpPromise = loadSources(sources, {}, [
+        var _this = this;
+        var visitorId;
+        var fpPromise = loadSources(sources, {}, [
             "screenResolution",
             "screenFrame",
             "canvas",
             "fontPreferences",
             "languages"
         ])();
-        const canvas = getCanvas(callback);
-        const webgl = getWebGL(callback);
-        return fpPromise.then(async (components) => {
-            const customComponents = {
-                ...components,
-                screenPrint: getScreenPrint(),
-                fontPreferencePrint: await getFontPreference(),
-                languagesPrint: getLanguages(),
-                canvasPrint: canvas,
-                webglPrint: webgl,
-                webglRenderer: getWebGLRenderer(webgl),
-                doNotTrack: getDoNotTrack(),
-            };
-            visitorId = index.hashComponents(customComponents);
-            let properties = componentsToJsonString(customComponents, callback);
-            return Promise.resolve({
-                Id: visitorId,
-                Properties: properties
+        var canvas = getCanvas(callback);
+        var webgl = getWebGL(callback);
+        return fpPromise.then(function (components) { return __awaiter(_this, void 0, void 0, function () {
+            var customComponents, _a, properties;
+            var _b;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        _a = [__assign({}, components)];
+                        _b = { screenPrint: getScreenPrint() };
+                        return [4 /*yield*/, getFontPreference()];
+                    case 1:
+                        customComponents = __assign.apply(void 0, _a.concat([(_b.fontPreferencePrint = _c.sent(), _b.languagesPrint = getLanguages(), _b.canvasPrint = canvas, _b.webglPrint = webgl, _b.webglRenderer = getWebGLRenderer(webgl), _b.doNotTrack = getDoNotTrack(), _b)]));
+                        visitorId = index.hashComponents(customComponents);
+                        properties = componentsToJsonString(customComponents, callback);
+                        return [2 /*return*/, Promise.resolve({
+                                Id: visitorId,
+                                Properties: properties
+                            })];
+                }
             });
-        });
+        }); });
     }
 
     exports.getAudio = getAudio;

@@ -6,12 +6,12 @@ var fpNewCookie = (function (exports) {
     var isSet = false;
     var timeout = 200;
     function localStorage(key, value) {
-        const result = getSetLocalStorage(key, value);
+        var result = getSetLocalStorage(key, value);
         return result;
     }
     function getSetLocalStorage(key, value) {
         try {
-            const localStorageObj = window.localStorage;
+            var localStorageObj = window.localStorage;
             if (localStorageObj) {
                 if (isSet) {
                     localStorageObj.setItem(key, value);
@@ -27,14 +27,14 @@ var fpNewCookie = (function (exports) {
         }
     }
     function indexedDb(key, value) {
-        const result = getSetIndexedDb('indexedDB_ls', 'ls', key, value, isSet);
+        var result = getSetIndexedDb('indexedDB_ls', 'ls', key, value, isSet);
         return result;
     }
     function getSetIndexedDb(dbName, storeName, key, value, isSet) {
         return new Promise(function (resolve, reject) {
-            const indexedDbObj = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
+            var indexedDbObj = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB || window.shimIndexedDB;
             if (indexedDbObj) {
-                const request = indexedDbObj.open(dbName);
+                var request = indexedDbObj.open(dbName);
                 request.onerror = function () {
                     console.log('Failed to open database');
                     resolve(null);
@@ -47,27 +47,27 @@ var fpNewCookie = (function (exports) {
                     db.createObjectStore(storeName);
                 };
                 request.onsuccess = function (event) {
-                    const db = event.target.result;
+                    var db = event.target.result;
                     if (db) {
                         if (!db.objectStoreNames.contains(storeName)) {
                             db.close();
                             indexedDB.deleteDatabase(dbName);
-                            const request2 = indexedDB.open(dbName, 1);
+                            var request2 = indexedDB.open(dbName, 1);
                             request2.onupgradeneeded = function (event) {
-                                const db2 = event.target.result;
+                                var db2 = event.target.result;
                                 db2.createObjectStore(storeName);
                             };
                             request2.onsuccess = function (event) {
-                                const db2 = event.target.result;
-                                const transaction = db2.transaction(storeName, "readwrite");
-                                const store = transaction.objectStore(storeName);
+                                var db2 = event.target.result;
+                                var transaction = db2.transaction(storeName, "readwrite");
+                                var store = transaction.objectStore(storeName);
                                 store.get(key).onsuccess = function (innerEvent) {
                                     if (isSet) {
                                         store.put(value, key);
                                         resolve(null);
                                     }
                                     else {
-                                        const data = innerEvent.target.result;
+                                        var data = innerEvent.target.result;
                                         if (data) {
                                             resolve(data);
                                         }
@@ -79,16 +79,16 @@ var fpNewCookie = (function (exports) {
                             };
                         }
                         else {
-                            const transaction = db.transaction(storeName, 'readwrite');
+                            var transaction = db.transaction(storeName, 'readwrite');
                             if (transaction.db.objectStoreNames.contains(storeName)) {
-                                const store = transaction.objectStore(storeName);
-                                store.get(key).onsuccess = function (innerEvent) {
+                                var store_1 = transaction.objectStore(storeName);
+                                store_1.get(key).onsuccess = function (innerEvent) {
                                     if (isSet) {
-                                        store.put(value, key);
+                                        store_1.put(value, key);
                                         resolve(null);
                                     }
                                     else {
-                                        const data = innerEvent.target.result;
+                                        var data = innerEvent.target.result;
                                         if (data) {
                                             resolve(data);
                                         }
@@ -105,31 +105,31 @@ var fpNewCookie = (function (exports) {
         });
     }
     function cookie(key, value) {
-        const result = getSetCookie(key, value);
+        var result = getSetCookie(key, value);
         return result;
     }
     function getSetCookie(key, value) {
         return new Promise(function (resolve, reject) {
             try {
                 if (isSet) {
-                    let expires = '';
-                    let date = new Date();
+                    var expires = '';
+                    var date = new Date();
                     date.setFullYear(date.getFullYear() + 1);
                     expires = '; expires=' + date.toUTCString();
-                    const setValue = key + '=' + (value || '') + expires + '; SameSite=None; Secure; path=/';
+                    var setValue = key + '=' + (value || '') + expires + '; SameSite=None; Secure; path=/';
                     document.cookie = setValue;
                     resolve(null);
                 }
                 else {
-                    let cookie = null;
-                    const cookieArr = document.cookie.split(';');
-                    for (let i = 0; i < cookieArr.length; i++) {
-                        const cookiePair = cookieArr[i].split('=');
+                    var cookie_1 = null;
+                    var cookieArr = document.cookie.split(';');
+                    for (var i = 0; i < cookieArr.length; i++) {
+                        var cookiePair = cookieArr[i].split('=');
                         if (key == cookiePair[0].trim()) {
-                            cookie = decodeURIComponent(cookiePair[1]);
+                            cookie_1 = decodeURIComponent(cookiePair[1]);
                         }
                     }
-                    resolve(cookie);
+                    resolve(cookie_1);
                 }
             }
             catch (exception) {
@@ -137,7 +137,7 @@ var fpNewCookie = (function (exports) {
         });
     }
     function windowName(key, value) {
-        const result = getSetWindowName(key, value);
+        var result = getSetWindowName(key, value);
         return result;
     }
     function getSetWindowName(key, value) {
@@ -167,12 +167,12 @@ var fpNewCookie = (function (exports) {
         return typeof obj !== 'undefined' && !!obj;
     }
     function generateUUIDv4() {
-        let uuid = '';
-        for (let i = 0; i < 32; i++) {
+        var uuid = '';
+        for (var i = 0; i < 32; i++) {
             if (i === 8 || i === 12 || i === 16 || i === 20) {
                 uuid += '-';
             }
-            const random = (Math.random() * 16) | 0;
+            var random = (Math.random() * 16) | 0;
             if (i === 12) {
                 uuid += '4';
             }
@@ -186,12 +186,12 @@ var fpNewCookie = (function (exports) {
         return uuid;
     }
     function validateUUID(uuid) {
-        const uuidRegex = /^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[8|9|aA|bB][a-f\d]{3}-[a-f\d]{12}$/i;
+        var uuidRegex = /^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[8|9|aA|bB][a-f\d]{3}-[a-f\d]{12}$/i;
         if (!uuidRegex.test(uuid)) {
             return false;
         }
         // Kiểm tra phiên bản UUID
-        const versionBits = parseInt(uuid.charAt(14), 16);
+        var versionBits = parseInt(uuid.charAt(14), 16);
         if (versionBits !== 4) {
             return false;
         }
@@ -202,17 +202,17 @@ var fpNewCookie = (function (exports) {
         return true;
     }
     function waitAllWithTimeout(promises) {
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => resolve(), timeout);
+        var timeoutPromise = new Promise(function (resolve, reject) {
+            setTimeout(function () { return resolve(); }, timeout);
         });
-        return Promise.all(promises.map((p) => Promise.race([p, timeoutPromise])));
+        return Promise.all(promises.map(function (p) { return Promise.race([p, timeoutPromise]); }));
     }
     function getFirstMaxCountValue(arr) {
-        let count = {};
-        let maxCount = 0;
-        let maxValue = null;
+        var count = {};
+        var maxCount = 0;
+        var maxValue = null;
         if (arr && Array.isArray(arr) && arr.length > 0) {
-            for (let i = 0; i < arr.length; i++) {
+            for (var i = 0; i < arr.length; i++) {
                 if (count[arr[i]] === undefined) {
                     count[arr[i]] = 1;
                 }
@@ -225,20 +225,20 @@ var fpNewCookie = (function (exports) {
                 }
             }
         }
-        return new Promise((resolve) => {
+        return new Promise(function (resolve) {
             resolve(validateUUID(maxValue) ? maxValue : generateUUIDv4());
         });
     }
     function get(key) {
         try {
             isSet = false;
-            const promises = storageHandlers.map((handler) => {
-                return new Promise((resolve) => {
+            var promises = storageHandlers.map(function (handler) {
+                return new Promise(function (resolve) {
                     resolve(handler(key, null));
                 });
             });
-            return waitAllWithTimeout(promises).then((cookies) => {
-                return getFirstMaxCountValue(cookies).then((cookieValue) => {
+            return waitAllWithTimeout(promises).then(function (cookies) {
+                return getFirstMaxCountValue(cookies).then(function (cookieValue) {
                     return Promise.resolve(cookieValue);
                 });
             });
@@ -256,10 +256,12 @@ var fpNewCookie = (function (exports) {
         catch (exception) {
         }
     }
-    function getStorage(key = cookieKey) {
+    function getStorage(key) {
+        if (key === void 0) { key = cookieKey; }
         return get(key);
     }
-    function setStorage(key = cookieKey, value) {
+    function setStorage(key, value) {
+        if (key === void 0) { key = cookieKey; }
         if (key && value)
             set(key, value);
     }
