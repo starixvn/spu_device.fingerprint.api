@@ -106,22 +106,22 @@ namespace Device.FingerPrint.PortalAPI
 
 
             #region Authentication
-            services.AddAuthentication(option =>
-            {
-                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            //services.AddAuthentication(option =>
+            //{
+            //    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            //    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 
-            }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = false,
-                    ValidateIssuerSigningKey = false,
-                    IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
-                };
-            });
+            //}).AddJwtBearer(options =>
+            //{
+            //    options.TokenValidationParameters = new TokenValidationParameters
+            //    {
+            //        ValidateIssuer = false,
+            //        ValidateAudience = false,
+            //        ValidateLifetime = false,
+            //        ValidateIssuerSigningKey = false,
+            //        IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
+            //    };
+            //});
             #endregion
 
             RegisterRedis(services);
