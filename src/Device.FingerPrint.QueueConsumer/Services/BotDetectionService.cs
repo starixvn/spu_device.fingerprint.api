@@ -4,7 +4,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
     using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Model;
     using Fanex.Logging;
-    using Fanex.Oneyed.Infrastructure.Models;
     using Newtonsoft.Json;
     using Newtonsoft.Json.Linq;
     using System;

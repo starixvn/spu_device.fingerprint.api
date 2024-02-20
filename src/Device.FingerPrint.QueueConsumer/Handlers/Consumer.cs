@@ -11,7 +11,6 @@
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.Database;
     using Fanex.LogTrail.Service;
-    using Fanex.Oneyed.Infrastructure.Models;
     using MassTransit;
     using System;
     using System.Collections.Generic;

@@ -5,7 +5,6 @@
     using Device.FingerPrint.Model;
     using Device.FingerPrint.QueueConsumer.Models;
     using Fanex.Logging;
-    using Fanex.Oneyed.Infrastructure.Models;
     using Newtonsoft.Json;
     using System;
 

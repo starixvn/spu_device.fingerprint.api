@@ -12,7 +12,7 @@ namespace Device.FingerPrint.Queue
     {
         Task SendAsync<T>(T data, string address);
 
-        Task SendBatchAsync<T>(IEnumerable<T> datas, string address) where T : class;
+        Task SendBatchAsync<T>(IEnumerable<T> data, string address) where T : class;
     }
     public class MassTransitProducer : IMassTransitProducer
     {
@@ -29,10 +29,10 @@ namespace Device.FingerPrint.Queue
             await endpoint.Send(data, new CancellationToken());
         }
 
-        public async Task SendBatchAsync<T>(IEnumerable<T> datas, string address) where T : class
+        public async Task SendBatchAsync<T>(IEnumerable<T> data, string address) where T : class
         {
             var endpoint = await bus.GetSendEndpoint(new Uri(address));
-            await endpoint.SendBatch(datas, new CancellationToken());
+            await endpoint.SendBatch(data, new CancellationToken());
         }
     }
 }

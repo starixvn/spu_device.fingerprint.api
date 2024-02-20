@@ -23,6 +23,8 @@
         Task HashSetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond = 0);
 
         Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey);
+
+        Task<bool> AddAsyncAndExpiryAsync<T>(string key, T value, DateTimeOffset expiresAt);
     }
 
     public class RedisService : IRedisService
