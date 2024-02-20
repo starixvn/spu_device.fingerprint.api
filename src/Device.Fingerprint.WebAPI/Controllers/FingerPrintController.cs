@@ -213,7 +213,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             // Method intentionally left empty.
             // 
-            logger.Info("I'm good.");
+            // logger.Info("I'm good.");
         }
 
         [HttpGet("getClientIP")]

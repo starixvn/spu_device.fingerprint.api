@@ -175,6 +175,11 @@
             };
         }
 
+        [HttpGet("hc")]
+        public void HealthCheck()
+        {
+        }
+
         private void AddHeaderToRedis(string sessionKey)
         {
             var headerModel = GetHeaderValue();
