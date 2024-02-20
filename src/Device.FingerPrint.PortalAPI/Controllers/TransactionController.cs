@@ -143,7 +143,9 @@
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
 
-            clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
+            var message = $"RealIP: {GetRealIp()} | {logsData.Exception}";
+
+            clientTransactionService.InsertClientTransactionException(logsData.Function, message, logsData.UserAgent);
         }
 
         [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]
