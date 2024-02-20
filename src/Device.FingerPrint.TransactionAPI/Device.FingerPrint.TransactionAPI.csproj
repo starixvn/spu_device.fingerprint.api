@@ -21,10 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
-    <ProjectReference Include="..\src\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
-    <ProjectReference Include="..\src\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
-    <ProjectReference Include="..\src\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
+    <ProjectReference Include="..\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj" />
   </ItemGroup>
 
 </Project>

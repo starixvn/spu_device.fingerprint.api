@@ -57,7 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConsoleApp", "ConsoleApp", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.RawTransaction.Insert", "src\FPS.RawTransaction.Insert\FPS.RawTransaction.Insert.csproj", "{CFCE674A-2DE9-419B-9670-BAFEE91B606F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.TransactionAPI", "Device.FingerPrint.TransactionAPI\Device.FingerPrint.TransactionAPI.csproj", "{C7E7C789-F289-45AD-8746-658096587EE7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.FingerPrint.TransactionAPI", "src\Device.FingerPrint.TransactionAPI\Device.FingerPrint.TransactionAPI.csproj", "{C7E7C789-F289-45AD-8746-658096587EE7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
