@@ -20,6 +20,7 @@ namespace Device.FingerPrint.TransactionAPI
     using ONEbook.UM.Transport;
     using Device.FingerPrint.Redis;
     using ONEbook.UM.AspNetCore;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 
     public class Startup
     {
@@ -74,6 +75,8 @@ namespace Device.FingerPrint.TransactionAPI
                 options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
                 options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
             });
+
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -86,6 +89,11 @@ namespace Device.FingerPrint.TransactionAPI
             app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseRouting();
+
+            app.UseHealthChecks("/healthz", new HealthCheckOptions
+            {
+                Predicate = _ => true
+            });
 
             app.UseEndpoints(endpoints =>
             {
