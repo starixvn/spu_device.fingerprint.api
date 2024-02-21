@@ -24,8 +24,8 @@ namespace Device.FingerPrint.Model
         [JsonPropertyName("sk")]
         public string SessionKey { get; set; }
 
-        [JsonPropertyName("oc")]
-        public string OldCookie { get; set; }
+        [JsonPropertyName("dc")]
+        public string DeviceCode { get; set; }
 
         [JsonPropertyName("nc")]
         public string NewCookie { get; set; }

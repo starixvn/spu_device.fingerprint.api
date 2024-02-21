@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Features.ClientTransaction.Criterias
 
         public override string GetSettingKey()
         {
-            return "CTS_Log_FPSClientTransactionException_Insert";
+            return "DCS_DT_Log_FPSJavascriptException_Insert";
         }
 
         public override bool IsValid()
