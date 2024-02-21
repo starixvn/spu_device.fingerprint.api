@@ -124,7 +124,7 @@ namespace Device.FingerPrint.TransactionAPI
         public List<SubscriberModel> GetExtraSubscribers()
         {
             var listExtraSubscribersModel = new List<SubscriberModel>();
-            var extraSubscribers = GetValue<string>("DCS-ExtraSubscribers").Split(',');
+            var extraSubscribers = GetValue<string>("DCSExtraSubscribers").Split(',');
             if (extraSubscribers != null && extraSubscribers.Any())
             {
                 foreach (var subscriber in extraSubscribers)
