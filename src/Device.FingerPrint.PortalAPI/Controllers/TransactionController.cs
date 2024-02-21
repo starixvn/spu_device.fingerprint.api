@@ -142,10 +142,10 @@
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
+            logsData.RealIP = GetRealIp();
+            logsData.FakeIP = GetFakeIp();
 
-            var message = $"RealIP: {GetRealIp()} | {logsData.Exception}";
-
-            clientTransactionService.InsertClientTransactionException(logsData.Function, message, logsData.UserAgent);
+            clientTransactionService.InsertClientTransactionException(logsData);
         }
 
         [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]
