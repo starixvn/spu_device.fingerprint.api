@@ -21,6 +21,7 @@ namespace Device.FingerPrint.TransactionAPI
     using Device.FingerPrint.Redis;
     using ONEbook.UM.AspNetCore;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+    using Device.FingerPrint.Core.Middleware;
 
     public class Startup
     {
@@ -85,8 +86,7 @@ namespace Device.FingerPrint.TransactionAPI
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseMiddleware<ExceptionMiddleware>();
+            var appSettings = app.ApplicationServices.GetRequiredService<IAppSettings>();
 
             app.UseRouting();
 
@@ -94,6 +94,9 @@ namespace Device.FingerPrint.TransactionAPI
             {
                 Predicate = _ => true
             });
+
+            app.UseMiddleware<ExceptionMiddleware>();
+            app.UseMiddleware<CustomJWTMiddleware>(appSettings.JWTEnable, appSettings.JWTPassword);
 
             app.UseEndpoints(endpoints =>
             {

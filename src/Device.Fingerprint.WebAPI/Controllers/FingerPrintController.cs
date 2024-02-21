@@ -220,6 +220,19 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return "I'm good.";
         }
 
+
+        [HttpGet]
+        [Route("getToken")]
+        public string GetToken(string env = "local")
+        {
+            if (env == "prod")
+            {
+                return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ii8vbG9jYWxob3N0OjUwMDcvYXBpIiwibmJmIjoxNzA4NTA5MjE5LCJleHAiOjI1MzQwMjI3NTYwMCwiaWF0IjoxNzA4NTA5MjE5LCJpc3MiOiIvL2xvY2FsaG9zdDo1MDA3L2FwaSJ9.0ot1gLv11INDOPcMxBPXoP5WWWT0xUhS2d1GQPStVvY";
+            }
+
+            return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ii8vbG9jYWxob3N0OjUwMDcvYXBpIiwibmJmIjoxNzA4NTA3NTM0LCJleHAiOjI1MzQwMjI3NTYwMCwiaWF0IjoxNzA4NTA3NTM0LCJpc3MiOiIvL2xvY2FsaG9zdDo1MDA3L2FwaSJ9.fiE102TDhb14_rG4NvgGXRk_nwiEKZxGVT9Iq0JWycs";
+        }
+
         [HttpGet("getClientIP")]
         public string GetClientIP()
         {

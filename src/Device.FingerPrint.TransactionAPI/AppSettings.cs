@@ -28,6 +28,9 @@ namespace Device.FingerPrint.TransactionAPI
 
         string LogTrailSystemName { get; }
 
+        string JWTPassword { get; }
+
+        bool JWTEnable { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -56,6 +59,10 @@ namespace Device.FingerPrint.TransactionAPI
 
         private readonly string logTrailSystemName;
 
+        private readonly string jwtPassword;
+
+        private readonly bool jwtEnable;
+
         public AppSettings(IConfiguration configuration)
         {
             this.configuration = configuration;
@@ -81,6 +88,10 @@ namespace Device.FingerPrint.TransactionAPI
             logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl");
 
             logTrailSystemName = GetValue<string>("LogTrail:SystemName");
+
+            jwtPassword = GetValue<string>("JWT:Password");
+
+            jwtEnable = GetValue<bool>("JWT:Enable");
         }
 
         public string QueueName => queueName;
@@ -104,6 +115,10 @@ namespace Device.FingerPrint.TransactionAPI
         public string LogTrailBaseUrl => logTrailBaseUrl;
 
         public string LogTrailSystemName => logTrailSystemName;
+
+        public string JWTPassword => jwtPassword;
+
+        public bool JWTEnable => jwtEnable;
 
         public T GetValue<T>(string key)
         {
