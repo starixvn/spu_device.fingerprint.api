@@ -118,11 +118,11 @@ namespace Device.FingerPrint.PortalAPI
             //    {
             //        ValidateIssuer = false,
             //        ValidateAudience = false,
-            //        ValidateLifetime = false,
             //        ValidateIssuerSigningKey = false,
+            //        ClockSkew = TimeSpan.Zero,
             //        IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
             //    };
-            //});
+            });
             #endregion
 
             RegisterRedis(services);
@@ -176,9 +176,10 @@ namespace Device.FingerPrint.PortalAPI
                 await next();
             });
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
-            app.UseMiddleware<JWTMiddleware>();
             app.UseMiddleware<ExceptionMiddleware>();                       
 
             if(env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("AppConfig:Environment", "UAT") == "UAT")
