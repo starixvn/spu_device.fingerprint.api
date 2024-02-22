@@ -154,12 +154,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [HttpGet("s/crt/{version}")]
         public ActionResult CryptScript(string version)
         {
-            var scriptName = version.Contains("beta") ? "encrypt" : "md5";
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.js";
+            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
 
             if (appSettings.Environment != "DEV")
             {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/{scriptName}.min.js";
+                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
@@ -182,6 +181,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("s/tok")]
+        [HttpPost("s/tok")]
         [ResponseCache(NoStore = true, Duration = 0)]
         public ActionResult GetToken()
         {
@@ -213,7 +213,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             // Method intentionally left empty.
             // 
-            logger.Info("I'm good.");
+            // logger.Info("I'm good.");
         }
 
         [HttpGet("getClientIP")]

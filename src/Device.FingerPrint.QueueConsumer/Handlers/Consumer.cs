@@ -86,7 +86,7 @@
             var tasks = new List<Task>
             {
                 InsertLogTrail(transactionModels),
-                HandleClearRedis(transactionModels),
+                //HandleClearRedis(transactionModels),
                 PushTransactionToMonitorAsync(transactionModels)
             };
 

@@ -36,7 +36,7 @@
             this.appSettings = appSettings;
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hd/{version}")]
         public void Header([FromBody] string data)
         {
@@ -48,7 +48,7 @@
             }
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce/{version}")]
         public async Task Cookie([FromBody] string data)
         {
@@ -70,7 +70,7 @@
             }
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp/{version}")]
         public async Task FingerPrint([FromBody] string data)
         {
@@ -91,7 +91,7 @@
             }
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hd")]
         public void Header([FromBody] BaseParameter data)
         {
@@ -101,7 +101,7 @@
             }
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
         public void Cookie([FromBody] CookieParameter data)
         {
@@ -112,7 +112,7 @@
             }
         }
 
-        [Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
+        //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] FingerprintParameter data)
         {
@@ -142,8 +142,10 @@
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
+            logsData.RealIP = GetRealIp();
+            logsData.FakeIP = GetFakeIp();
 
-            clientTransactionService.InsertClientTransactionException(logsData.Function, logsData.Exception, logsData.UserAgent);
+            clientTransactionService.InsertClientTransactionException(logsData);
         }
 
         [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]
@@ -171,6 +173,11 @@
                 ServerName = Environment.MachineName,
                 ServerTime = DateTime.Now
             };
+        }
+
+        [HttpGet("hc")]
+        public void HealthCheck()
+        {
         }
 
         private void AddHeaderToRedis(string sessionKey)

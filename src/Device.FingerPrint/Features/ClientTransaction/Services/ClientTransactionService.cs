@@ -1,8 +1,11 @@
-﻿namespace Device.FingerPrint.Features.ClientTransaction.Services
+﻿using Device.FingerPrint.Model;
+using Newtonsoft.Json;
+
+namespace Device.FingerPrint.Features.ClientTransaction.Services
 {
     public interface IClientTransactionService
     {
-        void InsertClientTransactionException(string function, string exception, string userAgent);
+        void InsertClientTransactionException(ClientTransactionExceptionModel logsData);
     }
 
     public class ClientTransactionService : IClientTransactionService
@@ -14,9 +17,10 @@
             this.clientTransactionDataAccess = clientTransactionDataAccess;
         }
 
-        public void InsertClientTransactionException(string function, string exception, string userAgent)
+        public void InsertClientTransactionException(ClientTransactionExceptionModel logsData)
         {
-            clientTransactionDataAccess.InsertClientTransactionException(function, exception, userAgent);
+            var exceptionJson = $"[{JsonConvert.SerializeObject(logsData)}]";
+            clientTransactionDataAccess.InsertClientTransactionException(exceptionJson);
         }
     }
 }

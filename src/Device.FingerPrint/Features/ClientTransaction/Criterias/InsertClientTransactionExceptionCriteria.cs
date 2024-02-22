@@ -5,18 +5,12 @@ namespace Device.FingerPrint.Features.ClientTransaction.Criterias
 {
     public class InsertClientTransactionExceptionCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_Function")]
-        public string Function { get; set; }
-
-        [SpParam(SqlParamName = "ip_Exception")]
-        public string Exception { get; set; }
-
-        [SpParam(SqlParamName = "ip_UserAgent")]
-        public string UserAgent { get; set; }
+        [SpParam(SqlParamName = "ip_ExceptionJson")]
+        public string ExceptionJson { get; set; }
 
         public override string GetSettingKey()
         {
-            return "FPS_FP_ClientTransaction_LogsException_Insert";
+            return "DCS_DT_Log_FPSJavascriptException_Insert";
         }
 
         public override bool IsValid()
