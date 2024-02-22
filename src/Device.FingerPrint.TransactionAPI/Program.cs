@@ -1,9 +1,15 @@
 using Device.FingerPrint.TransactionAPI;
+using Fanex.Logging;
+
 public class Program
 {
     public static void Main(string[] args)
     {
-        CreateHostBuilder(args).Build().Run();
+        var host = CreateHostBuilder(args).Build();
+
+        LogService.Info(string.Format("{0} has been started at {1}", typeof(Program).FullName, DateTimeOffset.Now));
+
+        host.Run();
     }
 
     public static IHostBuilder CreateHostBuilder(string[] args) =>
