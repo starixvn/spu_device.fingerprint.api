@@ -21,18 +21,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
         private readonly ISubscriberServices subscriberServices;
-        private readonly ILogger logger;
 
         public FingerPrintController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
-            ISubscriberServices subscriberServices,
-            ILogger logger)
+            ISubscriberServices subscriberServices)
         {
             this.environment = Environment;
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
-            this.logger = logger;
         }
 
         [HttpGet("scr/{subscriberName}")]
@@ -81,7 +78,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     }
                     else
                     {
-                        logger.Info("Subscriber " + subscriberName + " does not exists");
+                        LogService.Info("Subscriber " + subscriberName + " does not exists");
                     }
                 }
             }
@@ -213,7 +210,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
         {
             // Method intentionally left empty.
             // 
-            // logger.Info("I'm good.");
+            // LogService.Info("I'm good.");
+        }
+
+        [HttpGet("hc-sentry")]
+        public string HealthCheckSentry()
+        {
+            LogService.Info("I'm good.");
+            return "I'm good.";
         }
 
         [HttpGet("getClientIP")]

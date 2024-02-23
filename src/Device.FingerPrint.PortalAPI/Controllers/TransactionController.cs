@@ -7,6 +7,7 @@
     using Device.FingerPrint.PortalAPI.Models;
     using Device.FingerPrint.Redis;
     using DeviceDetectorNET.Class.Device;
+    using Fanex.Logging;
     using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
@@ -178,6 +179,13 @@
         [HttpGet("hc")]
         public void HealthCheck()
         {
+        }
+
+        [HttpGet("hc-sentry")]
+        public string HealthCheckSentry()
+        {
+            LogService.Info("I'm good.");
+            return "I'm good.";
         }
 
         private void AddHeaderToRedis(string sessionKey)

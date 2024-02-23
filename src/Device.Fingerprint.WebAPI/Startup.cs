@@ -110,13 +110,15 @@ namespace Device.Fingerprint.WebAPI
            {
                      new SentryLogging(new SentryEngineOptions
                      {
-                         Dsn = appSettings.SentryDsn
+                         Dsn = new Dsn(appSettings.SentryDsn)
                      })
            });
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+
+            LogService.Info("WebAPI Start!");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
