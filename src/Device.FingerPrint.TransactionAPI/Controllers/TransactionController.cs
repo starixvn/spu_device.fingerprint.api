@@ -52,8 +52,6 @@
         [Route("FPS/CheckTransaction")]
         public async Task<IActionResult> CheckTransactionAsync(TransactionRequest transRequest)
         {
-            await logger.InfoAsync($"TransRequest: {JsonSerializer.Serialize(transRequest)}");
-
             var responseCode = TransactionResult.UnderMaintenance;
 
             if (!IsMaintenance && !IsIgnoredSite(transRequest.Subscriber))
