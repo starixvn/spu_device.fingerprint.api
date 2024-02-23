@@ -216,6 +216,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
             // logger.Info("I'm good.");
         }
 
+        [HttpGet("hc-sentry")]
+        public string HealthCheckSentry()
+        {
+            logger.Info("I'm good.");
+            return "I'm good.";
+        }
+
         [HttpGet("getClientIP")]
         public string GetClientIP()
         {
