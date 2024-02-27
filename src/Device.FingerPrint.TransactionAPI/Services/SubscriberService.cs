@@ -48,7 +48,7 @@
 
             if (!string.IsNullOrWhiteSpace(subName))
             {
-                var cacheKey = $"WebAPI:{subName}";
+                var cacheKey = $"TransAPI:{subName}";
 
                 SubscriberModel subInfo = await GetSubscriberInfoByCache(cacheKey, subName);
 
@@ -85,7 +85,7 @@
         {
             if (!string.IsNullOrWhiteSpace(subName))
             {
-                var cacheKey = $"WebAPI:{subName}";
+                var cacheKey = $"TransAPI:{subName}";
 
                 var subData = listExtraSubscribersModel.FirstOrDefault(x => x.SubscriberName.Equals(subName, StringComparison.OrdinalIgnoreCase));
 
