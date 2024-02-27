@@ -9,6 +9,7 @@
     using Device.FingerPrint.TransactionAPI.Services;
     using Fanex.Logging;
     using Fanex.LogTrail.Service;
+    using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using ONEbook.UM.Services;
 
@@ -98,6 +99,19 @@
 
             var response = GetTransactionResponse(responseCode);
             return Ok(response.ResultMessage);
+        }
+
+        [HttpGet("whoami")]
+        public IActionResult WhoAmI()
+        {
+            var httpConnectionFeature = HttpContext.Features.Get<IHttpConnectionFeature>();
+            var localIpAddress = httpConnectionFeature?.LocalIpAddress;
+            return Ok(new WhoAmIModel
+            {
+                LocalIP = localIpAddress.ToString(),
+                ServerName = Environment.MachineName,
+                ServerTime = DateTime.Now
+            });
         }
 
         private bool IsIgnoredSite(string site)
