@@ -28,7 +28,6 @@
         private const string defaultMethod = "PushQueue";
         private const string defaultSource = "API";
 
-
         public TransactionController(
             IMaintenanceService maintenanceService,
             IAppSettings appSettings,
@@ -47,10 +46,9 @@
             this.massTransitProducer = massTransitProducer;
         }
 
-        [HttpPost, HttpOptions]
-        [Route("FPS/AddTransaction")]
-        [Route("FPS/AddTransactionVer2")]
-        [Route("FPS/CheckTransaction")]
+        [HttpPost("FPS/AddTransaction")]
+        [HttpPost("FPS/AddTransactionVer2")]
+        [HttpPost("FPS/CheckTransaction")]
         public async Task<IActionResult> CheckTransactionAsync(TransactionRequest transRequest)
         {
             var responseCode = TransactionResult.UnderMaintenance;
