@@ -11,6 +11,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Device.FingerPrint.Core;
 using System;
+using Device.FingerPrint.Core.Encoders;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -25,6 +26,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private readonly IRedisService redisService;
         private readonly ILogInfoServices logInfoServices;
         private readonly IAppSettings appSettings;
+        private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
 
         public RawTransactionAttributeService(ICrypto crypto, IRedisService redisService, ILogInfoServices logInfoServices, IAppSettings appSettings)
         {
@@ -39,19 +41,32 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (model != null)
             {
                 var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
+                var fingerPrintEncodeTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
                 var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
                 var cookieTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
                 await Task.WhenAll(fingerPrintTask, headerTask, cookieTask);
 
                 var fingerPrint = fingerPrintTask.Result;
+                var fingerPrintEncode = fingerPrintEncodeTask.Result;
                 var header = headerTask.Result;
                 var cookie = cookieTask.Result;
 
                 model.RawUserAgent = model.UserAgent;
                 model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
-                model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrint, header, model.RawUserAgentInfo);
+                var fingerPrintModel = new FingerprintModel();
+                if (fingerPrint != null && !string.IsNullOrEmpty(fingerPrint.Id))
+                {
+                    fingerPrintModel = fingerPrint;
+                }
+                else if (!string.IsNullOrEmpty(fingerPrintEncode))
+                {
+                    var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
+                    fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
+                }
+
+                model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, header, model.RawUserAgentInfo);
                 model.CookieCode = cookie;
 
                 // Log Info Consumer
@@ -69,28 +84,26 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     }
                 }
 
-                // Log info to test
-                var allowedUsers = new[] { "sutest01", "andy7" };
-
-                if (allowedUsers.Contains(model.LoginName) && header != null)
+                var logUserTest = new[] { "member19", "qatest05", "andy7", "12mbtest005" };
+                if (logUserTest.Contains(model.LoginName))
                 {
-                    _ = LogService.InfoAsync($"Header Info of {model.LoginName}\n" +
-                                              $"RealIp: {header.RealIP}\n" +
-                                              $"FakeIp: {header.FakeIP}");
+                    _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName}\n" +
+                                            $"RealIp: {header.RealIP}\n" +
+                                            $"FakeIp: {header.FakeIP}");
                 }
             }
         }
 
         private FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo)
         {
-            if (fpModel == null) return new FingerprintAttributeModel();
+            var result = new FingerprintAttributeModel();
 
-            var result = new FingerprintAttributeModel
+            if (fpModel != null && !string.IsNullOrEmpty(fpModel.Id))
             {
-                FingerPrintCode = fpModel.Id,
-                Attribute = fpModel.Attributes,
-                Platform = fpModel.Platform
-            };
+                result.FingerPrintCode = fpModel.Id;
+                result.Attribute = fpModel.Attributes;
+                result.Platform = fpModel.Platform;
+            }
 
             if (headerModel != null)
             {
@@ -218,7 +231,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return new LogInfoModel
             {
                 LogType = logType,
-                SessionKey = model.SessionKey,
+                SessionKey = $"{appSettings.Environment} - {model.SessionKey}",
                 LoginName = model.LoginName,
                 SubscriberName = model.SubscriberName,
                 TransTime = model.TransTime,

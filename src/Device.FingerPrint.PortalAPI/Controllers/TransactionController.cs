@@ -6,9 +6,7 @@
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
     using Device.FingerPrint.Redis;
-    using DeviceDetectorNET.Class.Device;
     using Fanex.Logging;
-    using Microsoft.AspNetCore.Authorization;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
@@ -80,7 +78,7 @@
                 var decodeData = Base64.Decode(data, base64Key);
                 var fingerprint = JsonSerializer.Deserialize<FingerprintParameter>(decodeData);
 
-                if(fingerprint != null)
+                if (fingerprint != null)
                 {
                     var fingerprintCode = fingerprint.Fingerprint?.Id;
 
@@ -94,7 +92,7 @@
 
         //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("hd")]
-        public void Header([FromBody] BaseParameter data)
+        public void Header([FromBody] PortalParameter data)
         {
             if (data != null)
             {
@@ -104,22 +102,21 @@
 
         //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("ce")]
-        public void Cookie([FromBody] CookieParameter data)
+        public void Cookie([FromBody] PortalParameter data)
         {
             if (data != null)
             {
-                AddHeaderToRedis(data.SessionKey);
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Data, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), true);
             }
         }
 
         //[Authorize(AuthenticationSchemes = Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost("fp")]
-        public void FingerPrint([FromBody] FingerprintParameter data)
+        public void FingerPrint([FromBody] PortalParameter data)
         {
             if (data != null)
             {
-                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), data.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
+                redisService.HashSetAndExpiryAsync(data.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), true);
             }
         }
 

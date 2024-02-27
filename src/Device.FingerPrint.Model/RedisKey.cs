@@ -7,7 +7,8 @@ namespace Device.FingerPrint.Model
         Cookie,
         Headless,
         FingerPrint,
-        Header
+        Header,
+        FingerPrintEncode
     }
 
     public class RedisString
