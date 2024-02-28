@@ -10,8 +10,6 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             RegisterTransactionService(services);
             RegisterSubscriberService(services);
-           // RegisterQueueService(services);
-            RegisterExceptionService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -24,12 +22,6 @@ namespace Device.Fingerprint.WebAPI.Services
         {
             services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
             services.AddSingleton<ISubscriberServices, SubscriberServices>();
-        }
-
-        private static void RegisterExceptionService(this IServiceCollection services)
-        {
-            services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
-            services.AddSingleton<ITransactionService, TransactionService>();
         }
     }
 }
