@@ -87,7 +87,7 @@
             {
                 InsertLogTrail(transactionModels),
                 //HandleClearRedis(transactionModels),
-                PushTransactionToMonitorAsync(transactionModels)
+                //PushTransactionToMonitorAsync(transactionModels)
             };
 
             await Task.WhenAll(tasks);
