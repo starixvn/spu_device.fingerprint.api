@@ -22,6 +22,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sentry;
+using StackExchange.Redis;
 using StackExchange.Redis.Extensions.Core;
 using StackExchange.Redis.Extensions.Core.Abstractions;
 using StackExchange.Redis.Extensions.Core.Configuration;
@@ -220,8 +221,22 @@ namespace Device.FingerPrint.PortalAPI
         private void RegisterRedis(IServiceCollection services)
         {
             var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
-
             services.AddSingleton(redisConfiguration);
+
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var configOptions = new ConfigurationOptions
+                {
+                    EndPoints = { $"{redisConfiguration.Hosts[0].Host}:{redisConfiguration.Hosts[0].Port}" },
+                    Password = redisConfiguration.Password,
+                    Ssl = redisConfiguration.Ssl,
+                    ConnectTimeout = redisConfiguration.ConnectTimeout,
+                    ConnectRetry = 3,
+                    KeepAlive = 180,
+                    DefaultDatabase = 0
+                };
+                return ConnectionMultiplexer.Connect(configOptions);
+            });
 
             services.AddSingleton<IRedisClient, RedisClient>();
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
