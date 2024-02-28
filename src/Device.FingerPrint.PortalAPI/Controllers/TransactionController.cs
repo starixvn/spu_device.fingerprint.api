@@ -12,7 +12,6 @@
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Linq;
-    using System.Net;
     using System.Text.Json;
     using System.Threading.Tasks;
 
@@ -96,7 +95,7 @@
         {
             if (data != null)
             {
-                var sessionKey = ParseSessionKey(data.SessionKey);
+                var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
 
                 if (sessionKey != null && sessionKey.Length > 1)
                 {
@@ -109,11 +108,11 @@
         [HttpPost("ce")]
         public void Cookie([FromBody] PortalParameter data)
         {
-            var sessionKey = ParseSessionKey(data.SessionKey);
+            var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
 
             if (sessionKey != null && sessionKey.Length > 1)
             {
-                redisService.HashSetWithDbIndex(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.Cookie), data.Data, appSettings.RedisExpired);
+                redisService.HashSetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.Cookie), data.Data, appSettings.RedisExpired);
             }
         }
 
@@ -121,11 +120,11 @@
         [HttpPost("fp")]
         public void FingerPrint([FromBody] PortalParameter data)
         {
-            var sessionKey = ParseSessionKey(data.SessionKey);
+            var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
 
             if (sessionKey != null && sessionKey.Length > 1)
             {
-                redisService.HashSetWithDbIndex(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, appSettings.RedisExpired);
+                redisService.HashSetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, appSettings.RedisExpired);
             }
         }
 
@@ -208,7 +207,7 @@
             var headerModel = GetHeaderValue();
             if (headerModel != null)
             {
-                redisService.HashSetWithDbIndex(redisDatabaseIndex, sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel), appSettings.RedisExpired);
+                redisService.HashSetWithDbIndexAsync(redisDatabaseIndex, sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel), appSettings.RedisExpired);
             }
         }
 
@@ -323,20 +322,6 @@
                 .Where(format => !string.Equals(format, "br", StringComparison.OrdinalIgnoreCase));
 
             return string.Join(", ", normalizedFormats);
-        }
-
-        private string[] ParseSessionKey(string sessionKey)
-        {
-            if (string.IsNullOrEmpty(sessionKey))
-            {
-                return null;
-            }
-            if (!sessionKey.Contains(':'))
-            {
-                return new string[] { sessionKey, appSettings.RedisDatabase.ToString() };
-            }
-
-            return sessionKey.Split(':');
         }
     }
 }

@@ -300,5 +300,19 @@ namespace Device.FingerPrint.Core
                 deviceInfo.TimeZone,
                 deviceInfo.LocalIps));
         }
+
+        public static string[] ParseSessionKey(string sessionKey, int defaultRedisDatabase)
+        {
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                return null;
+            }
+            if (!sessionKey.Contains(':'))
+            {
+                return new string[] { sessionKey, defaultRedisDatabase.ToString() };
+            }
+
+            return sessionKey.Split(':');
+        }
     }
 }
