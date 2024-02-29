@@ -307,12 +307,28 @@ namespace Device.FingerPrint.Core
             {
                 return null;
             }
-            if (!sessionKey.Contains(':'))
+
+            if (sessionKey.Contains(':'))
+            {
+                var parts = sessionKey.Split(':');
+                if (parts.Length == 2 && ValidationSessionKey(parts[0]))
+                {
+                    return parts;
+                }
+                return null;
+            }
+
+            if (ValidationSessionKey(sessionKey))
             {
                 return new string[] { sessionKey, defaultRedisDatabase.ToString() };
             }
 
-            return sessionKey.Split(':');
+            return null;
+        }
+
+        public static bool ValidationSessionKey(string guidStr)
+        {
+            return Guid.TryParse(guidStr, out Guid _);
         }
     }
 }

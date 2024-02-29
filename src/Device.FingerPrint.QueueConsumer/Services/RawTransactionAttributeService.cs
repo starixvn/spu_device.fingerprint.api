@@ -1,4 +1,6 @@
-﻿using Device.FingerPrint.Core.Services;
+﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Encoders;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.LogInfo.Model;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Model;
@@ -7,14 +9,8 @@ using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
 using Fanex.Logging;
 using Newtonsoft.Json;
-using System.Linq;
-using System.Threading.Tasks;
-using Device.FingerPrint.Core;
 using System;
-using Device.FingerPrint.Core.Encoders;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using Fanex.Oneyed.Infrastructure.Models;
-using Microsoft.IdentityModel.Tokens;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -141,17 +137,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
                             }
                         }
 
-                        var logUserTest = new[] { "member19", "qatest05", "andy7", "12mbtest005" };
-                        if (logUserTest.Contains(model.LoginName))
-                        {
-                            _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName}\n" +
-                                                    $"RealIp: {headerModel.RealIP}\n" +
-                                                    $"FakeIp: {headerModel.FakeIP}");
-                        }
+                        //var logUserTest = new[] { "member19", "qatest05", "andy7", "12mbtest005" };
+                        //if (logUserTest.Contains(model.LoginName))
+                        //{
+                        //    _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName}\n" +
+                        //                            $"RealIp: {headerModel.RealIP}\n" +
+                        //                            $"FakeIp: {headerModel.FakeIP}");
+                        //}
                     }
                     else
                     {
-                        _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName} cannot parse SessionKey ({model.SessionKey})!");
+                        _ = LogService.ErrorAsync($"{appSettings.Environment} - SessionKey cannot parse:\n {JsonConvert.SerializeObject(model)}");
                     }
                 }
             }
