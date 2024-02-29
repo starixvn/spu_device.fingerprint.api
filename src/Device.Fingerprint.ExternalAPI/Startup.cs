@@ -78,28 +78,7 @@ namespace Device.Fingerprint.WebAPI
 
             });
             #endregion
-
-
-            #region Authentication
-            //services.AddAuthentication(option =>
-            //{
-            //    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            //}).AddJwtBearer(options =>
-            //{
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = false,
-            //        ValidateAudience = false,
-            //        ValidateLifetime = false,
-            //        ValidateIssuerSigningKey = false,
-            //        IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
-            //    };
-            //});
-            #endregion
-
-            //RegisterRedis(services);
+           
 
             services.RegisterService();
             FanexDataConfig(appSettings);
@@ -118,7 +97,7 @@ namespace Device.Fingerprint.WebAPI
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-            LogService.Info("WebAPI Start!");
+            LogService.Info("ExternalAPI Start!");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -134,7 +113,7 @@ namespace Device.Fingerprint.WebAPI
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1");                
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.ExternalAPI v1");                
             });
 
             app.UseStaticFiles();

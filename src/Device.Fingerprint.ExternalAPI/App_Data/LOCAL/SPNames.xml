@@ -2,6 +2,11 @@
 
 <Functions>	
 	<Function Name="Subscriber">
-		<Setting Key="FPS_FP_Core_SubscriberInfoByName_Get" SpName="FPS_FP_Core_SubscriberInfoByName_Get" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
+		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="MySQL.CTS_Admin.Reporter"/>
 	</Function>
+  <Function Name="Transaction">
+    <Setting Key="DCS_DC_Transaction_GetHistoryBySubscriber" SpName="DCS_DC_Transaction_GetHistoryBySubscriber" DbName="MySQL.DCS_DataCenter.Reporter"/>
+    <Setting Key="DCS_DC_Transaction_GetLatestBySubscriber" SpName="DCS_DC_Transaction_GetLatestBySubscriber" DbName="MySQL.DCS_DataCenter.Reporter"/>
+  </Function>
+  
 </Functions>

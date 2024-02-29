@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Features.Transaction.Criterias;
 using Device.FingerPrint.Features.Transaction.Model;
 using Fanex.Data.Repository;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -33,6 +34,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
         void EvolutionNewDevice(string transJson);
 
         void EvolutionRecoverDevice(string transJson);
+
+        IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem);
+
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem);
 
     }
 
@@ -179,6 +184,41 @@ namespace Device.FingerPrint.Features.Transaction.Services
             };
 
             repository.Execute(criteria);
+        }
+
+        public IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem)
+        {
+            var criteria = new GetLatestTransactionBySubscriberCriteria
+            {
+               SubscriberId =   subscriberId,
+               Length   = length,
+               Skip = skip,
+               Take = take,
+               TotalItem = 0
+            };
+
+            totalItem = criteria.TotalItem;
+
+            return repository.Fetch<LatestTransactionEntity>(criteria);
+        }
+
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem)
+        {
+            var criteria = new GetTransactionHistoryCriteria
+            {
+                FromDate = fromDate,
+                ToDate = toDate,
+                IsPartial = IsPartial,
+                SubscriberId = subscriberId,
+                UserName = username,
+                Skip = skip,
+                Take = take,
+                TotalItem = 0
+            };
+
+            totalItem = criteria.TotalItem;
+
+            return repository.Fetch<TransactionHistoryEntity>(criteria);
         }
     }
 }

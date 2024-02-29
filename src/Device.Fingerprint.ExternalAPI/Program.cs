@@ -27,7 +27,7 @@ namespace Device.Fingerprint.WebAPI
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
 #if DEBUG
-                    webBuilder.UseUrls("http://*:5007");
+                    webBuilder.UseUrls("http://*:5009");
 #else
                     webBuilder.UseUrls("http://*:5000");
 #endif

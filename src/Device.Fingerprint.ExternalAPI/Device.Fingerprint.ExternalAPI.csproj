@@ -9,10 +9,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Scripts\DetecasUtility\**" />
-    <Content Remove="Scripts\DetecasUtility\**" />
-    <EmbeddedResource Remove="Scripts\DetecasUtility\**" />
-    <None Remove="Scripts\DetecasUtility\**" />
+    <Compile Remove="Scripts\**" />
+    <Content Remove="Scripts\**" />
+    <EmbeddedResource Remove="Scripts\**" />
+    <None Remove="Scripts\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,61 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="Scripts\fp.js" />
-    <None Remove="Scripts\fp.min.js" />
-    <None Remove="Scripts\libs\cookie.min.js" />
-    <None Remove="Scripts\libs\cookie1.js" />
-    <None Remove="Scripts\libs\gfp.js" />
-    <None Remove="Scripts\libs\gfp.min.js" />
-    <None Remove="Scripts\libs\headlessBrowser.js" />
-	<None Remove="Scripts\libs\headlessBrowser.min.js" />
-	<None Remove="Scripts\libs\md5.js" />
-	<None Remove="Scripts\libs\md5.min.js" />
-	<None Remove="Scripts\libs\newCookie.js" />
-	<None Remove="Scripts\libs\newCookie.min.js" />
-  </ItemGroup>
-
-  <ItemGroup>
     <_ContentIncludedByDefault Remove="appsettings.UAT.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="Scripts\fp.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Scripts\fp.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Scripts\libs\gfp.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Scripts\libs\gfp.min.js">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-	  <Content Include="Scripts\libs\headlessBrowser.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\headlessBrowser.min.js">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\encrypt.js">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\encrypt.min.js">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\newCookie.js">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\newCookie.min.js">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\md5.js">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Scripts\libs\md5.min.js">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -100,10 +46,6 @@
     <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Resource Include="Scripts\libs\headlessBrowser.js" />
   </ItemGroup>
 
   <ItemGroup>
