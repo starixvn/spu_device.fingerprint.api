@@ -7,7 +7,7 @@ public class Program
     {
         var host = CreateHostBuilder(args).Build();
 
-        LogService.Info(string.Format("{0} has been started at {1}", typeof(Program).FullName, DateTimeOffset.Now));
+        LogService.Info(string.Format("This is transaction API {0} has been started at {1}", typeof(Program).FullName, DateTimeOffset.Now));
 
         host.Run();
     }

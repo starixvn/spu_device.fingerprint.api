@@ -59,7 +59,7 @@
                 {
                     if(transRequest.Subscriber.ToLower() == "12bet")
                     {
-                        LogService.Error("this is 12bet transaction: " + transRequest.Account);
+                        logger.Error("this is 12bet transaction: " + transRequest.Account);
                     }
 
                     responseCode = await subscriberService.ValidateAsync(transRequest, IsExtraSubscriber(transRequest.Subscriber));
@@ -94,7 +94,7 @@
                 }
                 catch (Exception ex)
                 {
-                    LogService.Error(ex.Message, ex);
+                    logger.Error(ex.Message, ex);
 
                     responseCode = TransactionResult.Others;
                 }
@@ -218,7 +218,7 @@
         {
             try
             {
-                LogService.Error(message);
+                logger.Error(message);
             }
             catch (Exception ex)
             {
