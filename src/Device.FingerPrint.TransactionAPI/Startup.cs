@@ -22,6 +22,7 @@ namespace Device.FingerPrint.TransactionAPI
     using ONEbook.UM.AspNetCore;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Device.FingerPrint.Core.Middleware;
+    using Microsoft.OpenApi.Models;
 
     public class Startup
     {
@@ -46,6 +47,22 @@ namespace Device.FingerPrint.TransactionAPI
             RegisterRedis(services);
 
             services.AddControllers();
+
+            services.AddMvc();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { 
+                    Title = "Transaction API", 
+                    Version = "v1",
+                    Description = "This is transaction API",
+                    Contact = new OpenApiContact()
+                    {
+                        Name = "Admin",
+                        Email = "abc@abc.com"
+                    }
+                });
+            });
 
             LogManager
            .SetDefaultLogCategory("FPS-API")
@@ -93,6 +110,13 @@ namespace Device.FingerPrint.TransactionAPI
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
                 Predicate = _ => true
+            });
+
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {                
+                c.SwaggerEndpoint("v1/swagger.json", "Transaction API V1");
             });
 
             app.UseMiddleware<ExceptionMiddleware>();
