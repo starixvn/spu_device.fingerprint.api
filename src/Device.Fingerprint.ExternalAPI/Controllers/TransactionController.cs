@@ -40,12 +40,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             if (subscriber != null)
             {
-                var trans = transactionService.GetLatestTransaction(subscriber.SubscriberId, length, take, skip, out totalItem);
+                var trans = transactionService.GetLatestTransaction(subscriber.SubscriberId, length, skip, take, out totalItem);
 
                 var transformedTrans = trans.Select(x => new LatestTransactionModel {
                     Action = x.Action,
                     Browser = x.Browser,
-                    Domain = x.UrlDetail,
+                    Domain = x.UrlDetails,
                     Device = x.FirstDeviceCode,
                     IP = x.IP,
                     OS = x.OS,
@@ -91,7 +91,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     Action = x.Action,
                     Browser = x.Browser,
-                    Domain = x.UrlDetail,
+                    Domain = x.UrlDetails,
                     Device = x.FirstDeviceCode,
                     IP = x.IP,
                     OS = x.OS,

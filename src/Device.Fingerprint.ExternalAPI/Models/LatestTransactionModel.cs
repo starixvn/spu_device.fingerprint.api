@@ -24,6 +24,6 @@ namespace Device.Fingerprint.ExternalAPI.Models
 
         public string IP { get; set; }
 
-        public long RobotTracking { get; set; }
+        public string RobotTracking { get; set; }
     }
 }

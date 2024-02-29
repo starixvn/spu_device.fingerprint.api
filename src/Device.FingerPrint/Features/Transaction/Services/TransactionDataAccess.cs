@@ -197,9 +197,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
                TotalItem = 0
             };
 
+            var result = repository.Fetch<LatestTransactionEntity>(criteria);
+
             totalItem = criteria.TotalItem;
 
-            return repository.Fetch<LatestTransactionEntity>(criteria);
+            return result;
         }
 
         public IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem)
@@ -214,11 +216,13 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 Skip = skip,
                 Take = take,
                 TotalItem = 0
-            };
+            };            
+
+            var result = repository.Fetch<TransactionHistoryEntity>(criteria);
 
             totalItem = criteria.TotalItem;
 
-            return repository.Fetch<TransactionHistoryEntity>(criteria);
+            return result;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Browser { get; set; }
 
-        public string UrlDetail { get; set; }
+        public string UrlDetails { get; set; }
 
         public string UserName { get; set; }
 
