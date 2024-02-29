@@ -213,7 +213,7 @@
         }
 
         [HttpGet]
-        [Route("FPS/TestAPI")]
+        [Route("FPS/TestAPI/{message}")]
         public string TestAPI(string message)
         {
             try
@@ -225,7 +225,7 @@
                 return ex.Message;
             }
 
-            return "Ok";
+            return message;
         }
 
     }
