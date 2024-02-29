@@ -212,5 +212,21 @@
             return await redisService.GetAsync<string>("test:testing");
         }
 
+        [HttpGet]
+        [Route("FPS/TestAPI")]
+        public string TestAPI(string message)
+        {
+            try
+            {
+                LogService.Error(message);
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+
+            return "Ok";
+        }
+
     }
 }
