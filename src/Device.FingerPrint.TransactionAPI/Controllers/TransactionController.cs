@@ -212,7 +212,7 @@
             return await redisService.GetAsync<string>("test:testing");
         }
 
-        [HttpGet]
+        [HttpGet]        
         [Route("FPS/TestAPI/{message}")]
         public string TestAPI(string message)
         {
@@ -228,5 +228,20 @@
             return message;
         }
 
+        [HttpPost]
+        [Route("FPS/TestPostAPI")]
+        public string TestPostAPI([FromBody]string message)
+        {
+            try
+            {
+                logger.Error(message);
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+
+            return message;
+        }
     }
 }
