@@ -17,6 +17,7 @@ namespace Device.Fingerprint.WebAPI
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.HttpOverrides;
+    using Microsoft.AspNetCore.RateLimiting;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -25,6 +26,7 @@ namespace Device.Fingerprint.WebAPI
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.RateLimiting;
 
     public class Startup
     {
@@ -61,6 +63,16 @@ namespace Device.Fingerprint.WebAPI
                 jsonInputFormatter.SupportedMediaTypes.Add("application/json");
             });
 
+            services.AddRateLimiter(options => {
+                options.AddFixedWindowLimiter(policyName: "fixed", options =>
+                {
+                    options.PermitLimit = 4;
+                    options.Window = TimeSpan.FromSeconds(12);
+                    options.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                    options.QueueLimit = 2;
+                });
+            });
+
             services.Configure<ForwardedHeadersOptions>(options =>
             {
                 options.ForwardedHeaders =
@@ -75,12 +87,28 @@ namespace Device.Fingerprint.WebAPI
             services.AddSwaggerGen(swagger =>
             {
                 swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });
-                swagger.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
                     In = ParameterLocation.Header,
                     Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer"
+                });
+
+                swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            }
+                        },
+                        Array.Empty<string>()
+                    }
                 });
 
             });
@@ -157,6 +185,8 @@ namespace Device.Fingerprint.WebAPI
             app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseMiddleware<JWTValidationMiddleware>();
+
+            app.UseRateLimiter();
 
             app.UseEndpoints(endpoints =>
             {
