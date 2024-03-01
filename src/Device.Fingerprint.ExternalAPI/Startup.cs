@@ -1,5 +1,6 @@
 namespace Device.Fingerprint.WebAPI
 {
+    using Device.Fingerprint.ExternalAPI.Middleware;
     using Device.Fingerprint.WebAPI.Middleware;
     using Device.Fingerprint.WebAPI.Services;
     using Device.FingerPrint.Core;
@@ -37,8 +38,7 @@ namespace Device.Fingerprint.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var appSettings = new AppSettings(this.Configuration);
-            var JWTService = new JWTService(appSettings);
+            var appSettings = new AppSettings(this.Configuration);           
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
@@ -74,7 +74,14 @@ namespace Device.Fingerprint.WebAPI
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>
             {
-                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });               
+                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });
+                swagger.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Description = "Standard Authorization header using the Bearer scheme. Example: \"bearer {token}\"",
+                    In = ParameterLocation.Header,
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey
+                });
 
             });
             #endregion
@@ -148,6 +155,8 @@ namespace Device.Fingerprint.WebAPI
             app.UseAuthorization();
 
             app.UseMiddleware<ExceptionMiddleware>();
+
+            app.UseMiddleware<JWTValidationMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
