@@ -6,24 +6,18 @@ COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
-COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
-
-COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
-
-COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
-
 COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
 
 
-COPY ["./src/Device.Fingerprint.WebAPI/Device.Fingerprint.WebAPI.csproj", "Device.Fingerprint.WebAPI/"]
+COPY ["./src/Device.Fingerprint.ExternalAPI/Device.Fingerprint.ExternalAPI.csproj", "Device.Fingerprint.ExternalAPI/"]
 
-WORKDIR "/src/Device.Fingerprint.WebAPI"
+WORKDIR "/src/Device.Fingerprint.ExternalAPI"
 
 RUN dotnet nuget add source https://nuget.nexdev.net/api/v2
 
 RUN dotnet restore -v n
 
-COPY ./src/Device.Fingerprint.WebAPI .
+COPY ./src/Device.Fingerprint.ExternalAPI .
 
 RUN dotnet publish -r linux-x64 --self-contained false -c Release -o /app
 
@@ -35,4 +29,4 @@ COPY --from=builder /app .
 
 ENV TZ="America/La_Paz"
 
-ENTRYPOINT ["dotnet", "Device.Fingerprint.WebAPI.dll"]
+ENTRYPOINT ["dotnet", "Device.Fingerprint.ExternalAPI.dll"]
