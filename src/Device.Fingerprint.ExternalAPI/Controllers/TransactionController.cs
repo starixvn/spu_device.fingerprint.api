@@ -32,6 +32,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.transactionService = transactionService;
         }
 
+        /// <summary>
+        /// Get latest transaction
+        /// </summary>
+        /// <param name="subscriberName">Subscriber Name</param>
+        /// <param name="length">Top of data</param>
+        /// <param name="take">Take</param>
+        /// <param name="skip">Skip</param>
+        /// <returns></returns>
         [HttpGet("GetLatestTransaction/{subscriberName}/{length}/{take}/{skip}")]
         public ActionResult<LatestTransactionList> GetLatestTransaction(string subscriberName, int length, int take, int skip)
         {
@@ -76,6 +84,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
             });
         }
 
+        /// <summary>
+        /// Get transaction history by subscriber name and login name in 7 days.
+        /// </summary>
+        /// <param name="loginName">User name</param>
+        /// <param name="subscriberName">Subscriber name</param>
+        /// <param name="fromDate">From Date</param>
+        /// <param name="toDate">To Date</param>
+        /// <param name="take">Take</param>
+        /// <param name="skip">Skip</param>
+        /// <returns></returns>
         [HttpGet("GetTransactionHistory/{loginName}/{subscriberName}/{fromDate}/{toDate}/{take}/{skip}")]
         public ActionResult<TransactionHistoryList> GetTransactionHistory(string loginName, string subscriberName, DateTime fromDate, DateTime toDate, int take, int skip)
         {
@@ -85,33 +103,38 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
             if (subscriber != null)
             {
-                var trans = transactionService.GetTransactionHistory(subscriber.SubscriberId, fromDate, toDate, loginName,false, skip, take, out totalItem);
+                var days = toDate.Subtract(fromDate).Days;
 
-                var transformedTrans = trans.Select(x => new TransactionHistoryModel
+                if(days <= 7)
                 {
-                    Action = x.Action,
-                    Browser = x.Browser,
-                    Domain = x.UrlDetails,
-                    Device = x.FirstDeviceCode,
-                    IP = x.IP,
-                    OS = x.OS,
-                    RegisterName = x.RegisterName,
-                    RobotTracking = x.RobotTracking,
-                    TransID = x.TransID,
-                    TransTime = x.TransTime,
-                    UserName = x.UserName,
-                    CTSCustID = x.CTSCustID,
-                    SubscriberID = x.SubscriberID,
-                    ActionResult = x.ActionResult
-                });
+                    var trans = transactionService.GetTransactionHistory(subscriber.SubscriberId, fromDate, toDate, loginName, false, skip, take, out totalItem);
 
-                return Ok(new TransactionHistoryList
-                {                   
-                    TotalItem = totalItem,
-                    Take = take,
-                    Skip = skip,
-                    Trans = transformedTrans
-                });
+                    var transformedTrans = trans.Select(x => new TransactionHistoryModel
+                    {
+                        Action = x.Action,
+                        Browser = x.Browser,
+                        Domain = x.UrlDetails,
+                        Device = x.FirstDeviceCode,
+                        IP = x.IP,
+                        OS = x.OS,
+                        RegisterName = x.RegisterName,
+                        RobotTracking = x.RobotTracking,
+                        TransID = x.TransID,
+                        TransTime = x.TransTime,
+                        UserName = x.UserName,
+                        CTSCustID = x.CTSCustID,
+                        SubscriberID = x.SubscriberID,
+                        ActionResult = x.ActionResult
+                    });
+
+                    return Ok(new TransactionHistoryList
+                    {
+                        TotalItem = totalItem,
+                        Take = take,
+                        Skip = skip,
+                        Trans = transformedTrans
+                    });
+                }                
             }
 
             return Ok(new TransactionHistoryList
