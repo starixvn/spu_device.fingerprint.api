@@ -10,7 +10,6 @@ namespace Device.FingerPrint.PortalAPI.Services
         public static void RegisterService(this IServiceCollection services)
         {
             InitService(services);
-            RegisterQueueService(services);
             RegisterSubscriberService(services);
             RegisterLogExeption(services);
         }
@@ -18,11 +17,6 @@ namespace Device.FingerPrint.PortalAPI.Services
         private static void InitService(this IServiceCollection services)
         {
             services.AddSingleton<ICrypto, Crypto>();
-        }
-
-        private static void RegisterQueueService(this IServiceCollection services)
-        {
-            services.AddSingleton<IEasyNetQService, EasyNetQService>();
         }
 
         private static void RegisterSubscriberService(this IServiceCollection services)
