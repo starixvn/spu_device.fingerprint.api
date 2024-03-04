@@ -37,11 +37,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task GetTransactionAttribute(RawTransactionModel model)
         {
-            if (model != null)
+            if (model != null && !string.IsNullOrEmpty(model.SessionKey))
             {
                 if (!model.SessionKey.Contains(':'))
                 {
-                    _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName} is still using old SessionKey!");
+                    // _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName} is still using old SessionKey!");
 
                     var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
                     var fingerPrintEncodeTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
