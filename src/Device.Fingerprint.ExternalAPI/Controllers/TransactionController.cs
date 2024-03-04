@@ -1,8 +1,10 @@
 ﻿using Device.Fingerprint.ExternalAPI.Models;
 using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,9 +19,10 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
+        
         private readonly ISubscriberServices subscriberServices;
         private readonly ITransactionService transactionService;
-
+        private  JWTService jWTService;
         public TransactionController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -30,6 +33,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
             this.subscriberServices = subscriberServices;
             this.transactionService = transactionService;
+            jWTService = new JWTService(appSettings);
+
         }
 
         /// <summary>
@@ -144,6 +149,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 Skip = skip,
                 Trans = null
             });
+        }
+
+        [HttpGet("generatetoken/audience")]
+        [AllowAnonymous]
+        public string GenerateToken(string audience, string issue)
+        {
+            return jWTService.GenerateJWT(issue, audience, DateTime.UtcNow.AddYears(10));
         }
     }
 }

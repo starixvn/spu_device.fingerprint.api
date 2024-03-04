@@ -12,6 +12,7 @@ namespace Device.Fingerprint.WebAPI
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
+    using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
@@ -21,6 +22,7 @@ namespace Device.Fingerprint.WebAPI
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
+    using Microsoft.IdentityModel.Tokens;
     using Microsoft.OpenApi.Models;
     using Sentry;
     using System;
@@ -40,7 +42,9 @@ namespace Device.Fingerprint.WebAPI
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            var appSettings = new AppSettings(this.Configuration);           
+            var appSettings = new AppSettings(this.Configuration);
+
+            var JWTService = new JWTService(appSettings);
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
@@ -113,7 +117,27 @@ namespace Device.Fingerprint.WebAPI
 
             });
             #endregion
-           
+
+            #region Authentication
+            services.AddAuthentication(option =>
+            {
+                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
+            }).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,                    
+                    ValidateAudience = true,
+                    ValidAudience = appSettings.JWTAudience,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
+                };
+            });
+            #endregion
+
 
             services.RegisterService();
             FanexDataConfig(appSettings);
