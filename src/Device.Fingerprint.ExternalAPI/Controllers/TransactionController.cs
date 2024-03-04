@@ -99,7 +99,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         /// <param name="take">Take</param>
         /// <param name="skip">Skip</param>
         /// <returns></returns>
-        [HttpGet("GetTransactionHistory/{loginName}/{subscriberName}/{fromDate}/{toDate}/{take}/{skip}")]
+        [HttpGet("GetTransactionHistory/{subscriberName}/{loginName}/{fromDate}/{toDate}/{take}/{skip}")]
         public ActionResult<TransactionHistoryList> GetTransactionHistory(string loginName, string subscriberName, DateTime fromDate, DateTime toDate, int take, int skip)
         {
 
