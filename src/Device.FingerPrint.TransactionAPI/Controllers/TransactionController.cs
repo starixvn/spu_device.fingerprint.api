@@ -57,12 +57,6 @@
             {
                 try
                 {
-                    if(transRequest.Subscriber.ToLower() == "12bet")
-                    {
-                        logger.Error("this is 12bet transaction: " + transRequest.Account);
-                        return Ok(transRequest.Account);
-                    }
-
                     responseCode = await subscriberService.ValidateAsync(transRequest, IsExtraSubscriber(transRequest.Subscriber));
 
                     if (responseCode == TransactionResult.Success)
