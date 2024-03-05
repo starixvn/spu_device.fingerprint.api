@@ -19,15 +19,21 @@
         Task<long> HashDeleteAsync(string hashKey, string[] keys);
 
         Task HashSetAndExpiryAsync<T>(string hashKey, string key, T value, DateTimeOffset expiresAt, bool isForceUpdate = false);
+
+        Task HashSetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond = 0);
+
+        Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey);
     }
 
     public class RedisService : IRedisService
     {
         private readonly IRedisDatabase redisDatabase;
+        private readonly IConnectionMultiplexer connectionMultiplexer;
 
-        public RedisService(IRedisClient redisClient)
+        public RedisService(IRedisClient redisClient, IConnectionMultiplexer connectionMultiplexer)
         {
             redisDatabase = redisClient.GetDefaultDatabase();
+            this.connectionMultiplexer = connectionMultiplexer;
         }
 
         public IRedisDatabase RedisDatabase => redisDatabase;
@@ -63,6 +69,25 @@
             await HashSetAsync(hashKey, key, value, isForceUpdate);
 
             await UpdateExpiryAsync(hashKey, expiresAt);
+        }
+
+        public async Task HashSetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond = 0)
+        {
+            var db = connectionMultiplexer.GetDatabase(redisDatabaseIndex);
+
+            await db.HashSetAsync(hashKey, fieldKey, fieldValue);
+
+            if(expireSecond > 0)
+            {
+                await db.KeyExpireAsync(hashKey, TimeSpan.FromSeconds(expireSecond));
+            }
+        }
+
+        public async Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey)
+        {
+            var db = connectionMultiplexer.GetDatabase(redisDatabaseIndex);
+
+            return await db.HashGetAsync(hashKey, fieldKey);
         }
     }
 }

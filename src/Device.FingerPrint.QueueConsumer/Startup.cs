@@ -22,6 +22,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
+    using StackExchange.Redis;
     using StackExchange.Redis.Extensions.Core;
     using StackExchange.Redis.Extensions.Core.Abstractions;
     using StackExchange.Redis.Extensions.Core.Configuration;
@@ -157,6 +158,21 @@ namespace Device.FingerPrint.QueueConsumer
             var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
 
             services.AddSingleton(redisConfiguration);
+
+            services.AddSingleton<IConnectionMultiplexer>(sp =>
+            {
+                var configOptions = new ConfigurationOptions
+                {
+                    EndPoints = { $"{redisConfiguration.Hosts[0].Host}:{redisConfiguration.Hosts[0].Port}" },
+                    Password = redisConfiguration.Password,
+                    Ssl = redisConfiguration.Ssl,
+                    ConnectTimeout = redisConfiguration.ConnectTimeout,
+                    ConnectRetry = 3,
+                    KeepAlive = 180,
+                    DefaultDatabase = 0
+                };
+                return ConnectionMultiplexer.Connect(configOptions);
+            });
 
             services.AddSingleton<IRedisClient, RedisClient>();
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();

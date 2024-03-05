@@ -1,4 +1,6 @@
-﻿using Device.FingerPrint.Core.Services;
+﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Encoders;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.LogInfo.Model;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Model;
@@ -7,11 +9,8 @@ using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
 using Fanex.Logging;
 using Newtonsoft.Json;
-using System.Linq;
-using System.Threading.Tasks;
-using Device.FingerPrint.Core;
 using System;
-using Device.FingerPrint.Core.Encoders;
+using System.Threading.Tasks;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -38,58 +37,118 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task GetTransactionAttribute(RawTransactionModel model)
         {
-            if (model != null)
+            if (model != null && !string.IsNullOrEmpty(model.SessionKey))
             {
-                var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                var fingerPrintEncodeTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
-                var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                var cookieTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-
-                await Task.WhenAll(fingerPrintTask, fingerPrintEncodeTask, headerTask, cookieTask);
-
-                var fingerPrint = fingerPrintTask.Result;
-                var fingerPrintEncode = fingerPrintEncodeTask.Result;
-                var header = headerTask.Result;
-                var cookie = cookieTask.Result;
-
-                model.RawUserAgent = model.UserAgent;
-                model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
-
-                var fingerPrintModel = new FingerprintModel();
-                if (fingerPrint != null && !string.IsNullOrEmpty(fingerPrint.Id))
+                if (!model.SessionKey.Contains(':'))
                 {
-                    fingerPrintModel = fingerPrint;
-                }
-                else if (!string.IsNullOrEmpty(fingerPrintEncode))
-                {
-                    var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
-                    fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
-                }
+                    // _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName} is still using old SessionKey!");
 
-                model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, header, model.RawUserAgentInfo);
-                model.CookieCode = cookie;
+                    var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
+                    var fingerPrintEncodeTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
+                    var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                    var cookieTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                // Log Info Consumer
-                var subscriberName = model.SubscriberName;
-                if (appSettings.GetValue<bool>("Consumer:LogInfo") 
-                    && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (string.IsNullOrEmpty(model.SessionKey))
+                    await Task.WhenAll(fingerPrintTask, fingerPrintEncodeTask, headerTask, cookieTask);
+
+                    var fingerPrint = fingerPrintTask.Result;
+                    var fingerPrintEncode = fingerPrintEncodeTask.Result;
+                    var header = headerTask.Result;
+                    var cookie = cookieTask.Result;
+
+                    var fingerPrintModel = new FingerprintModel();
+                    if (fingerPrint != null && !string.IsNullOrEmpty(fingerPrint.Id))
                     {
-                        LogSessionKeyEmpty(model);
+                        fingerPrintModel = fingerPrint;
                     }
-                    else if (fingerPrint == null && cookie == null && header == null)
+                    else if (!string.IsNullOrEmpty(fingerPrintEncode))
                     {
-                        LogRedisValueEmpty(model);
+                        var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
+                        fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
+                    }
+
+                    model.RawUserAgent = model.UserAgent;
+                    model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
+
+                    model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, header, model.RawUserAgentInfo);
+                    model.CookieCode = cookie;
+
+                    // Log Info Consumer
+                    var subscriberName = model.SubscriberName;
+                    if (appSettings.GetValue<bool>("Consumer:LogInfo")
+                        && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (string.IsNullOrEmpty(model.SessionKey))
+                        {
+                            LogSessionKeyEmpty(model);
+                        }
+                        else if (fingerPrint == null && cookie == null && header == null)
+                        {
+                            LogRedisValueEmpty(model);
+                        }
                     }
                 }
-
-                var logUserTest = new[] { "member19", "qatest05", "andy7", "12mbtest005" };
-                if (logUserTest.Contains(model.LoginName))
+                else
                 {
-                    _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName}\n" +
-                                            $"RealIp: {header.RealIP}\n" +
-                                            $"FakeIp: {header.FakeIP}");
+                    var sessionKey = Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
+
+                    if (sessionKey != null && sessionKey.Length > 1)
+                    {
+                        var fingerPrintEncodeTask = redisService.HashGetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
+                        var headerTask = redisService.HashGetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.Header));
+                        var cookieTask = redisService.HashGetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.Cookie));
+
+                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask);
+
+                        var fingerPrintEncode = fingerPrintEncodeTask.Result;
+                        var header = headerTask.Result;
+                        var cookie = cookieTask.Result;
+
+                        var fingerPrintModel = new FingerprintModel();
+                        if (!string.IsNullOrEmpty(fingerPrintEncode))
+                        {
+                            var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
+                            fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
+                        }
+
+                        var headerModel = new HeaderModel();
+                        if (!string.IsNullOrEmpty(header))
+                        {
+                            headerModel = JsonConvert.DeserializeObject<HeaderModel>(header);
+                        }
+
+                        model.RawUserAgent = model.UserAgent;
+                        model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
+
+                        model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, headerModel, model.RawUserAgentInfo);
+                        model.CookieCode = cookie;
+
+                        // Log Info Consumer
+                        var subscriberName = model.SubscriberName;
+                        if (appSettings.GetValue<bool>("Consumer:LogInfo")
+                            && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (string.IsNullOrEmpty(sessionKey[0]))
+                            {
+                                LogSessionKeyEmpty(model);
+                            }
+                            else if (fingerPrintEncode == null && cookie == null && header == null)
+                            {
+                                LogRedisValueEmpty(model);
+                            }
+                        }
+
+                        //var logUserTest = new[] { "member19", "qatest05", "andy7", "12mbtest005" };
+                        //if (logUserTest.Contains(model.LoginName))
+                        //{
+                        //    _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName}\n" +
+                        //                            $"RealIp: {headerModel.RealIP}\n" +
+                        //                            $"FakeIp: {headerModel.FakeIP}");
+                        //}
+                    }
+                    else
+                    {
+                        _ = LogService.ErrorAsync($"{appSettings.Environment} - SessionKey cannot parse:\n {JsonConvert.SerializeObject(model)}");
+                    }
                 }
             }
         }

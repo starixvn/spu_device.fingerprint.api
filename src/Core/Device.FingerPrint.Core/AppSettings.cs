@@ -24,6 +24,8 @@ namespace Device.FingerPrint.Core
 
         bool IgnoreClientTransLogs { get; }
 
+        int RedisDatabase { get; }
+
         long RedisExpired { get; }
 
         string JWTPassword { get; }
@@ -58,6 +60,7 @@ namespace Device.FingerPrint.Core
 
         private readonly bool ignoreClientTransLogs;
         private readonly long redisExpired;
+        private readonly int redisDatabase;
 
         private readonly string jWTPassword;
 
@@ -91,6 +94,8 @@ namespace Device.FingerPrint.Core
 
             ignoreClientTransLogs = !string.IsNullOrEmpty(GetValue<string>("IgnoreClientTransLog")) && Convert.ToBoolean(GetValue<string>("IgnoreClientTransLog"));
 
+            redisDatabase = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Database")) ? "0" : GetValue<string>("Redis:Database"));
+
             redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
@@ -123,6 +128,8 @@ namespace Device.FingerPrint.Core
         public string PortalApiUrl => portalApiUrl;
 
         public bool IgnoreClientTransLogs => ignoreClientTransLogs;
+
+        public int RedisDatabase => redisDatabase;
 
         public long RedisExpired => redisExpired;
 

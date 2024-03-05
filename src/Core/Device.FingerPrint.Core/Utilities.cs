@@ -300,5 +300,35 @@ namespace Device.FingerPrint.Core
                 deviceInfo.TimeZone,
                 deviceInfo.LocalIps));
         }
+
+        public static string[] ParseSessionKey(string sessionKey, int defaultRedisDatabase)
+        {
+            if (string.IsNullOrEmpty(sessionKey))
+            {
+                return null;
+            }
+
+            if (sessionKey.Contains(':'))
+            {
+                var parts = sessionKey.Split(':');
+                if (parts.Length == 2 && ValidationSessionKey(parts[0]))
+                {
+                    return parts;
+                }
+                return null;
+            }
+
+            if (ValidationSessionKey(sessionKey))
+            {
+                return new string[] { sessionKey, defaultRedisDatabase.ToString() };
+            }
+
+            return null;
+        }
+
+        public static bool ValidationSessionKey(string guidStr)
+        {
+            return Guid.TryParse(guidStr, out Guid _);
+        }
     }
 }
