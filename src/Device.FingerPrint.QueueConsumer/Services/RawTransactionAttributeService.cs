@@ -45,7 +45,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
                 var cookieTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                await Task.WhenAll(fingerPrintTask, headerTask, cookieTask);
+                await Task.WhenAll(fingerPrintTask, fingerPrintEncodeTask, headerTask, cookieTask);
 
                 var fingerPrint = fingerPrintTask.Result;
                 var fingerPrintEncode = fingerPrintEncodeTask.Result;
