@@ -24,6 +24,10 @@
 
         Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey);
 
+        Task<T> GetAsync<T>(string key);
+
+        Task<bool> SetAsync<T>(string key, T value);
+
         Task<bool> AddAsyncAndExpiryAsync<T>(string key, T value, DateTimeOffset expiresAt);
     }
 
@@ -90,6 +94,23 @@
             var db = connectionMultiplexer.GetDatabase(redisDatabaseIndex);
 
             return await db.HashGetAsync(hashKey, fieldKey);
+        }
+
+        public async Task<T> GetAsync<T>(string key)
+        {
+            return default;
+            //return await redisDatabase.GetAsync<T>(key);
+        }
+
+        public Task<bool> SetAsync<T>(string key, T value)
+        {
+            return default;
+            // return redisDatabase.SetAddAsync<T>(key, value, flag: CommandFlags.FireAndForget);
+        }
+
+        public Task<bool> AddAsyncAndExpiryAsync<T>(string key, T value, DateTimeOffset expiresAt)
+        {
+            return default;
         }
     }
 }
