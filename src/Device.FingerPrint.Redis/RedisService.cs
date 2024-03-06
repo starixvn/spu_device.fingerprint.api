@@ -98,19 +98,17 @@
 
         public async Task<T> GetAsync<T>(string key)
         {
-            return default;
-            //return await redisDatabase.GetAsync<T>(key);
+            return await redisDatabase.GetAsync<T>(key);
         }
 
         public Task<bool> SetAsync<T>(string key, T value)
         {
-            return default;
-            // return redisDatabase.SetAddAsync<T>(key, value, flag: CommandFlags.FireAndForget);
+            return redisDatabase.SetAddAsync<T>(key, value, flag: CommandFlags.FireAndForget);
         }
 
         public Task<bool> AddAsyncAndExpiryAsync<T>(string key, T value, DateTimeOffset expiresAt)
         {
-            return default;
+            return redisDatabase.AddAsync(key, value, expiresAt, flag: CommandFlags.FireAndForget);
         }
     }
 }
