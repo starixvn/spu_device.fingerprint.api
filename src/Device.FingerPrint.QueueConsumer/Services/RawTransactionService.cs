@@ -3,7 +3,6 @@
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
-    using Fanex.Oneyed.Infrastructure.Models;
     using System;
     using System.Collections;
     using System.Collections.Generic;
