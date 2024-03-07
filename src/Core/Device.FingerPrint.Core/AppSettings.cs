@@ -30,6 +30,12 @@ namespace Device.FingerPrint.Core
 
         string JWTPassword { get; }
 
+        string JWT { get; }
+
+        string JWTIssue { get; }
+
+        string JWTAudience { get; }
+
         string LogTrailBaseUrl { get; }
         
         string SystemName {get; }
@@ -41,6 +47,8 @@ namespace Device.FingerPrint.Core
         IConfiguration Configuration { get; }
 
         T GetValue<T>(string key);
+
+        T GetSection<T>(string key);
     }
 
     public class AppSettings : IAppSettings
@@ -63,6 +71,12 @@ namespace Device.FingerPrint.Core
         private readonly int redisDatabase;
 
         private readonly string jWTPassword;
+
+        private readonly string jWTIssue;
+
+        private readonly string jWTAudience;
+
+        private readonly string jWT;
 
         private readonly string logTrailBaseUrl;
         private readonly string systemName;
@@ -100,6 +114,12 @@ namespace Device.FingerPrint.Core
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
 
+            jWTIssue = GetValue<string>("AppConfig:JWT:Issue") ?? string.Empty;
+
+            jWTAudience = GetValue<string>("AppConfig:JWT:Audience") ?? string.Empty;
+
+            jWT = GetValue<string>("AppConfig:JWT") ?? string.Empty;
+
             logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
 
             systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
@@ -135,6 +155,8 @@ namespace Device.FingerPrint.Core
 
         public string JWTPassword => jWTPassword;
 
+        public string JWT => jWT;
+
         public string LogTrailBaseUrl => logTrailBaseUrl;
 
         public string SystemName => systemName;
@@ -168,5 +190,8 @@ namespace Device.FingerPrint.Core
 
         public IConfiguration Configuration => configuration;
 
+        public string JWTIssue => jWTIssue;
+
+        public string JWTAudience => jWTAudience;
     }
 }

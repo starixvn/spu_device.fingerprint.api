@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void DeviceIdentifyNoFingerprint(string rawTransIds);
 
-        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity> ,IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch);
+        (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity>, IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch);
 
         void MergeTransaction(string transJson);
 
@@ -33,6 +34,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
         void EvolutionNewDevice(string transJson);
 
         void EvolutionRecoverDevice(string transJson);
+
+        IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem);
+
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem);
     }
 
     public class TransactionService : ITransactionService
@@ -71,9 +76,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.UpdateForceMergeTransaction(transJson);
         }
 
-        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity> ,IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch)
+        public (IEnumerable<DeviceIdentifyEntity>, IEnumerable<DeviceIdentifyEntity>, IEnumerable<ulong>) GetDeviceIdentify(int batchSize, int numberOfBatch)
         {
-            return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);            
+            return transactionDataAccess.GetDeviceIdentify(batchSize, numberOfBatch);
         }
 
         public IEnumerable<TransactionEvolutionAttributesEntity> GetTransactionEvolutionAttributes(string fingerPrintIds, string BrowserFamilyCode)
@@ -109,6 +114,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void EvolutionRecoverDevice(string transJson)
         {
             transactionDataAccess.EvolutionRecoverDevice(transJson);
+        }
+
+        public IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem)
+        {
+            return transactionDataAccess.GetLatestTransaction(subscriberId, length, skip, take, out totalItem);
+        }
+
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem)
+        {
+            return transactionDataAccess.GetTransactionHistory(subscriberId, fromDate, toDate, username, IsPartial, skip, take, out totalItem);
         }
     }
 }
