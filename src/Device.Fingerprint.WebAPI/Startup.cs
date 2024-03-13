@@ -99,8 +99,6 @@ namespace Device.Fingerprint.WebAPI
             //});
             #endregion
 
-            //RegisterRedis(services);
-
             services.RegisterService();
             FanexDataConfig(appSettings);
 
