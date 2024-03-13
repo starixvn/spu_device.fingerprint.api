@@ -22,8 +22,6 @@ namespace Device.FingerPrint.Core
 
         string Environment { get; }
 
-        bool IgnoreClientTransLogs { get; }
-
         int RedisDatabase { get; }
 
         long RedisExpired { get; }
@@ -66,7 +64,6 @@ namespace Device.FingerPrint.Core
         private readonly string cryptoIV;
         private readonly string cryptoSalt;
 
-        private readonly bool ignoreClientTransLogs;
         private readonly long redisExpired;
         private readonly int redisDatabase;
 
@@ -106,8 +103,6 @@ namespace Device.FingerPrint.Core
 
             environment = GetValue<string>("AppConfig:Environment") ?? string.Empty;
 
-            ignoreClientTransLogs = !string.IsNullOrEmpty(GetValue<string>("IgnoreClientTransLog")) && Convert.ToBoolean(GetValue<string>("IgnoreClientTransLog"));
-
             redisDatabase = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Database")) ? "0" : GetValue<string>("Redis:Database"));
 
             redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
@@ -146,8 +141,6 @@ namespace Device.FingerPrint.Core
         public string CDNApiUrl => cdnApiUrl;
 
         public string PortalApiUrl => portalApiUrl;
-
-        public bool IgnoreClientTransLogs => ignoreClientTransLogs;
 
         public int RedisDatabase => redisDatabase;
 
