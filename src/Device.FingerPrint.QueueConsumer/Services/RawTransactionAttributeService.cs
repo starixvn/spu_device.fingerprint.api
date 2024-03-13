@@ -23,14 +23,21 @@ namespace Device.FingerPrint.QueueConsumer.Services
     {
         private readonly ICrypto crypto;
         private readonly IRedisService redisService;
+        private readonly IRedisMultiplexService redisMultiplexService;
         private readonly ILogInfoServices logInfoServices;
         private readonly IAppSettings appSettings;
         private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
 
-        public RawTransactionAttributeService(ICrypto crypto, IRedisService redisService, ILogInfoServices logInfoServices, IAppSettings appSettings)
+        public RawTransactionAttributeService(
+            ICrypto crypto, 
+            IRedisService redisService,
+            IRedisMultiplexService redisMultiplexService,
+            ILogInfoServices logInfoServices, 
+            IAppSettings appSettings)
         {
             this.crypto = crypto;
             this.redisService = redisService;
+            this.redisMultiplexService = redisMultiplexService;
             this.logInfoServices = logInfoServices;
             this.appSettings = appSettings;
         }
@@ -90,9 +97,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                     if (sessionKey != null && sessionKey.RedisDbIndex > 0)
                     {
-                        var fingerPrintEncodeTask = redisService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
-                        var headerTask = redisService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                        var cookieTask = redisService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
+                        var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
+                        var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                        var cookieTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
                         await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask);
 
