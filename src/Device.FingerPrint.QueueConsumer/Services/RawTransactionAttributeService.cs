@@ -41,8 +41,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             {
                 if (!model.SessionKey.Contains(':'))
                 {
-                    // _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName} is still using old SessionKey!");
-
                     var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
                     var fingerPrintEncodeTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
                     var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
@@ -72,7 +70,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, header, model.RawUserAgentInfo);
                     model.CookieCode = cookie;
 
-                    // Log Info Consumer
                     var subscriberName = model.SubscriberName;
                     if (appSettings.GetValue<bool>("Consumer:LogInfo")
                         && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
@@ -91,11 +88,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     var sessionKey = Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
 
-                    if (sessionKey != null && sessionKey.Length > 1)
+                    if (sessionKey != null && sessionKey.RedisDbIndex > 0)
                     {
-                        var fingerPrintEncodeTask = redisService.HashGetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
-                        var headerTask = redisService.HashGetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.Header));
-                        var cookieTask = redisService.HashGetWithDbIndexAsync(int.Parse(sessionKey[1]), sessionKey[0], RedisString.GetRedisKeyName(RedisKey.Cookie));
+                        var fingerPrintEncodeTask = redisService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
+                        var headerTask = redisService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                        var cookieTask = redisService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
                         await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask);
 
@@ -127,7 +124,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         if (appSettings.GetValue<bool>("Consumer:LogInfo")
                             && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
                         {
-                            if (string.IsNullOrEmpty(sessionKey[0]))
+                            if (string.IsNullOrEmpty(sessionKey.SessionKey))
                             {
                                 LogSessionKeyEmpty(model);
                             }
@@ -136,14 +133,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                                 LogRedisValueEmpty(model);
                             }
                         }
-
-                        //var logUserTest = new[] { "member19", "qatest05", "andy7", "12mbtest005" };
-                        //if (logUserTest.Contains(model.LoginName))
-                        //{
-                        //    _ = LogService.InfoAsync($"{appSettings.Environment} - user: {model.LoginName}\n" +
-                        //                            $"RealIp: {headerModel.RealIP}\n" +
-                        //                            $"FakeIp: {headerModel.FakeIP}");
-                        //}
                     }
                     else
                     {

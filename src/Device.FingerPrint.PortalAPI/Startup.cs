@@ -1,6 +1,5 @@
+using AspNetCoreRateLimit;
 using Device.FingerPrint.Core;
-using Device.FingerPrint.Core.Middleware;
-using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.Redis;
 using Fanex.Data;
@@ -10,16 +9,13 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Sentry;
 using StackExchange.Redis;
@@ -47,17 +43,19 @@ namespace Device.FingerPrint.PortalAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
-            var JWTService = new JWTService(appSettings);
 
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
 
-            services.AddSingleton<ILogTrailClientService>(serviceProvider =>
-            {
-                var logTrailClientService = new LogTrailClientService();
-                logTrailClientService.SetLogTrailBaseUrl(appSettings.LogTrailBaseUrl);
-                return logTrailClientService;
-            });
+            // Config RateLimit
+            services.AddMemoryCache();
+
+            services.Configure<IpRateLimitOptions>(Configuration.GetSection("IpRateLimiting"));
+            services.Configure<IpRateLimitPolicies>(Configuration.GetSection("IpRateLimitPolicies"));
+
+            services.AddInMemoryRateLimiting();
+            services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+
 
             services.AddControllers();
 
@@ -75,55 +73,11 @@ namespace Device.FingerPrint.PortalAPI
             services.AddSwaggerGen(swagger =>
             {
                 swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.PortalAPI", Version = "v1" });
-                // To Enable authorization using Swagger (JWT)
-                swagger.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme()
-                {
-                    Name = "Authorization",
-                    Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer",
-                    BearerFormat = "JWT",
-                    In = ParameterLocation.Header,
-                    Description = "JWT Authorization header using the Bearer scheme. \r\n\r\n Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
-                });
-                swagger.AddSecurityRequirement(new OpenApiSecurityRequirement
-                {
-                    {
-                          new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "Bearer"
-                                }
-                            },
-                            new string[] {}
-                    }
-                });
             });
 
             services.AddHttpContextAccessor();
 
             services.AddHealthChecks();
-
-
-            #region Authentication
-            services.AddAuthentication(option =>
-            {
-                option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            }).AddJwtBearer(options =>
-            {
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateIssuerSigningKey = false,
-                    ClockSkew = TimeSpan.Zero,
-                    IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
-                };
-            });
-            #endregion
 
             RegisterRedis(services);
 
@@ -158,6 +112,10 @@ namespace Device.FingerPrint.PortalAPI
 
             app.UseRouting();
 
+            app.UseIpRateLimiting();
+
+            app.UseAuthorization();
+
             app.UseCors();
 
             app.UseResponseCaching();
@@ -171,23 +129,21 @@ namespace Device.FingerPrint.PortalAPI
                         MaxAge = TimeSpan.FromSeconds(600)
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
-                    new string[] { "Accept-Encoding" };                
+                    new string[] { "Accept-Encoding" };
 
                 await next();
             });
 
             app.UseAuthentication();
 
-            app.UseAuthorization();
+            app.UseMiddleware<ExceptionMiddleware>();
 
-            app.UseMiddleware<ExceptionMiddleware>();                       
-
-            if(env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("AppConfig:Environment", "UAT") == "UAT")
+            if (env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("AppConfig:Environment", "UAT") == "UAT")
             {
                 app.UseSwagger();
 
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.PortalAPI v1"));
-            }            
+            }
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
