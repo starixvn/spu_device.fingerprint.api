@@ -301,7 +301,7 @@ namespace Device.FingerPrint.Core
                 deviceInfo.LocalIps));
         }
 
-        public static string[] ParseSessionKey(string sessionKey, int defaultRedisDatabase)
+        public static SessionKeyModel ParseSessionKey(string sessionKey, int defaultRedisDatabase)
         {
             if (string.IsNullOrEmpty(sessionKey))
             {
@@ -311,16 +311,16 @@ namespace Device.FingerPrint.Core
             if (sessionKey.Contains(':'))
             {
                 var parts = sessionKey.Split(':');
-                if (parts.Length == 2 && ValidationSessionKey(parts[0]))
+                if (parts.Length > 1 && ValidationSessionKey(parts[0]))
                 {
-                    return parts;
+                    return new SessionKeyModel { SessionKey = parts[0], RedisDbIndex = int.Parse(parts[1]) };
                 }
                 return null;
             }
 
             if (ValidationSessionKey(sessionKey))
             {
-                return new string[] { sessionKey, defaultRedisDatabase.ToString() };
+                return new SessionKeyModel { SessionKey = sessionKey, RedisDbIndex = defaultRedisDatabase };
             }
 
             return null;
