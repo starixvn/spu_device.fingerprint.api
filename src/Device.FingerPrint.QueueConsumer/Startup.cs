@@ -178,6 +178,7 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
             services.AddSingleton<IRedisService, RedisService>();
+            services.AddSingleton<IRedisMultiplexService, RedisMultiplexService>();
         }
 
         private void InitService(IServiceCollection services)

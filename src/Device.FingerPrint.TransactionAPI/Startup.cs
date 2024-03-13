@@ -148,7 +148,7 @@ namespace Device.FingerPrint.TransactionAPI
             services.AddSingleton<IRedisClient, RedisClient>();
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
-            services.AddSingleton<IRedisService, RedisService>();
+            services.AddSingleton<IRedisService, RedisService>(); 
         }
     }
 }

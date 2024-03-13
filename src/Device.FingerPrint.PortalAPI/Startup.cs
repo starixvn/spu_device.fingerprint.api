@@ -199,6 +199,7 @@ namespace Device.FingerPrint.PortalAPI
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
             services.AddSingleton<IRedisService, RedisService>();
+            services.AddSingleton<IRedisMultiplexService, RedisMultiplexService>();
         }
     }
 }

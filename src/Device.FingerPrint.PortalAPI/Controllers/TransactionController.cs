@@ -20,6 +20,7 @@
     public class TransactionController : ControllerBase
     {
         private readonly IRedisService redisService;
+        private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IAppSettings appSettings;
         private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
@@ -28,9 +29,11 @@
         public TransactionController(
             IAppSettings appSettings,
             IRedisService redisService,
+            IRedisMultiplexService redisMultiplexService,
             IClientTransactionService clientTransactionService)
         {
             this.redisService = redisService;
+            this.redisMultiplexService = redisMultiplexService;
             this.clientTransactionService = clientTransactionService;
             this.appSettings = appSettings;
         }
@@ -110,7 +113,7 @@
 
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
-                    redisService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Data, appSettings.RedisExpired);
+                    redisMultiplexService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Data, appSettings.RedisExpired);
                 }
             }
         }
@@ -124,7 +127,7 @@
 
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
-                    redisService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, appSettings.RedisExpired);
+                    redisMultiplexService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, appSettings.RedisExpired);
                 }
             }
         }
@@ -169,7 +172,7 @@
         [HttpGet("check-redis-expired")]
         public async Task<double> CheckRedisExpired(int redisDbIndex, string sessionKey)
         {
-            var timeToLive = await redisService.GetTimeSpan(redisDbIndex, sessionKey);
+            var timeToLive = await redisMultiplexService.GetTimeSpan(redisDbIndex, sessionKey);
 
             return timeToLive;
         }
@@ -200,7 +203,7 @@
             var headerModel = GetHeaderValue();
             if (headerModel != null)
             {
-                redisService.HashSetWithDbIndexAsync(originService, redisDatabaseIndex, sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel), appSettings.RedisExpired);
+                redisMultiplexService.HashSetWithDbIndexAsync(originService, redisDatabaseIndex, sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel), appSettings.RedisExpired);
             }
         }
 
