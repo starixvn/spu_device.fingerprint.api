@@ -4,6 +4,8 @@ WORKDIR /src
 
 COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
+COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
+
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
