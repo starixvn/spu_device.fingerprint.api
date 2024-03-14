@@ -36,8 +36,6 @@
 
         public int SubscriberId { get; set; }
 
-        public DateTime SubscriberDate { get; set; }
-
         public DateTime? LoginTime { get; set; }
 
         public string CaptchaResult { get; set; }

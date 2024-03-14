@@ -142,7 +142,7 @@
                 IP = transactionRequest.Ip,
                 FakeIP = transactionRequest.FakeIp,
                 TransDate = DateTime.Now,
-                SubscriberDate = transactionRequest.SubscriberDate,
+                SubscriberDate = DateTime.Now,
                 Token = transactionRequest.Token,
                 Recaptcha = "",
                 SessionKey = transactionRequest.SessionKey,
