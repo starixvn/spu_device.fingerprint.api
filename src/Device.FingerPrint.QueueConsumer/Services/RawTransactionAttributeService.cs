@@ -5,6 +5,7 @@ using Device.FingerPrint.Features.LogInfo.Model;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.Model.Enums;
+using Device.FingerPrint.QueueConsumer.Models;
 using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
 using Fanex.Logging;
@@ -95,17 +96,23 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     var sessionKey = Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
 
+
                     if (sessionKey != null && sessionKey.RedisDbIndex > 0)
                     {
                         var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
                         var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
                         var cookieTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask);
+                        var jsChallengeTask = redisService.GetAsync<string>($"Challenge:{sessionKey.SessionKey}");
+
+                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask, jsChallengeTask);
 
                         var fingerPrintEncode = fingerPrintEncodeTask.Result;
                         var header = headerTask.Result;
                         var cookie = cookieTask.Result;
+                        var jsChallenge = jsChallengeTask.Result;
+
+                        TransformJSChallengeInfo(model, sessionKey, jsChallenge);
 
                         var fingerPrintModel = new FingerprintModel();
                         if (!string.IsNullOrEmpty(fingerPrintEncode))
@@ -176,6 +183,20 @@ namespace Device.FingerPrint.QueueConsumer.Services
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);
 
             return result;
+        }
+
+        private static void TransformJSChallengeInfo(RawTransactionModel model, SessionKeyModel sessionKey, string jsChallenge)
+        {
+            if (!string.IsNullOrEmpty(jsChallenge))
+            {
+                var jsChallengeInfo = JsonConvert.DeserializeObject<JSChallengeInfo>(jsChallenge);
+                if (string.IsNullOrEmpty(jsChallengeInfo.Expect))
+                {
+                    jsChallengeInfo.Expect = jsChallengeInfo.Expected;
+                }
+                jsChallengeInfo.ChallengeCode = sessionKey.SessionKey;
+                model.RawJsChallengeInfo = jsChallengeInfo;
+            }
         }
 
         private string HashBrowserFamilyCode(FingerprintAttributeModel model)

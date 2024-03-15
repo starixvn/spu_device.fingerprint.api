@@ -82,6 +82,8 @@ namespace Device.FingerPrint.Model
         public string RawUserAgent { get; set; }
 
         public UserAgentInfoModel RawUserAgentInfo { get; set; }
+
+        public JSChallengeInfo RawJsChallengeInfo { get; set; }
     }
 
     public class ConvertBigInteger : ConverterBase
