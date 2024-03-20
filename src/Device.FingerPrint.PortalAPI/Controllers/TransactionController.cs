@@ -38,7 +38,7 @@
             this.appSettings = appSettings;
         }
 
-        [HttpPost("hd/{version}")]
+        [HttpPost("h/d/{version}")]
         public void Header([FromBody] string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -49,7 +49,7 @@
             }
         }
 
-        [HttpPost("ce/{version}")]
+        [HttpPost("c/e/{version}")]
         public async Task Cookie([FromBody] string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -70,7 +70,7 @@
             }
         }
 
-        [HttpPost("fp/{version}")]
+        [HttpPost("f/p/{version}")]
         public async Task FingerPrint([FromBody] string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -90,7 +90,7 @@
             }
         }
 
-        [HttpPost("hd")]
+        [HttpPost("h/d")]
         public void Header([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -104,7 +104,7 @@
             }
         }
 
-        [HttpPost("ce")]
+        [HttpPost("c/e")]
         public void Cookie([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -118,7 +118,7 @@
             }
         }
 
-        [HttpPost("fp")]
+        [HttpPost("f/p")]
         public void FingerPrint([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -132,7 +132,7 @@
             }
         }
 
-        [HttpPost("cle")]
+        [HttpPost("c/l/e")]
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
