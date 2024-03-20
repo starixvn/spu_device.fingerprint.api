@@ -18,7 +18,7 @@
 
         public int ExeClientTimeInSecond { get; set; }
 
-        public bool Result { get; set; }
+        public int Result { get; set; }
 
         public string ErrMsg { get; set; }
 
