@@ -5,7 +5,6 @@ using Device.FingerPrint.Features.LogInfo.Model;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.Model.Enums;
-using Device.FingerPrint.QueueConsumer.Models;
 using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
 using Fanex.Logging;
@@ -111,6 +110,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         var header = headerTask.Result;
                         var cookie = cookieTask.Result;
                         var jsChallenge = jsChallengeTask.Result;
+
+                        if(string.IsNullOrEmpty(jsChallenge) && (!string.IsNullOrEmpty(fingerPrintEncode) || !string.IsNullOrEmpty(header) || !string.IsNullOrEmpty(cookie)))
+                        {
+                            await LogService.InfoAsync($"JS challenge is empty:\n {JsonConvert.SerializeObject(model)}");
+                        }
 
                         TransformJSChallengeInfo(model, sessionKey, jsChallenge);
 
