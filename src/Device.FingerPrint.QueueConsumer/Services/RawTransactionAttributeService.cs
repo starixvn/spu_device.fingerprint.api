@@ -198,6 +198,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     jsChallengeInfo.Expect = jsChallengeInfo.Expected;
                 }
+
+                if(jsChallengeInfo.Expect != jsChallengeInfo.Actual && jsChallengeInfo.Result == 0)
+                {
+                    jsChallengeInfo.Result = 1;
+                }
                 jsChallengeInfo.ChallengeCode = sessionKey.SessionKey;
                 model.RawJsChallengeInfo = jsChallengeInfo;
             }
