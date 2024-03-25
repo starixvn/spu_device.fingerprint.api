@@ -14,9 +14,9 @@
 
         public string Actual { get; set; }
 
-        public int ExeServerTimeInSecond { get; set; }
+        public int? ExeServerTimeInSecond { get; set; }
 
-        public int ExeClientTimeInSecond { get; set; }
+        public int? ExeClientTimeInSecond { get; set; }
 
         public int Result { get; set; }
 
