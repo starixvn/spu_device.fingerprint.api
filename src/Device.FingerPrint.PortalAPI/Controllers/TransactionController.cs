@@ -91,6 +91,7 @@
         }
 
         [HttpPost("h/d")]
+        [HttpPost("hd")]
         public void Header([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -105,6 +106,7 @@
         }
 
         [HttpPost("c/e")]
+        [HttpPost("ce")]
         public void Cookie([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -119,6 +121,7 @@
         }
 
         [HttpPost("f/p")]
+        [HttpPost("fp")]
         public void FingerPrint([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -133,6 +136,7 @@
         }
 
         [HttpPost("c/l/e")]
+        [HttpPost("cle")]
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
