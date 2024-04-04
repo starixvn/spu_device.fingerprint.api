@@ -101,7 +101,7 @@ namespace Device.FingerPrint.TransactionAPI
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // Custom Metrics to count requests for each endpoint and the method
-            var counter = Metrics.CreateCounter("transactionapi_path_counter", "Counts requests to the Transaction API endpoints", new CounterConfiguration
+            var counter = Metrics.CreateCounter("transaction_api_path_counter", "Counts requests to the Transaction API endpoints", new CounterConfiguration
             {
                 LabelNames = new[] { "method", "endpoint" }
             });

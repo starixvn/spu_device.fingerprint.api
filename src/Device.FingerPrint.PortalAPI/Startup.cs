@@ -112,7 +112,7 @@ namespace Device.FingerPrint.PortalAPI
 
 
             // Custom Metrics to count requests for each endpoint and the method
-            var counter = Metrics.CreateCounter("fingerprintapi_path_counter", "Counts requests to the Transaction API endpoints", new CounterConfiguration
+            var counter = Metrics.CreateCounter("portal_api_path_counter", "Counts requests to the Portal API endpoints", new CounterConfiguration
             {
                 LabelNames = new[] { "method", "endpoint" }
             });
