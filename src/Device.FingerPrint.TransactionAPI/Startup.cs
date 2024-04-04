@@ -23,6 +23,7 @@ namespace Device.FingerPrint.TransactionAPI
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Device.FingerPrint.Core.Middleware;
     using Microsoft.OpenApi.Models;
+    using Prometheus;
 
     public class Startup
     {
@@ -99,6 +100,20 @@ namespace Device.FingerPrint.TransactionAPI
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // Custom Metrics to count requests for each endpoint and the method
+            var counter = Metrics.CreateCounter("transactionapi_path_counter", "Counts requests to the Transaction API endpoints", new CounterConfiguration
+            {
+                LabelNames = new[] { "method", "endpoint" }
+            });
+            app.Use((context, next) =>
+            {
+                counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
+                return next();
+            });
+            // Use the Prometheus middleware
+            app.UseMetricServer();
+            app.UseHttpMetrics();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
