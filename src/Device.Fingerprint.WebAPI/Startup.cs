@@ -20,6 +20,7 @@ namespace Device.Fingerprint.WebAPI
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.OpenApi.Models;
+    using Prometheus;
     using Sentry;
     using System;
     using System.Collections.Generic;
@@ -127,7 +128,21 @@ namespace Device.Fingerprint.WebAPI
                 app.UseDeveloperExceptionPage();
 
             }
-           
+
+            // Custom Metrics to count requests for each endpoint and the method
+            var counter = Metrics.CreateCounter("fingerprintapi_path_counter", "Counts requests to the Transaction API endpoints", new CounterConfiguration
+            {
+                LabelNames = new[] { "method", "endpoint" }
+            });
+            app.Use((context, next) =>
+            {
+                counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
+                return next();
+            });
+            // Use the Prometheus middleware
+            app.UseMetricServer();
+            app.UseHttpMetrics();
+
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
