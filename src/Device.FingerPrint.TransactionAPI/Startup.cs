@@ -110,9 +110,6 @@ namespace Device.FingerPrint.TransactionAPI
                 counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
                 return next();
             });
-            // Use the Prometheus middleware
-            app.UseMetricServer();
-            app.UseHttpMetrics();
 
             if (env.IsDevelopment())
             {
@@ -121,6 +118,10 @@ namespace Device.FingerPrint.TransactionAPI
             var appSettings = app.ApplicationServices.GetRequiredService<IAppSettings>();
 
             app.UseRouting();
+
+            // Use the Prometheus middleware
+            app.UseMetricServer();
+            app.UseHttpMetrics();
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
