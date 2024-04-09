@@ -102,7 +102,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
                         var cookieTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                        var jsChallengeTask = redisService.GetAsync<string>($"Challenge:{sessionKey.SessionKey}");
+                        var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{sessionKey.SessionKey}");
 
                         await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask, jsChallengeTask);
 

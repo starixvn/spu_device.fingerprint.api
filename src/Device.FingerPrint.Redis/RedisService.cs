@@ -8,6 +8,8 @@
     {
         IRedisDatabase RedisDatabase { get; }
 
+        IRedisDatabase RedisJSChallengeDatabase { get; }
+
         Task<T?> HashGetAsync<T>(string hashKey, string key);
 
         Task<bool> HashSetAsync<T>(string hashKey, string key, T value, bool isForceUpdate);
@@ -30,13 +32,20 @@
     public class RedisService : IRedisService
     {
         private readonly IRedisDatabase redisDatabase;
+        private readonly IRedisDatabase redisJSChallengeDatabase;
+
+        private readonly int REDIS_JSCHALLENGE_DATABASE = 10;
 
         public RedisService(IRedisClient redisClient)
         {
             redisDatabase = redisClient.GetDefaultDatabase();
+
+            redisJSChallengeDatabase = redisClient.GetDb(REDIS_JSCHALLENGE_DATABASE);
         }
 
         public IRedisDatabase RedisDatabase => redisDatabase;
+
+        public IRedisDatabase RedisJSChallengeDatabase => redisJSChallengeDatabase;
 
 
         public Task<bool> HashSetAsync<T>(string hashKey, string key, T value, bool isForceUpdate)
