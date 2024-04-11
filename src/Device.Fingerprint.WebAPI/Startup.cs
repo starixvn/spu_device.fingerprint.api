@@ -129,20 +129,6 @@ namespace Device.Fingerprint.WebAPI
 
             }
 
-            // Custom Metrics to count requests for each endpoint and the method
-            var counter = Metrics.CreateCounter("web_api_path_counter", "Counts requests to the Web API endpoints", new CounterConfiguration
-            {
-                LabelNames = new[] { "method", "endpoint" }
-            });
-            app.Use((context, next) =>
-            {
-                counter.WithLabels(context.Request.Method, context.Request.Path).Inc();
-                return next();
-            });
-            // Use the Prometheus middleware
-            app.UseMetricServer();
-            app.UseHttpMetrics();
-
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
@@ -160,6 +146,9 @@ namespace Device.Fingerprint.WebAPI
             app.UseForwardedHeaders();
 
             app.UseRouting();
+
+            app.UseMetricServer();
+            app.UseHttpMetrics();
 
             app.UseCors();
 
