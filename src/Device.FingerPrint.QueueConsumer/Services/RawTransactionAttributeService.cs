@@ -102,8 +102,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
                         var cookieTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                        var redisDatabase = redisService.RedisJSChallengeDatabase.Database.Database;
-
                         var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{sessionKey.SessionKey}");
 
 
@@ -113,14 +111,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         var header = headerTask.Result;
                         var cookie = cookieTask.Result;
                         var jsChallenge = jsChallengeTask.Result;
-
-                        await LogService.InfoAsync($"redisDatabase: {redisDatabase} jsChallengeResult: {jsChallenge}");
-
-
-                        if (string.IsNullOrEmpty(jsChallenge) && (!string.IsNullOrEmpty(fingerPrintEncode) || !string.IsNullOrEmpty(header) || !string.IsNullOrEmpty(cookie)))
-                        {
-                            await LogService.InfoAsync($"JS challenge is empty:\n {JsonConvert.SerializeObject(model)}");
-                        }
 
                         TransformJSChallengeInfo(model, sessionKey, jsChallenge);
 

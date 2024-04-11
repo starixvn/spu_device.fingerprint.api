@@ -78,7 +78,7 @@
 
             await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
 
-            await logger.InfoAsync($"transactionModels:\n {JsonConvert.SerializeObject(transactionModels)}");
+           // await logger.InfoAsync($"transactionModels:\n {JsonConvert.SerializeObject(transactionModels)}");
 
             _ = AdditionalProcessingNotAwait(transactionModels);
         }
