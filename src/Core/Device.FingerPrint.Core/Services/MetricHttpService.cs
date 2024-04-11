@@ -19,6 +19,7 @@
             {
                 Endpoint = gatewayInfo.Url,
                 Job = gatewayInfo.Job,
+                Instance = Environment.MachineName,
                 HttpClientProvider = () => httpClient
             });
 
