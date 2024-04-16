@@ -41,6 +41,9 @@ namespace Device.Fingerprint.WebAPI
             var appSettings = new AppSettings(this.Configuration);
             var JWTService = new JWTService(appSettings);
 
+            var gatewaySetting = new GatewaySetting(Configuration);
+            services.AddSingleton<IGatewaySetting>(gatewaySetting);
+
             services.AddSingleton<IAppSettings>(appSettings);
             services.AddSingleton<ILogger, Logger>();
 
@@ -129,6 +132,8 @@ namespace Device.Fingerprint.WebAPI
 
             }
 
+            var gatewaySetting = app.ApplicationServices.GetRequiredService<IGatewaySetting>();
+
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
@@ -147,8 +152,11 @@ namespace Device.Fingerprint.WebAPI
 
             app.UseRouting();
 
+            // Use the Prometheus middleware
             app.UseMetricServer();
             app.UseHttpMetrics();
+
+            MetricHttpService.PublicDataToGateway(gatewaySetting.GatewayInfo);
 
             app.UseCors();
 

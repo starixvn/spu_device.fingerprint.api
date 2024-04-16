@@ -1,5 +1,6 @@
 using AspNetCoreRateLimit;
 using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.Redis;
 using Fanex.Data;
@@ -9,6 +10,7 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
+using Fanex.LogTrail.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -46,6 +48,10 @@ namespace Device.FingerPrint.PortalAPI
             var appSettings = new AppSettings(this.Configuration);
 
             services.AddSingleton<IAppSettings>(appSettings);
+
+            var gatewaySetting = new GatewaySetting(Configuration);
+            services.AddSingleton<IGatewaySetting>(gatewaySetting);
+
             services.AddSingleton<ILogger, Logger>();
 
             // Config RateLimit
@@ -110,10 +116,15 @@ namespace Device.FingerPrint.PortalAPI
                 app.UseDeveloperExceptionPage();
             }
 
+            var gatewaySetting = app.ApplicationServices.GetRequiredService<IGatewaySetting>();
+
             app.UseRouting();
 
+            // Use the Prometheus middleware
             app.UseMetricServer();
             app.UseHttpMetrics();
+
+            MetricHttpService.PublicDataToGateway(gatewaySetting.GatewayInfo);
 
             app.UseIpRateLimiting();
 

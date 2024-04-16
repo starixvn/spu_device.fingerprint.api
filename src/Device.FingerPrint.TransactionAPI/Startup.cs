@@ -24,6 +24,9 @@ namespace Device.FingerPrint.TransactionAPI
     using Device.FingerPrint.Core.Middleware;
     using Microsoft.OpenApi.Models;
     using Prometheus;
+    using System.Net.Http.Headers;
+    using System.Text;
+    using Device.FingerPrint.Core.Services;
 
     public class Startup
     {
@@ -38,6 +41,9 @@ namespace Device.FingerPrint.TransactionAPI
         {
             var appSettings = new AppSettings(Configuration);
             services.AddSingleton<IAppSettings>(appSettings);
+            var gatewaySetting = new GatewaySetting(Configuration);
+            services.AddSingleton<IGatewaySetting>(gatewaySetting);
+
             services.AddSingleton<ILogEvent>(serviceProvider =>
             {
                 var logEvent = new LogEvent(appSettings.LogTrailBaseUrl);
@@ -105,12 +111,16 @@ namespace Device.FingerPrint.TransactionAPI
                 app.UseDeveloperExceptionPage();
             }
             var appSettings = app.ApplicationServices.GetRequiredService<IAppSettings>();
+            var gatewaySetting = app.ApplicationServices.GetRequiredService<IGatewaySetting>();
 
             app.UseRouting();
 
             // Use the Prometheus middleware
             app.UseMetricServer();
             app.UseHttpMetrics();
+
+            MetricHttpService.PublicDataToGateway(gatewaySetting.GatewayInfo);
+
 
             app.UseHealthChecks("/healthz", new HealthCheckOptions
             {
@@ -132,6 +142,7 @@ namespace Device.FingerPrint.TransactionAPI
                 endpoints.MapControllers();
             });
         }
+
 
         private void RegisterService(IServiceCollection services)
         {
