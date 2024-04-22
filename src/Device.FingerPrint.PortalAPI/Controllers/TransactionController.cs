@@ -38,7 +38,7 @@
             this.appSettings = appSettings;
         }
 
-        [HttpPost("hd/{version}")]
+        [HttpPost("h/d/{version}")]
         public void Header([FromBody] string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -49,7 +49,7 @@
             }
         }
 
-        [HttpPost("ce/{version}")]
+        [HttpPost("c/e/{version}")]
         public async Task Cookie([FromBody] string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -70,7 +70,7 @@
             }
         }
 
-        [HttpPost("fp/{version}")]
+        [HttpPost("f/p/{version}")]
         public async Task FingerPrint([FromBody] string data)
         {
             if (!string.IsNullOrEmpty(data))
@@ -90,6 +90,7 @@
             }
         }
 
+        [HttpPost("h/d")]
         [HttpPost("hd")]
         public void Header([FromBody] PortalParameter data)
         {
@@ -104,6 +105,7 @@
             }
         }
 
+        [HttpPost("c/e")]
         [HttpPost("ce")]
         public void Cookie([FromBody] PortalParameter data)
         {
@@ -118,6 +120,7 @@
             }
         }
 
+        [HttpPost("f/p")]
         [HttpPost("fp")]
         public void FingerPrint([FromBody] PortalParameter data)
         {
@@ -132,6 +135,7 @@
             }
         }
 
+        [HttpPost("c/l/e")]
         [HttpPost("cle")]
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {

@@ -2,11 +2,13 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Model;
+    using Device.FingerPrint.QueueConsumer.Models;
     using Device.FingerPrint.Redis;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     public interface IRawTransactionService

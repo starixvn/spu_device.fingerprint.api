@@ -95,17 +95,24 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     var sessionKey = Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
 
+
                     if (sessionKey != null && sessionKey.RedisDbIndex > 0)
                     {
                         var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
                         var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
                         var cookieTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask);
+                        var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{sessionKey.SessionKey}");
+
+
+                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask, jsChallengeTask);
 
                         var fingerPrintEncode = fingerPrintEncodeTask.Result;
                         var header = headerTask.Result;
                         var cookie = cookieTask.Result;
+                        var jsChallenge = jsChallengeTask.Result;
+
+                        TransformJSChallengeInfo(model, sessionKey, jsChallenge);
 
                         var fingerPrintModel = new FingerprintModel();
                         if (!string.IsNullOrEmpty(fingerPrintEncode))
@@ -176,6 +183,25 @@ namespace Device.FingerPrint.QueueConsumer.Services
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);
 
             return result;
+        }
+
+        private static void TransformJSChallengeInfo(RawTransactionModel model, SessionKeyModel sessionKey, string jsChallenge)
+        {
+            if (!string.IsNullOrEmpty(jsChallenge))
+            {
+                var jsChallengeInfo = JsonConvert.DeserializeObject<JSChallengeInfo>(jsChallenge);
+                if (string.IsNullOrEmpty(jsChallengeInfo.Expect))
+                {
+                    jsChallengeInfo.Expect = jsChallengeInfo.Expected;
+                }
+
+                if(jsChallengeInfo.Expect != jsChallengeInfo.Actual && jsChallengeInfo.Result == 0)
+                {
+                    jsChallengeInfo.Result = 1;
+                }
+                jsChallengeInfo.ChallengeCode = sessionKey.SessionKey;
+                model.RawJsChallengeInfo = jsChallengeInfo;
+            }
         }
 
         private string HashBrowserFamilyCode(FingerprintAttributeModel model)

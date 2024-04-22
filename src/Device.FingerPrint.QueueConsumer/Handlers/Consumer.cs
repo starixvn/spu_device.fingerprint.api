@@ -12,6 +12,7 @@
     using Fanex.Logging.Extensions.Database;
     using Fanex.LogTrail.Service;
     using MassTransit;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -76,6 +77,8 @@
             ipdbService.TransformTransactionByIps(transactionModels);
 
             await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
+
+           // await logger.InfoAsync($"transactionModels:\n {JsonConvert.SerializeObject(transactionModels)}");
 
             _ = AdditionalProcessingNotAwait(transactionModels);
         }
