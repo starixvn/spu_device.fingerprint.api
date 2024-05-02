@@ -115,8 +115,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                         TransformJSChallengeInfo(model, sessionKey, jsChallenge);
 
-                        _ = ClearRedisJSChallenge(sessionKey.SessionKey);
-
                         var fingerPrintModel = new FingerprintModel();
                         if (!string.IsNullOrEmpty(fingerPrintEncode))
                         {
@@ -204,18 +202,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 }
                 jsChallengeInfo.ChallengeCode = sessionKey.SessionKey;
                 model.RawJsChallengeInfo = jsChallengeInfo;
-            }
-        }
-
-        private async Task ClearRedisJSChallenge(string sessionKey)
-        {
-            try
-            {
-                await redisService.RedisJSChallengeDatabase.RemoveAsync($"Challenge:{sessionKey}", StackExchange.Redis.CommandFlags.FireAndForget);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(ex.Message);
             }
         }
 

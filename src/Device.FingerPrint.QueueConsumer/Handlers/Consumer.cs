@@ -4,7 +4,6 @@
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
-    using Device.FingerPrint.Model.TransactionMonitoring;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
@@ -12,7 +11,6 @@
     using Fanex.Logging.Extensions.Database;
     using Fanex.LogTrail.Service;
     using MassTransit;
-    using Newtonsoft.Json;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -78,8 +76,6 @@
 
             await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
 
-           // await logger.InfoAsync($"transactionModels:\n {JsonConvert.SerializeObject(transactionModels)}");
-
             _ = AdditionalProcessingNotAwait(transactionModels);
         }
 
@@ -88,18 +84,24 @@
             var tasks = new List<Task>
             {
                 InsertLogTrail(transactionModels),
-                //HandleClearRedis(transactionModels),
-                //PushTransactionToMonitorAsync(transactionModels)
+                HandleClearRedisJsChallenge(transactionModels)
             };
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task HandleClearRedis(IEnumerable<RawTransactionModel> transactions)
+        private async Task HandleClearRedisJsChallenge(IEnumerable<RawTransactionModel> transactionModels)
         {
             try
             {
-                await rawTransactionService.ClearRedisAsync(transactions);
+                var jsChallenges = transactionModels.Select(x => x.RawJsChallengeInfo);
+
+                if (jsChallenges != null && jsChallenges.Any())
+                {                   
+
+                    await rawTransactionService.ClearRedisJsChallenge(jsChallenges);
+                }
+
             }
             catch (Exception ex)
             {
@@ -131,27 +133,6 @@
                 catch (Exception ex)
                 {
                     LogError(ex);
-                }
-            }
-        }
-
-        private async Task PushTransactionToMonitorAsync(IEnumerable<RawTransactionModel> transactions)
-        {
-            if (appSettings.GetValue<bool>("RabbitMQ:Monitor:PushTrans-To-Monitor") && !appSettings.IsExtraSub)
-            {
-                var groupTrans = transactions.Select(x => { x.TransTime = Convert.ToDateTime(x.TransTime.ToString("MM/dd/yyyy")); return x; })
-                                    .GroupBy(x => new { x.SubscriberId, x.SubscriberName, x.TransTime })
-                                    .Select(x => new TransactionMonitoringModel
-                                    {
-                                        SubscriberID = x.Key.SubscriberId,
-                                        SubscriberName = x.Key.SubscriberName,
-                                        TransDate = x.Key.TransTime,
-                                        TransTotal = x.Count()
-                                    });
-
-                if (groupTrans != null && groupTrans.Any())
-                {
-                    await massTransitProducer.SendBatchAsync(groupTrans.ToList(), appSettings.GetValue<string>("RabbitMQ:Monitor:Name"));
                 }
             }
         }
