@@ -17,7 +17,7 @@
 
         Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
 
-        Task ClearRedisJsChallenge(IEnumerable<JSChallengeInfo> jsChallenges);
+        Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -121,13 +121,11 @@
             await Task.WhenAll(tasks);
         }
 
-        public async Task ClearRedisJsChallenge(IEnumerable<JSChallengeInfo> jsChallenges)
+        public async Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes)
         {
-            var jsChallengeCodes = jsChallenges.Where(x => x.ChallengeCode != null).Select(x => x.ChallengeCode);
-
             var tasks = jsChallengeCodes
-                .Select(code => redisService.RedisJSChallengeDatabase.RemoveAsync($"Challenge:{code}", StackExchange.Redis.CommandFlags.FireAndForget))
-                .ToList();
+            .Select(code => redisService.RedisJSChallengeDatabase.RemoveAsync($"Challenge:{code}", StackExchange.Redis.CommandFlags.FireAndForget))
+            .ToList();
 
             await Task.WhenAll(tasks);
         }

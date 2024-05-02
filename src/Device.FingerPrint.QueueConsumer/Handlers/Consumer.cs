@@ -11,6 +11,7 @@
     using Fanex.Logging.Extensions.Database;
     using Fanex.LogTrail.Service;
     using MassTransit;
+    using Microsoft.IdentityModel.Tokens;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -84,23 +85,24 @@
             var tasks = new List<Task>
             {
                 InsertLogTrail(transactionModels),
-                HandleClearRedisJsChallenge(transactionModels)
+                //HandleClearRedis(transactionModels),
+                //PushTransactionToMonitorAsync(transactionModels)
             };
+
+            var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
+            if(rawJsChallenges != null && rawJsChallenges.Any())
+            {
+                tasks.Add(HandleClearRedisJsChallenge(rawJsChallenges));
+            }
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task HandleClearRedisJsChallenge(IEnumerable<RawTransactionModel> transactionModels)
+        private async Task HandleClearRedisJsChallenge(IEnumerable<string> rawJsChallenges)
         {
             try
             {
-                var jsChallenges = transactionModels.Select(x => x.RawJsChallengeInfo);
-
-                if (jsChallenges != null && jsChallenges.Any())
-                {                   
-
-                    await rawTransactionService.ClearRedisJsChallenge(jsChallenges);
-                }
+                await rawTransactionService.ClearRedisJsChallenge(rawJsChallenges);
 
             }
             catch (Exception ex)
