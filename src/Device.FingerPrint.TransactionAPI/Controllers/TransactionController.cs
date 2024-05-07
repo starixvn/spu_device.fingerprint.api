@@ -9,6 +9,7 @@
     using Device.FingerPrint.TransactionAPI.Services;
     using Fanex.Logging;
     using Fanex.LogTrail.Service;
+    using MassTransit;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using ONEbook.UM.Models;
@@ -98,6 +99,18 @@
 
             var response = GetTransactionResponse(responseCode);
             return Ok(response.ResultMessage);
+        }
+
+        [HttpPost("FPS/CheckTransaction/1")]
+        public async Task<IActionResult> CheckTransactionAsync1(TransactionRequest transRequest)
+        {
+            return Ok("CheckTransactionAsync1");
+        }
+
+        [HttpPost("FPS/CheckTransaction/2")]
+        public async Task<IActionResult> CheckTransactionAsync2(TransactionRequest transRequest)
+        {
+            return Ok("CheckTransactionAsync2");
         }
 
         [HttpGet("whoami")]

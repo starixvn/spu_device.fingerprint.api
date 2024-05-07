@@ -1,13 +1,17 @@
-using Device.FingerPrint.Gateway.Model;
+using Device.FingerPrint.Gateway.Handlers;
+using Device.FingerPrint.Gateway.Services;
+using Device.FingerPrint.Redis;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
 using Sentry;
-using System.Text;
+using StackExchange.Redis.Extensions.Core;
+using StackExchange.Redis.Extensions.Core.Abstractions;
+using StackExchange.Redis.Extensions.Core.Configuration;
+using StackExchange.Redis.Extensions.Core.Implementations;
+using StackExchange.Redis.Extensions.MsgPack;
 using ILogger = Fanex.Logging.ILogger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -21,15 +25,28 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
-builder.Services.AddOcelot(builder.Configuration)
+builder.Services
+    .AddOcelot(builder.Configuration)    
     .AddCacheManager(x =>
     {
         x.WithDictionaryHandle();
-    });
+    })
+    .AddDelegatingHandler<CustomHandler>(true);
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
 builder.Services.AddSingleton<Device.FingerPrint.Gateway.IAppSettings>(appSettings);
 builder.Services.AddSingleton<ILogger, Logger>();
+
+var redisConfiguration = builder.Configuration.GetSection("Redis").Get<RedisConfiguration>();
+
+builder.Services.AddSingleton(redisConfiguration);
+
+builder.Services.AddSingleton<IRedisClient, RedisClient>();
+builder.Services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
+builder.Services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
+builder.Services.AddSingleton<IRedisService, RedisService>();
+
+builder.Services.AddSingleton<ISubscriberService, SubscriberService>();
 
 LogManager
           .SetDefaultLogCategory("FPS-Gateway-API")
@@ -55,23 +72,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.MapHealthChecks("/healthz");
-
-//await app.UseOcelot(new OcelotPipelineConfiguration
-//{
-//    PreQueryStringBuilderMiddleware = async (context, next) =>
-//    {
-//        var buffer = new byte[Convert.ToInt32(context.Request.ContentLength)];
-//        await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
-//        var bodyAsText = Encoding.UTF8.GetString(buffer);
-
-//        var transactionRequest = JsonConvert.DeserializeObject<TransactionRequest>(bodyAsText);
-
-//        context.Request.Headers.Add("x-subscriber", transactionRequest?.Subscriber);
-
-//        //context.Items.UpsertDownstreamRequest(new Ocelot.Request.Middleware.DownstreamRequest(new http)
-//        await next.Invoke();
-//    }
-//});
 
 await app.UseOcelot();
 

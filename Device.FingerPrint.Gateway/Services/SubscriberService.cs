@@ -2,11 +2,11 @@
 {
     using Device.FingerPrint.Gateway.Model;
     using Device.FingerPrint.Redis;
-    using System.Text.Json;   
+    using System.Text.Json;
 
     public interface ISubscriberService
     {
-        Task<string> ValidateAsync(TransactionRequest transactionRequest, bool isExtraSubscriber);
+        Task<bool> ValidateAsync(string subscriber);
     }
 
     public class SubscriberService : ISubscriberService
@@ -20,50 +20,35 @@
             this.redisService = redisService;
         }
 
-        public async Task<string> ValidateAsync(TransactionRequest transactionRequest, bool isExtraSubscriber)
-
+        public async Task<bool> ValidateAsync(string subscriber)
         {
-            if (string.IsNullOrEmpty(transactionRequest.Account))
-            {
-                return TransactionResult.EmptyAccount;
-            }
 
-            if (!string.IsNullOrWhiteSpace(transactionRequest.Subscriber))
+            if (!string.IsNullOrWhiteSpace(subscriber))
             {
-                var subscriber = await GetSubscriberInfoAsync(transactionRequest.Subscriber, isExtraSubscriber, appSettings.ExtraSubscribers);
+                var subscriberInfo = await GetSubscriberInfoAsync(subscriber);
 
-                if (subscriber != null && subscriber.SubscriberId != 0)
+                if (subscriberInfo != null && subscriberInfo.SubscriberId != 0)
                 {
-                    transactionRequest.SubscriberId = subscriber.SubscriberId;
-
-                    return TransactionResult.Success;
+                    return true;
                 }
             }
 
-            return TransactionResult.NotExistSubscriber;
+            return false;
         }
 
-        private async Task<SubscriberModel> GetSubscriberInfoAsync(string subName, bool isExtraSubscriber, List<SubscriberModel> listExtraSubscribersModel)
+        private async Task<SubscriberModel> GetSubscriberInfoAsync(string subName)
         {
 
             if (!string.IsNullOrWhiteSpace(subName))
             {
-                var cacheKey = $"GatewayAPI:{subName}";
-
-                SubscriberModel subInfo = await GetSubscriberInfoByCache(cacheKey, subName);
-
-                if (subInfo != null && subInfo.SubscriberId != 0)
+                if (IsExtraSubscriber(subName))
                 {
-                    return subInfo;
+                    return GetExtraSubscriberInfo(subName);
                 }
-
-                if (isExtraSubscriber)
+                else
                 {
-                    return GetExtraSubscriberInfo(subName, listExtraSubscribersModel);
-                }
-
-                return await GetDataSubscriberAndSetCacheAsync(subName, cacheKey);
-
+                    return await GetSubscriberInfo(subName);
+                }  
             }
 
             return new SubscriberModel();
@@ -81,25 +66,43 @@
             }
         }
 
-        private SubscriberModel GetExtraSubscriberInfo(string subName, List<SubscriberModel> listExtraSubscribersModel)
+        private SubscriberModel GetExtraSubscriberInfo(string subName)
         {
             if (!string.IsNullOrWhiteSpace(subName))
             {
-                var cacheKey = $"GatewayAPI:{subName}";
-
-                var subData = listExtraSubscribersModel.FirstOrDefault(x => x.SubscriberName.Equals(subName, StringComparison.OrdinalIgnoreCase));
-
-                if (subData != null && subData.SubscriberId != 0)
-                {
-                    _ = redisService.AddAsyncAndExpiryAsync(cacheKey, subData, DateTimeOffset.UtcNow.AddMinutes(120));
-
-                    return subData;
-                }
+                return appSettings.ExtraSubscribers.FirstOrDefault(x => x.SubscriberName.Equals(subName, StringComparison.OrdinalIgnoreCase));
             }
 
             return new SubscriberModel();
         }
 
+        private async Task<SubscriberModel> GetSubscriberInfo(string subName)
+        {
+            if(!string.IsNullOrWhiteSpace(subName))
+            {
+                var cacheKey = $"GatewayAPI:{subName}";
+
+                var subData = await GetSubscriberInfoByCache(cacheKey, subName);
+
+                if(subData != null)
+                {
+                    return subData;
+                }
+                else
+                {
+                    subData = await GetSubscriberInfoAsync(subName);
+
+                    if(subData != null && subData.SubscriberId != 0)
+                    {
+                        _ = redisService.AddAsyncAndExpiryAsync(cacheKey, subData, DateTimeOffset.UtcNow.AddMinutes(120));
+
+                        return subData;
+                    }                    
+                }
+            }
+
+            return new SubscriberModel();
+        }
 
         private async Task<SubscriberModel> GetDataSubscriberAndSetCacheAsync(string subName, string cacheKey)
         {
@@ -108,9 +111,11 @@
             if (subData != null && subData.SubscriberId != 0)
             {
                 _ = redisService.AddAsyncAndExpiryAsync(cacheKey, subData, DateTimeOffset.UtcNow.AddMinutes(120));
+
+                return subData;
             }
 
-            return subData;
+            return new SubscriberModel();
         }
 
         private async Task<SubscriberModel> GetDataSubscriberAsync(string subName)
@@ -128,8 +133,18 @@
                         return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result);
                     });
 
-                return result;
+                return result ?? new SubscriberModel();
             }
+        }
+
+        private bool IsExtraSubscriber(string subscriberName)
+        {
+            if (appSettings.ExtraSubscribers != null && appSettings.ExtraSubscribers.Any())
+            {
+                return appSettings.ExtraSubscribers.Exists(x => x.SubscriberName.ToLower() == subscriberName.ToLower());
+            }
+
+            return false;
         }
     }
 }
