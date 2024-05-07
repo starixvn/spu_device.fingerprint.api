@@ -101,6 +101,18 @@
             return Ok(response.ResultMessage);
         }
 
+        [HttpPost("FPS/CheckTransaction/1")]
+        public async Task<IActionResult> CheckTransactionAsync1(TransactionRequest transRequest)
+        {
+            return Ok("CheckTransactionAsync1");
+        }
+
+        [HttpPost("FPS/CheckTransaction/2")]
+        public async Task<IActionResult> CheckTransactionAsync2(TransactionRequest transRequest)
+        {
+            return Ok("CheckTransactionAsync2");
+        }
+
         [HttpPost("FPS/InsertTransaction")]
         public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
         {

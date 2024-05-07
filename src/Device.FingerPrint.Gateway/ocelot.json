@@ -9,7 +9,21 @@
                     "Port": 5250
                 }
             ],
-            "UpstreamPathTemplate": "/FPS/CheckTransaction",
+            "UpstreamPathTemplate": "/FPS/Int/CheckTransaction",
+            "UpstreamHttpMethod": [
+                "POST"
+            ]
+        },
+        {
+            "DownstreamPathTemplate": "/FPS/CheckTransaction",
+            "DownstreamScheme": "http",
+            "DownstreamHostAndPorts": [
+                {
+                    "Host": "localhost",
+                    "Port": 5250
+                }
+            ],
+            "UpstreamPathTemplate": "/FPS/Ext/CheckTransaction",
             "UpstreamHttpMethod": [
                 "POST"
             ]

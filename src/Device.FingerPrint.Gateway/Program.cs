@@ -6,6 +6,7 @@ using Fanex.Logging.Sentry;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Values;
 using Sentry;
 using StackExchange.Redis.Extensions.Core;
 using StackExchange.Redis.Extensions.Core.Abstractions;
@@ -13,6 +14,8 @@ using StackExchange.Redis.Extensions.Core.Configuration;
 using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.MsgPack;
 using ILogger = Fanex.Logging.ILogger;
+using System.Reflection.PortableExecutable;
+using StackExchange.Redis.Extensions.MsgPack;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -73,6 +76,7 @@ app.MapControllers();
 
 app.MapHealthChecks("/healthz");
 
+});
 await app.UseOcelot();
 
 LogService.Info(string.Format("This is Gateway API {0} has been started at {1}", typeof(Program).FullName, DateTimeOffset.Now));
