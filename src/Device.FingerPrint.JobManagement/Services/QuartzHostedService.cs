@@ -87,11 +87,25 @@
                 .UsingJobData("ignoreMonitoring", trigger.IgnoreMonitoring)
                 .StartNow();
 
-            if (trigger.TriggerType != "Cron")
+            if (trigger.TriggerType != "Cron") //simple
             {
-                triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInSeconds(trigger.IntervalInSecond).RepeatForever());
+                if (trigger.TriggerType == "Calendar") //calendar
+                {
+
+                    triggerBuilder.WithCalendarIntervalSchedule(action =>
+                    {
+                        action.InTimeZone(TimeZoneInfo.FindSystemTimeZoneById(trigger.TimeZone));
+
+                        action.WithInterval(trigger.Interval, trigger.IntervalUnit);                       
+
+                    });
+                }
+                else
+                {
+                    triggerBuilder.WithSimpleSchedule(x => x.WithIntervalInSeconds(trigger.IntervalInSecond).RepeatForever());
+                }
             }
-            else
+            else // cron
             {
                 if (!string.IsNullOrWhiteSpace(trigger.TimeZone))
                 {
