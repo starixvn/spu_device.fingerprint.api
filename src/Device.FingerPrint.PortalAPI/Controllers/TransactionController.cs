@@ -131,6 +131,7 @@
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
                     redisMultiplexService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, appSettings.RedisExpired);
+                    AddHeaderToRedisWithDbIndex(sessionKey.RedisDbIndex, sessionKey.SessionKey);
                 }
             }
         }

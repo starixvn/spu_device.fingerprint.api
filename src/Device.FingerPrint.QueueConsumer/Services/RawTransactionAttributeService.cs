@@ -7,7 +7,6 @@ using Device.FingerPrint.Model;
 using Device.FingerPrint.Model.Enums;
 using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
-using DeviceDetectorNET.Class.Device;
 using Fanex.Logging;
 using Newtonsoft.Json;
 using System;
@@ -30,10 +29,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
 
         public RawTransactionAttributeService(
-            ICrypto crypto, 
+            ICrypto crypto,
             IRedisService redisService,
             IRedisMultiplexService redisMultiplexService,
-            ILogInfoServices logInfoServices, 
+            ILogInfoServices logInfoServices,
             IAppSettings appSettings)
         {
             this.crypto = crypto;
@@ -196,7 +195,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     jsChallengeInfo.Expect = jsChallengeInfo.Expected;
                 }
 
-                if(jsChallengeInfo.Expect != jsChallengeInfo.Actual && jsChallengeInfo.Result == 0)
+                if (jsChallengeInfo.Expect != jsChallengeInfo.Actual && jsChallengeInfo.Result == 0)
                 {
                     jsChallengeInfo.Result = 1;
                 }
