@@ -35,9 +35,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem);
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem);
+        IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
 
     }
 
@@ -185,44 +185,30 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
             repository.Execute(criteria);
         }
+        
 
-        public IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem)
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
         {
-            var criteria = new GetLatestTransactionBySubscriberCriteria
-            {
-               SubscriberId =   subscriberId,
-               Length   = length,
-               Skip = skip,
-               Take = take,
-               TotalItem = 0
-            };
-
-            var result = repository.Fetch<LatestTransactionEntity>(criteria);
-
-            totalItem = criteria.TotalItem;
-
-            return result;
-        }
-
-        public IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem)
-        {
-            var criteria = new GetTransactionHistoryCriteria
+            var criteria = new GetTransactionHistoryByDateRangeSubscriberCriteria
             {
                 FromDate = fromDate,
-                ToDate = toDate,
-                IsPartial = IsPartial,
-                SubscriberId = subscriberId,
-                UserName = username,
-                Skip = skip,
-                Take = take,
-                TotalItem = 0
+                Limit = limit,                
+                SubscriberId = subscriberId,                
             };            
 
-            var result = repository.Fetch<TransactionHistoryEntity>(criteria);
+            return repository.Fetch<TransactionHistoryEntity>(criteria);
+        }
 
-            totalItem = criteria.TotalItem;
+        public IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
+        {
+            var criteria = new GetAssociationByDateRangeSubscriberCriteria
+            {
+                FromDate = fromDate,
+                Limit = limit,
+                SubscriberId = subscriberId,
+            };
 
-            return result;
+            return repository.Fetch<AssociationEntity>(criteria);
         }
     }
 }

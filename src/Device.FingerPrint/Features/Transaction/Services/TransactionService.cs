@@ -35,9 +35,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem);
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem);
+        IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
     }
 
     public class TransactionService : ITransactionService
@@ -114,16 +114,16 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void EvolutionRecoverDevice(string transJson)
         {
             transactionDataAccess.EvolutionRecoverDevice(transJson);
+        }        
+
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
+        {
+            return transactionDataAccess.GetTransactionHistoryByDateRangeSubscriber(subscriberId, fromDate, limit);
         }
 
-        public IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem)
+        public IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
         {
-            return transactionDataAccess.GetLatestTransaction(subscriberId, length, skip, take, out totalItem);
-        }
-
-        public IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem)
-        {
-            return transactionDataAccess.GetTransactionHistory(subscriberId, fromDate, toDate, username, IsPartial, skip, take, out totalItem);
+            return transactionDataAccess.GetAssociationByDateRangeSubscriber(subscriberId, fromDate, limit);
         }
     }
 }

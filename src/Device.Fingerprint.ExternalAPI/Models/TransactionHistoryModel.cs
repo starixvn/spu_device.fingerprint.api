@@ -6,9 +6,9 @@ namespace Device.FingerPrint.Features.Transaction.Model
 {
     public class TransactionHistoryModel
     {
-        public DateTime TransTime { get; set; }
+        public DateTime DateTime { get; set; }
 
-        public long TransID { get; set; }
+        public long TrackingNumber { get; set; }
 
         public string Device { get; set; }
 
@@ -18,21 +18,19 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Action { get; set; }
 
-        public string ActionResult { get; set; }
-
-        public string OS { get; set; }
+        public string DeviceType { get; set; }
 
         public string Browser { get; set; }
 
         public string Domain { get; set; }
 
-        public string UserName { get; set; }
-
-        public string RegisterName { get; set; }
+        public string Account { get; set; }
 
         public int SubscriberID { get; set; }
 
-        public long CTSCustID { get; set; }
+        public long RawFingerPrintID { get; set; }
+
+        public long RawUserAgentID { get; set; }
 
     }
 }
