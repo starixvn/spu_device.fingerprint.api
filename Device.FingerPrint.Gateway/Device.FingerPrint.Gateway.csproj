@@ -12,7 +12,6 @@
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Ocelot" Version="23.3.3" />
-    <PackageReference Include="Ocelot.Administration" Version="23.3.3" />
     <PackageReference Include="Ocelot.Cache.CacheManager" Version="23.3.3" />
     <PackageReference Include="StackExchange.Redis.Extensions.MsgPack" Version="10.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="6.6.2" />

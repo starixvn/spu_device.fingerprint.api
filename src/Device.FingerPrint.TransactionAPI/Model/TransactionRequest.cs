@@ -1,4 +1,5 @@
-﻿namespace Device.FingerPrint.TransactionAPI.Model
+﻿
+namespace Device.FingerPrint.TransactionAPI.Model
 {
     public class TransactionRequest
     {

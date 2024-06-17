@@ -31,7 +31,7 @@ builder.Services
     {
         x.WithDictionaryHandle();
     })
-    .AddDelegatingHandler<CustomHandler>(true);
+    .AddDelegatingHandler<ValidateHandler>(true);
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
 builder.Services.AddSingleton<Device.FingerPrint.Gateway.IAppSettings>(appSettings);

@@ -101,17 +101,27 @@
             return Ok(response.ResultMessage);
         }
 
-        [HttpPost("FPS/CheckTransaction/1")]
-        public async Task<IActionResult> CheckTransactionAsync1(TransactionRequest transRequest)
+        [HttpPost("FPS/InsertTransaction")]
+        public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
         {
-            return Ok("CheckTransactionAsync1");
+            var di = transRequest.Di ?? transRequest.__di;
+            var transAttributesJoined = JoinStringAttributes(new List<string> {
+                        transRequest.AcceptsTypes,
+                        transRequest.Platform,
+                        (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
+                        transRequest.UserAgent,
+                        transRequest.Screen,
+                        transRequest.Ip,
+                        di,
+                        transRequest.Url,
+                        transRequest.DetecasAnalysis
+                    }, "###");
+
+            _ = PushToQueueAsync(transRequest, transAttributesJoined);
+
+            return Ok();
         }
 
-        [HttpPost("FPS/CheckTransaction/2")]
-        public async Task<IActionResult> CheckTransactionAsync2(TransactionRequest transRequest)
-        {
-            return Ok("CheckTransactionAsync2");
-        }
 
         [HttpGet("whoami")]
         public IActionResult WhoAmI()
@@ -221,7 +231,7 @@
             return await redisService.GetAsync<string>("test:testing");
         }
 
-        [HttpGet]        
+        [HttpGet]
         [Route("FPS/TestAPI/{message}")]
         public string TestAPI(string message)
         {
@@ -246,7 +256,7 @@
 
         [HttpPost]
         [Route("FPS/TestPostAPI")]
-        public string TestPostAPI([FromBody]string message)
+        public string TestPostAPI([FromBody] string message)
         {
             try
             {

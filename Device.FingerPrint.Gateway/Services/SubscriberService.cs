@@ -90,7 +90,7 @@
                 }
                 else
                 {
-                    subData = await GetSubscriberInfoAsync(subName);
+                    subData = await GetDataSubscriberAsync(subName);
 
                     if(subData != null && subData.SubscriberId != 0)
                     {
