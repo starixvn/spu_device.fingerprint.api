@@ -152,17 +152,21 @@ namespace Device.Fingerprint.WebAPI.Controllers
         public ActionResult CryptScript(string version)
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
+            var storageScriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
             if (appSettings.Environment != "DEV")
             {
                 scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
+                storageScriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
             }
 
             var bundleFile = new BundleFile(scriptPath);
+            var storageScriptFile = new BundleFile(storageScriptPath);
 
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+            if (!string.IsNullOrWhiteSpace(bundleFile.Content) || !string.IsNullOrWhiteSpace(storageScriptFile.Content))
             {
-                return new JavascriptResult(bundleFile.Content);
+                var combinedContent = $"{bundleFile.Content}\n{storageScriptFile.Content}";
+                return new JavascriptResult(combinedContent);
             }
 
             return new EmptyResult();

@@ -2,14 +2,13 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Model;
-    using Device.FingerPrint.QueueConsumer.Models;
     using Device.FingerPrint.Redis;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
+    using YamlDotNet.Core.Tokens;
 
     public interface IRawTransactionService
     {
@@ -18,17 +17,21 @@
         Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
 
         Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
+
+        Task InsertOrUpdateEverCookie(string hashKey, IEnumerable<string> everCookies, long expireSecond);
     }
 
     public class RawTransactionService : IRawTransactionService
     {
         private readonly IRawTransactionAttributeService rawTransactionAttributeService;
         private readonly IRedisService redisService;
+        private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IDeviceService deviceService;
         private readonly IBotDetectionService botDetectionService;
 
         public RawTransactionService(
             IRedisService redisService,
+            IRedisMultiplexService redisMultiplexService,
             IRawTransactionAttributeService rawTransactionAttributeService,
             IDeviceService deviceService,
             IBotDetectionService botDetectionService
@@ -36,6 +39,7 @@
         {
             this.rawTransactionAttributeService = rawTransactionAttributeService;
             this.redisService = redisService;
+            this.redisMultiplexService = redisMultiplexService;
             this.deviceService = deviceService;
             this.botDetectionService = botDetectionService;
         }
@@ -103,7 +107,7 @@
                 BotComponent = botDModel?.Component ?? string.Empty
             };
 
-            await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
+            await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel, botDModel);
 
             return rawTransModel;
         }
@@ -130,5 +134,21 @@
             await Task.WhenAll(tasks);
         }
 
+        public async Task InsertOrUpdateEverCookie(string hashKey, IEnumerable<string> everCookies, long expireSecond)
+        {
+            try
+            {
+                var redisEverCookieDb = redisMultiplexService.GetRedisEverCookieDb();
+
+                var tasks = everCookies
+                .Select(code => redisMultiplexService.AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
+                .ToList();
+
+                await Task.WhenAll(tasks);
+            }
+            catch (Exception ex){ 
+                var arr = ex.Message.Split(' ');
+            }
+        }
     }
 }

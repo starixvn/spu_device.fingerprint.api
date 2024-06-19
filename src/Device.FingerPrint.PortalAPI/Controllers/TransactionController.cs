@@ -9,8 +9,11 @@
     using Fanex.Logging;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
+    using Microsoft.AspNetCore.Http.HttpResults;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Net.Http.Headers;
     using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
@@ -145,6 +148,56 @@
             logsData.FakeIP = GetFakeIp();
 
             clientTransactionService.InsertClientTransactionException(logsData);
+        }
+
+        [HttpGet("e/c")]
+        public async Task<IActionResult> GetEverCookie()
+        {
+
+            var header = Request.Headers;
+            var sessionKeyValue = header["Res-Sk-X"].ToString();
+            var storageValues = header["Res-Stg-X"].ToString();
+            var cookieValue = header["Res-Ck-X"].ToString();
+            var etagValue = GetEtagValue();
+
+            var everCookieValues = new List<string> { sessionKeyValue, cookieValue, etagValue }.Concat(storageValues.Split(','));
+
+            everCookieValues = everCookieValues
+                .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
+                .Where(parsed => parsed != null)
+                .Select(parsed => "EverCookie:" + parsed.SessionKey)
+                .Distinct()
+                .ToList();
+
+            var result = await redisMultiplexService.GetValueOnRedis(everCookieValues);
+
+            //Response.Headers["Cache-Control"] = "public,max-age=60";
+            //Response.Headers["Pragma"] = "cache";
+            //Response.Headers["Expires"] = DateTime.UtcNow.AddSeconds(60).ToString("R");
+
+            /// redisMultiplexService.StringSet(redisDatabaseIndex: 1, "SessionKeys", "555");
+            return Ok(RemoveEverCookiePrefix(result));
+        }
+
+        private static string RemoveEverCookiePrefix(string input)
+        {
+            const string prefix = "EverCookie:";
+            if (input.StartsWith(prefix))
+            {
+                return input.Replace(prefix, string.Empty);
+            }
+            return input;
+        }
+
+        private string GetEtagValue()
+        {
+            var requestHeaders = Request.Headers;
+            if (requestHeaders.TryGetValue(HeaderNames.IfNoneMatch, out var requestETag))
+            {
+                return requestETag;
+            }
+
+            return string.Empty;
         }
 
         [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]

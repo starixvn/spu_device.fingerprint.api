@@ -156,6 +156,7 @@ namespace Device.FingerPrint.QueueConsumer
         private void RegisterRedis(IServiceCollection services)
         {
             var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+            var redisDatabaseIndex = int.Parse(Configuration["Redis:EverCookieDbIndex"]);
 
             services.AddSingleton(redisConfiguration);
 
@@ -178,7 +179,13 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
             services.AddSingleton<IRedisService, RedisService>();
-            services.AddSingleton<IRedisMultiplexService, RedisMultiplexService>();
+
+
+            services.AddSingleton<IRedisMultiplexService>(provider =>
+                new RedisMultiplexService(
+                    provider.GetRequiredService<IConnectionMultiplexer>(),
+                    redisDatabaseIndex
+            ));
         }
 
         private void InitService(IServiceCollection services)

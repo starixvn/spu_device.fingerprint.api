@@ -55,6 +55,8 @@ namespace Device.FingerPrint.Core
     {
         private readonly IConfiguration configuration;
 
+        public const string DeviceIdEncryptKey = "&％#@?,:*!~^.";
+
         private readonly string cdnApiUrl;
         private readonly string portalApiUrl;
         private readonly string apiUrl;

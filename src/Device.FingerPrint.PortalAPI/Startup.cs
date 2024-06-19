@@ -10,7 +10,6 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
-using Fanex.LogTrail.Service;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
@@ -192,6 +191,8 @@ namespace Device.FingerPrint.PortalAPI
         private void RegisterRedis(IServiceCollection services)
         {
             var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+            var redisDatabaseIndex = int.Parse(Configuration["Redis:EverCookieDbIndex"]);
+
             services.AddSingleton(redisConfiguration);
 
             services.AddSingleton<IConnectionMultiplexer>(sp =>
@@ -213,7 +214,12 @@ namespace Device.FingerPrint.PortalAPI
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
             services.AddSingleton<IRedisService, RedisService>();
-            services.AddSingleton<IRedisMultiplexService, RedisMultiplexService>();
+
+            services.AddTransient<IRedisMultiplexService>(provider =>
+                new RedisMultiplexService(
+                    provider.GetRequiredService<IConnectionMultiplexer>(),
+                    redisDatabaseIndex
+            ));
         }
     }
 }

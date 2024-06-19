@@ -11,7 +11,6 @@
     using Fanex.Logging.Extensions.Database;
     using Fanex.LogTrail.Service;
     using MassTransit;
-    using Microsoft.IdentityModel.Tokens;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -30,6 +29,8 @@
         private const string defaultDestination = "DCS_RawTrans";
         private const string defaultSource = "RabbitMQ";
         private const string defaultMethod = "Consumer";
+
+        private const string hashKeyEverCookie = "EverCookie";
 
         public Consumer(
                 IMassTransitProducer massTransitProducer,
@@ -95,6 +96,12 @@
             if (rawJsChallenges != null && rawJsChallenges.Any())
             {
                 tasks.Add(HandleClearRedisJsChallenge(rawJsChallenges));
+            }
+
+            var everCookies = transactionModels.Where(x => !string.IsNullOrEmpty(x.CookieCode))?.Select(x => x.CookieCode);
+            if (everCookies != null && everCookies.Any())
+            {
+                tasks.Add(rawTransactionService.InsertOrUpdateEverCookie(hashKeyEverCookie, everCookies, 30));
             }
 
             await Task.WhenAll(tasks);

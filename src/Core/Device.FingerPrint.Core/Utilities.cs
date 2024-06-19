@@ -10,6 +10,8 @@ using System.Xml.Serialization;
 using System.Xml;
 using Device.FingerPrint.Model;
 using System.Text.RegularExpressions;
+using Device.FingerPrint.Core.Encoders;
+using Fanex.Logging;
 
 namespace Device.FingerPrint.Core
 {
@@ -328,7 +330,26 @@ namespace Device.FingerPrint.Core
 
         public static bool ValidationSessionKey(string guidStr)
         {
-            return Guid.TryParse(guidStr, out Guid _);
+            return Guid.TryParse(guidStr, out Guid _) || ValidationSessionKeyByEncrypt(guidStr);
+        }
+
+        public static bool ValidationSessionKeyByEncrypt(string deviceID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(deviceID))
+                {
+                    return false;
+                }
+
+                var decryptStr = DeviceEncoder.Decrypt(deviceID);
+
+                return Guid.TryParse(decryptStr, out Guid newGuid);
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }

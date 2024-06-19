@@ -16,7 +16,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 {
     public interface IRawTransactionAttributeService
     {
-        Task GetTransactionAttribute(RawTransactionModel model);
+        Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel);
     }
 
     public class RawTransactionAttributeService : IRawTransactionAttributeService
@@ -42,8 +42,16 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.appSettings = appSettings;
         }
 
-        public async Task GetTransactionAttribute(RawTransactionModel model)
+        public async Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel)
         {
+            if (botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
+            {
+                var jscKey = botDModel.JscKey;
+                var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{jscKey}");
+                var jsChallenge = jsChallengeTask.Result;
+                TransformJSChallengeInfo(model, jscKey, jsChallenge);
+            }
+
             if (model != null && !string.IsNullOrEmpty(model.SessionKey))
             {
                 if (!model.SessionKey.Contains(':'))
@@ -100,19 +108,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     {
                         var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
                         var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                        var cookieTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
 
-                        var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{sessionKey.SessionKey}");
-
-
-                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, cookieTask, jsChallengeTask);
+                        await Task.WhenAll(fingerPrintEncodeTask, headerTask);
 
                         var fingerPrintEncode = fingerPrintEncodeTask.Result;
                         var header = headerTask.Result;
-                        var cookie = cookieTask.Result;
-                        var jsChallenge = jsChallengeTask.Result;
-
-                        TransformJSChallengeInfo(model, sessionKey, jsChallenge);
 
                         var fingerPrintModel = new FingerprintModel();
                         if (!string.IsNullOrEmpty(fingerPrintEncode))
@@ -131,7 +131,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, headerModel, model.RawUserAgentInfo);
-                        model.CookieCode = cookie;
+                        model.CookieCode = sessionKey.SessionKey;
 
                         // Log Info Consumer
                         var subscriberName = model.SubscriberName;
@@ -142,7 +142,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                             {
                                 LogSessionKeyEmpty(model);
                             }
-                            else if (fingerPrintEncode == null && cookie == null && header == null)
+                            else if (fingerPrintEncode == null && header == null)
                             {
                                 LogRedisValueEmpty(model);
                             }
@@ -185,7 +185,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return result;
         }
 
-        private static void TransformJSChallengeInfo(RawTransactionModel model, SessionKeyModel sessionKey, string jsChallenge)
+        private static void TransformJSChallengeInfo(RawTransactionModel model, string jscKey, string jsChallenge)
         {
             if (!string.IsNullOrEmpty(jsChallenge))
             {
@@ -199,7 +199,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     jsChallengeInfo.Result = 1;
                 }
-                jsChallengeInfo.ChallengeCode = sessionKey.SessionKey;
+                jsChallengeInfo.ChallengeCode = jscKey;
                 model.RawJsChallengeInfo = jsChallengeInfo;
             }
         }
