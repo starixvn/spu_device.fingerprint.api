@@ -76,7 +76,6 @@ app.MapControllers();
 
 app.MapHealthChecks("/healthz");
 
-});
 await app.UseOcelot();
 
 LogService.Info(string.Format("This is Gateway API {0} has been started at {1}", typeof(Program).FullName, DateTimeOffset.Now));
