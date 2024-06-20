@@ -8,7 +8,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using YamlDotNet.Core.Tokens;
 
     public interface IRawTransactionService
     {
@@ -141,12 +140,13 @@
                 var redisEverCookieDb = redisMultiplexService.GetRedisEverCookieDb();
 
                 var tasks = everCookies
-                .Select(code => redisMultiplexService.AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
+                .Select(code => redisMultiplexService.EverCookie_AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
                 .ToList();
 
                 await Task.WhenAll(tasks);
             }
-            catch (Exception ex){ 
+            catch (Exception ex)
+            {
                 var arr = ex.Message.Split(' ');
             }
         }

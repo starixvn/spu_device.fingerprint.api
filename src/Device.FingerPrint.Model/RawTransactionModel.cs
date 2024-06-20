@@ -77,7 +77,13 @@ namespace Device.FingerPrint.Model
 
         public string CookieCode { get; set; }
 
+        public string RawFingerPrintCode { get; set; }
+
         public FingerprintAttributeModel FingerprintAttribute { get; set; }
+
+        public string BrowserInstanceCode { get; set; }
+
+        public string BrowserFamilyCode { get; set; }
 
         public string RawUserAgent { get; set; }
 

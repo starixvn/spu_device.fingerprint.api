@@ -4,7 +4,6 @@
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
-    using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
@@ -18,7 +17,6 @@
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
-        private readonly IMassTransitProducer massTransitProducer;
         private readonly IRawTransactionService rawTransactionService;
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
@@ -33,7 +31,6 @@
         private const string hashKeyEverCookie = "EverCookie";
 
         public Consumer(
-                IMassTransitProducer massTransitProducer,
                 IRawTransactionService rawTransactionService,
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
@@ -42,13 +39,12 @@
                 ILogEvent logEvent
         )
         {
-            this.massTransitProducer = massTransitProducer;
             this.rawTransactionService = rawTransactionService;
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.logEvent = logEvent;
+            this.logEvent = logEvent;;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -87,9 +83,7 @@
         {
             var tasks = new List<Task>
             {
-                InsertLogTrail(transactionModels),
-                //HandleClearRedis(transactionModels),
-                //PushTransactionToMonitorAsync(transactionModels)
+                InsertLogTrail(transactionModels)
             };
 
             var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
@@ -101,7 +95,7 @@
             var everCookies = transactionModels.Where(x => !string.IsNullOrEmpty(x.CookieCode))?.Select(x => x.CookieCode);
             if (everCookies != null && everCookies.Any())
             {
-                tasks.Add(rawTransactionService.InsertOrUpdateEverCookie(hashKeyEverCookie, everCookies, 30));
+                tasks.Add(rawTransactionService.InsertOrUpdateEverCookie(hashKeyEverCookie, everCookies, appSettings.EverCookieExpireSecond));
             }
 
             await Task.WhenAll(tasks);

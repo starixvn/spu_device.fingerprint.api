@@ -1,20 +1,23 @@
 ﻿using StackExchange.Redis;
+using StackExchange.Redis.Extensions.Core.Implementations;
 
 namespace Device.FingerPrint.Redis
 {
     public interface IRedisMultiplexService
     {
-        public Task HashSetWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond);
+        Task HashSetWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond);
 
-        public Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey);
+        Task HashSetMultipleFieldsWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond);
 
-        public Task<double> GetTimeSpan(int redisDatabaseIndex, string hashKey);
+        Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey);
+
+        Task<double> GetTimeSpan(int redisDatabaseIndex, string hashKey);
 
         IDatabase GetRedisEverCookieDb();
 
-        Task AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry);
+        Task EverCookie_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry);
 
-        Task<string> GetValueOnRedis(IEnumerable<string> values);
+        Task<string> EverCookie_GetValueFromRedis(IEnumerable<string> values);
     }
 
     public class RedisMultiplexService : IRedisMultiplexService
@@ -32,6 +35,26 @@ namespace Device.FingerPrint.Redis
         public IDatabase GetRedisEverCookieDb()
         {
             return redisEverCookieDb;
+        }
+
+        public async Task HashSetMultipleFieldsWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond = 0)
+        {
+            var db = connectionMultiplexer.GetDatabase(redisDatabaseIndex);
+
+            bool exists = await db.KeyExistsAsync(hashKey);
+
+            foreach (var pair in fieldKeyValuePairs)
+            {
+                await db.HashSetAsync(hashKey, pair.Key, pair.Value);
+            }
+
+            if (!exists && expireSecond > 0)
+            {
+                await db.HashSetAsync(hashKey, "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"), When.NotExists, CommandFlags.FireAndForget);
+                await db.HashSetAsync(hashKey, "OriginService", originService, When.NotExists, CommandFlags.FireAndForget);
+
+                await db.KeyExpireAsync(hashKey, TimeSpan.FromSeconds(expireSecond));
+            }
         }
 
         public async Task HashSetWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond = 0)
@@ -71,14 +94,14 @@ namespace Device.FingerPrint.Redis
             return -1;
         }
 
-        public async Task AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry)
+        public async Task EverCookie_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry)
         {
             string expiryKey = $"{hashKey}:{itemKey}";
             await redisEverCookieDb.StringSetAsync(expiryKey, value);
             await redisEverCookieDb.KeyExpireAsync(expiryKey, expiry);
         }
 
-        public async Task<string> GetValueOnRedis(IEnumerable<string> values)
+        public async Task<string> EverCookie_GetValueFromRedis(IEnumerable<string> values)
         {
             foreach (var value in values)
             {

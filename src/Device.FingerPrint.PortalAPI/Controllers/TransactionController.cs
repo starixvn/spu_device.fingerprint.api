@@ -9,7 +9,6 @@
     using Fanex.Logging;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
-    using Microsoft.AspNetCore.Http.HttpResults;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Net.Http.Headers;
     using System;
@@ -133,27 +132,21 @@
 
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
-                    redisMultiplexService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data, appSettings.RedisExpired);
-                    AddHeaderToRedisWithDbIndex(sessionKey.RedisDbIndex, sessionKey.SessionKey);
+                    var headerModel = GetHeaderValue();
+                    var keyValuePairs = new Dictionary<string, string>
+                                        {
+                                            { RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data },
+                                            { RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel) }
+                                        };
+
+                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, keyValuePairs, appSettings.RedisExpired);
                 }
             }
-        }
-
-        [HttpPost("c/l/e")]
-        [HttpPost("cle")]
-        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
-        {
-            logsData.UserAgent = Request.Headers["User-Agent"];
-            logsData.RealIP = GetRealIp();
-            logsData.FakeIP = GetFakeIp();
-
-            clientTransactionService.InsertClientTransactionException(logsData);
         }
 
         [HttpGet("e/c")]
         public async Task<IActionResult> GetEverCookie()
         {
-
             var header = Request.Headers;
             var sessionKeyValue = header["Res-Sk-X"].ToString();
             var storageValues = header["Res-Stg-X"].ToString();
@@ -169,35 +162,20 @@
                 .Distinct()
                 .ToList();
 
-            var result = await redisMultiplexService.GetValueOnRedis(everCookieValues);
+            var result = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
 
-            //Response.Headers["Cache-Control"] = "public,max-age=60";
-            //Response.Headers["Pragma"] = "cache";
-            //Response.Headers["Expires"] = DateTime.UtcNow.AddSeconds(60).ToString("R");
-
-            /// redisMultiplexService.StringSet(redisDatabaseIndex: 1, "SessionKeys", "555");
             return Ok(RemoveEverCookiePrefix(result));
         }
 
-        private static string RemoveEverCookiePrefix(string input)
+        [HttpPost("c/l/e")]
+        [HttpPost("cle")]
+        public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
-            const string prefix = "EverCookie:";
-            if (input.StartsWith(prefix))
-            {
-                return input.Replace(prefix, string.Empty);
-            }
-            return input;
-        }
+            logsData.UserAgent = Request.Headers["User-Agent"];
+            logsData.RealIP = GetRealIp();
+            logsData.FakeIP = GetFakeIp();
 
-        private string GetEtagValue()
-        {
-            var requestHeaders = Request.Headers;
-            if (requestHeaders.TryGetValue(HeaderNames.IfNoneMatch, out var requestETag))
-            {
-                return requestETag;
-            }
-
-            return string.Empty;
+            clientTransactionService.InsertClientTransactionException(logsData);
         }
 
         [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]
@@ -267,20 +245,28 @@
 
         private HeaderModel GetHeaderValue()
         {
-            var url = HttpContext.Request.Headers["Origin"].ToString();
-
-            return new HeaderModel
+            try
             {
-                Accept = HttpContext.Request.Headers["Accept"],
-                Encoding = NormalizeAcceptEncoding(HttpContext.Request.Headers["Accept-Encoding"]),
-                Headers = string.Join(" ", HttpContext.Request.Headers.Keys),
-                SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
-                SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
-                SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : "",
-                Url = url,
-                RealIP = GetRealIp(),
-                FakeIP = GetFakeIp()
-            };
+                var url = HttpContext.Request.Headers["Origin"].ToString();
+
+                return new HeaderModel
+                {
+                    Accept = HttpContext.Request.Headers["Accept"],
+                    Encoding = NormalizeAcceptEncoding(HttpContext.Request.Headers["Accept-Encoding"]),
+                    Headers = string.Join(" ", HttpContext.Request.Headers.Keys),
+                    SecChUa = Request.Headers["sec-ch-ua"].Count > 0 ? Request.Headers["sec-ch-ua"].ToString() : "",
+                    SecChUaPlatform = Request.Headers["sec-ch-ua-platform"].Count > 0 ? Request.Headers["sec-ch-ua-platform"].ToString().Replace("\"", "") : "",
+                    SecChUaMobile = Request.Headers["sec-ch-ua-mobile"].Count > 0 ? Request.Headers["sec-ch-ua-mobile"].ToString() : "",
+                    Url = url,
+                    RealIP = GetRealIp(),
+                    FakeIP = GetFakeIp()
+                };
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message);
+                return new HeaderModel();
+            }
         }
 
         private string GetFakeIp()
@@ -378,6 +364,27 @@
                 .Where(format => !string.Equals(format, "br", StringComparison.OrdinalIgnoreCase));
 
             return string.Join(", ", normalizedFormats);
+        }
+
+        private static string RemoveEverCookiePrefix(string input)
+        {
+            const string prefix = "EverCookie:";
+            if (input.StartsWith(prefix))
+            {
+                return input.Replace(prefix, string.Empty);
+            }
+            return input;
+        }
+
+        private string GetEtagValue()
+        {
+            var requestHeaders = Request.Headers;
+            if (requestHeaders.TryGetValue(HeaderNames.IfNoneMatch, out var requestETag))
+            {
+                return requestETag;
+            }
+
+            return string.Empty;
         }
     }
 }

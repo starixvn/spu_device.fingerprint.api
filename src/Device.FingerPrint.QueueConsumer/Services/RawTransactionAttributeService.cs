@@ -56,53 +56,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
             {
                 if (!model.SessionKey.Contains(':'))
                 {
-                    var fingerPrintTask = redisService.HashGetAsync<FingerprintModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                    var fingerPrintEncodeTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
-                    var headerTask = redisService.HashGetAsync<HeaderModel>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
-                    var cookieTask = redisService.HashGetAsync<string>(model.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-
-                    await Task.WhenAll(fingerPrintTask, fingerPrintEncodeTask, headerTask, cookieTask);
-
-                    var fingerPrint = fingerPrintTask.Result;
-                    var fingerPrintEncode = fingerPrintEncodeTask.Result;
-                    var header = headerTask.Result;
-                    var cookie = cookieTask.Result;
-
-                    var fingerPrintModel = new FingerprintModel();
-                    if (fingerPrint != null && !string.IsNullOrEmpty(fingerPrint.Id))
-                    {
-                        fingerPrintModel = fingerPrint;
-                    }
-                    else if (!string.IsNullOrEmpty(fingerPrintEncode))
-                    {
-                        var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
-                        fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
-                    }
-
-                    model.RawUserAgent = model.UserAgent;
-                    model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
-
-                    model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, header, model.RawUserAgentInfo);
-                    model.CookieCode = cookie;
-
-                    var subscriberName = model.SubscriberName;
-                    if (appSettings.GetValue<bool>("Consumer:LogInfo")
-                        && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (string.IsNullOrEmpty(model.SessionKey))
-                        {
-                            LogSessionKeyEmpty(model);
-                        }
-                        else if (fingerPrint == null && cookie == null && header == null)
-                        {
-                            LogRedisValueEmpty(model);
-                        }
-                    }
+                    _ = LogService.ErrorAsync($"{appSettings.Environment} - SessionKey does not contain a colon:\n {JsonConvert.SerializeObject(model)}");
                 }
                 else
                 {
                     var sessionKey = Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
-
 
                     if (sessionKey != null && sessionKey.RedisDbIndex > 0)
                     {
@@ -130,7 +88,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.RawUserAgent = model.UserAgent;
                         model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
-                        model.FingerprintAttribute = TransformFingerprintAttributes(fingerPrintModel, headerModel, model.RawUserAgentInfo);
+                        model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
+                        model.RawFingerPrintCode = model.FingerprintAttribute.FingerPrintCode;
                         model.CookieCode = sessionKey.SessionKey;
 
                         // Log Info Consumer
@@ -156,7 +115,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
         }
 
-        private FingerprintAttributeModel TransformFingerprintAttributes(FingerprintModel fpModel, HeaderModel headerModel, UserAgentInfoModel userAgentInfo)
+        private FingerprintAttributeModel TransformFingerprintAttributes(RawTransactionModel rawTransModel, FingerprintModel fpModel, HeaderModel headerModel)
         {
             var result = new FingerprintAttributeModel();
 
@@ -165,6 +124,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 result.FingerPrintCode = fpModel.Id;
                 result.Attribute = fpModel.Attributes;
                 result.Platform = fpModel.Platform;
+
+                rawTransModel.RawFingerPrintCode = fpModel.Id;
             }
 
             if (headerModel != null)
@@ -173,6 +134,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 result.Encoding = headerModel.Encoding;
                 result.Headers = headerModel.Headers;
 
+                var userAgentInfo = rawTransModel.RawUserAgentInfo;
                 result.UserAgent = userAgentInfo.UserAgent;
                 result.BrowserName = userAgentInfo.ClientName;
                 result.BrowserVersion = userAgentInfo.ClientVersion;
@@ -181,6 +143,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             result.BrowserInstanceCode = HashBrowserInstanceCode(result);
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);
+
+            rawTransModel.BrowserInstanceCode = result.BrowserInstanceCode;
+            rawTransModel.BrowserFamilyCode = result.BrowserFamilyCode;
 
             return result;
         }
