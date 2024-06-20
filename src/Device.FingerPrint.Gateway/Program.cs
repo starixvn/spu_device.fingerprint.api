@@ -6,7 +6,6 @@ using Fanex.Logging.Sentry;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Values;
 using Sentry;
 using StackExchange.Redis.Extensions.Core;
 using StackExchange.Redis.Extensions.Core.Abstractions;
@@ -14,8 +13,6 @@ using StackExchange.Redis.Extensions.Core.Configuration;
 using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.MsgPack;
 using ILogger = Fanex.Logging.ILogger;
-using System.Reflection.PortableExecutable;
-using StackExchange.Redis.Extensions.MsgPack;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +24,10 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
+builder.Configuration
+    .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+
 builder.Services
     .AddOcelot(builder.Configuration)    
     .AddCacheManager(x =>
