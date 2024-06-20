@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
+    <ProjectReference Include="..\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
   </ItemGroup>
 
 </Project>

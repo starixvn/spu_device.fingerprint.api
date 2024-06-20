@@ -61,7 +61,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Transact
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.ExternalAPI", "src\Device.Fingerprint.ExternalAPI\Device.Fingerprint.ExternalAPI.csproj", "{C72F23F4-75EC-4E0D-9AE3-9CFAEF967812}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Gateway", "Device.FingerPrint.Gateway\Device.FingerPrint.Gateway.csproj", "{A9590200-D03F-4656-B196-933B61CEA0CE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Gateway", "src\Device.FingerPrint.Gateway\Device.FingerPrint.Gateway.csproj", "{A9590200-D03F-4656-B196-933B61CEA0CE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Client.NetStandard", "src\FPS.Client.NetStandard\FPS.Client.NetStandard.csproj", "{6AE2F7D7-4489-4ED2-BD8E-64B04097AFBE}"
 EndProject
