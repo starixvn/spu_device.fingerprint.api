@@ -2,7 +2,7 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:7.0-alpine AS builder
 
 WORKDIR /src
 
-COPY ["./src/Core/Device.FingerPrint.Redis", "Core/Device.FingerPrint.Redis/"]
+COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
 
 COPY ["./src/Device.FingerPrint.Gateway/Device.FingerPrint.Gateway.csproj", "Device.FingerPrint.Gateway/"]
 
