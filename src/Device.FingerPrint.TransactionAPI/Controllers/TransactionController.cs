@@ -7,6 +7,7 @@
     using Device.FingerPrint.Redis;
     using Device.FingerPrint.TransactionAPI.Model;
     using Device.FingerPrint.TransactionAPI.Services;
+    using EasyNetQ;
     using Fanex.Logging;
     using Fanex.LogTrail.Service;
     using MassTransit;
@@ -86,7 +87,7 @@
                     else
                     {
                         var errorMessage = GetTransactionResponse(responseCode);
-                        await logger.ErrorAsync($"CheckTransactionAsync responseCode = {JsonSerializer.Serialize(errorMessage)} \nTransRequest: {JsonSerializer.Serialize(transRequest)}");
+                        await logger.ErrorAsync($"CheckTransactionAsync responseCode = {System.Text.Json.JsonSerializer.Serialize(errorMessage)} \nTransRequest: {System.Text.Json.JsonSerializer.Serialize(transRequest)}");
                     }
                 }
                 catch (Exception ex)
@@ -116,6 +117,8 @@
         [HttpPost("FPS/InsertTransaction")]
         public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
         {
+            logger.Info("This is request from gateway api");
+
             var di = transRequest.Di ?? transRequest.__di;
             var transAttributesJoined = JoinStringAttributes(new List<string> {
                         transRequest.AcceptsTypes,
