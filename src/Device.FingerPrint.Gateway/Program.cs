@@ -3,6 +3,7 @@ using Device.FingerPrint.Gateway.Services;
 using Device.FingerPrint.Redis;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
@@ -74,7 +75,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHealthChecks("/healthz");
+app.UseHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = _ => true
+});
 
 await app.UseOcelot();
 
