@@ -5,21 +5,17 @@ using System.Security.Permissions;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    class GetTransactionHistoryByDateRangeSubscriberCriteria : NonQueryCommand
+    class GetAssociationByAccountSubscriberCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_SubscriberID")]
         public int SubscriberId { get; set; }
 
-        [SpParam(SqlParamName = "ip_FromDate")]
-        public DateTime FromDate { get; set; }
-
-        [SpParam(SqlParamName = "ip_Limit")]
-        public int Limit { get; set; }
-       
+        [SpParam(SqlParamName = "ip_Account")]
+        public string Account { get; set; }       
 
         public override string GetSettingKey()
         {
-            return "DCS_DC_Transaction_GetHistoryByDateRangeSubscriber";
+            return "DCS_DC_Association_GetAssociationByAccountSubscriber";
         }
 
         public override bool IsValid()

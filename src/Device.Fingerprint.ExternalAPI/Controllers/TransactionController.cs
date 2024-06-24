@@ -43,8 +43,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         /// <param name="subscriberName"></param>
         /// <param name="fromDate"></param>
         /// <returns></returns>
-        [HttpGet("GetTransactionHistory/{subscriberName}/{fromDate}")]
-        public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, DateTime fromDate)
+        [HttpGet("GetTransactionHistory/{subscriberName}/{trackingNumber}")]
+        public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, long trackingNumber)
         {
 
             try
@@ -53,7 +53,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (subscriber != null)
                 {
-                    var trans = transactionService.GetTransactionHistoryByDateRangeSubscriber(subscriber.SubscriberId, fromDate, 1000);
+                    var trans = transactionService.GetTransactionHistoryByDateRangeSubscriber(subscriber.SubscriberId, trackingNumber, 1000);
 
                     var transformedTrans = trans.Select(x => new TransactionHistoryModel
                     {
@@ -66,16 +66,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         RobotTracking = x.RobotTracking,
                         TrackingNumber = x.TransID,
                         DateTime = x.TransTime,
-                        Account = x.UserName,                        
-                        SubscriberID = x.SubscriberID,
-                        RawFingerPrintID = x.RawFingerPrintID,
-                        RawUserAgentID = x.RawUserAgentID
+                        Account = x.UserName
                     });
 
                     return Ok(new TransactionHistoryList
                     {
                         Trans = transformedTrans,
-                        ErrorCode = 0,
+                        StatusCode =  System.Net.HttpStatusCode.OK,
                         ErrorMessage = string.Empty                       
                     });
                 }
@@ -84,7 +81,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     return Ok(new TransactionHistoryList
                     {
                         Trans = null,
-                        ErrorCode = -1,
+                        StatusCode =  System.Net.HttpStatusCode.NotFound,
                         ErrorMessage = "Subscriber cannot be null"                       
                     });
                 }
@@ -94,7 +91,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 return Ok(new TransactionHistoryList
                 {
                     Trans = null,
-                    ErrorCode = -1,
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
                     ErrorMessage = ex.Message
                 });
             }       
@@ -106,8 +103,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         /// <param name="subscriberName"></param>
         /// <param name="fromDate"></param>
         /// <returns></returns>
-        [HttpGet("GetAssociation/{subscriberName}/{fromDate}")]
-        public ActionResult<AssociationList> GetAssociation(string subscriberName, DateTime fromDate)
+        [HttpGet("GetAssociation/{subscriberName}/{account}")]
+        public ActionResult<AssociationList> GetAssociation(string subscriberName, string account)
         {
             try
             {
@@ -115,23 +112,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (subscriber != null)
                 {
-                    var associationList = transactionService.GetAssociationByDateRangeSubscriber(subscriber.SubscriberId, fromDate, 1000);
-
-                    var transformedAss = associationList.Select(x => new AssociationModel
-                    {
-                       Account = x.LoginName,
-                       AccountID = x.AccountID,
-                       AssociationID = x.AssociationID,
-                       CreatedTime = x.CreatedTime,
-                       DeviceCode = x.FirstDeviceCode,
-                       DeviceID = x.DeviceID
-                    });
-
+                    var associationByAccountSubscriber = transactionService.GetAssociationByAccountSubscriber(subscriber.SubscriberId, account);
+                                        
                     return Ok(new AssociationList
                     {
-                        Associations = transformedAss,
-                        ErrorCode = 0,
-                        ErrorMessage = string.Empty                      
+                       StatusCode = System.Net.HttpStatusCode.OK,
+                       ErrorMessage = string.Empty,
+                       AssociatedDevices = associationByAccountSubscriber.Item1.Count(),
+                       AssociatedDeviceDetails = associationByAccountSubscriber.Item1.Select(x => new AssociationDeviceModel { Device = x.Device, FirstSeenDate = x.FirstSeenDate }),
+                       AssociatedAccounts = associationByAccountSubscriber.Item2.Count(),
+                       AssociatedAccountDetails = associationByAccountSubscriber.Item2.Select(x => new AssociationAccountModel { Account = x.Account, FirstAssociationDate = x.FirstAssociationDate }),
 
                     });
                 }
@@ -139,18 +129,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     return Ok(new AssociationList
                     {
-                        Associations = null,
-                        ErrorCode = -1,
+                        StatusCode = System.Net.HttpStatusCode.NotFound,                        
                         ErrorMessage = "Subscriber cannot be null"
                     });
                 }
             }
             catch (Exception ex)
             {
-                return Ok(new TransactionHistoryList
+                return Ok(new AssociationList
                 {
-                    Trans = null,
-                    ErrorCode = -1,
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,                    
                     ErrorMessage = ex.Message
                 });
             }

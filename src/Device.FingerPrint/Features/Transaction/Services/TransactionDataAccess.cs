@@ -35,9 +35,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, long transId, int limit);
 
-        IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
+        (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
 
     }
 
@@ -185,30 +185,29 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
             repository.Execute(criteria);
         }
-        
 
-        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
+
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, long transId, int limit)
         {
-            var criteria = new GetTransactionHistoryByDateRangeSubscriberCriteria
+            var criteria = new GetHistoryByTransIDSubscriberCriteria
             {
-                FromDate = fromDate,
-                Limit = limit,                
-                SubscriberId = subscriberId,                
-            };            
-
-            return repository.Fetch<TransactionHistoryEntity>(criteria);
-        }
-
-        public IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
-        {
-            var criteria = new GetAssociationByDateRangeSubscriberCriteria
-            {
-                FromDate = fromDate,
+                TransId = transId,
                 Limit = limit,
                 SubscriberId = subscriberId,
             };
 
-            return repository.Fetch<AssociationEntity>(criteria);
+            return repository.Fetch<TransactionHistoryEntity>(criteria);
+        }
+
+        public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
+        {
+            var criteria = new GetAssociationByAccountSubscriberCriteria
+            {
+                SubscriberId = subscriberId,
+                Account = account
+            };
+
+            return repository.FetchMultiple<AssociationDeviceEntity, AssociationAccountEntity>(criteria);
         }
     }
 }

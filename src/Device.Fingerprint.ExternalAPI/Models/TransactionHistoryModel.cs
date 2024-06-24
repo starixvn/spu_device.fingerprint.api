@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Device.FingerPrint.Features.Transaction.Model
 {
@@ -10,13 +8,11 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public long TrackingNumber { get; set; }
 
-        public string Device { get; set; }
-
-        public string IP { get; set; }
-
-        public string RobotTracking { get; set; }
+        public string Account { get; set; }
 
         public string Action { get; set; }
+
+        public string Device { get; set; }
 
         public string DeviceType { get; set; }
 
@@ -24,13 +20,9 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Domain { get; set; }
 
-        public string Account { get; set; }
+        public string IP { get; set; }
 
-        public int SubscriberID { get; set; }
-
-        public long RawFingerPrintID { get; set; }
-
-        public long RawUserAgentID { get; set; }
+        public string RobotTracking { get; set; }    
 
     }
 }

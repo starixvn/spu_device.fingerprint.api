@@ -1,15 +1,20 @@
-﻿using Device.FingerPrint.Features.Transaction.Model;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Net;
 
 namespace Device.Fingerprint.ExternalAPI.Models
 {
     public class AssociationList
-    {       
-        public IEnumerable<AssociationModel> Associations { get; set; }
-
-        public int ErrorCode { get; set; }
+    {
+        public HttpStatusCode StatusCode { get; set; }
 
         public string ErrorMessage { get; set; }
+
+        public int AssociatedDevices { get; set; }
+
+        public IEnumerable<AssociationDeviceModel> AssociatedDeviceDetails { get; set; }
+
+        public int AssociatedAccounts { get; set; }
+
+        public IEnumerable<AssociationAccountModel> AssociatedAccountDetails { get; set; }
     }
 }

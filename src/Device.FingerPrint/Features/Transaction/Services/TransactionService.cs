@@ -35,9 +35,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, long transId, int limit);                
 
-        IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit);
+        (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
     }
 
     public class TransactionService : ITransactionService
@@ -116,14 +116,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
             transactionDataAccess.EvolutionRecoverDevice(transJson);
         }        
 
-        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, long transId, int limit)
         {
-            return transactionDataAccess.GetTransactionHistoryByDateRangeSubscriber(subscriberId, fromDate, limit);
-        }
+            return transactionDataAccess.GetTransactionHistoryByDateRangeSubscriber(subscriberId, transId, limit);
+        }               
 
-        public IEnumerable<AssociationEntity> GetAssociationByDateRangeSubscriber(int subscriberId, DateTime fromDate, int limit)
+        public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
         {
-            return transactionDataAccess.GetAssociationByDateRangeSubscriber(subscriberId, fromDate, limit);
+            return transactionDataAccess.GetAssociationByAccountSubscriber(subscriberId, account);
         }
     }
 }
