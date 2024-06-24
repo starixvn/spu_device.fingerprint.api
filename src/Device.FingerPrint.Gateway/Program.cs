@@ -29,12 +29,12 @@ builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 
 builder.Services
-    .AddOcelot(builder.Configuration)    
+    .AddOcelot(builder.Configuration)
     .AddCacheManager(x =>
     {
         x.WithDictionaryHandle();
     })
-    .AddDelegatingHandler<ValidateHandler>(true);
+    .AddDelegatingHandler<ValidateHandler>();
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
 builder.Services.AddSingleton<Device.FingerPrint.Gateway.IAppSettings>(appSettings);
