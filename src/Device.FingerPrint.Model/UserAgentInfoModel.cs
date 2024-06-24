@@ -6,6 +6,8 @@ namespace Device.FingerPrint.Model
     {
         public string UserAgent { get; set; }
 
+        public string UserAgentCode { get; set; }
+
         public string ClientType { get; set; }
 
         public string ClientName { get; set; }

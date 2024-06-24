@@ -85,7 +85,11 @@ namespace Device.FingerPrint.Model
 
         public string BrowserFamilyCode { get; set; }
 
+        public string ChallengeCode { get; set; }
+
         public string RawUserAgent { get; set; }
+
+        public string RawUserAgentCode { get; set; }
 
         public UserAgentInfoModel RawUserAgentInfo { get; set; }
 

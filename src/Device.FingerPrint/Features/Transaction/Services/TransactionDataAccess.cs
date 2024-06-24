@@ -11,6 +11,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(string transJson, bool isTransOfDBExtra);
 
+        Task InsertCookie(string cookieCodesJson, bool isTransOfDBExtra);
+
         void InsertTransaction(string transJson);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -57,6 +59,17 @@ namespace Device.FingerPrint.Features.Transaction.Services
             var criteria = new InsertRawTransactionCriteria
             {
                 RawTransJson = transJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertCookie(string cookieCodes, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertCookieCriteria
+            {
+                CookieCodes = cookieCodes,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 

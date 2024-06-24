@@ -3,6 +3,7 @@ using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.Features.Transaction.Services
@@ -53,8 +54,27 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         public async Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
+            var cookieCodes = GetDistinctCookieCodesAsString(transactions);
+            await transactionDataAccess.InsertCookie(cookieCodes, isTransOfDBExtra);
+
             var transJson = JsonConvert.SerializeObject(transactions);
             await transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
+        }
+
+        private static string GetDistinctCookieCodesAsString(IEnumerable<RawTransactionModel> transactions)
+        {
+            return string.Join(",", transactions
+                        .Select(t => t.CookieCode)
+                        .Where(code => !string.IsNullOrEmpty(code))
+                        .Distinct()
+                        .ToArray());
+        }
+
+        private static IEnumerable<UserAgentInfoModel> GetDistinctRawUserAgents(IEnumerable<RawTransactionModel> transactions)
+        {
+            return transactions
+                .Where(x => x.RawUserAgentInfo != null)
+                .Select(t => t.RawUserAgentInfo);
         }
 
         public void InsertTransaction(IEnumerable<TransactionEntity> transactions)

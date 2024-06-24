@@ -89,7 +89,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
-                        model.RawFingerPrintCode = model.FingerprintAttribute.FingerPrintCode;
                         model.CookieCode = sessionKey.SessionKey;
 
                         // Log Info Consumer
@@ -143,7 +142,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             result.BrowserInstanceCode = HashBrowserInstanceCode(result);
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);
-
+            
+            var RawUserAgentCode = crypto.GetMD5Hash(result.UserAgent);
+            rawTransModel.RawUserAgentInfo.UserAgentCode = RawUserAgentCode;
+            rawTransModel.RawUserAgentCode = RawUserAgentCode;
             rawTransModel.BrowserInstanceCode = result.BrowserInstanceCode;
             rawTransModel.BrowserFamilyCode = result.BrowserFamilyCode;
 
@@ -166,6 +168,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 }
                 jsChallengeInfo.ChallengeCode = jscKey;
                 model.RawJsChallengeInfo = jsChallengeInfo;
+
+                model.ChallengeCode = jscKey;
             }
         }
 
