@@ -43,7 +43,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         /// <param name="subscriberName"></param>
         /// <param name="fromDate"></param>
         /// <returns></returns>
-        [HttpGet("GetTransactionHistory/{subscriberName}/{trackingNumber}")]
+        [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
         public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, long trackingNumber)
         {
 
@@ -53,7 +53,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (subscriber != null)
                 {
-                    var trans = transactionService.GetTransactionHistoryByDateRangeSubscriber(subscriber.SubscriberId, trackingNumber, 1000);
+                    var trans = transactionService.GetTransactionHistoryByTransIdSubscriber(subscriber.SubscriberId, trackingNumber, 1000);
 
                     var transformedTrans = trans.Select(x => new TransactionHistoryModel
                     {
@@ -103,8 +103,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
         /// <param name="subscriberName"></param>
         /// <param name="fromDate"></param>
         /// <returns></returns>
-        [HttpGet("GetAssociation/{subscriberName}/{account}")]
-        public ActionResult<AssociationList> GetAssociation(string subscriberName, string account)
+        [HttpGet("GetAssociationByAccount/{subscriberName}/{account}")]
+        public ActionResult<AssociationList> GetAssociationByAccount(string subscriberName, string account)
         {
             try
             {

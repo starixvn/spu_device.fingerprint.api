@@ -35,7 +35,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, long transId, int limit);
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);
 
         (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
 
@@ -187,9 +187,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
         }
 
 
-        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByDateRangeSubscriber(int subscriberId, long transId, int limit)
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit)
         {
-            var criteria = new GetHistoryByTransIDSubscriberCriteria
+            var criteria = new GetTransactionBySubscriberCriteria
             {
                 TransId = transId,
                 Limit = limit,
@@ -201,7 +201,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
         {
-            var criteria = new GetAssociationByAccountSubscriberCriteria
+            var criteria = new GetAssociationBySubscriberCriteria
             {
                 SubscriberId = subscriberId,
                 Account = account

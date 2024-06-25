@@ -5,21 +5,17 @@ using System.Security.Permissions;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    class GetHistoryByTransIDSubscriberCriteria : NonQueryCommand
+    class GetAssociationBySubscriberCriteria : NonQueryCommand
     {
         [SpParam(SqlParamName = "ip_SubscriberID")]
         public int SubscriberId { get; set; }
 
-        [SpParam(SqlParamName = "ip_TransID")]
-        public long TransId { get; set; }
-
-        [SpParam(SqlParamName = "ip_Limit")]
-        public int Limit { get; set; }
-       
+        [SpParam(SqlParamName = "ip_Account")]
+        public string Account { get; set; }       
 
         public override string GetSettingKey()
         {
-            return "DCS_DC_Transaction_GetHistoryByTransIDSubscriber";
+            return "DCS_DC_Association_GetAssociationByAccount";
         }
 
         public override bool IsValid()
