@@ -1,3 +1,4 @@
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Gateway.Handlers;
 using Device.FingerPrint.Gateway.Services;
 using Device.FingerPrint.Redis;
@@ -14,6 +15,7 @@ using StackExchange.Redis.Extensions.Core.Configuration;
 using StackExchange.Redis.Extensions.Core.Implementations;
 using StackExchange.Redis.Extensions.MsgPack;
 using ILogger = Fanex.Logging.ILogger;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,10 @@ builder.Services
     .AddDelegatingHandler<ValidateHandler>();
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
+
+var gatewaySetting = new GatewaySetting(builder.Configuration);
+builder.Services.AddSingleton<IGatewaySetting>(gatewaySetting);
+
 builder.Services.AddSingleton<Device.FingerPrint.Gateway.IAppSettings>(appSettings);
 builder.Services.AddSingleton<ILogger, Logger>();
 
@@ -73,6 +79,12 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+// Use the Prometheus middleware
+app.UseMetricServer();
+app.UseHttpMetrics();
+
+MetricHttpService.PublicDataToGateway(gatewaySetting.GatewayInfo);
 
 app.UseHealthChecks("/healthz", new HealthCheckOptions
 {

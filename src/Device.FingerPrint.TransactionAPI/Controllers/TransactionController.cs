@@ -100,25 +100,11 @@
 
             var response = GetTransactionResponse(responseCode);
             return Ok(response.ResultMessage);
-        }
-
-        [HttpPost("FPS/CheckTransaction/1")]
-        public async Task<IActionResult> CheckTransactionAsync1(TransactionRequest transRequest)
-        {
-            return Ok("CheckTransactionAsync1");
-        }
-
-        [HttpPost("FPS/CheckTransaction/2")]
-        public async Task<IActionResult> CheckTransactionAsync2(TransactionRequest transRequest)
-        {
-            return Ok("CheckTransactionAsync2");
-        }
+        }        
 
         [HttpPost("FPS/InsertTransaction")]
         public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
         {
-            logger.Info("This is request from gateway api");
-
             var di = transRequest.Di ?? transRequest.__di;
             var transAttributesJoined = JoinStringAttributes(new List<string> {
                         transRequest.AcceptsTypes,
@@ -237,29 +223,6 @@
             }
         }
 
-        [HttpGet]
-        [Route("FPS/TestRedis")]
-        public async Task<string> TestRedisAsync(string data)
-        {
-            await redisService.AddAsyncAndExpiryAsync("test:testing", data, DateTimeOffset.UtcNow.AddMinutes(1));
-
-            return await redisService.GetAsync<string>("test:testing");
-        }
-
-        [HttpGet]
-        [Route("FPS/TestAPI/{message}")]
-        public string TestAPI(string message)
-        {
-            try
-            {
-                logger.Error(message);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-
-            return message;
         }
 
         [HttpGet]
@@ -267,22 +230,5 @@
         public UnderMaintenanceTime TestUM()
         {
             return maintenanceService.GetUnderMaintenanceTime();
-        }
-
-        [HttpPost]
-        [Route("FPS/TestPostAPI")]
-        public string TestPostAPI([FromBody] string message)
-        {
-            try
-            {
-                logger.Error(message);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-
-            return message;
-        }
     }
 }
