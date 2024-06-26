@@ -16,6 +16,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class TransactionController : ControllerBase
     {
+        private const string formatDateTime = "yyyy-MM-dd HH:mm:ss.ms";
 
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
@@ -35,7 +36,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.transactionService = transactionService;
             jWTService = new JWTService(appSettings);
 
-        }               
+        }
 
         /// <summary>
         /// Get transaction history by range date and subscriber
@@ -62,18 +63,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Domain = x.UrlDetails,
                         Device = x.FirstDeviceCode,
                         IP = x.IP,
-                        DeviceType = x.OS,                        
+                        DeviceType = x.OS,
                         RobotTracking = x.RobotTracking,
                         TrackingNumber = x.TransID,
-                        DateTime = x.TransTime,
+                        DateTime = Convert.ToDateTime(x.TransTime.ToString(formatDateTime)),
                         Account = x.UserName
                     });
 
                     return Ok(new TransactionHistoryList
                     {
                         Trans = transformedTrans,
-                        StatusCode =  System.Net.HttpStatusCode.OK,
-                        ErrorMessage = string.Empty                       
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty
                     });
                 }
                 else
@@ -81,8 +82,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     return Ok(new TransactionHistoryList
                     {
                         Trans = null,
-                        StatusCode =  System.Net.HttpStatusCode.NotFound,
-                        ErrorMessage = "Subscriber cannot be null"                       
+                        StatusCode = System.Net.HttpStatusCode.NotFound,
+                        ErrorMessage = "Subscriber cannot be null"
                     });
                 }
             }
@@ -94,7 +95,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     StatusCode = System.Net.HttpStatusCode.BadRequest,
                     ErrorMessage = ex.Message
                 });
-            }       
+            }
         }
 
         /// <summary>
@@ -113,15 +114,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 if (subscriber != null)
                 {
                     var associationByAccountSubscriber = transactionService.GetAssociationByAccountSubscriber(subscriber.SubscriberId, account);
-                                        
+
                     return Ok(new AssociationList
                     {
-                       StatusCode = System.Net.HttpStatusCode.OK,
-                       ErrorMessage = string.Empty,
-                       AssociatedDevices = associationByAccountSubscriber.Item1.Count(),
-                       AssociatedDeviceDetails = associationByAccountSubscriber.Item1.Select(x => new AssociationDeviceModel { Device = x.Device, FirstSeenDate = x.FirstSeenDate }),
-                       AssociatedAccounts = associationByAccountSubscriber.Item2.Count(),
-                       AssociatedAccountDetails = associationByAccountSubscriber.Item2.Select(x => new AssociationAccountModel { Account = x.Account, FirstAssociationDate = x.FirstAssociationDate }),
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty,
+                        AssociatedDevices = associationByAccountSubscriber.Item1.Count(),
+                        AssociatedDeviceDetails = associationByAccountSubscriber.Item1.Select(x => new AssociationDeviceModel { Device = x.Device, FirstSeenDate = Convert.ToDateTime(x.FirstSeenDate.ToString(formatDateTime)) }),
+                        AssociatedAccounts = associationByAccountSubscriber.Item2.Count(),
+                        AssociatedAccountDetails = associationByAccountSubscriber.Item2.Select(x => new AssociationAccountModel { Account = x.Account, FirstAssociationDate = Convert.ToDateTime(x.FirstAssociationDate.ToString(formatDateTime)) }),
 
                     });
                 }
@@ -129,7 +130,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     return Ok(new AssociationList
                     {
-                        StatusCode = System.Net.HttpStatusCode.NotFound,                        
+                        StatusCode = System.Net.HttpStatusCode.NotFound,
                         ErrorMessage = "Subscriber cannot be null"
                     });
                 }
@@ -138,7 +139,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             {
                 return Ok(new AssociationList
                 {
-                    StatusCode = System.Net.HttpStatusCode.BadRequest,                    
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
                     ErrorMessage = ex.Message
                 });
             }
