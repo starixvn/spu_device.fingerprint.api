@@ -13,7 +13,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_TransID")]
         public long TransId { get; set; }
 
-        [SpParam(SqlParamName = "ip_Limit")]
+        [SpParam(SqlParamName = "ip_BatchSize")]
         public int Limit { get; set; }
        
 

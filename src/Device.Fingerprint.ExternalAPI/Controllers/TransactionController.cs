@@ -66,7 +66,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         DeviceType = x.OS,
                         RobotTracking = x.RobotTracking,
                         TrackingNumber = x.TransID,
-                        DateTime = Convert.ToDateTime(x.TransTime.ToString(formatDateTime)),
+                        DateTime = x.TransTime,
                         Account = x.UserName
                     });
 
@@ -120,9 +120,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         StatusCode = System.Net.HttpStatusCode.OK,
                         ErrorMessage = string.Empty,
                         AssociatedDevices = associationByAccountSubscriber.Item1.Count(),
-                        AssociatedDeviceDetails = associationByAccountSubscriber.Item1.Select(x => new AssociationDeviceModel { Device = x.Device, FirstSeenDate = Convert.ToDateTime(x.FirstSeenDate.ToString(formatDateTime)) }),
+                        AssociatedDeviceDetails = associationByAccountSubscriber.Item1.Select(x => new AssociationDeviceModel { Device = x.Device, FirstSeenDate = x.FirstSeenDate }),
                         AssociatedAccounts = associationByAccountSubscriber.Item2.Count(),
-                        AssociatedAccountDetails = associationByAccountSubscriber.Item2.Select(x => new AssociationAccountModel { Account = x.Account, FirstAssociationDate = Convert.ToDateTime(x.FirstAssociationDate.ToString(formatDateTime)) }),
+                        AssociatedAccountDetails = associationByAccountSubscriber.Item2.Select(x => new AssociationAccountModel { Account = x.Account, FirstAssociationDate = x.FirstAssociationDate }),
 
                     });
                 }
