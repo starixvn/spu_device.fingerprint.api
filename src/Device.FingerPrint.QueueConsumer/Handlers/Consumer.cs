@@ -44,7 +44,7 @@
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.logEvent = logEvent;;
+            this.logEvent = logEvent; ;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -83,7 +83,8 @@
         {
             var tasks = new List<Task>
             {
-                InsertLogTrail(transactionModels)
+                InsertLogTrail(transactionModels),
+                rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub)
             };
 
             var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
@@ -100,6 +101,7 @@
 
             await Task.WhenAll(tasks);
         }
+
 
         private async Task HandleClearRedisJsChallenge(IEnumerable<string> rawJsChallenges)
         {

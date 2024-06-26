@@ -13,6 +13,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         Task InsertCookie(string cookieCodesJson, bool isTransOfDBExtra);
 
+        Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra);
+
+        Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
+
+        Task InsertRawFingerPrint(string rawFingerPrintJson, bool isTransOfDBExtra);
+
         void InsertTransaction(string transJson);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -70,6 +76,39 @@ namespace Device.FingerPrint.Features.Transaction.Services
             var criteria = new InsertCookieCriteria
             {
                 CookieCodes = cookieCodes,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertRawUserAgentCriteria
+            {
+                RawUserAgentJson = rawUserAgentJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertJSChallengeInfoCriteria
+            {
+                JSChallengeInfoJson = jsChallengeInfoJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertRawFingerPrint(string rawFingerPrintJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertRawFingerPrintCriteria
+            {
+                RawFingerPrintJson = rawFingerPrintJson,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 

@@ -12,6 +12,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
 
+        Task InsertCookie(string cookieCodes, bool isTransOfDBExtra);
+
+        Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra);
+
+        Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
+
+        Task InsertRawFingerPrint(string rawFingerPrintAttributeJson, bool isTransOfDBExtra);
+
         void InsertTransaction(IEnumerable<TransactionEntity> transactions);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -54,27 +62,64 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         public async Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var cookieCodes = GetDistinctCookieCodesAsString(transactions);
-            await transactionDataAccess.InsertCookie(cookieCodes, isTransOfDBExtra);
-
-            var transJson = JsonConvert.SerializeObject(transactions);
+            var transJson = JsonConvert.SerializeObject(TransformInsertRawTransaction(transactions));
             await transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
+
         }
 
-        private static string GetDistinctCookieCodesAsString(IEnumerable<RawTransactionModel> transactions)
+        public async Task InsertCookie(string cookieCodes, bool isTransOfDBExtra)
         {
-            return string.Join(",", transactions
-                        .Select(t => t.CookieCode)
-                        .Where(code => !string.IsNullOrEmpty(code))
-                        .Distinct()
-                        .ToArray());
+            await transactionDataAccess.InsertCookie(cookieCodes, isTransOfDBExtra);
         }
 
-        private static IEnumerable<UserAgentInfoModel> GetDistinctRawUserAgents(IEnumerable<RawTransactionModel> transactions)
+        public async Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra)
         {
-            return transactions
-                .Where(x => x.RawUserAgentInfo != null)
-                .Select(t => t.RawUserAgentInfo);
+            await transactionDataAccess.InsertRawUserAgent(rawUserAgentJson, isTransOfDBExtra);
+        }
+
+        public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
+        {
+            await transactionDataAccess.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
+        }
+
+        public async Task InsertRawFingerPrint(string rawFingerPrintAttributeJson, bool isTransOfDBExtra)
+        {
+            await transactionDataAccess.InsertRawFingerPrint(rawFingerPrintAttributeJson, isTransOfDBExtra);
+        }
+
+        private static IEnumerable<InsertRawTransactionEntity> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
+        {
+            return transactions.Select(transaction => new InsertRawTransactionEntity
+            {
+                Action = transaction.Action,
+                ActionResult = transaction.ActionResult,
+                BotComponent = transaction.BotComponent,
+                BotDetection = transaction.BotDetection,
+                BrowserFamilyCode = transaction.BrowserFamilyCode,
+                BrowserInstanceCode = transaction.BrowserInstanceCode,
+                ChallengeCode = transaction.ChallengeCode,
+                CookieCode = transaction.CookieCode,
+                CreatedDate = transaction.CreatedDate,
+                DeviceCode = transaction.DeviceCode,
+                FakeIP = transaction.FakeIP,
+                FingerprintCode = transaction.FingerprintCode,
+                FingerprintMoreInfo = transaction.FingerprintMoreInfo,
+                FlaggedCode = transaction.FlaggedCode,
+                FPSTransId = transaction.FPSTransId,
+                InvalidDevice = transaction.InvalidDevice,
+                IP = transaction.IP,
+                IPId = transaction.IPId,
+                IsIPV6 = transaction.IsIPV6,
+                LoginName = transaction.LoginName,
+                PluginID = transaction.PluginID,
+                RawFingerPrintCode = transaction.RawFingerPrintCode,
+                RawUserAgentCode = transaction.RawUserAgentCode,
+                SubscriberName = transaction.SubscriberName,
+                TransStatus = transaction.TransStatus,
+                TransTime = transaction.TransTime,
+                URL = transaction.URL,
+                UserAgent = transaction.UserAgent
+            }).ToList();
         }
 
         public void InsertTransaction(IEnumerable<TransactionEntity> transactions)

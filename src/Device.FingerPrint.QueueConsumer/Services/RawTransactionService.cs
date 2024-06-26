@@ -1,8 +1,10 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
+    using Newtonsoft.Json;
     using System;
     using System.Collections;
     using System.Collections.Generic;
@@ -18,6 +20,8 @@
         Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
 
         Task InsertOrUpdateEverCookie(string hashKey, IEnumerable<string> everCookies, long expireSecond);
+
+        Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -27,13 +31,15 @@
         private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IDeviceService deviceService;
         private readonly IBotDetectionService botDetectionService;
+        private readonly ITransactionService transactionService;
 
         public RawTransactionService(
             IRedisService redisService,
             IRedisMultiplexService redisMultiplexService,
             IRawTransactionAttributeService rawTransactionAttributeService,
             IDeviceService deviceService,
-            IBotDetectionService botDetectionService
+            IBotDetectionService botDetectionService,
+            ITransactionService transactionService
         )
         {
             this.rawTransactionAttributeService = rawTransactionAttributeService;
@@ -41,6 +47,7 @@
             this.redisMultiplexService = redisMultiplexService;
             this.deviceService = deviceService;
             this.botDetectionService = botDetectionService;
+            this.transactionService = transactionService;
         }
 
         public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
@@ -150,5 +157,74 @@
                 var arr = ex.Message.Split(' ');
             }
         }
+
+        public async Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            var tasks = new List<Task>
+            {
+                InsertCookie(transactions, isTransOfDBExtra),
+                InsertRawUserAgent(transactions, isTransOfDBExtra),
+                InsertJSChallengeInfo(transactions, isTransOfDBExtra),
+                InsertRawFingerPrint(transactions, isTransOfDBExtra),
+            };
+
+            await Task.WhenAll(tasks);
+        }
+
+        private async Task InsertCookie(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            var cookieCodes = GetDistinctCookieCodesAsString(transactions);
+            if (!string.IsNullOrEmpty(cookieCodes))
+            {
+                await transactionService.InsertCookie(cookieCodes, isTransOfDBExtra);
+            }
+        }
+
+        private async Task InsertRawUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            var rawUserAgentInfos = GetDistinctInfo(transactions, t => t.RawUserAgentInfo);
+            if (rawUserAgentInfos != null && rawUserAgentInfos.Any())
+            {
+                var rawUserAgentJson = JsonConvert.SerializeObject(rawUserAgentInfos);
+                await transactionService.InsertRawUserAgent(rawUserAgentJson, isTransOfDBExtra);
+            }
+        }
+
+        private async Task InsertJSChallengeInfo(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            var jsChallengeInfos = GetDistinctInfo(transactions, t => t.RawJsChallengeInfo);
+            if (jsChallengeInfos != null && jsChallengeInfos.Any())
+            {
+                var jsChallengeInfoJson = JsonConvert.SerializeObject(jsChallengeInfos);
+                await transactionService.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
+            }
+        }
+
+        private async Task InsertRawFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            var rawFingerprintAttribute = GetDistinctInfo(transactions, t => t.FingerprintAttribute);
+            if (rawFingerprintAttribute != null && rawFingerprintAttribute.Any())
+            {
+                var rawFingerPrintAttributeJson = JsonConvert.SerializeObject(rawFingerprintAttribute);
+                await transactionService.InsertRawFingerPrint(rawFingerPrintAttributeJson, isTransOfDBExtra);
+            }
+        }
+
+        private static string GetDistinctCookieCodesAsString(IEnumerable<RawTransactionModel> transactions)
+        {
+            return string.Join(",", transactions
+                        .Select(t => t.CookieCode)
+                        .Where(code => !string.IsNullOrEmpty(code))
+                        .Distinct()
+                        .ToArray());
+        }
+
+        private static IEnumerable<TResult> GetDistinctInfo<TResult>(IEnumerable<RawTransactionModel> transactions, Func<RawTransactionModel, TResult> selector)
+        {
+            return transactions
+                .Where(x => selector(x) != null)
+                .Select(selector);
+        }
+
     }
 }

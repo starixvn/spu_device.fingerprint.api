@@ -44,9 +44,13 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel)
         {
+            string jscKey = null;
+
             if (botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
             {
-                var jscKey = botDModel.JscKey;
+                jscKey = botDModel.JscKey;
+                model.ChallengeCode = jscKey;
+
                 var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{jscKey}");
                 var jsChallenge = jsChallengeTask.Result;
                 TransformJSChallengeInfo(model, jscKey, jsChallenge);
@@ -89,6 +93,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
+                        model.RawFingerPrintCode = fingerPrintModel.Id;
                         model.CookieCode = sessionKey.SessionKey;
 
                         // Log Info Consumer
