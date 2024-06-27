@@ -1,6 +1,7 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
