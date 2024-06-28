@@ -12,7 +12,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
 
-        Task InsertCookie(string cookieCodes, bool isTransOfDBExtra);
+        Task InsertCookie(string cookieJson, bool isTransOfDBExtra);
 
         Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra);
 
@@ -67,9 +67,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         }
 
-        public async Task InsertCookie(string cookieCodes, bool isTransOfDBExtra)
+        public async Task InsertCookie(string cookieJson, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertCookie(cookieCodes, isTransOfDBExtra);
+            await transactionDataAccess.InsertCookie(cookieJson, isTransOfDBExtra);
         }
 
         public async Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra)
@@ -87,9 +87,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             await transactionDataAccess.InsertRawFingerPrint(rawFingerPrintAttributeJson, isTransOfDBExtra);
         }
 
-        private static IEnumerable<InsertRawTransactionEntity> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
+        private static IEnumerable<InsertRawTransactionDTO> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
         {
-            return transactions.Select(transaction => new InsertRawTransactionEntity
+            return transactions.Select(transaction => new InsertRawTransactionDTO
             {
                 Action = transaction.Action,
                 ActionResult = transaction.ActionResult,

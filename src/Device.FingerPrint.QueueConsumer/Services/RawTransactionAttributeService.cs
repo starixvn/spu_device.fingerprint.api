@@ -58,7 +58,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             {
                 if (!model.SessionKey.Contains(':'))
                 {
-                    _ = LogService.ErrorAsync($"{appSettings.Environment} - SessionKey does not contain a colon:\n {JsonConvert.SerializeObject(model)}");
+                    _ = LogService.InfoAsync($"{appSettings.Environment} - SessionKey does not contain a colon:\n {JsonConvert.SerializeObject(model)}");
                 }
                 else
                 {

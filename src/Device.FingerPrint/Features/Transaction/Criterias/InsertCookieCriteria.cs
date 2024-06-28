@@ -5,8 +5,8 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     public class InsertCookieCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_CookieCodes")]
-        public string CookieCodes { get; set; }
+        [SpParam(SqlParamName = "ip_CookieJson")]
+        public string CookieJson { get; set; }
 
         [SpParam(Ignored = true)]
         public bool IsTransOfDBExtra { get; set; }
@@ -15,7 +15,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         {
             if (this.IsTransOfDBExtra)
             {
-                return "DCS_ET_Transform_Cookie_Insert";
+                return "";
             }
             else
             {

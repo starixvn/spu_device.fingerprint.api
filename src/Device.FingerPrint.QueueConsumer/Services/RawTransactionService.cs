@@ -1,6 +1,7 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Features.Transaction.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
@@ -10,6 +11,7 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
+    using static MassTransit.ValidationResultExtensions;
 
     public interface IRawTransactionService
     {
@@ -173,16 +175,17 @@
 
         private async Task InsertCookie(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var cookieCodes = GetDistinctCookieCodesAsString(transactions);
-            if (!string.IsNullOrEmpty(cookieCodes))
+            var cookieInfos = GetCookieInfo(transactions);
+            if (cookieInfos != null && cookieInfos.Any())
             {
-                await transactionService.InsertCookie(cookieCodes, isTransOfDBExtra);
+                var cookieJson = JsonConvert.SerializeObject(cookieInfos);
+                await transactionService.InsertCookie(cookieJson, isTransOfDBExtra);
             }
         }
 
         private async Task InsertRawUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var rawUserAgentInfos = GetDistinctInfo(transactions, t => t.RawUserAgentInfo);
+            var rawUserAgentInfos = GetValidInfo(transactions, t => t.RawUserAgentInfo);
             if (rawUserAgentInfos != null && rawUserAgentInfos.Any())
             {
                 var rawUserAgentJson = JsonConvert.SerializeObject(rawUserAgentInfos);
@@ -192,7 +195,7 @@
 
         private async Task InsertJSChallengeInfo(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var jsChallengeInfos = GetDistinctInfo(transactions, t => t.RawJsChallengeInfo);
+            var jsChallengeInfos = GetValidInfo(transactions, t => t.RawJsChallengeInfo);
             if (jsChallengeInfos != null && jsChallengeInfos.Any())
             {
                 var jsChallengeInfoJson = JsonConvert.SerializeObject(jsChallengeInfos);
@@ -202,7 +205,7 @@
 
         private async Task InsertRawFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var rawFingerprintAttribute = GetDistinctInfo(transactions, t => t.FingerprintAttribute);
+            var rawFingerprintAttribute = GetValidInfo(transactions, t => t.FingerprintAttribute);
             if (rawFingerprintAttribute != null && rawFingerprintAttribute.Any())
             {
                 var rawFingerPrintAttributeJson = JsonConvert.SerializeObject(rawFingerprintAttribute);
@@ -210,20 +213,27 @@
             }
         }
 
-        private static string GetDistinctCookieCodesAsString(IEnumerable<RawTransactionModel> transactions)
+        private static IEnumerable<InsertCookieInfoDTO> GetCookieInfo(IEnumerable<RawTransactionModel> transactions)
         {
-            return string.Join(",", transactions
-                        .Select(t => t.CookieCode)
-                        .Where(code => !string.IsNullOrEmpty(code))
-                        .Distinct()
-                        .ToArray());
+            var result = transactions
+                .Where(t => !string.IsNullOrEmpty(t.CookieCode))
+                .GroupBy(t => t.CookieCode)
+                .Select(g => new InsertCookieInfoDTO
+                {
+                    CookieCode = g.Key,
+                    FirstTransTime = g.Min(t => t.TransTime)
+                })
+                .ToList();
+
+            return result;
         }
 
-        private static IEnumerable<TResult> GetDistinctInfo<TResult>(IEnumerable<RawTransactionModel> transactions, Func<RawTransactionModel, TResult> selector)
+        private static IEnumerable<TResult> GetValidInfo<TResult>(IEnumerable<RawTransactionModel> transactions, Func<RawTransactionModel, TResult> selector)
         {
             return transactions
-                .Where(x => selector(x) != null)
-                .Select(selector);
+                .Select(selector)
+                .Where(result => result != null)
+                .Distinct();
         }
 
     }

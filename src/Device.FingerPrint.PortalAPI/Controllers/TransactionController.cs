@@ -40,58 +40,6 @@
             this.appSettings = appSettings;
         }
 
-        [HttpPost("h/d/{version}")]
-        public void Header([FromBody] string data)
-        {
-            if (!string.IsNullOrEmpty(data))
-            {
-                var decodeData = Base64.Decode(data, base64Key);
-                var header = JsonSerializer.Deserialize<BaseParameter>(decodeData);
-                AddHeaderToRedis(header.SessionKey);
-            }
-        }
-
-        [HttpPost("c/e/{version}")]
-        public async Task Cookie([FromBody] string data)
-        {
-            if (!string.IsNullOrEmpty(data))
-            {
-                var decodeData = Base64.Decode(data, base64Key);
-                var cookie = JsonSerializer.Deserialize<CookieParameter>(decodeData);
-
-                if (cookie != null)
-                {
-                    var cookieValue = cookie.Cookie;
-                    var cookieRedis = await redisService.HashGetAsync<string>(cookie.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie));
-                    var isForceUpdate = cookieRedis != null && cookieRedis != cookieValue;
-
-                    await redisService.HashSetAndExpiryAsync(cookie.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie.Cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), isForceUpdate);
-                }
-
-                AddHeaderToRedis(cookie.SessionKey);
-            }
-        }
-
-        [HttpPost("f/p/{version}")]
-        public async Task FingerPrint([FromBody] string data)
-        {
-            if (!string.IsNullOrEmpty(data))
-            {
-                var decodeData = Base64.Decode(data, base64Key);
-                var fingerprint = JsonSerializer.Deserialize<FingerprintParameter>(decodeData);
-
-                if (fingerprint != null)
-                {
-                    var fingerprintCode = fingerprint.Fingerprint?.Id;
-
-                    var fingerPrintRedis = await redisService.HashGetAsync<FingerprintModel>(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint));
-                    var isForceUpdate = fingerPrintRedis != null && fingerPrintRedis.Id != fingerprintCode;
-
-                    await redisService.HashSetAndExpiryAsync(fingerprint.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrint), fingerprint.Fingerprint, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired), isForceUpdate);
-                }
-            }
-        }
-
         [HttpPost("h/d")]
         [HttpPost("hd")]
         public void Header([FromBody] PortalParameter data)
@@ -223,15 +171,6 @@
         {
             LogService.Info("I'm good.");
             return "I'm good.";
-        }
-
-        private void AddHeaderToRedis(string sessionKey)
-        {
-            var headerModel = GetHeaderValue();
-            if (headerModel != null)
-            {
-                redisService.HashSetAndExpiryAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), headerModel, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
-            }
         }
 
         private void AddHeaderToRedisWithDbIndex(int redisDatabaseIndex, string sessionKey)

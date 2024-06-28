@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Device.FingerPrint.Features.Transaction.Model
 {
-    internal class InsertRawTransactionEntity
+    public class InsertRawTransactionDTO
     {
         public string LoginName { get; set; }
 

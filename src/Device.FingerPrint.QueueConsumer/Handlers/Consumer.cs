@@ -88,16 +88,16 @@
                 rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub)
             };
 
+            var everCookies = transactionModels.Where(x => !string.IsNullOrEmpty(x.CookieCode))?.Select(x => DeviceEncoder.Encrypt(x.CookieCode));
+            if (everCookies != null && everCookies.Any())
+            {
+                tasks.Add(rawTransactionService.InsertOrUpdateEverCookie(hashKeyEverCookie, everCookies, appSettings.EverCookieExpireSecond));
+            }
+
             var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
             if (rawJsChallenges != null && rawJsChallenges.Any())
             {
                 tasks.Add(HandleClearRedisJsChallenge(rawJsChallenges));
-            }
-
-            var everCookies = transactionModels.Where(x => !string.IsNullOrEmpty(x.CookieCode))?.Select(x => x.CookieCode);
-            if (everCookies != null && everCookies.Any())
-            {
-                tasks.Add(rawTransactionService.InsertOrUpdateEverCookie(hashKeyEverCookie, everCookies, appSettings.EverCookieExpireSecond));
             }
 
             await Task.WhenAll(tasks);

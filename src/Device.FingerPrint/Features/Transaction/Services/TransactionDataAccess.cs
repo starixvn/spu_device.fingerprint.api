@@ -11,7 +11,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(string transJson, bool isTransOfDBExtra);
 
-        Task InsertCookie(string cookieCodesJson, bool isTransOfDBExtra);
+        Task InsertCookie(string cookieJson, bool isTransOfDBExtra);
 
         Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra);
 
@@ -71,11 +71,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
             await repository.ExecuteAsync(criteria);
         }
 
-        public async Task InsertCookie(string cookieCodes, bool isTransOfDBExtra)
+        public async Task InsertCookie(string cookieJson, bool isTransOfDBExtra)
         {
             var criteria = new InsertCookieCriteria
             {
-                CookieCodes = cookieCodes,
+                CookieJson = cookieJson,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
