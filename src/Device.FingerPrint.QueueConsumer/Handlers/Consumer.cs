@@ -73,11 +73,13 @@
                 return await rawTransactionService.TransformRawTransaction(x.Message);
             }));
 
-            ipdbService.TransformTransactionByIps(transactionModels);
+            var filterTransaction = transactionModels.Where(x => x.TransStatus != (int)TransStatusEnum.InvalidLoginName);
 
-            await transactionService.InsertRawTransaction(transactionModels, appSettings.IsExtraSub);
+            ipdbService.TransformTransactionByIps(filterTransaction);
 
-            _ = AdditionalProcessingNotAwait(transactionModels);
+            await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
+
+            _ = AdditionalProcessingNotAwait(filterTransaction);
         }
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
@@ -90,7 +92,7 @@
             };
 
             var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
-            if(rawJsChallenges != null && rawJsChallenges.Any())
+            if (rawJsChallenges != null && rawJsChallenges.Any())
             {
                 tasks.Add(HandleClearRedisJsChallenge(rawJsChallenges));
             }
