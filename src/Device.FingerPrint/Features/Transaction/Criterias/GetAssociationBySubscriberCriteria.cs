@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
         [SpParam(SqlParamName = "ip_SubscriberID")]
         public int SubscriberId { get; set; }
 
-        [SpParam(SqlParamName = "ip_Account")]
+        [SpParam(SqlParamName = "ip_AccountName")]
         public string Account { get; set; }       
 
         public override string GetSettingKey()
