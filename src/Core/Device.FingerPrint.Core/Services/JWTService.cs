@@ -31,16 +31,14 @@ namespace Device.FingerPrint.Core.Services
             return tokenHandler.WriteToken(token);
         }
 
-        public string GenerateJWT(string issuer, string audience, DateTime expiredTime)
+        public string GenerateJWT(DateTime expiredTime, string audience)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(appSettings.JWTPassword + "@" + audience));
             var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", issuer) }),
-                Expires = expiredTime,
-                Issuer = issuer,
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyJWT), SecurityAlgorithms.HmacSha256Signature),
-                Audience = audience
+            {                
+                Expires = expiredTime,               
+                SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
 

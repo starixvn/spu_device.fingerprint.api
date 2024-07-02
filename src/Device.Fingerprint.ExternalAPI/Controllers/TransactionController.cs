@@ -16,8 +16,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class TransactionController : ControllerBase
     {
-        private const string formatDateTime = "yyyy-MM-dd HH:mm:ss.ms";
-
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
 
@@ -37,13 +35,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             jWTService = new JWTService(appSettings);
 
         }
-
-        /// <summary>
-        /// Get transaction history by range date and subscriber
-        /// </summary>
-        /// <param name="subscriberName"></param>
-        /// <param name="fromDate"></param>
-        /// <returns></returns>
+        
         [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
         public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, long trackingNumber)
         {
@@ -97,13 +89,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 });
             }
         }
-
-        /// <summary>
-        /// Get association list by range date and subscriber
-        /// </summary>
-        /// <param name="subscriberName"></param>
-        /// <param name="fromDate"></param>
-        /// <returns></returns>
+        
         [HttpGet("GetAssociationByAccount/{subscriberName}/{account}")]
         public ActionResult<AssociationList> GetAssociationByAccount(string subscriberName, string account)
         {
@@ -148,9 +134,9 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         [HttpGet("generatetoken/audience")]
         [AllowAnonymous]
-        public string GenerateToken(string audience, string issue)
+        public string GenerateToken(string audience)
         {
-            return jWTService.GenerateJWT(issue, audience, DateTime.UtcNow.AddYears(10));
+            return jWTService.GenerateJWT(DateTime.UtcNow.AddYears(10), audience);
         }
     }
 }
