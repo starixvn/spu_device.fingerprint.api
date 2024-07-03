@@ -1,4 +1,4 @@
-var fpNewCookie = (function (exports) {
+var gfpCandy = (function (exports) {
     'use strict';
 
     var cookieKey = 'gfp';
@@ -286,10 +286,12 @@ var fpNewCookie = (function (exports) {
             set(key, value);
     }
 
-    return {
-        getStorage: getStorage,
-        getStorages: getStorages,
-        setStorage: setStorage
-    };
+    exports.getStorage = getStorage;
+    exports.getStorages = getStorages;
+    exports.setStorage = setStorage;
+
+    Object.defineProperty(exports, '__esModule', { value: true });
+
+    return exports;
 
 })({});
