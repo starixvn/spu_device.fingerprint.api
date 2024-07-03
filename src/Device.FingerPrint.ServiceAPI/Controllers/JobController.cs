@@ -1,13 +1,9 @@
 ﻿namespace Device.FingerPrint.ServiceAPI.Controllers
 {
-    using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.ServiceAPI.Services;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc;
-    using System;
-    using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -128,23 +124,6 @@
         public void TestNotificationTelegram([FromForm] string message)
         {
             monitorJobServices.TestNotificationTelegram(message);
-        }
-
-        [HttpPost("pushLogTrailEvent")]
-        public async Task PushLogTrailEventAsync([FromBody] LogEventModel[] body)
-        {
-            try
-            {
-                if (body.Length > 0)
-                {
-                    var logEvents = body.Select(x => JsonSerializer.Deserialize<LogEventInfo>(x.RenderedMessage));
-                    await massTransitProducer.SendBatchAsync(logEvents, appSettings.GetValue<string>("RabbitMQ:LogTrail:QueueName"));
-                }
-            }
-            catch (Exception ex)
-            {
-                LogService.Error("PushLogTrailEventAsync\n", ex);
-            }
         }
 
         [HttpGet("hc")]

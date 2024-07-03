@@ -22,12 +22,6 @@ namespace Device.FingerPrint.TransactionAPI
 
         string FPJSPortialAPI { get; }
 
-        bool LogTrailEnable { get; }
-
-        string LogTrailBaseUrl { get; }
-
-        string LogTrailSystemName { get; }
-
         string JWTPassword { get; }
 
         bool JWTEnable { get; }
@@ -53,12 +47,6 @@ namespace Device.FingerPrint.TransactionAPI
 
         private readonly string fPJSPortialAPI;
 
-        private readonly bool logTrailEnable;
-
-        private readonly string logTrailBaseUrl;
-
-        private readonly string logTrailSystemName;
-
         private readonly string jwtPassword;
 
         private readonly bool jwtEnable;
@@ -83,12 +71,6 @@ namespace Device.FingerPrint.TransactionAPI
 
             fPJSPortialAPI = GetValue<string>("FPJS-Portial-API");
 
-            logTrailEnable = GetValue<bool>("LogTrail:Enable");
-
-            logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl");
-
-            logTrailSystemName = GetValue<string>("LogTrail:SystemName");
-
             jwtPassword = GetValue<string>("JWT:Password");
 
             jwtEnable = GetValue<bool>("JWT:Enable");
@@ -109,12 +91,6 @@ namespace Device.FingerPrint.TransactionAPI
         public string GetSubscriberInfo => getSubscriberInfo;
 
         public string FPJSPortialAPI => fPJSPortialAPI;
-
-        public bool LogTrailEnable => logTrailEnable;
-
-        public string LogTrailBaseUrl => logTrailBaseUrl;
-
-        public string LogTrailSystemName => logTrailSystemName;
 
         public string JWTPassword => jwtPassword;
 

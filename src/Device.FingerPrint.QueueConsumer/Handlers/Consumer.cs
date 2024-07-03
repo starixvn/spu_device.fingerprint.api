@@ -2,14 +2,12 @@
 {
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Encoders;
-    using Device.FingerPrint.Core.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.Database;
-    using Fanex.LogTrail.Service;
     using MassTransit;
     using System;
     using System.Collections.Generic;
@@ -23,11 +21,6 @@
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly ILogEvent logEvent;
-
-        private const string defaultDestination = "DCS_RawTrans";
-        private const string defaultSource = "RabbitMQ";
-        private const string defaultMethod = "Consumer";
 
         private const string hashKeyEverCookie = "EverCookie";
 
@@ -36,8 +29,7 @@
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
-                ILogger logger,
-                ILogEvent logEvent
+                ILogger logger
         )
         {
             this.rawTransactionService = rawTransactionService;
@@ -45,7 +37,6 @@
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.logEvent = logEvent; ;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -84,7 +75,6 @@
         {
             var tasks = new List<Task>
             {
-                InsertLogTrail(transactionModels),
                 rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub)
             };
 
@@ -114,34 +104,6 @@
             catch (Exception ex)
             {
                 LogError(ex);
-            }
-        }
-
-        private async Task InsertLogTrail(IEnumerable<RawTransactionModel> transactions)
-        {
-            if (appSettings.IsEnableLogTrail)
-            {
-                try
-                {
-                    var logEvents = transactions.Select(x => new LogEventInfo
-                    {
-                        EventDate = DateTime.Now.Date,
-                        SubscriberID = x.SubscriberId,
-                        SystemName = appSettings.SystemName,
-                        Source = defaultSource,
-                        Destination = defaultDestination,
-                        Method = defaultMethod
-                    });
-
-                    await Task.WhenAll(logEvents.Select(async log =>
-                    {
-                        await logEvent.WriteEventInfoAsync(log);
-                    }));
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex);
-                }
             }
         }
 

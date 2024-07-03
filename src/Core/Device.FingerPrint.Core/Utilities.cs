@@ -1,17 +1,16 @@
-﻿using System;
+﻿using Device.FingerPrint.Core.Encoders;
+using Device.FingerPrint.Model;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Numerics;
 using System.Text;
-using System.Xml.Serialization;
-using System.Xml;
-using Device.FingerPrint.Model;
 using System.Text.RegularExpressions;
-using Device.FingerPrint.Core.Encoders;
-using Fanex.Logging;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Device.FingerPrint.Core
 {

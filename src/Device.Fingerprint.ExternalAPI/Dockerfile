@@ -10,8 +10,6 @@ COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
 
-COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
-
 
 COPY ["./src/Device.Fingerprint.ExternalAPI/Device.Fingerprint.ExternalAPI.csproj", "Device.Fingerprint.ExternalAPI/"]
 

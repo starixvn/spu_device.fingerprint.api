@@ -2,31 +2,28 @@
 
 namespace Device.FingerPrint.TransactionAPI
 {
+    using Device.FingerPrint.Core.Middleware;
+    using Device.FingerPrint.Core.Services;
+    using Device.FingerPrint.Queue;
+    using Device.FingerPrint.Redis;
     using Device.FingerPrint.TransactionAPI.Services;
-    using Fanex.Logging.Sentry;
     using Fanex.Logging;
+    using Fanex.Logging.Sentry;
     using MassTransit;
+    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+    using Microsoft.OpenApi.Models;
+    using ONEbook.UM.AspNetCore;
     using ONEbook.UM.Configurations;
     using ONEbook.UM.Helpers;
     using ONEbook.UM.Services;
+    using ONEbook.UM.Transport;
+    using Prometheus;
     using Sentry;
+    using StackExchange.Redis.Extensions.Core;
     using StackExchange.Redis.Extensions.Core.Abstractions;
     using StackExchange.Redis.Extensions.Core.Configuration;
     using StackExchange.Redis.Extensions.Core.Implementations;
-    using StackExchange.Redis.Extensions.Core;
     using StackExchange.Redis.Extensions.MsgPack;
-    using Fanex.LogTrail.Service;
-    using Device.FingerPrint.Queue;
-    using ONEbook.UM.Transport;
-    using Device.FingerPrint.Redis;
-    using ONEbook.UM.AspNetCore;
-    using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-    using Device.FingerPrint.Core.Middleware;
-    using Microsoft.OpenApi.Models;
-    using Prometheus;
-    using System.Net.Http.Headers;
-    using System.Text;
-    using Device.FingerPrint.Core.Services;
 
     public class Startup
     {
@@ -44,12 +41,6 @@ namespace Device.FingerPrint.TransactionAPI
             var gatewaySetting = new GatewaySetting(Configuration);
             services.AddSingleton<IGatewaySetting>(gatewaySetting);
 
-            services.AddSingleton<ILogEvent>(serviceProvider =>
-            {
-                var logEvent = new LogEvent(appSettings.LogTrailBaseUrl);
-                return logEvent;
-            });
-
             RegisterService(services);
             RegisterRedis(services);
 
@@ -59,8 +50,9 @@ namespace Device.FingerPrint.TransactionAPI
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { 
-                    Title = "Transaction API", 
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "Transaction API",
                     Version = "v1",
                     Description = "This is transaction API",
                     Contact = new OpenApiContact()
@@ -130,7 +122,7 @@ namespace Device.FingerPrint.TransactionAPI
             app.UseSwagger();
 
             app.UseSwaggerUI(c =>
-            {                
+            {
                 c.SwaggerEndpoint("v1/swagger.json", "Transaction API V1");
             });
 
@@ -164,7 +156,7 @@ namespace Device.FingerPrint.TransactionAPI
             services.AddSingleton<IRedisClient, RedisClient>();
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
-            services.AddSingleton<IRedisService, RedisService>(); 
+            services.AddSingleton<IRedisService, RedisService>();
         }
     }
 }

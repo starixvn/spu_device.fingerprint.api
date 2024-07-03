@@ -34,12 +34,6 @@ namespace Device.FingerPrint.Core
 
         string JWTAudience { get; }
 
-        string LogTrailBaseUrl { get; }
-        
-        string SystemName {get; }
-
-        bool IsEnableLogTrail { get; }
-
         bool IsExtraSub { get; }
 
         int MaxMonthsGetAssociationByDevice { get; }
@@ -81,10 +75,6 @@ namespace Device.FingerPrint.Core
 
         private readonly string jWT;
 
-        private readonly string logTrailBaseUrl;
-        private readonly string systemName;
-        private readonly bool isEnableLogTrail;
-
         private readonly bool isExtraSub;
         
         private readonly int maxMonthsGetAssociationByDevice;
@@ -125,12 +115,6 @@ namespace Device.FingerPrint.Core
 
             jWT = GetValue<string>("AppConfig:JWT") ?? string.Empty;
 
-            logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
-
-            systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
-
-            isEnableLogTrail = !string.IsNullOrEmpty(GetValue<string>("LogTrail:IsEnable")) && Convert.ToBoolean(GetValue<string>("LogTrail:IsEnable"));
-
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
@@ -163,12 +147,6 @@ namespace Device.FingerPrint.Core
         public string JWTPassword => jWTPassword;
 
         public string JWT => jWT;
-
-        public string LogTrailBaseUrl => logTrailBaseUrl;
-
-        public string SystemName => systemName;
-
-        public bool IsEnableLogTrail => isEnableLogTrail;
 
         public bool IsExtraSub => isExtraSub;
 

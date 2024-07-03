@@ -13,7 +13,6 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
-    using Fanex.LogTrail.Service;
     using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -62,12 +61,6 @@ namespace Device.FingerPrint.QueueConsumer
                             Dsn = new Dsn(appSettings.SentryDsn)
                         })
                });
-
-            services.AddSingleton<ILogEvent>(serviceProvider =>
-            {
-                var logEvent = new LogEvent(appSettings.LogTrailBaseUrl);
-                return logEvent;
-            });
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
