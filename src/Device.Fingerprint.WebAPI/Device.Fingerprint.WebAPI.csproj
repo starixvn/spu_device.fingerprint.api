@@ -83,11 +83,9 @@
 
   <ItemGroup>
     <PackageReference Include="DeviceDetector.NET" Version="6.1.4" />
-    <PackageReference Include="Fanex.Data.MySql" Version="4.2.2" />
     <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.1" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="prometheus-net" Version="8.2.1" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
@@ -100,8 +98,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
-    <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
-    <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>
 
   <ItemGroup>

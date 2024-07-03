@@ -1,11 +1,8 @@
 namespace Device.Fingerprint.WebAPI
 {
     using Device.Fingerprint.WebAPI.Middleware;
-    using Device.Fingerprint.WebAPI.Services;
     using Device.FingerPrint.Core;
     using Device.FingerPrint.Core.Services;
-    using Fanex.Data;
-    using Fanex.Data.MySql;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.AspNetCore;
@@ -39,7 +36,6 @@ namespace Device.Fingerprint.WebAPI
         public void ConfigureServices(IServiceCollection services)
         {
             var appSettings = new AppSettings(this.Configuration);
-            var JWTService = new JWTService(appSettings);
 
             var gatewaySetting = new GatewaySetting(Configuration);
             services.AddSingleton<IGatewaySetting>(gatewaySetting);
@@ -78,33 +74,10 @@ namespace Device.Fingerprint.WebAPI
             #region Swagger Configuration
             services.AddSwaggerGen(swagger =>
             {
-                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });               
+                swagger.SwaggerDoc("v1", new OpenApiInfo { Title = "Device.Fingerprint.WebAPI", Version = "v1" });
 
             });
             #endregion
-
-
-            #region Authentication
-            //services.AddAuthentication(option =>
-            //{
-            //    option.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            //    option.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-            //}).AddJwtBearer(options =>
-            //{
-            //    options.TokenValidationParameters = new TokenValidationParameters
-            //    {
-            //        ValidateIssuer = false,
-            //        ValidateAudience = false,
-            //        ValidateLifetime = false,
-            //        ValidateIssuerSigningKey = false,
-            //        IssuerSigningKey = new SymmetricSecurityKey(JWTService.keyJWT)
-            //    };
-            //});
-            #endregion
-
-            services.RegisterService();
-            FanexDataConfig(appSettings);
 
             LogManager
            .SetDefaultLogCategory("Device.Fingerprint.WebAPI")
@@ -138,7 +111,7 @@ namespace Device.Fingerprint.WebAPI
 
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1");                
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1");
             });
 
             app.UseStaticFiles();
@@ -176,33 +149,12 @@ namespace Device.Fingerprint.WebAPI
                 await next();
             });
 
-            app.UseAuthorization();
-
             app.UseMiddleware<ExceptionMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-            });            
+            });
         }
-
-        private void FanexDataConfig(IAppSettings appSettings)
-        {
-            var connections = Configuration
-                                  .GetSection("AppConfig:Connections")
-                                  .GetChildren()
-                                  .AsEnumerable()
-                                  .ToDictionary(
-                                           x => x.GetValue<string>("Name"),
-                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-                                   );
-
-            DbSettingProviderManager
-              .StartNewSession()
-              .Use(connections)
-              .WithMySql()
-              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-              .Run();
-        }        
     }
 }
