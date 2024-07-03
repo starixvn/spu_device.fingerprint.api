@@ -266,10 +266,9 @@ var fpNewCookie = (function (exports) {
                 });
             });
             return waitAllWithTimeout(promises).then(function (cookies) {
-                // const joinedCookies = cookies.filter(cookie => cookie !== undefined).join(',');
                 var joinedCookies = cookies
-                    .filter(function (cookie) { return cookie !== undefined; }) // Lọc các giá trị undefined
-                    .filter(function (cookie, index, self) { return self.indexOf(cookie) === index; }) // Loại bỏ các giá trị trùng lặp
+                    .filter(function (cookie) { return cookie !== undefined; })
+                    .filter(function (cookie, index, self) { return self.indexOf(cookie) === index; })
                     .join(',');
                 return Promise.resolve(joinedCookies);
             });
@@ -286,29 +285,11 @@ var fpNewCookie = (function (exports) {
         if (key && value)
             set(key, value);
     }
-    function getCookie(key) {
-        try {
-            var cookie_2 = null;
-            var cookieArr = document.cookie.split(';');
-            for (var i = 0; i < cookieArr.length; i++) {
-                var cookiePair = cookieArr[i].split('=');
-                if (key == cookiePair[0].trim()) {
-                    cookie_2 = decodeURIComponent(cookiePair[1]);
-                }
-            }
-            return cookie_2;
-        }
-        catch (exception) {
-        }
-    }
 
-    exports.getCookie = getCookie;
-    exports.getStorage = getStorage;
-    exports.getStorages = getStorages;
-    exports.setStorage = setStorage;
-
-    Object.defineProperty(exports, '__esModule', { value: true });
-
-    return exports;
+    return {
+        getStorage: getStorage,
+        getStorages: getStorages,
+        setStorage: setStorage
+    };
 
 })({});
