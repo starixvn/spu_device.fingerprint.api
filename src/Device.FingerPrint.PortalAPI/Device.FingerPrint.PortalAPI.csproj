@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="5.0.0" />
+    <PackageReference Include="Fanex.Data.MySql" Version="4.2.2" />
     <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.0" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
@@ -23,7 +24,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
-    <ProjectReference Include="..\Device.FingerPrint.Queue\Device.FingerPrint.Queue.csproj" />
     <ProjectReference Include="..\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
     <ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
   </ItemGroup>

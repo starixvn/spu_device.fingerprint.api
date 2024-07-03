@@ -1,7 +1,6 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Controllers
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
@@ -21,57 +20,22 @@
     [ApiController]
     public class TransactionController : ControllerBase
     {
-        private readonly IRedisService redisService;
         private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IAppSettings appSettings;
-        private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
         private const string originService = "PortalAPI";
 
         public TransactionController(
             IAppSettings appSettings,
-            IRedisService redisService,
             IRedisMultiplexService redisMultiplexService,
             IClientTransactionService clientTransactionService)
         {
-            this.redisService = redisService;
             this.redisMultiplexService = redisMultiplexService;
             this.clientTransactionService = clientTransactionService;
             this.appSettings = appSettings;
         }
 
-        [HttpPost("h/d")]
-        [HttpPost("hd")]
-        public void Header([FromBody] PortalParameter data)
-        {
-            if (data != null)
-            {
-                var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
-
-                if (sessionKey != null && sessionKey.RedisDbIndex > -1)
-                {
-                    AddHeaderToRedisWithDbIndex(sessionKey.RedisDbIndex, sessionKey.SessionKey);
-                }
-            }
-        }
-
-        [HttpPost("c/e")]
-        [HttpPost("ce")]
-        public void Cookie([FromBody] PortalParameter data)
-        {
-            if (data != null)
-            {
-                var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
-
-                if (sessionKey != null && sessionKey.RedisDbIndex > -1)
-                {
-                    redisMultiplexService.HashSetWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), data.Data, appSettings.RedisExpired);
-                }
-            }
-        }
-
         [HttpPost("f/p")]
-        [HttpPost("fp")]
         public void FingerPrint([FromBody] PortalParameter data)
         {
             if (data != null)
@@ -116,7 +80,6 @@
         }
 
         [HttpPost("c/l/e")]
-        [HttpPost("cle")]
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
             logsData.UserAgent = Request.Headers["User-Agent"];
@@ -124,19 +87,6 @@
             logsData.FakeIP = GetFakeIp();
 
             clientTransactionService.InsertClientTransactionException(logsData);
-        }
-
-        [HttpGet("etg/{subscriberId}/{sessionKey}/{cookie}")]
-        public void Etag(int subscriberId, string sessionKey, string cookie)
-        {
-            if (HttpContext.Request.Headers.Keys.Contains("If-None-Match") && HttpContext.Request.Headers["If-None-Match"].ToString() == cookie)
-            {
-                HttpContext.Response.StatusCode = 304;
-            }
-
-            HttpContext.Response.Headers.Add("ETag", new[] { cookie });
-
-            redisService.HashSetAndExpiryAsync(sessionKey, RedisString.GetRedisKeyName(RedisKey.Cookie), cookie, DateTimeOffset.UtcNow.AddSeconds(appSettings.RedisExpired));
         }
 
         [HttpGet("whoami")]
@@ -171,15 +121,6 @@
         {
             LogService.Info("I'm good.");
             return "I'm good.";
-        }
-
-        private void AddHeaderToRedisWithDbIndex(int redisDatabaseIndex, string sessionKey)
-        {
-            var headerModel = GetHeaderValue();
-            if (headerModel != null)
-            {
-                redisMultiplexService.HashSetWithDbIndexAsync(originService, redisDatabaseIndex, sessionKey, RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel), appSettings.RedisExpired);
-            }
         }
 
         private HeaderModel GetHeaderValue()

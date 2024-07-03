@@ -6,8 +6,6 @@ COPY ["./src/Device.FingerPrint", "Device.FingerPrint/"]
 
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
-COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
-
 COPY ["./src/Device.FingerPrint.Model", "Device.FingerPrint.Model/"]
 
 COPY ["./src/Device.FingerPrint.Redis", "Device.FingerPrint.Redis/"]
