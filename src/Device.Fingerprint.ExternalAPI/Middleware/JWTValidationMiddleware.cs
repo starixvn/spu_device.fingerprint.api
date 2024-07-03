@@ -43,13 +43,19 @@ namespace Device.Fingerprint.ExternalAPI.Middleware
         {
             if (!string.IsNullOrWhiteSpace(token))
             {
-                
-
                 var jwtSetting = appSettings.Configuration.GetSection("AppConfig:JWT:SubscriberConfig").Get<IEnumerable<SubscrbierTokenModel>>();
                 var subscriber = context.Request.Path.Value.Split('/')[3];
                 foreach (var item in jwtSetting)
                 {
-                    if (item.Token.ToLower().Equals(token.ToLower()) && item.Subscribers.Contains(subscriber, StringComparison.CurrentCultureIgnoreCase)) return true;
+                    if (item.Token.ToLower().Equals(token.ToLower()))
+                    {
+                        var subscribers = item.Subscribers.Split(',');
+
+                        if (subscribers.Length > 0 && subscribers.Any(x => x.Trim().ToLower().Equals(subscriber.ToLower())))
+                        {
+                            return true;
+                        }
+                    }
                 }
             }
 

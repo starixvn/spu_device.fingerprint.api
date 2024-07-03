@@ -35,9 +35,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem);
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem);
+        (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
 
     }
 
@@ -186,43 +186,28 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository.Execute(criteria);
         }
 
-        public IEnumerable<LatestTransactionEntity> GetLatestTransaction(int subscriberId, int length, int skip, int take, out int totalItem)
+
+        public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit)
         {
-            var criteria = new GetLatestTransactionBySubscriberCriteria
+            var criteria = new GetTransactionBySubscriberCriteria
             {
-               SubscriberId =   subscriberId,
-               Length   = length,
-               Skip = skip,
-               Take = take,
-               TotalItem = 0
+                TransId = transId,
+                Limit = limit,
+                SubscriberId = subscriberId,
             };
 
-            var result = repository.Fetch<LatestTransactionEntity>(criteria);
-
-            totalItem = criteria.TotalItem;
-
-            return result;
+            return repository.Fetch<TransactionHistoryEntity>(criteria);
         }
 
-        public IEnumerable<TransactionHistoryEntity> GetTransactionHistory(int subscriberId, DateTime fromDate, DateTime toDate, string username, bool IsPartial, int skip, int take, out int totalItem)
+        public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
         {
-            var criteria = new GetTransactionHistoryCriteria
+            var criteria = new GetAssociationBySubscriberCriteria
             {
-                FromDate = fromDate,
-                ToDate = toDate,
-                IsPartial = IsPartial,
                 SubscriberId = subscriberId,
-                UserName = username,
-                Skip = skip,
-                Take = take,
-                TotalItem = 0
-            };            
+                Account = account
+            };
 
-            var result = repository.Fetch<TransactionHistoryEntity>(criteria);
-
-            totalItem = criteria.TotalItem;
-
-            return result;
+            return repository.FetchMultiple<AssociationDeviceEntity, AssociationAccountEntity>(criteria);
         }
     }
 }

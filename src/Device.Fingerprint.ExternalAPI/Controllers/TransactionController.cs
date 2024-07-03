@@ -16,13 +16,12 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class TransactionController : ControllerBase
     {
-
         private readonly IWebHostEnvironment environment;
         private readonly IAppSettings appSettings;
-        
+
         private readonly ISubscriberServices subscriberServices;
         private readonly ITransactionService transactionService;
-        private  JWTService jWTService;
+        private JWTService jWTService;
         public TransactionController(
             IWebHostEnvironment Environment,
             IAppSettings appSettings,
@@ -36,83 +35,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
             jWTService = new JWTService(appSettings);
 
         }
-
-        /// <summary>
-        /// Get latest transaction
-        /// </summary>
-        /// <param name="subscriberName">Subscriber Name</param>
-        /// <param name="length">Top of data</param>
-        /// <param name="take">Take</param>
-        /// <param name="skip">Skip</param>
-        /// <returns></returns>
-        [HttpGet("GetLatestTransaction/{subscriberName}/{length}/{take}/{skip}")]
-        public ActionResult<LatestTransactionList> GetLatestTransaction(string subscriberName, int length, int take, int skip)
-        {
-            var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
-            var totalItem = 0;
-
-            if (subscriber != null)
-            {
-                var trans = transactionService.GetLatestTransaction(subscriber.SubscriberId, length, skip, take, out totalItem);
-
-                var transformedTrans = trans.Select(x => new LatestTransactionModel {
-                    Action = x.Action,
-                    Browser = x.Browser,
-                    Domain = x.UrlDetails,
-                    Device = x.FirstDeviceCode,
-                    IP = x.IP,
-                    OS = x.OS,
-                    RegisterName = x.RegisterName,
-                    RobotTracking = x.RobotTracking,
-                    TransID = x.TransID,    
-                    TransTime = x.TransTime,
-                    UserName = x.UserName
-                });
-
-                return Ok(new LatestTransactionList
-                {
-                    Length = length,
-                    TotalItem = totalItem,
-                    Take = take,
-                    Skip = skip,
-                    Trans = transformedTrans
-                });
-            }
-
-            return Ok(new LatestTransactionList
-            {
-                Length = length,
-                TotalItem = totalItem,
-                Take = take,
-                Skip = skip,
-                Trans = null
-            });
-        }
-
-        /// <summary>
-        /// Get transaction history by subscriber name and login name in 7 days.
-        /// </summary>
-        /// <param name="loginName">User name</param>
-        /// <param name="subscriberName">Subscriber name</param>
-        /// <param name="fromDate">From Date</param>
-        /// <param name="toDate">To Date</param>
-        /// <param name="take">Take</param>
-        /// <param name="skip">Skip</param>
-        /// <returns></returns>
-        [HttpGet("GetTransactionHistory/{subscriberName}/{loginName}/{fromDate}/{toDate}/{take}/{skip}")]
-        public ActionResult<TransactionHistoryList> GetTransactionHistory(string loginName, string subscriberName, DateTime fromDate, DateTime toDate, int take, int skip)
+        
+        [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
+        public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, long trackingNumber)
         {
 
-            var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
-            var totalItem = 0;
-
-            if (subscriber != null)
+            try
             {
-                var days = toDate.Subtract(fromDate).Days;
+                var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
 
-                if(days <= 7)
+                if (subscriber != null)
                 {
-                    var trans = transactionService.GetTransactionHistory(subscriber.SubscriberId, fromDate, toDate, loginName, false, skip, take, out totalItem);
+                    var trans = transactionService.GetTransactionHistoryByTransIdSubscriber(subscriber.SubscriberId, trackingNumber, 1000);
 
                     var transformedTrans = trans.Select(x => new TransactionHistoryModel
                     {
@@ -121,41 +55,88 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         Domain = x.UrlDetails,
                         Device = x.FirstDeviceCode,
                         IP = x.IP,
-                        OS = x.OS,
-                        RegisterName = x.RegisterName,
+                        DeviceType = x.OS,
                         RobotTracking = x.RobotTracking,
-                        TransID = x.TransID,
-                        TransTime = x.TransTime,
-                        UserName = x.UserName,
-                        CTSCustID = x.CTSCustID,
-                        SubscriberID = x.SubscriberID,
-                        ActionResult = x.ActionResult
+                        TrackingNumber = x.TransID,
+                        DateTime = x.TransTime,
+                        Account = x.UserName
                     });
 
                     return Ok(new TransactionHistoryList
                     {
-                        TotalItem = totalItem,
-                        Take = take,
-                        Skip = skip,
-                        Trans = transformedTrans
+                        Trans = transformedTrans,
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty
                     });
-                }                
+                }
+                else
+                {
+                    return Ok(new TransactionHistoryList
+                    {
+                        Trans = null,
+                        StatusCode = System.Net.HttpStatusCode.NotFound,
+                        ErrorMessage = "Subscriber cannot be null"
+                    });
+                }
             }
-
-            return Ok(new TransactionHistoryList
-            {                
-                TotalItem = totalItem,
-                Take = take,
-                Skip = skip,
-                Trans = null
-            });
+            catch (Exception ex)
+            {
+                return Ok(new TransactionHistoryList
+                {
+                    Trans = null,
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
         }
+        
+        [HttpGet("GetAssociationByAccount/{subscriberName}/{account}")]
+        public ActionResult<AssociationList> GetAssociationByAccount(string subscriberName, string account)
+        {
+            try
+            {
+                var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
+
+                if (subscriber != null)
+                {
+                    var associationByAccountSubscriber = transactionService.GetAssociationByAccountSubscriber(subscriber.SubscriberId, account);
+
+                    return Ok(new AssociationList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty,
+                        AssociatedDevices = associationByAccountSubscriber.Item1.Count(),
+                        AssociatedDeviceDetails = associationByAccountSubscriber.Item1.Select(x => new AssociationDeviceModel { Device = x.Device, FirstSeenDate = x.FirstSeenDate }),
+                        AssociatedAccounts = associationByAccountSubscriber.Item2.Count(),
+                        AssociatedAccountDetails = associationByAccountSubscriber.Item2.Select(x => new AssociationAccountModel { Account = x.Account, FirstAssociationDate = x.FirstAssociationDate }),
+
+                    });
+                }
+                else
+                {
+                    return Ok(new AssociationList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.NotFound,
+                        ErrorMessage = "Subscriber cannot be null"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(new AssociationList
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
 
         [HttpGet("generatetoken/audience")]
         [AllowAnonymous]
-        public string GenerateToken(string audience, string issue)
+        public string GenerateToken(string audience)
         {
-            return jWTService.GenerateJWT(issue, audience, DateTime.UtcNow.AddYears(10));
+            return jWTService.GenerateJWT(DateTime.UtcNow.AddYears(10), audience);
         }
     }
 }

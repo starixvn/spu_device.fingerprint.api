@@ -6,15 +6,15 @@ namespace Device.FingerPrint.Features.Transaction.Model
 {
     public class TransactionHistoryEntity
     {
+        public long TransID { get; set; }
+
         public DateTime TransTime { get; set; }
 
-        public long TransID { get; set; }               
+        public int SubscriberID { get; set; }
+
+        public string UserName { get; set; }
 
         public string FirstDeviceCode { get; set; }
-
-        public string IP { get; set; }                
-
-        public string RobotTracking { get; set; }
 
         public string Action { get; set; }
 
@@ -26,12 +26,12 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string UrlDetails { get; set; }
 
-        public string UserName { get; set; }
+        public string IP { get; set; }                
 
-        public string RegisterName { get; set; } 
+        public string RobotTracking { get; set; }        
 
-        public int SubscriberID { get; set; }
+        public long RawFingerPrintID { get; set; }
 
-        public long CTSCustID { get; set; }
+        public long RawUserAgentID { get; set; }
     }
 }
