@@ -16,6 +16,7 @@
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
+    using YamlDotNet.Core.Tokens;
 
     [Route("api")]
     [ApiController]
@@ -61,9 +62,8 @@
         public async Task<IActionResult> GetEverCookie()
         {
             var ecValues = Request.Headers["Res-Ec-X"].ToString();
-            var etagValue = GetEtagValue();
 
-            var everCookieValues = new List<string> { etagValue }.Concat(ecValues.Split(','));
+            var everCookieValues = new List<string> { GetEtagValue() }.Concat(ecValues.Split(','));
 
             everCookieValues = everCookieValues
                 .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
@@ -74,15 +74,23 @@
 
             var redisEcValue = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
 
+            var result = RemoveEverCookiePrefix(redisEcValue);
+
             if (string.IsNullOrEmpty(redisEcValue))
             {
                 var firstEcValue = everCookieValues.FirstOrDefault();
-                var result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverCookiePrefix(firstEcValue);
-
-                return Ok(result);
+                result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverCookiePrefix(firstEcValue);
             }
 
-            return Ok(RemoveEverCookiePrefix(redisEcValue));
+            UpdateResponseHeaders(result);
+
+            return Ok(result);
+        }
+
+        private void UpdateResponseHeaders(string etag)
+        {
+            Response.Headers["Cache-Control"] = "max-age=5, private";
+            Response.Headers["ETag"] = etag;
         }
 
         [HttpPost("c/l/e")]
