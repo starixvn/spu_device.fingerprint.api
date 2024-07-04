@@ -76,6 +76,11 @@
 
             var result = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
 
+            if (string.IsNullOrEmpty(result))
+            {
+                return Ok(sessionKeyValue);
+            }
+
             return Ok(RemoveEverCookiePrefix(result));
         }
 
