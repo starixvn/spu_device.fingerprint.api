@@ -40,6 +40,8 @@ namespace Device.FingerPrint.Core
         
         long EverCookieExpireSecond { get; }
 
+        long ApiEverCookieCacheMaxAge { get; }
+
         IConfiguration Configuration { get; }
 
         T GetValue<T>(string key);
@@ -80,6 +82,8 @@ namespace Device.FingerPrint.Core
         private readonly int maxMonthsGetAssociationByDevice;
         
         private readonly long everCookieExpireSecond;
+        
+        private readonly long apiEverCookieCacheMaxAge;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -120,6 +124,8 @@ namespace Device.FingerPrint.Core
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
             
             everCookieExpireSecond = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("Redis:EverCookieExpireSecond")) ? "3600" : GetValue<string>("Redis:EverCookieExpireSecond"));
+
+            apiEverCookieCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverCookieCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverCookieCacheMaxAge"));
         }
 
         public string ApiUrl => apiUrl;
@@ -153,6 +159,8 @@ namespace Device.FingerPrint.Core
         public int MaxMonthsGetAssociationByDevice => maxMonthsGetAssociationByDevice;
         
         public long EverCookieExpireSecond => everCookieExpireSecond;
+
+        public long ApiEverCookieCacheMaxAge => apiEverCookieCacheMaxAge;
 
         public T GetValue<T>(string key)
         {

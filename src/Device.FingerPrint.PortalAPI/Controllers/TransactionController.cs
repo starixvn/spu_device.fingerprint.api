@@ -89,7 +89,8 @@
 
         private void UpdateResponseHeaders(string etag)
         {
-            Response.Headers["Cache-Control"] = "max-age=5, private";
+            var apiEverCookieCacheMaxAge = appSettings.ApiEverCookieCacheMaxAge;
+            Response.Headers["Cache-Control"] = $"max-age={apiEverCookieCacheMaxAge}, private";
             Response.Headers["ETag"] = etag;
         }
 
