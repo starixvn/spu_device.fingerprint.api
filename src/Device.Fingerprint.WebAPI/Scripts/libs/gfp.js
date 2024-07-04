@@ -1,4 +1,4 @@
-var globalFP = (function (exports) {
+var gfpCode = (function (exports) {
     'use strict';
 
     /******************************************************************************
@@ -3708,7 +3708,7 @@ var globalFP = (function (exports) {
             isTrident: isTrident,
         };
     }
-    function getFP(callback) {
+    function getResult(callback) {
         var _this = this;
         var visitorId;
         var fpPromise = loadSources(sources, {}, [
@@ -3744,7 +3744,7 @@ var globalFP = (function (exports) {
 
     exports.getAudio = getAudio;
     exports.getBrowserSupport = getBrowserSupport;
-    exports.getFP = getFP;
+    exports.getResult = getResult;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 
