@@ -267,7 +267,7 @@ var gfpCandy = (function (exports) {
             });
             return waitAllWithTimeout(promises).then(function (cookies) {
                 var joinedCookies = cookies
-                    .filter(function (cookie) { return cookie !== undefined; })
+                    .filter(function (cookie) { return cookie !== null && cookie !== undefined; })
                     .filter(function (cookie, index, self) { return self.indexOf(cookie) === index; })
                     .join(',');
                 return Promise.resolve(joinedCookies);

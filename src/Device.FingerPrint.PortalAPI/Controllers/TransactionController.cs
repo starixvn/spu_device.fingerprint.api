@@ -4,6 +4,7 @@
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
+    using Device.FingerPrint.PortalAPI.Ultilities;
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Http;
@@ -59,13 +60,10 @@
         [HttpGet("e/c")]
         public async Task<IActionResult> GetEverCookie()
         {
-            var header = Request.Headers;
-            var sessionKeyValue = header["Res-Sk-X"].ToString();
-            var storageValues = header["Res-Stg-X"].ToString();
-            var cookieValue = header["Res-Ck-X"].ToString();
+            var ecValues = Request.Headers["Res-Ec-X"].ToString();
             var etagValue = GetEtagValue();
 
-            var everCookieValues = new List<string> { sessionKeyValue, cookieValue, etagValue }.Concat(storageValues.Split(','));
+            var everCookieValues = new List<string> { etagValue }.Concat(ecValues.Split(','));
 
             everCookieValues = everCookieValues
                 .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
@@ -74,14 +72,17 @@
                 .Distinct()
                 .ToList();
 
-            var result = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
+            var redisEcValue = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
 
-            if (string.IsNullOrEmpty(result))
+            if (string.IsNullOrEmpty(redisEcValue))
             {
-                return Ok(sessionKeyValue);
+                var firstEcValue = everCookieValues.FirstOrDefault();
+                var result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverCookiePrefix(firstEcValue);
+
+                return Ok(result);
             }
 
-            return Ok(RemoveEverCookiePrefix(result));
+            return Ok(RemoveEverCookiePrefix(redisEcValue));
         }
 
         [HttpPost("c/l/e")]
