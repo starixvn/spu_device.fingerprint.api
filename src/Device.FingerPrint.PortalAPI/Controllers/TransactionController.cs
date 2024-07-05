@@ -61,25 +61,34 @@
         [HttpGet("e/c")]
         public async Task<IActionResult> GetEverCookie()
         {
+            var result = string.Empty;
             var ecValues = Request.Headers["Res-Ec-X"].ToString();
 
-            var everCookieValues = new List<string> { GetEtagValue() }.Concat(ecValues.Split(','));
-
-            everCookieValues = everCookieValues
-                .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
-                .Where(parsed => parsed != null)
-                .Select(parsed => "EverCookie:" + parsed.SessionKey)
-                .Distinct()
-                .ToList();
-
-            var redisEcValue = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
-
-            var result = RemoveEverCookiePrefix(redisEcValue);
-
-            if (string.IsNullOrEmpty(redisEcValue))
+            var etagValue = GetEtagValue();
+            if (!string.IsNullOrEmpty(etagValue))
             {
-                var firstEcValue = everCookieValues.FirstOrDefault();
-                result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverCookiePrefix(firstEcValue);
+                result = etagValue;
+            }
+            else
+            {
+                var everCookieValues = new List<string> { GetEtagValue() }.Concat(ecValues.Split(','));
+
+                everCookieValues = everCookieValues
+                    .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
+                    .Where(parsed => parsed != null)
+                    .Select(parsed => "EverCookie:" + parsed.SessionKey)
+                    .Distinct()
+                    .ToList();
+
+                var redisEcValue = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
+
+                result = RemoveEverCookiePrefix(redisEcValue);
+
+                if (string.IsNullOrEmpty(redisEcValue))
+                {
+                    var firstEcValue = everCookieValues.FirstOrDefault();
+                    result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverCookiePrefix(firstEcValue);
+                }
             }
 
             UpdateResponseHeaders(result);

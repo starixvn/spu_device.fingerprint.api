@@ -109,7 +109,7 @@ namespace Device.FingerPrint.Core
 
             redisDatabase = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Database")) ? "0" : GetValue<string>("Redis:Database"));
 
-            redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
+            redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "3600" : GetValue<string>("Redis:Expired"));
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
 
