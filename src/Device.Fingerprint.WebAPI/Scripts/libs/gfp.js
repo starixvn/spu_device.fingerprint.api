@@ -76,7 +76,7 @@ var gfpCode = (function (exports) {
     }
 
     /**
-     * FingerprintJS v1.0.2 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
+     * FingerprintJS v1.0.3 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -87,7 +87,7 @@ var gfpCode = (function (exports) {
      * Copyright 2015-present FingerprintJS, Inc.
      */
 
-    var version = "1.0.2";
+    var version = "1.0.3";
 
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
@@ -96,7 +96,15 @@ var gfpCode = (function (exports) {
      * Allows asynchronous actions and microtasks to happen.
      */
     function releaseEventLoop() {
-        return wait(0);
+        // Don't use setTimeout because Chrome throttles it in some cases causing very long agent execution:
+        // https://stackoverflow.com/a/6032591/1118709
+        // https://github.com/chromium/chromium/commit/0295dd09496330f3a9103ef7e543fa9b6050409b
+        // Reusing a MessageChannel object gives no noticeable benefits
+        return new Promise(function (resolve) {
+            var channel = new MessageChannel();
+            channel.port1.onmessage = function () { return resolve(); };
+            channel.port2.postMessage(null);
+        });
     }
     function requestIdleCallbackIfAvailable(fallbackTimeout, deadlineTimeout) {
         if (deadlineTimeout === void 0) { deadlineTimeout = Infinity; }
@@ -163,10 +171,8 @@ var gfpCode = (function (exports) {
                         now = Date.now();
                         if (!(now >= lastLoopReleaseTime + loopReleaseInterval)) return [3 /*break*/, 3];
                         lastLoopReleaseTime = now;
-                        // Allows asynchronous actions and microtasks to happen
-                        return [4 /*yield*/, wait(0)];
+                        return [4 /*yield*/, releaseEventLoop()];
                     case 2:
-                        // Allows asynchronous actions and microtasks to happen
                         _a.sent();
                         _a.label = 3;
                     case 3:
@@ -645,13 +651,11 @@ var gfpCode = (function (exports) {
      * Warning for package users:
      * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
      */
-    function loadSources(sources, sourceOptions, excludeSources) {
+    function loadSources(sources, sourceOptions, excludeSources, loopReleaseInterval) {
         var includedSources = Object.keys(sources).filter(function (sourceKey) { return excludes(excludeSources, sourceKey); });
         // Using `mapWithBreaks` allows asynchronous sources to complete between synchronous sources
         // and measure the duration correctly
-        var sourceGettersPromise = mapWithBreaks(includedSources, function (sourceKey) {
-            return loadSource(sources[sourceKey], sourceOptions);
-        });
+        var sourceGettersPromise = mapWithBreaks(includedSources, function (sourceKey) { return loadSource(sources[sourceKey], sourceOptions); }, loopReleaseInterval);
         suppressUnhandledRejectionWarning(sourceGettersPromise);
         return function getComponents() {
             return __awaiter(this, void 0, void 0, function () {
@@ -665,7 +669,7 @@ var gfpCode = (function (exports) {
                                     var componentPromise = sourceGetter();
                                     suppressUnhandledRejectionWarning(componentPromise);
                                     return componentPromise;
-                                })];
+                                }, loopReleaseInterval)];
                         case 2:
                             componentPromises = _a.sent();
                             return [4 /*yield*/, Promise.all(componentPromises)
@@ -913,20 +917,186 @@ var gfpCode = (function (exports) {
     function isAndroid() {
         var isItChromium = isChromium();
         var isItGecko = isGecko();
-        // Only 2 browser engines are presented on Android.
-        // Actually, there is also Android 4.1 browser, but it's not worth detecting it at the moment.
-        if (!isItChromium && !isItGecko) {
-            return false;
-        }
         var w = window;
+        var n = navigator;
+        var c = 'connection';
         // Chrome removes all words "Android" from `navigator` when desktop version is requested
         // Firefox keeps "Android" in `navigator.appVersion` when desktop version is requested
-        return (countTruthy([
-            'onorientationchange' in w,
-            'orientation' in w,
-            isItChromium && !('SharedWorker' in w),
-            isItGecko && /android/i.test(navigator.appVersion),
-        ]) >= 2);
+        if (isItChromium) {
+            return (countTruthy([
+                !('SharedWorker' in w),
+                // `typechange` is deprecated, but it's still present on Android (tested on Chrome Mobile 117)
+                // Removal proposal https://bugs.chromium.org/p/chromium/issues/detail?id=699892
+                // Note: this expression returns true on ChromeOS, so additional detectors are required to avoid false-positives
+                n[c] && 'ontypechange' in n[c],
+                !('sinkId' in new window.Audio()),
+            ]) >= 2);
+        }
+        else if (isItGecko) {
+            return countTruthy(['onorientationchange' in w, 'orientation' in w, /android/i.test(navigator.appVersion)]) >= 2;
+        }
+        else {
+            // Only 2 browser engines are presented on Android.
+            // Actually, there is also Android 4.1 browser, but it's not worth detecting it at the moment.
+            return false;
+        }
+    }
+
+    /**
+     * A deep description: https://fingerprint.com/blog/audio-fingerprinting/
+     * Inspired by and based on https://github.com/cozylife/audio-fingerprint
+     *
+     * A version of the entropy source with stabilization to make it suitable for static fingerprinting.
+     * Audio signal is noised in private mode of Safari 17, so audio fingerprinting is skipped in Safari 17.
+     */
+    function getAudioFingerprint() {
+        if (doesBrowserPerformAntifingerprinting$1()) {
+            return -4 /* SpecialFingerprint.KnownForAntifingerprinting */;
+        }
+        return getUnstableAudioFingerprint();
+    }
+    /**
+     * A version of the entropy source without stabilization.
+     *
+     * Warning for package users:
+     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
+     */
+    function getUnstableAudioFingerprint() {
+        var w = window;
+        var AudioContext = w.OfflineAudioContext || w.webkitOfflineAudioContext;
+        if (!AudioContext) {
+            return -2 /* SpecialFingerprint.NotSupported */;
+        }
+        // In some browsers, audio context always stays suspended unless the context is started in response to a user action
+        // (e.g. a click or a tap). It prevents audio fingerprint from being taken at an arbitrary moment of time.
+        // Such browsers are old and unpopular, so the audio fingerprinting is just skipped in them.
+        // See a similar case explanation at https://stackoverflow.com/questions/46363048/onaudioprocess-not-called-on-ios11#46534088
+        if (doesBrowserSuspendAudioContext()) {
+            return -1 /* SpecialFingerprint.KnownForSuspending */;
+        }
+        var hashFromIndex = 4500;
+        var hashToIndex = 5000;
+        var context = new AudioContext(1, hashToIndex, 44100);
+        var oscillator = context.createOscillator();
+        oscillator.type = 'triangle';
+        oscillator.frequency.value = 10000;
+        var compressor = context.createDynamicsCompressor();
+        compressor.threshold.value = -50;
+        compressor.knee.value = 40;
+        compressor.ratio.value = 12;
+        compressor.attack.value = 0;
+        compressor.release.value = 0.25;
+        oscillator.connect(compressor);
+        compressor.connect(context.destination);
+        oscillator.start(0);
+        var _a = startRenderingAudio(context), renderPromise = _a[0], finishRendering = _a[1];
+        var fingerprintPromise = renderPromise.then(function (buffer) { return getHash(buffer.getChannelData(0).subarray(hashFromIndex)); }, function (error) {
+            if (error.name === "timeout" /* InnerErrorName.Timeout */ || error.name === "suspended" /* InnerErrorName.Suspended */) {
+                return -3 /* SpecialFingerprint.Timeout */;
+            }
+            throw error;
+        });
+        // Suppresses the console error message in case when the fingerprint fails before requested
+        suppressUnhandledRejectionWarning(fingerprintPromise);
+        return function () {
+            finishRendering();
+            return fingerprintPromise;
+        };
+    }
+    /**
+     * Checks if the current browser is known for always suspending audio context
+     */
+    function doesBrowserSuspendAudioContext() {
+        // Mobile Safari 11 and older
+        return isWebKit() && !isDesktopWebKit() && !isWebKit606OrNewer();
+    }
+    /**
+     * Checks if the current browser is known for applying anti-fingerprinting measures in all or some critical modes
+     */
+    function doesBrowserPerformAntifingerprinting$1() {
+        // Safari 17
+        return isWebKit() && isWebKit616OrNewer() && isSafariWebKit();
+    }
+    /**
+     * Starts rendering the audio context.
+     * When the returned function is called, the render process starts finishing.
+     */
+    function startRenderingAudio(context) {
+        var renderTryMaxCount = 3;
+        var renderRetryDelay = 500;
+        var runningMaxAwaitTime = 500;
+        var runningSufficientTime = 5000;
+        var finalize = function () { return undefined; };
+        var resultPromise = new Promise(function (resolve, reject) {
+            var isFinalized = false;
+            var renderTryCount = 0;
+            var startedRunningAt = 0;
+            context.oncomplete = function (event) { return resolve(event.renderedBuffer); };
+            var startRunningTimeout = function () {
+                setTimeout(function () { return reject(makeInnerError("timeout" /* InnerErrorName.Timeout */)); }, Math.min(runningMaxAwaitTime, startedRunningAt + runningSufficientTime - Date.now()));
+            };
+            var tryRender = function () {
+                try {
+                    var renderingPromise = context.startRendering();
+                    // `context.startRendering` has two APIs: Promise and callback, we check that it's really a promise just in case
+                    if (isPromise(renderingPromise)) {
+                        // Suppresses all unhadled rejections in case of scheduled redundant retries after successful rendering
+                        suppressUnhandledRejectionWarning(renderingPromise);
+                    }
+                    switch (context.state) {
+                        case 'running':
+                            startedRunningAt = Date.now();
+                            if (isFinalized) {
+                                startRunningTimeout();
+                            }
+                            break;
+                        // Sometimes the audio context doesn't start after calling `startRendering` (in addition to the cases where
+                        // audio context doesn't start at all). A known case is starting an audio context when the browser tab is in
+                        // background on iPhone. Retries usually help in this case.
+                        case 'suspended':
+                            // The audio context can reject starting until the tab is in foreground. Long fingerprint duration
+                            // in background isn't a problem, therefore the retry attempts don't count in background. It can lead to
+                            // a situation when a fingerprint takes very long time and finishes successfully. FYI, the audio context
+                            // can be suspended when `document.hidden === false` and start running after a retry.
+                            if (!document.hidden) {
+                                renderTryCount++;
+                            }
+                            if (isFinalized && renderTryCount >= renderTryMaxCount) {
+                                reject(makeInnerError("suspended" /* InnerErrorName.Suspended */));
+                            }
+                            else {
+                                setTimeout(tryRender, renderRetryDelay);
+                            }
+                            break;
+                    }
+                }
+                catch (error) {
+                    reject(error);
+                }
+            };
+            tryRender();
+            finalize = function () {
+                if (!isFinalized) {
+                    isFinalized = true;
+                    if (startedRunningAt > 0) {
+                        startRunningTimeout();
+                    }
+                }
+            };
+        });
+        return [resultPromise, finalize];
+    }
+    function getHash(signal) {
+        var hash = 0;
+        for (var i = 0; i < signal.length; ++i) {
+            hash += Math.abs(signal[i]);
+        }
+        return hash;
+    }
+    function makeInnerError(name) {
+        var error = new Error(name);
+        error.name = name;
+        return error;
     }
 
     /**
@@ -1062,275 +1232,6 @@ var gfpCode = (function (exports) {
             }
         }
     }
-    /**
-     * The returned promise resolves when the tab becomes visible (in foreground).
-     * If the tab is already visible, resolves immediately.
-     */
-    function whenDocumentVisible() {
-        return new Promise(function (resolve) {
-            var d = document;
-            var eventName = 'visibilitychange';
-            var handleVisibilityChange = function () {
-                if (!d.hidden) {
-                    d.removeEventListener(eventName, handleVisibilityChange);
-                    resolve();
-                }
-            };
-            d.addEventListener(eventName, handleVisibilityChange);
-            handleVisibilityChange();
-        });
-    }
-
-    var sampleRate = 44100;
-    var cloneCount = 40000;
-    var stabilizationPrecision = 6.2;
-    /**
-     * A version of the entropy source with stabilization to make it suitable for static fingerprinting.
-     * Audio signal is noised in private mode of Safari 17.
-     */
-    function getAudioFingerprint() {
-        return __awaiter(this, void 0, void 0, function () {
-            var finish;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, getUnstableAudioFingerprint()];
-                    case 1:
-                        finish = _a.sent();
-                        return [2 /*return*/, function () {
-                                var rawFingerprint = finish();
-                                return stabilize(rawFingerprint, stabilizationPrecision);
-                            }];
-                }
-            });
-        });
-    }
-    /**
-     * A version of the entropy source without stabilization.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
-    function getUnstableAudioFingerprint() {
-        return __awaiter(this, void 0, void 0, function () {
-            var fingerprintResult, timeoutPromise, fingerprintPromise;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        timeoutPromise = whenDocumentVisible().then(function () { return wait(500); });
-                        fingerprintPromise = getBaseAudioFingerprint().then(function (result) { return (fingerprintResult = [true, result]); }, function (error) { return (fingerprintResult = [false, error]); });
-                        return [4 /*yield*/, Promise.race([timeoutPromise, fingerprintPromise])];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, function () {
-                                if (!fingerprintResult) {
-                                    return -3 /* SpecialFingerprint.Timeout */;
-                                }
-                                if (!fingerprintResult[0]) {
-                                    throw fingerprintResult[1];
-                                }
-                                return fingerprintResult[1];
-                            }];
-                }
-            });
-        });
-    }
-    function getBaseAudioFingerprint() {
-        return __awaiter(this, void 0, void 0, function () {
-            var w, AudioContext, baseSignal, context, sourceNode, clonedSignal, fingerprint;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        w = window;
-                        AudioContext = w.OfflineAudioContext || w.webkitOfflineAudioContext;
-                        if (!AudioContext) {
-                            return [2 /*return*/, -2 /* SpecialFingerprint.NotSupported */];
-                        }
-                        // In some browsers, audio context always stays suspended unless the context is started in response to a user action
-                        // (e.g. a click or a tap). It prevents audio fingerprint from being taken at an arbitrary moment of time.
-                        // Such browsers are old and unpopular, so the audio fingerprinting is just skipped in them.
-                        // See a similar case explanation at https://stackoverflow.com/questions/46363048/onaudioprocess-not-called-on-ios11#46534088
-                        if (doesBrowserSuspendAudioContext()) {
-                            return [2 /*return*/, -1 /* SpecialFingerprint.KnownForSuspending */];
-                        }
-                        return [4 /*yield*/, getBaseSignal(AudioContext)];
-                    case 1:
-                        baseSignal = _a.sent();
-                        if (!baseSignal) {
-                            return [2 /*return*/, -3 /* SpecialFingerprint.Timeout */];
-                        }
-                        context = new AudioContext(1, baseSignal.length - 1 + cloneCount, sampleRate);
-                        sourceNode = context.createBufferSource();
-                        sourceNode.buffer = baseSignal;
-                        sourceNode.loop = true;
-                        sourceNode.loopStart = (baseSignal.length - 1) / sampleRate;
-                        sourceNode.loopEnd = baseSignal.length / sampleRate;
-                        sourceNode.connect(context.destination);
-                        sourceNode.start();
-                        return [4 /*yield*/, renderAudio(context)];
-                    case 2:
-                        clonedSignal = _a.sent();
-                        if (!clonedSignal) {
-                            return [2 /*return*/, -3 /* SpecialFingerprint.Timeout */];
-                        }
-                        fingerprint = extractFingerprint(baseSignal, clonedSignal.getChannelData(0).subarray(baseSignal.length - 1));
-                        return [2 /*return*/, Math.abs(fingerprint)]; // The fingerprint is made positive to avoid confusion with the special fingerprints
-                }
-            });
-        });
-    }
-    /**
-     * Checks if the current browser is known for always suspending audio context.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
-    function doesBrowserSuspendAudioContext() {
-        // Mobile Safari 11 and older
-        return isWebKit() && !isDesktopWebKit() && !isWebKit606OrNewer();
-    }
-    /**
-     * Produces an arbitrary audio signal
-     */
-    function getBaseSignal(AudioContext) {
-        return __awaiter(this, void 0, void 0, function () {
-            var targetSampleIndex, context, oscillator, compressor, filter;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        targetSampleIndex = 3395;
-                        context = new AudioContext(1, targetSampleIndex + 1, sampleRate);
-                        oscillator = context.createOscillator();
-                        oscillator.type = 'square';
-                        oscillator.frequency.value = 1000;
-                        compressor = context.createDynamicsCompressor();
-                        compressor.threshold.value = -70;
-                        compressor.knee.value = 40;
-                        compressor.ratio.value = 12;
-                        compressor.attack.value = 0;
-                        compressor.release.value = 0.25;
-                        filter = context.createBiquadFilter();
-                        filter.type = 'allpass';
-                        filter.frequency.value = 5.239622852977861;
-                        filter.Q.value = 0.1;
-                        oscillator.connect(compressor);
-                        compressor.connect(filter);
-                        filter.connect(context.destination);
-                        oscillator.start(0);
-                        return [4 /*yield*/, renderAudio(context)];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
-            });
-        });
-    }
-    /**
-     * Renders the given audio context with configured nodes.
-     * Returns `null` when the rendering runs out of attempts.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
-    function renderAudio(context) {
-        return new Promise(function (resolve, reject) {
-            var retryDelay = 200;
-            var attemptsLeft = 25;
-            context.oncomplete = function (event) { return resolve(event.renderedBuffer); };
-            var tryRender = function () {
-                try {
-                    var renderingPromise = context.startRendering();
-                    // `context.startRendering` has two APIs: Promise and callback, we check that it's really a promise just in case
-                    if (isPromise(renderingPromise)) {
-                        // Suppresses all unhandled rejections in case of scheduled redundant retries after successful rendering
-                        suppressUnhandledRejectionWarning(renderingPromise);
-                    }
-                    // Sometimes the audio context doesn't start after calling `startRendering` (in addition to the cases where
-                    // audio context doesn't start at all). A known case is starting an audio context when the browser tab is in
-                    // background on iPhone. Retries usually help in this case.
-                    if (context.state === 'suspended') {
-                        // The audio context can reject starting until the tab is in foreground. Long fingerprint duration
-                        // in background isn't a problem, therefore the retry attempts don't count in background. It can lead to
-                        // a situation when a fingerprint takes very long time and finishes successfully. FYI, the audio context
-                        // can be suspended when `document.hidden === false` and start running after a retry.
-                        if (!document.hidden) {
-                            attemptsLeft--;
-                        }
-                        if (attemptsLeft > 0) {
-                            setTimeout(tryRender, retryDelay);
-                        }
-                        else {
-                            resolve(null);
-                        }
-                    }
-                }
-                catch (error) {
-                    reject(error);
-                }
-            };
-            tryRender();
-        });
-    }
-    function extractFingerprint(baseSignal, clonedSample) {
-        var fingerprint = undefined;
-        var needsDenoising = false;
-        for (var i = 0; i < clonedSample.length; i += Math.floor(clonedSample.length / 10)) {
-            if (clonedSample[i] === 0) ;
-            else if (fingerprint === undefined) {
-                fingerprint = clonedSample[i];
-            }
-            else if (fingerprint !== clonedSample[i]) {
-                needsDenoising = true;
-                break;
-            }
-        }
-        // The looped buffer source works incorrectly in old Safari versions (>14 desktop, >15 mobile).
-        // The looped signal contains only 0s. To fix it, the loop start should be `baseSignal.length - 1.00000000001` and
-        // the loop end should be `baseSignal.length + 0.00000000001` (there can be 10 or 11 0s after the point). But this
-        // solution breaks the looped signal in other browsers. Instead of checking the browser version, we check that the
-        // looped signals comprises only 0s, and if it does, we return the last value of the base signal, because old Safari
-        // versions don't add noise that we want to cancel.
-        if (fingerprint === undefined) {
-            fingerprint = baseSignal.getChannelData(0)[baseSignal.length - 1];
-        }
-        else if (needsDenoising) {
-            fingerprint = getMiddle(clonedSample);
-        }
-        return fingerprint;
-    }
-    /**
-     * Calculates the middle between the minimum and the maximum array item
-     */
-    function getMiddle(signal) {
-        var min = Infinity;
-        var max = -Infinity;
-        for (var i = 0; i < signal.length; i++) {
-            var value = signal[i];
-            // In very rare cases the signal is 0 on a short range for some reason. Ignoring such samples.
-            if (value === 0) {
-                continue;
-            }
-            if (value < min) {
-                min = value;
-            }
-            if (value > max) {
-                max = value;
-            }
-        }
-        return (min + max) / 2;
-    }
-    /**
-     * Truncates some digits of the number to make it stable.
-     * `precision` is the number of significant digits to keep. The number may be not integer:
-     *  - If it ends with `.2`, the last digit is rounded to the nearest multiple of 5;
-     *  - If it ends with `.5`, the last digit is rounded to the nearest even number;
-     */
-    function stabilize(value, precision) {
-        if (value === 0) {
-            return value;
-        }
-        var power = Math.floor(Math.log10(Math.abs(value)));
-        var precisionPower = power - Math.floor(precision) + 1;
-        var precisionBase = Math.pow(10, -precisionPower) * ((precision * 10) % 10 || 1);
-        return Math.round(value * precisionBase) / precisionBase;
-    }
 
     // We use m or w because these two characters take up the maximum width.
     // And we use a LLi so that the same matching fonts can get separated.
@@ -1406,66 +1307,58 @@ var gfpCode = (function (exports) {
             return __awaiter(_this, void 0, void 0, function () {
                 var holder, spansContainer, defaultWidth, defaultHeight, createSpan, createSpanWithFonts, initializeBaseFontsSpans, initializeFontsSpans, isFontAvailable, baseFontsSpans, fontsSpans, index;
                 return __generator(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            holder = document.body;
-                            holder.style.fontSize = textSize;
-                            spansContainer = document.createElement('div');
-                            spansContainer.style.setProperty('visibility', 'hidden', 'important');
-                            defaultWidth = {};
-                            defaultHeight = {};
-                            createSpan = function (fontFamily) {
-                                var span = document.createElement('span');
-                                var style = span.style;
-                                style.position = 'absolute';
-                                style.top = '0';
-                                style.left = '0';
-                                style.fontFamily = fontFamily;
-                                span.textContent = testString;
-                                spansContainer.appendChild(span);
-                                return span;
-                            };
-                            createSpanWithFonts = function (fontToDetect, baseFont) {
-                                return createSpan("'".concat(fontToDetect, "',").concat(baseFont));
-                            };
-                            initializeBaseFontsSpans = function () {
-                                return baseFonts.map(createSpan);
-                            };
-                            initializeFontsSpans = function () {
-                                // Stores {fontName : [spans for that font]}
-                                var spans = {};
-                                var _loop_1 = function (font) {
-                                    spans[font] = baseFonts.map(function (baseFont) { return createSpanWithFonts(font, baseFont); });
-                                };
-                                for (var _i = 0, fontList_1 = fontList; _i < fontList_1.length; _i++) {
-                                    var font = fontList_1[_i];
-                                    _loop_1(font);
-                                }
-                                return spans;
-                            };
-                            isFontAvailable = function (fontSpans) {
-                                return baseFonts.some(function (baseFont, baseFontIndex) {
-                                    return fontSpans[baseFontIndex].offsetWidth !== defaultWidth[baseFont] ||
-                                        fontSpans[baseFontIndex].offsetHeight !== defaultHeight[baseFont];
-                                });
-                            };
-                            baseFontsSpans = initializeBaseFontsSpans();
-                            fontsSpans = initializeFontsSpans();
-                            // add all the spans to the DOM
-                            holder.appendChild(spansContainer);
-                            return [4 /*yield*/, releaseEventLoop()
-                                // get the default width for the three base fonts
-                            ];
-                        case 1:
-                            _b.sent();
-                            // get the default width for the three base fonts
-                            for (index = 0; index < baseFonts.length; index++) {
-                                defaultWidth[baseFonts[index]] = baseFontsSpans[index].offsetWidth; // width for the default font
-                                defaultHeight[baseFonts[index]] = baseFontsSpans[index].offsetHeight; // height for the default font
-                            }
-                            // check available fonts
-                            return [2 /*return*/, fontList.filter(function (font) { return isFontAvailable(fontsSpans[font]); })];
+                    holder = document.body;
+                    holder.style.fontSize = textSize;
+                    spansContainer = document.createElement('div');
+                    spansContainer.style.setProperty('visibility', 'hidden', 'important');
+                    defaultWidth = {};
+                    defaultHeight = {};
+                    createSpan = function (fontFamily) {
+                        var span = document.createElement('span');
+                        var style = span.style;
+                        style.position = 'absolute';
+                        style.top = '0';
+                        style.left = '0';
+                        style.fontFamily = fontFamily;
+                        span.textContent = testString;
+                        spansContainer.appendChild(span);
+                        return span;
+                    };
+                    createSpanWithFonts = function (fontToDetect, baseFont) {
+                        return createSpan("'".concat(fontToDetect, "',").concat(baseFont));
+                    };
+                    initializeBaseFontsSpans = function () {
+                        return baseFonts.map(createSpan);
+                    };
+                    initializeFontsSpans = function () {
+                        // Stores {fontName : [spans for that font]}
+                        var spans = {};
+                        var _loop_1 = function (font) {
+                            spans[font] = baseFonts.map(function (baseFont) { return createSpanWithFonts(font, baseFont); });
+                        };
+                        for (var _i = 0, fontList_1 = fontList; _i < fontList_1.length; _i++) {
+                            var font = fontList_1[_i];
+                            _loop_1(font);
+                        }
+                        return spans;
+                    };
+                    isFontAvailable = function (fontSpans) {
+                        return baseFonts.some(function (baseFont, baseFontIndex) {
+                            return fontSpans[baseFontIndex].offsetWidth !== defaultWidth[baseFont] ||
+                                fontSpans[baseFontIndex].offsetHeight !== defaultHeight[baseFont];
+                        });
+                    };
+                    baseFontsSpans = initializeBaseFontsSpans();
+                    fontsSpans = initializeFontsSpans();
+                    // add all the spans to the DOM
+                    holder.appendChild(spansContainer);
+                    // get the default width for the three base fonts
+                    for (index = 0; index < baseFonts.length; index++) {
+                        defaultWidth[baseFonts[index]] = baseFontsSpans[index].offsetWidth; // width for the default font
+                        defaultHeight[baseFonts[index]] = baseFontsSpans[index].offsetHeight; // height for the default font
                     }
+                    // check available fonts
+                    return [2 /*return*/, fontList.filter(function (font) { return isFontAvailable(fontsSpans[font]); })];
                 });
             });
         });
@@ -1516,31 +1409,24 @@ var gfpCode = (function (exports) {
      * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
      */
     function getUnstableCanvasFingerprint(skipImages) {
-        return __awaiter(this, void 0, void 0, function () {
-            var winding, geometry, text, _a, canvas, context;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        winding = false;
-                        _a = makeCanvasContext$1(), canvas = _a[0], context = _a[1];
-                        if (!!isSupported$1(canvas, context)) return [3 /*break*/, 1];
-                        geometry = text = "unsupported" /* ImageStatus.Unsupported */;
-                        return [3 /*break*/, 4];
-                    case 1:
-                        winding = doesSupportWinding$1(context);
-                        if (!skipImages) return [3 /*break*/, 2];
-                        geometry = text = "skipped" /* ImageStatus.Skipped */;
-                        return [3 /*break*/, 4];
-                    case 2:
-                        return [4 /*yield*/, renderImages(canvas, context)];
-                    case 3:
-                        _b = _c.sent(), geometry = _b[0], text = _b[1];
-                        _c.label = 4;
-                    case 4: return [2 /*return*/, { winding: winding, geometry: geometry, text: text }];
-                }
-            });
-        });
+        var _a;
+        var winding = false;
+        var geometry;
+        var text;
+        var _b = makeCanvasContext$1(), canvas = _b[0], context = _b[1];
+        if (!isSupported$1(canvas, context)) {
+            geometry = text = "unsupported" /* ImageStatus.Unsupported */;
+        }
+        else {
+            winding = doesSupportWinding$1(context);
+            if (skipImages) {
+                geometry = text = "skipped" /* ImageStatus.Skipped */;
+            }
+            else {
+                _a = renderImages(canvas, context), geometry = _a[0], text = _a[1];
+            }
+        }
+        return { winding: winding, geometry: geometry, text: text };
     }
     function makeCanvasContext$1() {
         var canvas = document.createElement('canvas');
@@ -1559,36 +1445,21 @@ var gfpCode = (function (exports) {
         return !context.isPointInPath(5, 5, 'evenodd');
     }
     function renderImages(canvas, context) {
-        return __awaiter(this, void 0, void 0, function () {
-            var textImage1, textImage2, geometryImage;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        renderTextImage$1(canvas, context);
-                        return [4 /*yield*/, releaseEventLoop()];
-                    case 1:
-                        _a.sent();
-                        textImage1 = canvasToString$1(canvas);
-                        textImage2 = canvasToString$1(canvas) // It's slightly faster to double-encode the text image
-                        ;
-                        // Some browsers add a noise to the canvas: https://github.com/fingerprintjs/fingerprintjs/issues/791
-                        // The canvas is excluded from the fingerprint in this case
-                        if (textImage1 !== textImage2) {
-                            return [2 /*return*/, ["unstable" /* ImageStatus.Unstable */, "unstable" /* ImageStatus.Unstable */]];
-                        }
-                        // Text is unstable:
-                        // https://github.com/fingerprintjs/fingerprintjs/issues/583
-                        // https://github.com/fingerprintjs/fingerprintjs/issues/103
-                        // Therefore it's extracted into a separate image.
-                        renderGeometryImage$1(canvas, context);
-                        return [4 /*yield*/, releaseEventLoop()];
-                    case 2:
-                        _a.sent();
-                        geometryImage = canvasToString$1(canvas);
-                        return [2 /*return*/, [textImage1, geometryImage]];
-                }
-            });
-        });
+        renderTextImage$1(canvas, context);
+        var textImage1 = canvasToString$1(canvas);
+        var textImage2 = canvasToString$1(canvas); // It's slightly faster to double-encode the text image
+        // Some browsers add a noise to the canvas: https://github.com/fingerprintjs/fingerprintjs/issues/791
+        // The canvas is excluded from the fingerprint in this case
+        if (textImage1 !== textImage2) {
+            return ["unstable" /* ImageStatus.Unstable */, "unstable" /* ImageStatus.Unstable */];
+        }
+        // Text is unstable:
+        // https://github.com/fingerprintjs/fingerprintjs/issues/583
+        // https://github.com/fingerprintjs/fingerprintjs/issues/103
+        // Therefore it's extracted into a separate image.
+        renderGeometryImage$1(canvas, context);
+        var geometryImage = canvasToString$1(canvas);
+        return [geometryImage, textImage1];
     }
     function renderTextImage$1(canvas, context) {
         // Resizing the canvas cleans it
@@ -1885,7 +1756,7 @@ var gfpCode = (function (exports) {
         // For browsers that don't support timezone names
         // The minus is intentional because the JS offset is opposite to the real offset
         var offset = -getTimezoneOffset();
-        return "UTC".concat(offset >= 0 ? '+' : '').concat(Math.abs(offset));
+        return "UTC".concat(offset >= 0 ? '+' : '').concat(offset);
     }
     function getTimezoneOffset() {
         var currentYear = new Date().getFullYear();
@@ -2393,9 +2264,6 @@ var gfpCode = (function (exports) {
                         return [3 /*break*/, 1];
                     case 3:
                         d.body.appendChild(root);
-                        return [4 /*yield*/, releaseEventLoop()];
-                    case 4:
-                        _b.sent();
                         try {
                             // Then check which of the elements are blocked
                             for (i = 0; i < selectors.length; ++i) {
@@ -2797,6 +2665,10 @@ var gfpCode = (function (exports) {
         return u8[3];
     }
 
+    /**
+     * The return type is a union instead of the enum, because it's too challenging to embed the const enum into another
+     * project. Turning it into a union is a simple and an elegant solution.
+     */
     function getApplePayState() {
         var ApplePaySession = window.ApplePaySession;
         if (typeof (ApplePaySession === null || ApplePaySession === void 0 ? void 0 : ApplePaySession.canMakePayments) !== 'function') {
@@ -2809,13 +2681,6 @@ var gfpCode = (function (exports) {
             return getStateFromError(error);
         }
     }
-    /**
-     * The return type is a union instead of the enum, because it's too challenging to embed the const enum into another
-     * project. Turning it into a union is a simple and an elegant solution.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
     function getStateFromError(error) {
         if (error instanceof Error) {
             // See full expected error messages in the test
@@ -2883,6 +2748,7 @@ var gfpCode = (function (exports) {
     var shaderTypes = ['FRAGMENT_SHADER', 'VERTEX_SHADER'];
     var precisionTypes = ['LOW_FLOAT', 'MEDIUM_FLOAT', 'HIGH_FLOAT', 'LOW_INT', 'MEDIUM_INT', 'HIGH_INT'];
     var rendererInfoExtensionName = 'WEBGL_debug_renderer_info';
+    var polygonModeExtensionName = 'WEBGL_polygon_mode';
     /**
      * Gets the basic and simple WebGL parameters
      */
@@ -2943,7 +2809,8 @@ var gfpCode = (function (exports) {
         if (extensions) {
             for (var _d = 0, extensions_1 = extensions; _d < extensions_1.length; _d++) {
                 var name_1 = extensions_1[_d];
-                if (name_1 === rendererInfoExtensionName && shouldAvoidDebugRendererInfo()) {
+                if ((name_1 === rendererInfoExtensionName && shouldAvoidDebugRendererInfo()) ||
+                    (name_1 === polygonModeExtensionName && shouldAvoidPolygonModeExtensions())) {
                     continue;
                 }
                 var extension = gl.getExtension(name_1);
@@ -3032,10 +2899,31 @@ var gfpCode = (function (exports) {
         return isGecko();
     }
     /**
+     * Some browsers print a console warning when the WEBGL_polygon_mode extension is requested.
+     * JS Agent aims to avoid printing messages to console, so we avoid this extension in that browsers.
+     */
+    function shouldAvoidPolygonModeExtensions() {
+        return isChromium() || isWebKit();
+    }
+    /**
      * Some unknown browsers have no `getParameter` method
      */
     function isValidParameterGetter(gl) {
         return typeof gl.getParameter === 'function';
+    }
+
+    function getAudioContextBaseLatency() {
+        var _a;
+        // The signal emits warning in Chrome and Firefox, therefore it is enabled on Safari where it doesn't produce warning
+        // and on Android where it's less visible
+        var isAllowedPlatform = isAndroid() || isWebKit();
+        if (!isAllowedPlatform) {
+            return -2 /* SpecialFingerprint.Disabled */;
+        }
+        if (!window.AudioContext) {
+            return -1 /* SpecialFingerprint.NotSupported */;
+        }
+        return (_a = new AudioContext().baseLatency) !== null && _a !== void 0 ? _a : -1 /* SpecialFingerprint.NotSupported */;
     }
 
     /**
@@ -3090,6 +2978,7 @@ var gfpCode = (function (exports) {
         architecture: getArchitecture,
         applePay: getApplePayState,
         privateClickMeasurement: getPrivateClickMeasurement,
+        audioBaseLatency: getAudioContextBaseLatency,
         // Some sources can affect other sources (e.g. WebGL can affect canvas), so it's important to run these sources
         // after other sources.
         webGlBasics: getWebGlBasics,
