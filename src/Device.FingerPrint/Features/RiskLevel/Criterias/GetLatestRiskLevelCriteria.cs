@@ -9,8 +9,8 @@ namespace Device.FingerPrint.Features.RiskLevel.Criterias
         [SpParam(SqlParamName = "ip_SubscriberID")]
         public int SubscriberId { get; set; }
 
-        [SpParam(SqlParamName = "ip_MaxID")]
-        public long MaxId { get; set; }
+        [SpParam(SqlParamName = "ip_LastID")]
+        public long LastId { get; set; }
 
         [SpParam(SqlParamName = "ip_BatchSize")]
         public int BatchSize { get; set; }

@@ -10,12 +10,12 @@ using System.Text;
 
 namespace Device.FingerPrint.Features.RiskLevel.Services
 {
-    public interface IRiskLevelAccess
+    public interface IRiskLevelDataAccess
     {
-        IEnumerable<RiskLevelEntity> GetCustomerClassRiskLevel(int subscriberId, long maxId, int batchSize);
+        IEnumerable<RiskLevelEntity> GetCustomerClassRiskLevel(int subscriberId, long lastId, int batchSize);
     }
 
-    public class RiskLevelDataAccess : IRiskLevelAccess
+    public class RiskLevelDataAccess : IRiskLevelDataAccess
     {
         private readonly IDynamicRepository repository;
 
@@ -24,12 +24,12 @@ namespace Device.FingerPrint.Features.RiskLevel.Services
             repository = new DynamicRepository();
         }
 
-        public IEnumerable<RiskLevelEntity> GetCustomerClassRiskLevel(int subscriberId, long maxId, int batchSize)
+        public IEnumerable<RiskLevelEntity> GetCustomerClassRiskLevel(int subscriberId, long lastId, int batchSize)
         {
             var criteria = new GetLatestRiskLevelCriteria
             {
                  SubscriberId = subscriberId,
-                 MaxId = maxId,
+                 LastId = lastId,
                  BatchSize = batchSize
             };
 
