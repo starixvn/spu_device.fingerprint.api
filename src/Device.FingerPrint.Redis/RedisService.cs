@@ -27,6 +27,8 @@
         Task<bool> SetAsync<T>(string key, T value);
 
         Task<bool> AddAsyncAndExpiryAsync<T>(string key, T value, DateTimeOffset expiresAt);
+
+        Task<long> HashIncrementAsync(string hashKey, string key, long value);
     }
 
     public class RedisService : IRedisService
@@ -93,6 +95,11 @@
         public Task<bool> AddAsyncAndExpiryAsync<T>(string key, T value, DateTimeOffset expiresAt)
         {
             return redisDatabase.AddAsync(key, value, expiresAt, flag: CommandFlags.FireAndForget);
+        }
+
+        public Task<long> HashIncrementAsync(string hashKey, string key, long value)
+        {
+            return redisDatabase.HashIncerementByAsync(hashKey, key, value);
         }
     }
 }

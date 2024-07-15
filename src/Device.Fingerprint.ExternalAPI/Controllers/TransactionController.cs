@@ -1,4 +1,5 @@
-﻿using Device.Fingerprint.ExternalAPI.Models;
+﻿using Device.Fingerprint.ExternalAPI.Filters;
+using Device.Fingerprint.ExternalAPI.Models;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
@@ -24,6 +25,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
         
         [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
+        [ServiceFilter(typeof(RequestCounterFilter))]
         public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, long trackingNumber)
         {
 
@@ -78,6 +80,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
         
         [HttpGet("GetAssociationByAccount/{subscriberName}/{account}")]
+        [ServiceFilter(typeof(RequestCounterFilter))]
         public ActionResult<AssociationList> GetAssociationByAccount(string subscriberName, string account)
         {
             try

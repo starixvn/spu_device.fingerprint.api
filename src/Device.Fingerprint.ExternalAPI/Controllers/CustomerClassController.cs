@@ -1,4 +1,5 @@
-﻿using Device.Fingerprint.ExternalAPI.Models;
+﻿using Device.Fingerprint.ExternalAPI.Filters;
+using Device.Fingerprint.ExternalAPI.Models;
 using Device.FingerPrint.Features.RiskLevel.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,7 @@ namespace Device.Fingerprint.ExternalAPI.Controllers
 
 
         [HttpGet("GetRiskLevelBySubscriber/{subscriberName}/{lastId}")]
+        [ServiceFilter(typeof(RequestCounterFilter))]
         public ActionResult<CustomerClassRiskLevelModel> GetRiskLevelBySubscriber(string subscriberName, long lastId)
         {
             try
