@@ -30,20 +30,13 @@ namespace Device.FingerPrint.Gateway.Handlers
                         {
                             return await base.SendAsync(request, cancellationToken);
                         }
-                    }
-                    else
-                    {
-                        return new HttpResponseMessage
-                        {
-                            StatusCode = System.Net.HttpStatusCode.BadRequest                           
-                        };
-                    }
+                    }                    
                 }
             }
 
             return new HttpResponseMessage
             {
-                StatusCode = System.Net.HttpStatusCode.NotFound
+                StatusCode = System.Net.HttpStatusCode.BadRequest
             };
         }
     }

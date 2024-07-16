@@ -14,6 +14,8 @@ namespace Device.FingerPrint.Gateway
         string GetSubscriberInfo { get; }
 
         List<SubscriberModel> ExtraSubscribers { get; }
+
+        string LogstashUrl { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -26,7 +28,9 @@ namespace Device.FingerPrint.Gateway
 
         private readonly string sentryDsn;       
 
-        private readonly string getSubscriberInfo;     
+        private readonly string getSubscriberInfo;    
+        
+        private readonly string logstashUrl;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -38,7 +42,9 @@ namespace Device.FingerPrint.Gateway
 
             sentryDsn = GetValue<string>("Sentry:Dsn");        
 
-            getSubscriberInfo = GetValue<string>("GetSubscriberUrl");           
+            getSubscriberInfo = GetValue<string>("GetSubscriberUrl");
+
+            logstashUrl = GetValue<string>("Logstash:Url");
         }
 
         public List<SubscriberModel> ExtraSubscribers => extraSubscribers;
@@ -48,6 +54,8 @@ namespace Device.FingerPrint.Gateway
         public string SentryDsn => sentryDsn;       
 
         public string GetSubscriberInfo => getSubscriberInfo;
+
+        public string LogstashUrl => logstashUrl;
 
         public T GetValue<T>(string key)
         {

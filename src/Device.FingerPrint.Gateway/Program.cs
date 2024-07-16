@@ -1,6 +1,7 @@
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Gateway.Handlers;
 using Device.FingerPrint.Gateway.Services;
+using Device.FingerPrint.Gateway.Middleware;
 using Device.FingerPrint.Redis;
 using Fanex.Logging;
 using Fanex.Logging.Sentry;
@@ -36,7 +37,8 @@ builder.Services
     {
         x.WithDictionaryHandle();
     })
-    .AddDelegatingHandler<ValidateHandler>();
+    .AddDelegatingHandler<ValidateHandler>()
+    .AddDelegatingHandler<LogstashHandler>();
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
 
@@ -79,6 +81,8 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 // Use the Prometheus middleware
 app.UseMetricServer();
