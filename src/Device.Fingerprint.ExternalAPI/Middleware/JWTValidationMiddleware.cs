@@ -23,18 +23,21 @@ namespace Device.Fingerprint.ExternalAPI.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (!context.Request.Path.Value.Contains("generatetoken/audience"))
+            if(this.appSettings.Environment == "PROD")
             {
-                var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ').Last();
-
-                if (string.IsNullOrWhiteSpace(token) || !ValidateToken(context, token))
+                if (!context.Request.Path.Value.Contains("generatetoken/audience"))
                 {
-                    context.Response.Clear();
-                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ').Last();
 
-                    return;
+                    if (string.IsNullOrWhiteSpace(token) || !ValidateToken(context, token))
+                    {
+                        context.Response.Clear();
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+
+                        return;
+                    }
                 }
-            }
+            }            
 
             await next(context);
         }
