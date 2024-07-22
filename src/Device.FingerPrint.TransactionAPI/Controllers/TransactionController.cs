@@ -11,6 +11,7 @@
     using Fanex.LogTrail.Service;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
+    using ONEbook.UM.Models;
     using ONEbook.UM.Services;
 
     [ApiController]
@@ -221,6 +222,13 @@
             }
 
             return message;
+        }
+
+        [HttpGet]
+        [Route("FPS/TestUM")]
+        public UnderMaintenanceTime TestUM()
+        {
+            return maintenanceService.GetUnderMaintenanceTime();
         }
 
         [HttpPost]
