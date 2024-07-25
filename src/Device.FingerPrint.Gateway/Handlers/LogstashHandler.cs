@@ -43,11 +43,9 @@ namespace Device.FingerPrint.Gateway.Handlers
             using (var httpClient = new HttpClient())
             {                
                 var logMessage = new TransactionLogstashModel
-                {
-                    Timestamp = DateTime.UtcNow,
-                    Level = "INFO",
+                {                   
                     Message = trans,
-                    Tags = trans.Subscriber
+                    Tags = "LoginTransaction"
                 };
                 
                 var jsonLogMessage = JsonConvert.SerializeObject(logMessage);
