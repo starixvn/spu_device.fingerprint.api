@@ -1,5 +1,6 @@
 ﻿
 using Device.FingerPrint.Gateway.Model;
+using Fanex.Logging;
 using Newtonsoft.Json;
 using System.Text;
 
@@ -26,6 +27,8 @@ namespace Device.FingerPrint.Gateway.Handlers
                     if (transactionRequest != null)
                     {
                         await PushLog(transactionRequest);
+
+                        LogService.Info("Push log ok -" + transactionRequest.Account + " - "  + transactionRequest.Subscriber);
                     }                                     
                 }
 
