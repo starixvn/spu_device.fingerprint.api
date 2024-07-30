@@ -1,6 +1,7 @@
 ﻿
 using Device.FingerPrint.Gateway.Model;
 using Device.FingerPrint.Gateway.Services;
+using Fanex.Logging;
 using Newtonsoft.Json;
 
 namespace Device.FingerPrint.Gateway.Handlers
@@ -16,22 +17,31 @@ namespace Device.FingerPrint.Gateway.Handlers
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (request != null && request.Content != null)
+            try
             {
-                var content = await request.Content.ReadAsStringAsync();
-
-                if (!string.IsNullOrWhiteSpace(content))
+                if (request != null && request.Content != null)
                 {
-                    var transactionRequest = JsonConvert.DeserializeObject<TransactionRequest>(content);
+                    var content = await request.Content.ReadAsStringAsync();
 
-                    if (transactionRequest != null && !string.IsNullOrWhiteSpace(transactionRequest?.Subscriber) && !string.IsNullOrWhiteSpace(transactionRequest.Account))
+                    if (!string.IsNullOrWhiteSpace(content))
                     {
-                        if (await this.subscriberService.ValidateAsync(transactionRequest?.Subscriber))
+                        var transactionRequest = JsonConvert.DeserializeObject<TransactionRequest>(content);
+
+                        LogService.Info($"this is log from gateway api: {transactionRequest.Subscriber} - {transactionRequest.Account}");
+
+                        if (transactionRequest != null && !string.IsNullOrWhiteSpace(transactionRequest?.Subscriber) && !string.IsNullOrWhiteSpace(transactionRequest.Account))
                         {
-                            return await base.SendAsync(request, cancellationToken);
+                            if (await this.subscriberService.ValidateAsync(transactionRequest?.Subscriber))
+                            {
+                                return await base.SendAsync(request, cancellationToken);
+                            }
                         }
-                    }                    
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                LogService.Error(ex.Message, ex);
             }
 
             return new HttpResponseMessage
