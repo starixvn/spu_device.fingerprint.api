@@ -1,13 +1,10 @@
 ﻿namespace Device.FingerPrint.TransactionAPI.Controllers
 {
-    using System.Text.Json;
-    using System.Threading.Tasks;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.Redis;
     using Device.FingerPrint.TransactionAPI.Model;
     using Device.FingerPrint.TransactionAPI.Services;
-    using EasyNetQ;
     using Fanex.Logging;
     using Fanex.LogTrail.Service;
     using MassTransit;
@@ -15,6 +12,7 @@
     using Microsoft.AspNetCore.Mvc;
     using ONEbook.UM.Models;
     using ONEbook.UM.Services;
+    using System.Threading.Tasks;
 
     [ApiController]
     public class TransactionController : ControllerBase
@@ -100,7 +98,7 @@
 
             var response = GetTransactionResponse(responseCode);
             return Ok(response.ResultMessage);
-        }        
+        }
 
         [HttpPost("FPS/InsertTransaction")]
         public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
@@ -223,12 +221,12 @@
             }
         }
 
-        }
 
         [HttpGet]
         [Route("FPS/TestUM")]
         public UnderMaintenanceTime TestUM()
         {
             return maintenanceService.GetUnderMaintenanceTime();
+        }
     }
 }
