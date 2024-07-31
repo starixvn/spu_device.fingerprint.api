@@ -75,7 +75,7 @@ namespace Device.FingerPrint.Model
 
         public long IPInfoCode { get; set; }
 
-        public string CookieCode { get; set; }
+        public string FPTagging { get; set; }
 
         public string RawFingerPrintCode { get; set; }
 
@@ -89,9 +89,9 @@ namespace Device.FingerPrint.Model
 
         public string RawUserAgent { get; set; }
 
-        public string RawUserAgentCode { get; set; }
+        public string FP_UserAgentCode { get; set; }
 
-        public UserAgentInfoModel RawUserAgentInfo { get; set; }
+        public UserAgentInfoModel UserAgentInfo { get; set; }
 
         public JSChallengeInfo RawJsChallengeInfo { get; set; }
     }

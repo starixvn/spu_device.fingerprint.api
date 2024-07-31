@@ -3,10 +3,10 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class InsertCookieCriteria : NonQueryCommand
+    public class InsertFPFingerPrintCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_CookieJson")]
-        public string CookieJson { get; set; }
+        [SpParam(SqlParamName = "ip_FingerPrintJson")]
+        public string FingerPrintJson { get; set; }
 
         [SpParam(Ignored = true)]
         public bool IsTransOfDBExtra { get; set; }
@@ -19,7 +19,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
             }
             else
             {
-                return "DCS_DC_Transform_Cookie_Insert";
+                return "DCS_DC_Transform_FP_FingerPrint_Insert";
             }
         }
 

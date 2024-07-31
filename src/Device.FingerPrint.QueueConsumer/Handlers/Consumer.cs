@@ -22,7 +22,7 @@
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
 
-        private const string hashKeyEverCookie = "EverCookie";
+        private const string hashKeyEverTagging = "EverTagging";
 
         public Consumer(
                 IRawTransactionService rawTransactionService,
@@ -78,10 +78,10 @@
                 rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub)
             };
 
-            var everCookies = transactionModels.Where(x => !string.IsNullOrEmpty(x.CookieCode))?.Select(x => DeviceEncoder.Encrypt(x.CookieCode));
-            if (everCookies != null && everCookies.Any())
+            var everTagging = transactionModels.Where(x => !string.IsNullOrEmpty(x.FPTagging))?.Select(x => DeviceEncoder.Encrypt(x.FPTagging));
+            if (everTagging != null && everTagging.Any())
             {
-                tasks.Add(rawTransactionService.InsertOrUpdateEverCookie(hashKeyEverCookie, everCookies, appSettings.EverCookieExpireSecond));
+                tasks.Add(rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond));
             }
 
             var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);

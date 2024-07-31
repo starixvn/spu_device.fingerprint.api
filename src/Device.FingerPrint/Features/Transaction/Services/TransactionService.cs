@@ -1,7 +1,6 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,13 +11,13 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
 
-        Task InsertCookie(string cookieJson, bool isTransOfDBExtra);
+        Task InsertFPTagging(string taggings, bool isTransOfDBExtra);
 
-        Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra);
+        Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
 
         Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
 
-        Task InsertRawFingerPrint(string rawFingerPrintAttributeJson, bool isTransOfDBExtra);
+        Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
 
         void InsertTransaction(IEnumerable<TransactionEntity> transactions);
 
@@ -44,7 +43,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);                
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);
 
         (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
 
@@ -67,14 +66,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         }
 
-        public async Task InsertCookie(string cookieJson, bool isTransOfDBExtra)
+        public async Task InsertFPTagging(string taggings, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertCookie(cookieJson, isTransOfDBExtra);
+            await transactionDataAccess.InsertFPTagging(taggings, isTransOfDBExtra);
         }
 
-        public async Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra)
+        public async Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertRawUserAgent(rawUserAgentJson, isTransOfDBExtra);
+            await transactionDataAccess.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
         }
 
         public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
@@ -82,9 +81,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             await transactionDataAccess.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
         }
 
-        public async Task InsertRawFingerPrint(string rawFingerPrintAttributeJson, bool isTransOfDBExtra)
+        public async Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertRawFingerPrint(rawFingerPrintAttributeJson, isTransOfDBExtra);
+            await transactionDataAccess.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
         }
 
         private static IEnumerable<InsertRawTransactionDTO> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
@@ -98,7 +97,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 BrowserFamilyCode = transaction.BrowserFamilyCode,
                 BrowserInstanceCode = transaction.BrowserInstanceCode,
                 ChallengeCode = transaction.ChallengeCode,
-                CookieCode = transaction.CookieCode,
+                FPTagging = transaction.FPTagging,
                 CreatedDate = transaction.CreatedDate,
                 DeviceCode = transaction.DeviceCode,
                 FakeIP = transaction.FakeIP,
@@ -113,7 +112,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 LoginName = transaction.LoginName,
                 PluginID = transaction.PluginID,
                 RawFingerPrintCode = transaction.RawFingerPrintCode,
-                RawUserAgentCode = transaction.RawUserAgentCode,
+                RawUserAgentCode = transaction.FP_UserAgentCode,
                 SubscriberName = transaction.SubscriberName,
                 TransStatus = transaction.TransStatus,
                 TransTime = transaction.TransTime,
@@ -181,12 +180,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void EvolutionRecoverDevice(string transJson)
         {
             transactionDataAccess.EvolutionRecoverDevice(transJson);
-        }        
+        }
 
         public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit)
         {
             return transactionDataAccess.GetTransactionHistoryByTransIdSubscriber(subscriberId, transId, limit);
-        }               
+        }
 
         public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
         {

@@ -58,8 +58,8 @@
             }
         }
 
-        [HttpGet("e/c")]
-        public async Task<IActionResult> GetEverCookie()
+        [HttpGet("e/t")]
+        public async Task<IActionResult> GetEverTagging()
         {
             var result = string.Empty;
             var ecValues = Request.Headers["Res-Ec-X"].ToString();
@@ -71,23 +71,23 @@
             }
             else
             {
-                var everCookieValues = new List<string> { GetEtagValue() }.Concat(ecValues.Split(','));
+                var everTaggingValues = new List<string> { GetEtagValue() }.Concat(ecValues.Split(','));
 
-                everCookieValues = everCookieValues
+                everTaggingValues = everTaggingValues
                     .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
                     .Where(parsed => parsed != null)
-                    .Select(parsed => "EverCookie:" + parsed.SessionKey)
+                    .Select(parsed => "EverTagging:" + parsed.SessionKey)
                     .Distinct()
                     .ToList();
 
-                var redisEcValue = await redisMultiplexService.EverCookie_GetValueFromRedis(everCookieValues);
+                var redisEcValue = await redisMultiplexService.EverTagging_GetValueFromRedis(everTaggingValues);
 
-                result = RemoveEverCookiePrefix(redisEcValue);
+                result = RemoveEverTaggingPrefix(redisEcValue);
 
                 if (string.IsNullOrEmpty(redisEcValue))
                 {
-                    var firstEcValue = everCookieValues.FirstOrDefault();
-                    result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverCookiePrefix(firstEcValue);
+                    var firstEcValue = everTaggingValues.FirstOrDefault();
+                    result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverTaggingPrefix(firstEcValue);
                 }
             }
 
@@ -98,8 +98,8 @@
 
         private void UpdateResponseHeaders(string etag)
         {
-            var apiEverCookieCacheMaxAge = appSettings.ApiEverCookieCacheMaxAge;
-            Response.Headers["Cache-Control"] = $"max-age={apiEverCookieCacheMaxAge}, private";
+            var ApiEverTaggingCacheMaxAge = appSettings.ApiEverTaggingCacheMaxAge;
+            Response.Headers["Cache-Control"] = $"max-age={ApiEverTaggingCacheMaxAge}, private";
             Response.Headers["ETag"] = etag;
         }
 
@@ -270,9 +270,9 @@
             return string.Join(", ", normalizedFormats);
         }
 
-        private static string RemoveEverCookiePrefix(string input)
+        private static string RemoveEverTaggingPrefix(string input)
         {
-            const string prefix = "EverCookie:";
+            const string prefix = "EverTagging:";
             if (input.StartsWith(prefix))
             {
                 return input.Replace(prefix, string.Empty);

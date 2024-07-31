@@ -21,7 +21,7 @@
 
         Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
 
-        Task InsertOrUpdateEverCookie(string hashKey, IEnumerable<string> everCookies, long expireSecond);
+        Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
         Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
     }
@@ -142,14 +142,14 @@
             await Task.WhenAll(tasks);
         }
 
-        public async Task InsertOrUpdateEverCookie(string hashKey, IEnumerable<string> everCookies, long expireSecond)
+        public async Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond)
         {
             try
             {
-                var redisEverCookieDb = redisMultiplexService.GetRedisEverCookieDb();
+                var redisEverTaggingDb = redisMultiplexService.GetRedisEverTaggingDb();
 
-                var tasks = everCookies
-                .Select(code => redisMultiplexService.EverCookie_AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
+                var tasks = everTaggings
+                .Select(code => redisMultiplexService.EverTagging_AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
                 .ToList();
 
                 await Task.WhenAll(tasks);
@@ -164,32 +164,31 @@
         {
             var tasks = new List<Task>
             {
-                InsertCookie(transactions, isTransOfDBExtra),
-                InsertRawUserAgent(transactions, isTransOfDBExtra),
-                InsertJSChallengeInfo(transactions, isTransOfDBExtra),
-                InsertRawFingerPrint(transactions, isTransOfDBExtra),
+                InsertFPTagging(transactions, isTransOfDBExtra),
+                InsertFPUserAgent(transactions, isTransOfDBExtra),
+                InsertFPFingerPrint(transactions, isTransOfDBExtra),
+                InsertJSChallengeInfo(transactions, isTransOfDBExtra)
             };
 
             await Task.WhenAll(tasks);
         }
 
-        private async Task InsertCookie(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private async Task InsertFPTagging(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var cookieInfos = GetCookieInfo(transactions);
-            if (cookieInfos != null && cookieInfos.Any())
+            var taggings = GetFPTaggingInfo(transactions);
+            if (!string.IsNullOrEmpty(taggings))
             {
-                var cookieJson = JsonConvert.SerializeObject(cookieInfos);
-                await transactionService.InsertCookie(cookieJson, isTransOfDBExtra);
+                await transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
             }
         }
 
-        private async Task InsertRawUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private async Task InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var rawUserAgentInfos = GetValidInfo(transactions, t => t.RawUserAgentInfo);
-            if (rawUserAgentInfos != null && rawUserAgentInfos.Any())
+            var userAgentInfos = GetValidInfo(transactions, t => t.UserAgentInfo);
+            if (userAgentInfos != null && userAgentInfos.Any())
             {
-                var rawUserAgentJson = JsonConvert.SerializeObject(rawUserAgentInfos);
-                await transactionService.InsertRawUserAgent(rawUserAgentJson, isTransOfDBExtra);
+                var userAgentJson = JsonConvert.SerializeObject(userAgentInfos);
+                await transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
             }
         }
 
@@ -203,27 +202,22 @@
             }
         }
 
-        private async Task InsertRawFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private async Task InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var rawFingerprintAttribute = GetValidInfo(transactions, t => t.FingerprintAttribute);
-            if (rawFingerprintAttribute != null && rawFingerprintAttribute.Any())
+            var fingerprintAttribute = GetValidInfo(transactions, t => t.FingerprintAttribute);
+            if (fingerprintAttribute != null && fingerprintAttribute.Any())
             {
-                var rawFingerPrintAttributeJson = JsonConvert.SerializeObject(rawFingerprintAttribute);
-                await transactionService.InsertRawFingerPrint(rawFingerPrintAttributeJson, isTransOfDBExtra);
+                var fingerPrintJson = JsonConvert.SerializeObject(fingerprintAttribute);
+                await transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
             }
         }
 
-        private static IEnumerable<InsertCookieInfoDTO> GetCookieInfo(IEnumerable<RawTransactionModel> transactions)
+        private static string GetFPTaggingInfo(IEnumerable<RawTransactionModel> transactions)
         {
-            var result = transactions
-                .Where(t => !string.IsNullOrEmpty(t.CookieCode))
-                .GroupBy(t => t.CookieCode)
-                .Select(g => new InsertCookieInfoDTO
-                {
-                    CookieCode = g.Key,
-                    FirstTransTime = g.Min(t => t.TransTime)
-                })
-                .ToList();
+            var result = string.Join(", ", transactions
+                            .Where(t => !string.IsNullOrEmpty(t.FPTagging))
+                            .Select(t => t.FPTagging)
+                            .Distinct());
 
             return result;
         }

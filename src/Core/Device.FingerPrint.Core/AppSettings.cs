@@ -38,9 +38,10 @@ namespace Device.FingerPrint.Core
 
         int MaxMonthsGetAssociationByDevice { get; }
         
-        long EverCookieExpireSecond { get; }
+        long EverTaggingExpireSecond { get; }
+        
 
-        long ApiEverCookieCacheMaxAge { get; }
+        long ApiEverTaggingCacheMaxAge { get; }
 
         IConfiguration Configuration { get; }
 
@@ -81,9 +82,10 @@ namespace Device.FingerPrint.Core
         
         private readonly int maxMonthsGetAssociationByDevice;
         
-        private readonly long everCookieExpireSecond;
+        private readonly long everTaggingExpireSecond;
         
-        private readonly long apiEverCookieCacheMaxAge;
+        
+        private readonly long apiEverTaggingCacheMaxAge;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -123,9 +125,10 @@ namespace Device.FingerPrint.Core
 
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
             
-            everCookieExpireSecond = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("Redis:EverCookieExpireSecond")) ? "3600" : GetValue<string>("Redis:EverCookieExpireSecond"));
+            everTaggingExpireSecond = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("Redis:EverTaggingExpireSecond")) ? "3600" : GetValue<string>("Redis:EverTaggingExpireSecond"));
+            
 
-            apiEverCookieCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverCookieCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverCookieCacheMaxAge"));
+            apiEverTaggingCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverTaggingCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverTaggingCacheMaxAge"));
         }
 
         public string ApiUrl => apiUrl;
@@ -158,9 +161,10 @@ namespace Device.FingerPrint.Core
 
         public int MaxMonthsGetAssociationByDevice => maxMonthsGetAssociationByDevice;
         
-        public long EverCookieExpireSecond => everCookieExpireSecond;
+        public long EverTaggingExpireSecond => everTaggingExpireSecond;
+        
 
-        public long ApiEverCookieCacheMaxAge => apiEverCookieCacheMaxAge;
+        public long ApiEverTaggingCacheMaxAge => apiEverTaggingCacheMaxAge;
 
         public T GetValue<T>(string key)
         {

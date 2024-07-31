@@ -56,7 +56,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string BotComponent { get; set; }
 
-        public string CookieCode { get; set; }
+        public string FPTagging { get; set; }
 
         public string RawFingerPrintCode { get; set; }
 

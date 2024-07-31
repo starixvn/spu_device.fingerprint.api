@@ -3,10 +3,10 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class InsertRawFingerPrintCriteria : NonQueryCommand
+    public class InsertFPTaggingCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_RawFingerPrintJson")]
-        public string RawFingerPrintJson { get; set; }
+        [SpParam(SqlParamName = "ip_Taggings")]
+        public string Taggings { get; set; }
 
         [SpParam(Ignored = true)]
         public bool IsTransOfDBExtra { get; set; }
@@ -19,7 +19,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
             }
             else
             {
-                return "DCS_DC_Transform_RawFingerPrint_Insert";
+                return "DCS_DC_Transform_FP_Tagging_Insert";
             }
         }
 

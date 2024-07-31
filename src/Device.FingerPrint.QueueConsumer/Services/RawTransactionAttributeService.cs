@@ -88,11 +88,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         }
 
                         model.RawUserAgent = model.UserAgent;
-                        model.RawUserAgentInfo = GetUserAgentInfo(model.UserAgent);
+                        model.UserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
                         model.RawFingerPrintCode = fingerPrintModel.Id;
-                        model.CookieCode = DeviceEncoder.Decrypt(sessionKey.SessionKey);
+                        model.FPTagging = DeviceEncoder.Decrypt(sessionKey.SessionKey);
 
                         // Log Info Consumer
                         var subscriberName = model.SubscriberName;
@@ -136,7 +136,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 result.Encoding = headerModel.Encoding;
                 result.Headers = headerModel.Headers;
 
-                var userAgentInfo = rawTransModel.RawUserAgentInfo;
+                var userAgentInfo = rawTransModel.UserAgentInfo;
                 result.UserAgent = userAgentInfo.UserAgent;
                 result.BrowserName = userAgentInfo.ClientName;
                 result.BrowserVersion = userAgentInfo.ClientVersion;
@@ -146,9 +146,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
             result.BrowserInstanceCode = HashBrowserInstanceCode(result);
             result.BrowserFamilyCode = HashBrowserFamilyCode(result);
             
-            var RawUserAgentCode = crypto.GetMD5Hash(result.UserAgent);
-            rawTransModel.RawUserAgentInfo.UserAgentCode = RawUserAgentCode;
-            rawTransModel.RawUserAgentCode = RawUserAgentCode;
+            var UserAgentCode = crypto.GetMD5Hash(result.UserAgent);
+            rawTransModel.UserAgentInfo.UserAgentCode = UserAgentCode;
+            rawTransModel.FP_UserAgentCode = UserAgentCode;
             rawTransModel.BrowserInstanceCode = result.BrowserInstanceCode;
             rawTransModel.BrowserFamilyCode = result.BrowserFamilyCode;
 

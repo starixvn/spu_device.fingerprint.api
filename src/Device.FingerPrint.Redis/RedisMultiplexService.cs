@@ -13,28 +13,28 @@ namespace Device.FingerPrint.Redis
 
         Task<double> GetTimeSpan(int redisDatabaseIndex, string hashKey);
 
-        IDatabase GetRedisEverCookieDb();
+        IDatabase GetRedisEverTaggingDb();
 
-        Task EverCookie_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry);
+        Task EverTagging_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry);
 
-        Task<string> EverCookie_GetValueFromRedis(IEnumerable<string> values);
+        Task<string> EverTagging_GetValueFromRedis(IEnumerable<string> values);
     }
 
     public class RedisMultiplexService : IRedisMultiplexService
     {
         private readonly IConnectionMultiplexer connectionMultiplexer;
 
-        private readonly IDatabase redisEverCookieDb;
+        private readonly IDatabase redisEverTaggingDb;
 
-        public RedisMultiplexService(IConnectionMultiplexer connectionMultiplexer, int everCookieDbIndex)
+        public RedisMultiplexService(IConnectionMultiplexer connectionMultiplexer, int EverTaggingDbIndex)
         {
             this.connectionMultiplexer = connectionMultiplexer;
-            redisEverCookieDb = connectionMultiplexer.GetDatabase(everCookieDbIndex);
+            redisEverTaggingDb = connectionMultiplexer.GetDatabase(EverTaggingDbIndex);
         }
 
-        public IDatabase GetRedisEverCookieDb()
+        public IDatabase GetRedisEverTaggingDb()
         {
-            return redisEverCookieDb;
+            return redisEverTaggingDb;
         }
 
         public async Task HashSetMultipleFieldsWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond = 0)
@@ -94,18 +94,18 @@ namespace Device.FingerPrint.Redis
             return -1;
         }
 
-        public async Task EverCookie_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry)
+        public async Task EverTagging_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry)
         {
             string expiryKey = $"{hashKey}:{itemKey}";
-            await redisEverCookieDb.StringSetAsync(expiryKey, value);
-            await redisEverCookieDb.KeyExpireAsync(expiryKey, expiry);
+            await redisEverTaggingDb.StringSetAsync(expiryKey, value);
+            await redisEverTaggingDb.KeyExpireAsync(expiryKey, expiry);
         }
 
-        public async Task<string> EverCookie_GetValueFromRedis(IEnumerable<string> values)
+        public async Task<string> EverTagging_GetValueFromRedis(IEnumerable<string> values)
         {
             foreach (var value in values)
             {
-                var result = await redisEverCookieDb.StringGetAsync(value);
+                var result = await redisEverTaggingDb.StringGetAsync(value);
                 if (result.HasValue)
                 {
                     return value;

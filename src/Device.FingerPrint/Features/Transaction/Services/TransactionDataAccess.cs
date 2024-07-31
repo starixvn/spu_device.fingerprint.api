@@ -1,7 +1,6 @@
 ﻿using Device.FingerPrint.Features.Transaction.Criterias;
 using Device.FingerPrint.Features.Transaction.Model;
 using Fanex.Data.Repository;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,13 +10,13 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(string transJson, bool isTransOfDBExtra);
 
-        Task InsertCookie(string cookieJson, bool isTransOfDBExtra);
+        Task InsertFPTagging(string taggings, bool isTransOfDBExtra);
 
-        Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra);
+        Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
 
         Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
 
-        Task InsertRawFingerPrint(string rawFingerPrintJson, bool isTransOfDBExtra);
+        Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
 
         void InsertTransaction(string transJson);
 
@@ -71,22 +70,22 @@ namespace Device.FingerPrint.Features.Transaction.Services
             await repository.ExecuteAsync(criteria);
         }
 
-        public async Task InsertCookie(string cookieJson, bool isTransOfDBExtra)
+        public async Task InsertFPTagging(string taggings, bool isTransOfDBExtra)
         {
-            var criteria = new InsertCookieCriteria
+            var criteria = new InsertFPTaggingCriteria
             {
-                CookieJson = cookieJson,
+                Taggings = taggings,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
             await repository.ExecuteAsync(criteria);
         }
 
-        public async Task InsertRawUserAgent(string rawUserAgentJson, bool isTransOfDBExtra)
+        public async Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
         {
-            var criteria = new InsertRawUserAgentCriteria
+            var criteria = new InsertFPUserAgentCriteria
             {
-                RawUserAgentJson = rawUserAgentJson,
+                UserAgentJson = userAgentJson,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
@@ -104,11 +103,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
             await repository.ExecuteAsync(criteria);
         }
 
-        public async Task InsertRawFingerPrint(string rawFingerPrintJson, bool isTransOfDBExtra)
+        public async Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
         {
-            var criteria = new InsertRawFingerPrintCriteria
+            var criteria = new InsertFPFingerPrintCriteria
             {
-                RawFingerPrintJson = rawFingerPrintJson,
+                FingerPrintJson = fingerPrintJson,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 

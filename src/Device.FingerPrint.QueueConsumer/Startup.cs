@@ -149,7 +149,7 @@ namespace Device.FingerPrint.QueueConsumer
         private void RegisterRedis(IServiceCollection services)
         {
             var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
-            var redisDatabaseIndex = int.Parse(Configuration["Redis:EverCookieDbIndex"]);
+            var redisDatabaseIndex = int.Parse(Configuration["Redis:EverTaggingDbIndex"]);
 
             services.AddSingleton(redisConfiguration);
 

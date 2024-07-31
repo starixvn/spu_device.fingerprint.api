@@ -3,10 +3,10 @@ using Fanex.Data.Repository;
 
 namespace Device.FingerPrint.Features.Transaction.Criterias
 {
-    public class InsertRawUserAgentCriteria : NonQueryCommand
+    public class InsertFPUserAgentCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_RawUserAgentJson")]
-        public string RawUserAgentJson { get; set; }
+        [SpParam(SqlParamName = "ip_UserAgentJson")]
+        public string UserAgentJson { get; set; }
 
         [SpParam(Ignored = true)]
         public bool IsTransOfDBExtra { get; set; }
@@ -19,7 +19,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
             }
             else
             {
-                return "DCS_DC_Transform_RawUserAgent_Insert";
+                return "DCS_DC_Transform_FP_UserAgent_Insert";
             }
         }
 
