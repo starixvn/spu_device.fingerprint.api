@@ -87,8 +87,6 @@ var gfpCode = (function (exports) {
      * Copyright 2015-present FingerprintJS, Inc.
      */
 
-    var version = "1.0.3";
-
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
     }
@@ -105,19 +103,6 @@ var gfpCode = (function (exports) {
             channel.port1.onmessage = function () { return resolve(); };
             channel.port2.postMessage(null);
         });
-    }
-    function requestIdleCallbackIfAvailable(fallbackTimeout, deadlineTimeout) {
-        if (deadlineTimeout === void 0) { deadlineTimeout = Infinity; }
-        var requestIdleCallback = window.requestIdleCallback;
-        if (requestIdleCallback) {
-            // The function `requestIdleCallback` loses the binding to `window` here.
-            // `globalThis` isn't always equal `window` (see https://github.com/fingerprintjs/fingerprintjs/issues/683).
-            // Therefore, an error can occur. `call(window,` prevents the error.
-            return new Promise(function (resolve) { return requestIdleCallback.call(window, function () { return resolve(); }, { timeout: deadlineTimeout }); });
-        }
-        else {
-            return wait(Math.min(fallbackTimeout, deadlineTimeout));
-        }
     }
     function isPromise(value) {
         return !!value && typeof value.then === 'function';
@@ -288,300 +273,6 @@ var gfpCode = (function (exports) {
             }
         }
         return [tag, attributes];
-    }
-    /**
-     * Converts a string to UTF8 bytes
-     */
-    function getUTF8Bytes(input) {
-        // Benchmark: https://jsbench.me/b6klaaxgwq/1
-        // If you want to just count bytes, see solutions at https://jsbench.me/ehklab415e/1
-        var result = new Uint8Array(input.length);
-        for (var i = 0; i < input.length; i++) {
-            // `charCode` is faster than encoding, so we prefer that when it's possible
-            var charCode = input.charCodeAt(i);
-            // In case of non-ASCII symbols we use proper encoding
-            if (charCode > 127) {
-                return new TextEncoder().encode(input);
-            }
-            result[i] = charCode;
-        }
-        return result;
-    }
-
-    /*
-     * Based on https://github.com/karanlyons/murmurHash3.js/blob/a33d0723127e2e5415056c455f8aed2451ace208/murmurHash3.js
-     */
-    /**
-     * Adds two 64-bit values (provided as tuples of 32-bit values)
-     * and updates (mutates) first value to write the result
-     */
-    function x64Add(m, n) {
-        var m0 = m[0] >>> 16, m1 = m[0] & 0xffff, m2 = m[1] >>> 16, m3 = m[1] & 0xffff;
-        var n0 = n[0] >>> 16, n1 = n[0] & 0xffff, n2 = n[1] >>> 16, n3 = n[1] & 0xffff;
-        var o0 = 0, o1 = 0, o2 = 0, o3 = 0;
-        o3 += m3 + n3;
-        o2 += o3 >>> 16;
-        o3 &= 0xffff;
-        o2 += m2 + n2;
-        o1 += o2 >>> 16;
-        o2 &= 0xffff;
-        o1 += m1 + n1;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o0 += m0 + n0;
-        o0 &= 0xffff;
-        m[0] = (o0 << 16) | o1;
-        m[1] = (o2 << 16) | o3;
-    }
-    /**
-     * Multiplies two 64-bit values (provided as tuples of 32-bit values)
-     * and updates (mutates) first value to write the result
-     */
-    function x64Multiply(m, n) {
-        var m0 = m[0] >>> 16, m1 = m[0] & 0xffff, m2 = m[1] >>> 16, m3 = m[1] & 0xffff;
-        var n0 = n[0] >>> 16, n1 = n[0] & 0xffff, n2 = n[1] >>> 16, n3 = n[1] & 0xffff;
-        var o0 = 0, o1 = 0, o2 = 0, o3 = 0;
-        o3 += m3 * n3;
-        o2 += o3 >>> 16;
-        o3 &= 0xffff;
-        o2 += m2 * n3;
-        o1 += o2 >>> 16;
-        o2 &= 0xffff;
-        o2 += m3 * n2;
-        o1 += o2 >>> 16;
-        o2 &= 0xffff;
-        o1 += m1 * n3;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o1 += m2 * n2;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o1 += m3 * n1;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o0 += m0 * n3 + m1 * n2 + m2 * n1 + m3 * n0;
-        o0 &= 0xffff;
-        m[0] = (o0 << 16) | o1;
-        m[1] = (o2 << 16) | o3;
-    }
-    /**
-     * Provides left rotation of the given int64 value (provided as tuple of two int32)
-     * by given number of bits. Result is written back to the value
-     */
-    function x64Rotl(m, bits) {
-        var m0 = m[0];
-        bits %= 64;
-        if (bits === 32) {
-            m[0] = m[1];
-            m[1] = m0;
-        }
-        else if (bits < 32) {
-            m[0] = (m0 << bits) | (m[1] >>> (32 - bits));
-            m[1] = (m[1] << bits) | (m0 >>> (32 - bits));
-        }
-        else {
-            bits -= 32;
-            m[0] = (m[1] << bits) | (m0 >>> (32 - bits));
-            m[1] = (m0 << bits) | (m[1] >>> (32 - bits));
-        }
-    }
-    /**
-     * Provides a left shift of the given int32 value (provided as tuple of [0, int32])
-     * by given number of bits. Result is written back to the value
-     */
-    function x64LeftShift(m, bits) {
-        bits %= 64;
-        if (bits === 0) {
-            return;
-        }
-        else if (bits < 32) {
-            m[0] = m[1] >>> (32 - bits);
-            m[1] = m[1] << bits;
-        }
-        else {
-            m[0] = m[1] << (bits - 32);
-            m[1] = 0;
-        }
-    }
-    /**
-     * Provides a XOR of the given int64 values(provided as tuple of two int32).
-     * Result is written back to the first value
-     */
-    function x64Xor(m, n) {
-        m[0] ^= n[0];
-        m[1] ^= n[1];
-    }
-    var F1 = [0xff51afd7, 0xed558ccd];
-    var F2 = [0xc4ceb9fe, 0x1a85ec53];
-    /**
-     * Calculates murmurHash3's final x64 mix of that block and writes result back to the input value.
-     * (`[0, h[0] >>> 1]` is a 33 bit unsigned right shift. This is the
-     * only place where we need to right shift 64bit ints.)
-     */
-    function x64Fmix(h) {
-        var shifted = [0, h[0] >>> 1];
-        x64Xor(h, shifted);
-        x64Multiply(h, F1);
-        shifted[1] = h[0] >>> 1;
-        x64Xor(h, shifted);
-        x64Multiply(h, F2);
-        shifted[1] = h[0] >>> 1;
-        x64Xor(h, shifted);
-    }
-    var C1 = [0x87c37b91, 0x114253d5];
-    var C2 = [0x4cf5ad43, 0x2745937f];
-    var M$1 = [0, 5];
-    var N1 = [0, 0x52dce729];
-    var N2 = [0, 0x38495ab5];
-    /**
-     * Given a string and an optional seed as an int, returns a 128 bit
-     * hash using the x64 flavor of MurmurHash3, as an unsigned hex.
-     * All internal functions mutates passed value to achieve minimal memory allocations and GC load
-     *
-     * Benchmark https://jsbench.me/p4lkpaoabi/1
-     */
-    function x64hash128(input, seed) {
-        var key = getUTF8Bytes(input);
-        seed = seed || 0;
-        var length = [0, key.length];
-        var remainder = length[1] % 16;
-        var bytes = length[1] - remainder;
-        var h1 = [0, seed];
-        var h2 = [0, seed];
-        var k1 = [0, 0];
-        var k2 = [0, 0];
-        var i;
-        for (i = 0; i < bytes; i = i + 16) {
-            k1[0] = key[i + 4] | (key[i + 5] << 8) | (key[i + 6] << 16) | (key[i + 7] << 24);
-            k1[1] = key[i] | (key[i + 1] << 8) | (key[i + 2] << 16) | (key[i + 3] << 24);
-            k2[0] = key[i + 12] | (key[i + 13] << 8) | (key[i + 14] << 16) | (key[i + 15] << 24);
-            k2[1] = key[i + 8] | (key[i + 9] << 8) | (key[i + 10] << 16) | (key[i + 11] << 24);
-            x64Multiply(k1, C1);
-            x64Rotl(k1, 31);
-            x64Multiply(k1, C2);
-            x64Xor(h1, k1);
-            x64Rotl(h1, 27);
-            x64Add(h1, h2);
-            x64Multiply(h1, M$1);
-            x64Add(h1, N1);
-            x64Multiply(k2, C2);
-            x64Rotl(k2, 33);
-            x64Multiply(k2, C1);
-            x64Xor(h2, k2);
-            x64Rotl(h2, 31);
-            x64Add(h2, h1);
-            x64Multiply(h2, M$1);
-            x64Add(h2, N2);
-        }
-        k1[0] = 0;
-        k1[1] = 0;
-        k2[0] = 0;
-        k2[1] = 0;
-        var val = [0, 0];
-        switch (remainder) {
-            case 15:
-                val[1] = key[i + 14];
-                x64LeftShift(val, 48);
-                x64Xor(k2, val);
-            // fallthrough
-            case 14:
-                val[1] = key[i + 13];
-                x64LeftShift(val, 40);
-                x64Xor(k2, val);
-            // fallthrough
-            case 13:
-                val[1] = key[i + 12];
-                x64LeftShift(val, 32);
-                x64Xor(k2, val);
-            // fallthrough
-            case 12:
-                val[1] = key[i + 11];
-                x64LeftShift(val, 24);
-                x64Xor(k2, val);
-            // fallthrough
-            case 11:
-                val[1] = key[i + 10];
-                x64LeftShift(val, 16);
-                x64Xor(k2, val);
-            // fallthrough
-            case 10:
-                val[1] = key[i + 9];
-                x64LeftShift(val, 8);
-                x64Xor(k2, val);
-            // fallthrough
-            case 9:
-                val[1] = key[i + 8];
-                x64Xor(k2, val);
-                x64Multiply(k2, C2);
-                x64Rotl(k2, 33);
-                x64Multiply(k2, C1);
-                x64Xor(h2, k2);
-            // fallthrough
-            case 8:
-                val[1] = key[i + 7];
-                x64LeftShift(val, 56);
-                x64Xor(k1, val);
-            // fallthrough
-            case 7:
-                val[1] = key[i + 6];
-                x64LeftShift(val, 48);
-                x64Xor(k1, val);
-            // fallthrough
-            case 6:
-                val[1] = key[i + 5];
-                x64LeftShift(val, 40);
-                x64Xor(k1, val);
-            // fallthrough
-            case 5:
-                val[1] = key[i + 4];
-                x64LeftShift(val, 32);
-                x64Xor(k1, val);
-            // fallthrough
-            case 4:
-                val[1] = key[i + 3];
-                x64LeftShift(val, 24);
-                x64Xor(k1, val);
-            // fallthrough
-            case 3:
-                val[1] = key[i + 2];
-                x64LeftShift(val, 16);
-                x64Xor(k1, val);
-            // fallthrough
-            case 2:
-                val[1] = key[i + 1];
-                x64LeftShift(val, 8);
-                x64Xor(k1, val);
-            // fallthrough
-            case 1:
-                val[1] = key[i];
-                x64Xor(k1, val);
-                x64Multiply(k1, C1);
-                x64Rotl(k1, 31);
-                x64Multiply(k1, C2);
-                x64Xor(h1, k1);
-            // fallthrough
-        }
-        x64Xor(h1, length);
-        x64Xor(h2, length);
-        x64Add(h1, h2);
-        x64Add(h2, h1);
-        x64Fmix(h1);
-        x64Fmix(h2);
-        x64Add(h1, h2);
-        x64Add(h2, h1);
-        return (('00000000' + (h1[0] >>> 0).toString(16)).slice(-8) +
-            ('00000000' + (h1[1] >>> 0).toString(16)).slice(-8) +
-            ('00000000' + (h2[0] >>> 0).toString(16)).slice(-8) +
-            ('00000000' + (h2[1] >>> 0).toString(16)).slice(-8));
-    }
-
-    /**
-     * Converts an error object to a plain object that can be used with `JSON.stringify`.
-     * If you just run `JSON.stringify(error)`, you'll get `'{}'`.
-     */
-    function errorToObject(error) {
-        var _a;
-        return __assign({ name: error.name, message: error.message, stack: (_a = error.stack) === null || _a === void 0 ? void 0 : _a.split('\n') }, error);
     }
     function isFunctionNative(func) {
         return /^function\s.*?\{\s*\[native code]\s*}$/.test(String(func));
@@ -1399,7 +1090,7 @@ var gfpCode = (function (exports) {
      * A version of the entropy source with stabilization to make it suitable for static fingerprinting.
      * Canvas image is noised in private mode of Safari 17, so image rendering is skipped in Safari 17.
      */
-    function getCanvasFingerprint$1() {
+    function getCanvasFingerprint() {
         return getUnstableCanvasFingerprint(doesBrowserPerformAntifingerprinting());
     }
     /**
@@ -1413,12 +1104,12 @@ var gfpCode = (function (exports) {
         var winding = false;
         var geometry;
         var text;
-        var _b = makeCanvasContext$1(), canvas = _b[0], context = _b[1];
-        if (!isSupported$1(canvas, context)) {
+        var _b = makeCanvasContext(), canvas = _b[0], context = _b[1];
+        if (!isSupported(canvas, context)) {
             geometry = text = "unsupported" /* ImageStatus.Unsupported */;
         }
         else {
-            winding = doesSupportWinding$1(context);
+            winding = doesSupportWinding(context);
             if (skipImages) {
                 geometry = text = "skipped" /* ImageStatus.Skipped */;
             }
@@ -1428,16 +1119,16 @@ var gfpCode = (function (exports) {
         }
         return { winding: winding, geometry: geometry, text: text };
     }
-    function makeCanvasContext$1() {
+    function makeCanvasContext() {
         var canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
         return [canvas, canvas.getContext('2d')];
     }
-    function isSupported$1(canvas, context) {
+    function isSupported(canvas, context) {
         return !!(context && canvas.toDataURL);
     }
-    function doesSupportWinding$1(context) {
+    function doesSupportWinding(context) {
         // https://web.archive.org/web/20170825024655/http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
         // https://github.com/Modernizr/Modernizr/blob/master/feature-detects/canvas/winding.js
         context.rect(0, 0, 10, 10);
@@ -1445,9 +1136,9 @@ var gfpCode = (function (exports) {
         return !context.isPointInPath(5, 5, 'evenodd');
     }
     function renderImages(canvas, context) {
-        renderTextImage$1(canvas, context);
-        var textImage1 = canvasToString$1(canvas);
-        var textImage2 = canvasToString$1(canvas); // It's slightly faster to double-encode the text image
+        renderTextImage(canvas, context);
+        var textImage1 = canvasToString(canvas);
+        var textImage2 = canvasToString(canvas); // It's slightly faster to double-encode the text image
         // Some browsers add a noise to the canvas: https://github.com/fingerprintjs/fingerprintjs/issues/791
         // The canvas is excluded from the fingerprint in this case
         if (textImage1 !== textImage2) {
@@ -1457,11 +1148,11 @@ var gfpCode = (function (exports) {
         // https://github.com/fingerprintjs/fingerprintjs/issues/583
         // https://github.com/fingerprintjs/fingerprintjs/issues/103
         // Therefore it's extracted into a separate image.
-        renderGeometryImage$1(canvas, context);
-        var geometryImage = canvasToString$1(canvas);
+        renderGeometryImage(canvas, context);
+        var geometryImage = canvasToString(canvas);
         return [geometryImage, textImage1];
     }
-    function renderTextImage$1(canvas, context) {
+    function renderTextImage(canvas, context) {
         // Resizing the canvas cleans it
         canvas.width = 240;
         canvas.height = 60;
@@ -1484,7 +1175,7 @@ var gfpCode = (function (exports) {
         context.font = '18pt Arial';
         context.fillText(printedText, 4, 45);
     }
-    function renderGeometryImage$1(canvas, context) {
+    function renderGeometryImage(canvas, context) {
         // Resizing the canvas cleans it
         canvas.width = 122;
         canvas.height = 110;
@@ -1512,7 +1203,7 @@ var gfpCode = (function (exports) {
         context.arc(60, 60, 20, 0, Math.PI * 2, true);
         context.fill('evenodd');
     }
-    function canvasToString$1(canvas) {
+    function canvasToString(canvas) {
         return canvas.toDataURL();
     }
     /**
@@ -1559,7 +1250,7 @@ var gfpCode = (function (exports) {
         return navigator.oscpu;
     }
 
-    function getLanguages$1() {
+    function getLanguages() {
         var n = navigator;
         var result = [];
         var language = n.language || n.userLanguage || n.browserLanguage || n.systemLanguage;
@@ -2946,9 +2637,9 @@ var gfpCode = (function (exports) {
         fontPreferences: getFontPreferences,
         audio: getAudioFingerprint,
         screenFrame: getScreenFrame,
-        canvas: getCanvasFingerprint$1,
+        canvas: getCanvasFingerprint,
         osCpu: getOsCpu,
-        languages: getLanguages$1,
+        languages: getLanguages,
         colorDepth: getColorDepth,
         deviceMemory: getDeviceMemory,
         screenResolution: getScreenResolution,
@@ -2984,544 +2675,106 @@ var gfpCode = (function (exports) {
         webGlBasics: getWebGlBasics,
         webGlExtensions: getWebGlExtensions,
     };
-    /**
-     * Loads the built-in entropy sources.
-     * Returns a function that collects the entropy components to make the visitor identifier.
-     */
-    function loadBuiltinSources(options) {
-        return loadSources(sources, options, []);
-    }
 
-    var commentTemplate = '$ if upgrade to Pro: https://fpjs.dev/pro';
-    function getConfidence(components) {
-        var openConfidenceScore = getOpenConfidenceScore(components);
-        var proConfidenceScore = deriveProConfidenceScore(openConfidenceScore);
-        return { score: openConfidenceScore, comment: commentTemplate.replace(/\$/g, "".concat(proConfidenceScore)) };
-    }
-    function getOpenConfidenceScore(components) {
-        // In order to calculate the true probability of the visitor identifier being correct, we need to know the number of
-        // website visitors (the higher the number, the less the probability because the fingerprint entropy is limited).
-        // JS agent doesn't know the number of visitors, so we can only do an approximate assessment.
-        if (isAndroid()) {
-            return 0.4;
-        }
-        // Safari (mobile and desktop)
-        if (isWebKit()) {
-            return isDesktopWebKit() && !(isWebKit616OrNewer() && isSafariWebKit()) ? 0.5 : 0.3;
-        }
-        var platform = 'value' in components.platform ? components.platform.value : '';
-        // Windows
-        if (/^Win/.test(platform)) {
-            // The score is greater than on macOS because of the higher variety of devices running Windows.
-            // Chrome provides more entropy than Firefox according too
-            // https://netmarketshare.com/browser-market-share.aspx?options=%7B%22filter%22%3A%7B%22%24and%22%3A%5B%7B%22platform%22%3A%7B%22%24in%22%3A%5B%22Windows%22%5D%7D%7D%5D%7D%2C%22dateLabel%22%3A%22Trend%22%2C%22attributes%22%3A%22share%22%2C%22group%22%3A%22browser%22%2C%22sort%22%3A%7B%22share%22%3A-1%7D%2C%22id%22%3A%22browsersDesktop%22%2C%22dateInterval%22%3A%22Monthly%22%2C%22dateStart%22%3A%222019-11%22%2C%22dateEnd%22%3A%222020-10%22%2C%22segments%22%3A%22-1000%22%7D
-            // So we assign the same score to them.
-            return 0.6;
-        }
-        // macOS
-        if (/^Mac/.test(platform)) {
-            // Chrome provides more entropy than Safari and Safari provides more entropy than Firefox.
-            // Chrome is more popular than Safari and Safari is more popular than Firefox according to
-            // https://netmarketshare.com/browser-market-share.aspx?options=%7B%22filter%22%3A%7B%22%24and%22%3A%5B%7B%22platform%22%3A%7B%22%24in%22%3A%5B%22Mac%20OS%22%5D%7D%7D%5D%7D%2C%22dateLabel%22%3A%22Trend%22%2C%22attributes%22%3A%22share%22%2C%22group%22%3A%22browser%22%2C%22sort%22%3A%7B%22share%22%3A-1%7D%2C%22id%22%3A%22browsersDesktop%22%2C%22dateInterval%22%3A%22Monthly%22%2C%22dateStart%22%3A%222019-11%22%2C%22dateEnd%22%3A%222020-10%22%2C%22segments%22%3A%22-1000%22%7D
-            // So we assign the same score to them.
-            return 0.5;
-        }
-        // Another platform, e.g. a desktop Linux. It's rare, so it should be pretty unique.
-        return 0.7;
-    }
-    function deriveProConfidenceScore(openConfidenceScore) {
-        return round(0.99 + 0.01 * openConfidenceScore, 0.0001);
-    }
-
-    function componentsToCanonicalString(components) {
-        var result = '';
-        for (var _i = 0, _a = Object.keys(components).sort(); _i < _a.length; _i++) {
-            var componentKey = _a[_i];
-            var component = components[componentKey];
-            var value = 'error' in component ? 'error' : JSON.stringify(component.value);
-            result += "".concat(result ? '|' : '').concat(componentKey.replace(/([:|\\])/g, '\\$1'), ":").concat(value);
-        }
-        return result;
-    }
-    function componentsToDebugString(components) {
-        return JSON.stringify(components, function (_key, value) {
-            if (value instanceof Error) {
-                return errorToObject(value);
-            }
-            return value;
-        }, 2);
-    }
-    function hashComponents(components) {
-        return x64hash128(componentsToCanonicalString(components));
-    }
-    /**
-     * Makes a GetResult implementation that calculates the visitor id hash on demand.
-     * Designed for optimisation.
-     */
-    function makeLazyGetResult(components) {
-        var visitorIdCache;
-        // This function runs very fast, so there is no need to make it lazy
-        var confidence = getConfidence(components);
-        // A plain class isn't used because its getters and setters aren't enumerable.
-        return {
-            get visitorId() {
-                if (visitorIdCache === undefined) {
-                    visitorIdCache = hashComponents(this.components);
-                }
-                return visitorIdCache;
-            },
-            set visitorId(visitorId) {
-                visitorIdCache = visitorId;
-            },
-            confidence: confidence,
-            components: components,
-            version: version,
-        };
-    }
-    /**
-     * A delay is required to ensure consistent entropy components.
-     * See https://github.com/fingerprintjs/fingerprintjs/issues/254
-     * and https://github.com/fingerprintjs/fingerprintjs/issues/307
-     * and https://github.com/fingerprintjs/fingerprintjs/commit/945633e7c5f67ae38eb0fea37349712f0e669b18
-     */
-    function prepareForSources(delayFallback) {
-        if (delayFallback === void 0) { delayFallback = 50; }
-        // A proper deadline is unknown. Let it be twice the fallback timeout so that both cases have the same average time.
-        return requestIdleCallbackIfAvailable(delayFallback, delayFallback * 2);
-    }
-    /**
-     * The function isn't exported from the index file to not allow to call it without `load()`.
-     * The hiding gives more freedom for future non-breaking updates.
-     *
-     * A factory function is used instead of a class to shorten the attribute names in the minified code.
-     * Native private class fields could've been used, but TypeScript doesn't allow them with `"target": "es5"`.
-     */
-    function makeAgent(getComponents, debug) {
-        var creationTime = Date.now();
-        return {
-            get: function (options) {
-                return __awaiter(this, void 0, void 0, function () {
-                    var startTime, components, result;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                startTime = Date.now();
-                                return [4 /*yield*/, getComponents()];
-                            case 1:
-                                components = _a.sent();
-                                result = makeLazyGetResult(components);
-                                if (debug || (options === null || options === void 0 ? void 0 : options.debug)) {
-                                    // console.log is ok here because it's under a debug clause
-                                    // eslint-disable-next-line no-console
-                                    console.log("Copy the text below to get the debug data:\n\n```\nversion: ".concat(result.version, "\nuserAgent: ").concat(navigator.userAgent, "\ntimeBetweenLoadAndGet: ").concat(startTime - creationTime, "\nvisitorId: ").concat(result.visitorId, "\ncomponents: ").concat(componentsToDebugString(components), "\n```"));
-                                }
-                                return [2 /*return*/, result];
-                        }
-                    });
-                });
-            },
-        };
-    }
-    /**
-     * Sends an unpersonalized AJAX request to collect installation statistics
-     */
-    function monitor() {
-        // The FingerprintJS CDN (https://github.com/fingerprintjs/cdn) replaces `window.__fpjs_d_m` with `true`
-        if (window.__fpjs_d_m || Math.random() >= 0.001) {
-            return;
-        }
-        try {
-            var request = new XMLHttpRequest();
-            request.open('get', "https://m1.openfpcdn.io/fingerprintjs/v".concat(version, "/npm-monitoring"), true);
-            request.send();
-        }
-        catch (error) {
-            // console.error is ok here because it's an unexpected error handler
-            // eslint-disable-next-line no-console
-            console.error(error);
-        }
-    }
-    /**
-     * Builds an instance of Agent and waits a delay required for a proper operation.
-     */
-    function load(options) {
-        var _a;
-        if (options === void 0) { options = {}; }
+    function detectIncognito() {
         return __awaiter(this, void 0, void 0, function () {
-            var delayFallback, debug, getComponents;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if ((_a = options.monitoring) !== null && _a !== void 0 ? _a : true) {
-                            monitor();
-                        }
-                        delayFallback = options.delayFallback, debug = options.debug;
-                        return [4 /*yield*/, prepareForSources(delayFallback)];
-                    case 1:
-                        _b.sent();
-                        getComponents = loadBuiltinSources({ cache: {}, debug: debug });
-                        return [2 /*return*/, makeAgent(getComponents, debug)];
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
+                            function newSafariTest() {
+                                var tmp_name = String(Math.random());
+                                try {
+                                    var db = window.indexedDB.open(tmp_name, 1);
+                                    db.onupgradeneeded = function (i) {
+                                        var _a, _b;
+                                        var res = (_a = i.target) === null || _a === void 0 ? void 0 : _a.result;
+                                        try {
+                                            res.createObjectStore('test', {
+                                                autoIncrement: true
+                                            }).put(new Blob());
+                                            resolve(false);
+                                        }
+                                        catch (e) {
+                                            var message = e;
+                                            if (e instanceof Error) {
+                                                message = (_b = e.message) !== null && _b !== void 0 ? _b : e;
+                                            }
+                                            if (typeof message !== 'string') {
+                                                resolve(false);
+                                                return;
+                                            }
+                                            var matchesExpectedError = message.includes('BlobURLs are not yet supported');
+                                            resolve(matchesExpectedError);
+                                            return;
+                                        }
+                                        finally {
+                                            res.close();
+                                            window.indexedDB.deleteDatabase(tmp_name);
+                                        }
+                                    };
+                                }
+                                catch (e) {
+                                    resolve(false);
+                                }
+                            }
+                            function safariPrivateTest() {
+                                newSafariTest();
+                            }
+                            function getChromeQuotaLimit() {
+                                var w = window;
+                                if (w.performance !== undefined &&
+                                    w.performance.memory !== undefined &&
+                                    w.performance.memory.jsHeapSizeLimit !== undefined) {
+                                    return performance.memory.jsHeapSizeLimit;
+                                }
+                                return 1073741824;
+                            }
+                            function storageQuotaChromePrivateTest() {
+                                navigator.webkitTemporaryStorage.queryUsageAndQuota(function (_, quota) {
+                                    var quotaInMib = Math.round(quota / (1024 * 1024));
+                                    var quotaLimitInMib = Math.round(getChromeQuotaLimit() / (1024 * 1024)) * 2;
+                                    resolve(quotaInMib < quotaLimitInMib);
+                                }, function (e) {
+                                    reject(new Error('detectIncognito somehow failed to query storage quota: ' +
+                                        e.message));
+                                });
+                            }
+                            function chromePrivateTest() {
+                                storageQuotaChromePrivateTest();
+                            }
+                            function firefoxPrivateTest() {
+                                resolve(navigator.serviceWorker === undefined);
+                            }
+                            function main() {
+                                if (isWebKit()) {
+                                    safariPrivateTest();
+                                }
+                                else if (isChromium()) {
+                                    chromePrivateTest();
+                                }
+                                else if (isGecko()) {
+                                    firefoxPrivateTest();
+                                }
+                                else {
+                                    reject(new Error('detectIncognito cannot determine the browser'));
+                                }
+                            }
+                            main();
+                        })];
+                    case 1: return [2 /*return*/, _a.sent()];
                 }
             });
         });
     }
-
-    // The default export is a syntax sugar (`import * as FP from '...' → import FP from '...'`).
-    // It should contain all the public exported values.
-    var index = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
-
-    function getWebglCanvas() {
-        var canvas = document.createElement("canvas");
-        var gl = null;
-        try {
-            gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        }
-        catch (e) {
-            /* squelch */
-        }
-        if (!gl) {
-            gl = null;
-        }
-        return gl;
-    }
-    function getWebglFp() {
-        var gl;
-        var fa2s = function (fa) {
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl.LEQUAL);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            return "[" + fa[0] + ", " + fa[1] + "]";
-        };
-        var maxAnisotropy = function (gl) {
-            var anisotropy, ext = gl.getExtension("EXT_texture_filter_anisotropic") ||
-                gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
-                gl.getExtension("MOZ_EXT_texture_filter_anisotropic");
-            return ext
-                ? ((anisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT)),
-                    0 === anisotropy && (anisotropy = 2),
-                    anisotropy)
-                : null;
-        };
-        gl = getWebglCanvas();
-        if (!gl) {
-            return null;
-        }
-        // WebGL fingerprinting is a combination of techniques, found in MaxMind antifraud script & Augur fingerprinting.
-        // First it draws a gradient object with shaders and convers the image to the Base64 string.
-        // Then it enumerates all WebGL extensions & capabilities and appends them to the Base64 string, resulting in a huge WebGL string, potentially very unique on each device
-        // Since iOS supports webgl starting from version 8.1 and 8.1 runs on several graphics chips, the results may be different across ios devices, but we need to verify it.
-        var result = [];
-        var vShaderTemplate = "attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}";
-        var fShaderTemplate = "precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}";
-        var vertexPosBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        var vertices = new Float32Array([
-            -0.2, -0.9, 0, 0.4, -0.26, 0, 0, 0.732134444, 0,
-        ]);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        vertexPosBuffer.itemSize = 3;
-        vertexPosBuffer.numItems = 3;
-        var program = gl.createProgram(), vshader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vshader, vShaderTemplate);
-        gl.compileShader(vshader);
-        var fshader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fshader, fShaderTemplate);
-        gl.compileShader(fshader);
-        gl.attachShader(program, vshader);
-        gl.attachShader(program, fshader);
-        gl.linkProgram(program);
-        gl.useProgram(program);
-        program.vertexPosAttrib = gl.getAttribLocation(program, "attrVertex");
-        program.offsetUniform = gl.getUniformLocation(program, "uniformOffset");
-        gl.enableVertexAttribArray(program.vertexPosArray);
-        gl.vertexAttribPointer(program.vertexPosAttrib, vertexPosBuffer.itemSize, gl.FLOAT, !1, 0, 0);
-        gl.uniform2f(program.offsetUniform, 1, 1);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems);
-        //   if (gl.canvas != null) {
-        //     result.push(gl.canvas.toDataURL());
-        //   }
-        result.push("extensions:" + gl.getSupportedExtensions().join(";"));
-        result.push("webgl aliased line width range:" +
-            fa2s(gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE)));
-        result.push("webgl aliased point size range:" +
-            fa2s(gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)));
-        result.push("webgl alpha bits:" + gl.getParameter(gl.ALPHA_BITS));
-        result.push("webgl antialiasing:" + (gl.getContextAttributes().antialias ? "yes" : "no"));
-        result.push("webgl blue bits:" + gl.getParameter(gl.BLUE_BITS));
-        result.push("webgl depth bits:" + gl.getParameter(gl.DEPTH_BITS));
-        result.push("webgl green bits:" + gl.getParameter(gl.GREEN_BITS));
-        result.push("webgl max anisotropy:" + maxAnisotropy(gl));
-        result.push("webgl max combined texture image units:" +
-            gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS));
-        result.push("webgl max cube map texture size:" +
-            gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE));
-        result.push("webgl max fragment uniform vectors:" +
-            gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS));
-        result.push("webgl max render buffer size:" + gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
-        result.push("webgl max texture image units:" +
-            gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
-        result.push("webgl max texture size:" + gl.getParameter(gl.MAX_TEXTURE_SIZE));
-        result.push("webgl max varying vectors:" + gl.getParameter(gl.MAX_VARYING_VECTORS));
-        result.push("webgl max vertex attribs:" + gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
-        result.push("webgl max vertex texture image units:" +
-            gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS));
-        result.push("webgl max vertex uniform vectors:" +
-            gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS));
-        result.push("webgl max viewport dims:" + fa2s(gl.getParameter(gl.MAX_VIEWPORT_DIMS)));
-        result.push("webgl red bits:" + gl.getParameter(gl.RED_BITS));
-        result.push("webgl renderer:" + gl.getParameter(gl.RENDERER));
-        result.push("webgl shading language version:" +
-            gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
-        result.push("webgl stencil bits:" + gl.getParameter(gl.STENCIL_BITS));
-        result.push("webgl vendor:" + gl.getParameter(gl.VENDOR));
-        result.push("webgl version:" + gl.getParameter(gl.VERSION));
-        if (!gl.getShaderPrecisionFormat) {
-            return result.join("~");
-        }
-        result.push("webgl vertex shader high float precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision);
-        result.push("webgl vertex shader high float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).rangeMin);
-        result.push("webgl vertex shader high float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).rangeMax);
-        result.push("webgl vertex shader medium float precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision);
-        result.push("webgl vertex shader medium float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).rangeMin);
-        result.push("webgl vertex shader medium float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).rangeMax);
-        result.push("webgl vertex shader low float precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).precision);
-        result.push("webgl vertex shader low float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).rangeMin);
-        result.push("webgl vertex shader low float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).rangeMax);
-        result.push("webgl fragment shader high float precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision);
-        result.push("webgl fragment shader high float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).rangeMin);
-        result.push("webgl fragment shader high float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).rangeMax);
-        result.push("webgl fragment shader medium float precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision);
-        result.push("webgl fragment shader medium float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).rangeMin);
-        result.push("webgl fragment shader medium float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).rangeMax);
-        result.push("webgl fragment shader low float precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).precision);
-        result.push("webgl fragment shader low float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).rangeMin);
-        result.push("webgl fragment shader low float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).rangeMax);
-        result.push("webgl vertex shader high int precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).precision);
-        result.push("webgl vertex shader high int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).rangeMin);
-        result.push("webgl vertex shader high int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).rangeMax);
-        result.push("webgl vertex shader medium int precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).precision);
-        result.push("webgl vertex shader medium int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).rangeMin);
-        result.push("webgl vertex shader medium int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).rangeMax);
-        result.push("webgl vertex shader low int precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).precision);
-        result.push("webgl vertex shader low int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).rangeMin);
-        result.push("webgl vertex shader low int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).rangeMax);
-        result.push("webgl fragment shader high int precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).precision);
-        result.push("webgl fragment shader high int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).rangeMin);
-        result.push("webgl fragment shader high int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).rangeMax);
-        result.push("webgl fragment shader medium int precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).precision);
-        result.push("webgl fragment shader medium int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).rangeMin);
-        result.push("webgl fragment shader medium int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).rangeMax);
-        result.push("webgl fragment shader low int precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).precision);
-        result.push("webgl fragment shader low int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).rangeMin);
-        result.push("webgl fragment shader low int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).rangeMax);
-        return result.join("~");
-    }
-    function webglId(callback) {
-        try {
-            var n1 = getWebglFp();
-            var m1 = JSON.stringify(n1).replace(/,?"[0-9]+":/g, "");
-            var hash1 = callback(m1);
-            var n2 = getWebglFp();
-            var m2 = JSON.stringify(n2).replace(/,?"[0-9]+":/g, "");
-            var hash2 = callback(m2);
-            if (hash1 == hash2) {
-                return hash1;
-            }
-            return "unstable";
-        }
-        catch (error) {
-            console.log('error', error);
-            return 'error';
-        }
+    if (typeof window !== 'undefined') {
+        window.detectIncognito = detectIncognito;
     }
 
-    function checkFunctionCode(func, expectedName) {
-        var reg = new RegExp("^\\s*function " +
-            expectedName +
-            "\\s*\\(\\)\\s*\\{\\s*\\[native code\\]\\s*\\}\\s*$");
-        if (!func.toString().match(reg)) {
-            return true;
-        }
-        return false;
-    }
-    function isFnCanvasDefender() {
-        return checkFunctionCode(HTMLCanvasElement.prototype.toDataURL, "toDataURL");
-    }
-
-    function getCanvas(callback) {
-        var start = new Date();
-        if (!isFnCanvasDefender()) {
-            var result = getCanvasFingerprint();
-            if (result.geometry != "unstable") {
-                var hash = callback(JSON.stringify(result));
-                return { value: hash, duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
-            }
-        }
-        return { value: "unstable", duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
-    }
-    function getCanvasFingerprint() {
-        var winding = false;
-        var geometry;
-        var text;
-        var _a = makeCanvasContext(), canvas = _a[0], context = _a[1];
-        if (!isSupported(canvas, context)) {
-            geometry = text = ''; // The value will be 'unsupported' in v3.4
-        }
-        else {
-            winding = doesSupportWinding(context);
-            renderTextImage(canvas, context);
-            var textImage1 = canvasToString(canvas);
-            var textImage2 = canvasToString(canvas);
-            if (textImage1 !== textImage2) {
-                geometry = text = 'unstable';
-            }
-            else {
-                // text = textImage1
-                renderGeometryImage(canvas, context);
-                geometry = canvasToString(canvas);
-            }
-        }
-        return { winding: winding, geometry: geometry, text: text };
-    }
-    function makeCanvasContext() {
-        var canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        return [canvas, canvas.getContext('2d')];
-    }
-    function isSupported(canvas, context) {
-        return !!(context && canvas.toDataURL);
-    }
-    function doesSupportWinding(context) {
-        context.rect(0, 0, 10, 10);
-        context.rect(2, 2, 6, 6);
-        return !context.isPointInPath(5, 5, 'evenodd');
-    }
-    function renderTextImage(canvas, context) {
-        // Resizing the canvas cleans it
-        canvas.width = 240;
-        canvas.height = 60;
-        context.textBaseline = 'alphabetic';
-        context.fillStyle = '#f60';
-        context.fillRect(100, 1, 62, 20);
-        context.fillStyle = '#069';
-        context.font = '11pt "Times New Roman"';
-        var printedText = "Cwm fjordbank gly " + String.fromCharCode(55357, 56835) /* 😃 */;
-        context.fillText(printedText, 2, 15);
-        context.fillStyle = 'rgba(102, 204, 0, 0.2)';
-        context.font = '18pt Arial';
-        context.fillText(printedText, 4, 45);
-    }
-    function renderGeometryImage(canvas, context) {
-        // Resizing the canvas cleans it
-        canvas.width = 122;
-        canvas.height = 110;
-        // Canvas blending
-        context.globalCompositeOperation = 'multiply';
-        for (var _i = 0, _a = [
-            ['#f2f', 40, 40],
-            ['#2ff', 80, 40],
-            ['#ff2', 60, 80],
-        ]; _i < _a.length; _i++) {
-            var _b = _a[_i], color = _b[0], x = _b[1], y = _b[2];
-            context.fillStyle = color;
-            context.beginPath();
-            context.arc(x, y, 40, 0, Math.PI * 2, true);
-            context.closePath();
-            context.fill();
-        }
-        // Canvas winding
-        context.fillStyle = '#f9c';
-        context.arc(60, 60, 60, 0, Math.PI * 2, true);
-        context.arc(60, 60, 20, 0, Math.PI * 2, true);
-        context.fill('evenodd');
-    }
-    function canvasToString(canvas) {
-        return canvas.toDataURL();
-    }
-
-    var listAttributeHash = ["math", "fontPreferencePrint", "webGlExtensions"];
-    function getDevicePixelRatio() {
-        return window.devicePixelRatio;
-    }
-    function getCurrentResolution() {
-        var ratio = getDevicePixelRatio();
-        return screen.width * ratio + "x" + screen.height * ratio;
-    }
-    function getPixelDepth() {
-        return screen.pixelDepth;
-    }
-    function getScreenPrint() {
-        var start = Date.now();
-        var result = {
-            currentResolution: getCurrentResolution(),
-            pixelDepth: getPixelDepth(),
-        };
-        return { value: result, duration: Date.now() - start };
-    }
-    function getWebGL(callback) {
-        var start = new Date();
-        var result = webglId(callback);
-        return { value: result, duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
-    }
+    var listAttributeHash = ["canvas", "math", "webGlBasics", "webGlExtensions"];
     function getDoNotTrack() {
         var start = Date.now();
         var result = navigator.doNotTrack;
         return { value: result, duration: Date.now() - start };
-    }
-    function getWebGLRenderer(webgl) {
-        var start = Date.now();
-        if (webgl && webgl.value == "unstable") {
-            return { value: "unstable", duration: Date.now() - start };
-        }
-        return { value: getGLRenderer(), duration: Date.now() - start };
-    }
-    function getGLRenderer() {
-        var canvas = document.createElement("canvas");
-        var gl = canvas.getContext("webgl");
-        if (gl &&
-            typeof gl.getExtension === "function" &&
-            gl.getExtension("WEBGL_debug_renderer_info") != null) {
-            return gl.getParameter(gl.getExtension("WEBGL_debug_renderer_info").UNMASKED_RENDERER_WEBGL);
-        }
-        return "";
     }
     function componentsToJsonString(components, callback) {
         var sortedKeys = Object.keys(components).sort();
@@ -3551,88 +2804,30 @@ var gfpCode = (function (exports) {
         }
         return result + "}";
     }
-    function getFontPreference() {
-        return __awaiter(this, void 0, void 0, function () {
-            var start, font, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        start = Date.now();
-                        return [4 /*yield*/, sources.fontPreferences()];
-                    case 1:
-                        font = _a.sent();
-                        result = {
-                            default: font["default"],
-                            apple: font["apple"],
-                            serif: font["serif"],
-                            sans: font["sans"],
-                            min: font["min"],
-                            system: font["system"],
-                        };
-                        return [2 /*return*/, { value: result, duration: Date.now() - start }];
-                }
-            });
+    function getIncognitoMode(param) {
+        return detectIncognito().then(function (result) {
+            return {
+                components: param,
+                incognitoMode: result
+            };
         });
-    }
-    function getLanguages() {
-        var start = Date.now();
-        var result = {
-            language: window.navigator.language,
-            languages: window.navigator.languages.join(","),
-            userLanguage: window.navigator["userLanguage"],
-            browserLanguage: window.navigator["browserLanguage"],
-            systemLanguage: window.navigator["systemLanguage"],
-        };
-        return { value: result, duration: Date.now() - start };
-    }
-    function getAudio() {
-        return sources.audio();
-    }
-    function getBrowserSupport() {
-        return {
-            isWebKit: isWebKit,
-            isAndroid: isAndroid,
-            isChromium: isChromium,
-            isGecko: isGecko,
-            isTrident: isTrident,
-        };
     }
     function getResult(callback) {
         var _this = this;
-        var visitorId;
-        var fpPromise = loadSources(sources, {}, [
-            "screenResolution",
-            "screenFrame",
-            "canvas",
-            "fontPreferences",
-            "languages"
-        ])();
-        var canvas = getCanvas(callback);
-        var webgl = getWebGL(callback);
-        return fpPromise.then(function (components) { return __awaiter(_this, void 0, void 0, function () {
-            var customComponents, _a, properties;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        _a = [__assign({}, components)];
-                        _b = { screenPrint: getScreenPrint() };
-                        return [4 /*yield*/, getFontPreference()];
-                    case 1:
-                        customComponents = __assign.apply(void 0, _a.concat([(_b.fontPreferencePrint = _c.sent(), _b.languagesPrint = getLanguages(), _b.canvasPrint = canvas, _b.webglPrint = webgl, _b.webglRenderer = getWebGLRenderer(webgl), _b.doNotTrack = getDoNotTrack(), _b)]));
-                        visitorId = index.hashComponents(customComponents);
-                        properties = componentsToJsonString(customComponents, callback);
-                        return [2 /*return*/, Promise.resolve({
-                                Id: visitorId,
-                                Properties: properties
-                            })];
-                }
+        var fpPromise = loadSources(sources, {}, [])();
+        return fpPromise.then(function (result) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
+            return [2 /*return*/, getIncognitoMode(result)];
+        }); }); })
+            .then(function (res) {
+            var customComponents = __assign(__assign({}, res.components), { doNotTrack: getDoNotTrack(), isIncognitoMode: { value: res.incognitoMode } });
+            var properties = componentsToJsonString(customComponents, callback);
+            console.log('properties', properties);
+            return Promise.resolve({
+                Properties: properties
             });
-        }); });
+        });
     }
 
-    exports.getAudio = getAudio;
-    exports.getBrowserSupport = getBrowserSupport;
     exports.getResult = getResult;
 
     Object.defineProperty(exports, '__esModule', { value: true });
