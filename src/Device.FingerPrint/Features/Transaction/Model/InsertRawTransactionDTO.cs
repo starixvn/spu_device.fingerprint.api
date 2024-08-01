@@ -58,14 +58,12 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string FPTagging { get; set; }
 
-        public string RawFingerPrintCode { get; set; }
+        public string FPFingerPrintCode { get; set; }
 
-        public string BrowserInstanceCode { get; set; }
-
-        public string BrowserFamilyCode { get; set; }
+        public string FPFingerPrintExtraCode { get; set; }
 
         public string ChallengeCode { get; set; }
 
-        public string RawUserAgentCode { get; set; }
+        public string FPUserAgentCode { get; set; }
     }
 }

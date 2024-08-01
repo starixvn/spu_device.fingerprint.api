@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System;
 using FileHelpers;
+using Device.FingerPrint.Model.DTO;
 
 namespace Device.FingerPrint.Model
 {
@@ -77,19 +78,17 @@ namespace Device.FingerPrint.Model
 
         public string FPTagging { get; set; }
 
-        public string RawFingerPrintCode { get; set; }
+        public string FPFingerPrintCode { get; set; }
 
-        public FingerprintAttributeModel FingerprintAttribute { get; set; }
+        public string FPFingerPrintExtraCode { get; set; }
 
-        public string BrowserInstanceCode { get; set; }
+        public string FPUserAgentCode { get; set; }
 
-        public string BrowserFamilyCode { get; set; }
+        public InsertFPFingerprintDTO FingerprintAttribute { get; set; }
 
         public string ChallengeCode { get; set; }
 
         public string RawUserAgent { get; set; }
-
-        public string FP_UserAgentCode { get; set; }
 
         public UserAgentInfoModel UserAgentInfo { get; set; }
 

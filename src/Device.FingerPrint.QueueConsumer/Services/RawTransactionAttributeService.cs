@@ -4,13 +4,19 @@ using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.LogInfo.Model;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Model;
+using Device.FingerPrint.Model.DTO;
 using Device.FingerPrint.Model.Enums;
 using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
+using DeviceDetectorNET.Class.Device;
 using Fanex.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using static MassTransit.ValidationResultExtensions;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -91,8 +97,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.UserAgentInfo = GetUserAgentInfo(model.UserAgent);
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
-                        model.RawFingerPrintCode = fingerPrintModel.Id;
+
                         model.FPTagging = DeviceEncoder.Decrypt(sessionKey.SessionKey);
+                        model.FPFingerPrintCode = model.FingerprintAttribute.FPFingerPrintCode;
+                        model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
+                        model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
                         // Log Info Consumer
                         var subscriberName = model.SubscriberName;
@@ -117,42 +126,79 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
         }
 
-        private FingerprintAttributeModel TransformFingerprintAttributes(RawTransactionModel rawTransModel, FingerprintModel fpModel, HeaderModel headerModel)
+        private InsertFPFingerprintDTO TransformFingerprintAttributes(RawTransactionModel rawTransModel, FingerprintModel fpModel, HeaderModel headerModel)
         {
-            var result = new FingerprintAttributeModel();
-
-            if (fpModel != null && !string.IsNullOrEmpty(fpModel.Id))
+            var result = new InsertFPFingerprintDTO();
+            if (fpModel != null && !string.IsNullOrEmpty(fpModel.Attributes))
             {
-                result.FingerPrintCode = fpModel.Id;
-                result.Attribute = fpModel.Attributes;
-                result.Platform = fpModel.Platform;
+                var stringDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(fpModel.Attributes)
+                    .ToDictionary(kvp => kvp.Key, kvp => JsonConvert.SerializeObject(kvp.Value));
 
-                rawTransModel.RawFingerPrintCode = fpModel.Id;
-            }
+                var fingerPrintAttribute = new FPFingerprintAttributeModel();
+                foreach (var property in typeof(FPFingerprintAttributeModel).GetProperties())
+                {
+                    var camelCaseName = Char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+                    if (stringDictionary.TryGetValue(camelCaseName, out string value))
+                    {
+                        property.SetValue(fingerPrintAttribute, value);
+                    }
+                }
 
-            if (headerModel != null)
-            {
-                result.Accept = headerModel.Accept;
-                result.Encoding = headerModel.Encoding;
-                result.Headers = headerModel.Headers;
+                result.FPFingerPrintCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerPrintAttribute));
+                result.FPFingerPrintAttribute = fingerPrintAttribute;
+
+                var fingerprintAttributeExtra = new FPFingerprintAttributeExtraModel();
+                if (headerModel != null)
+                {
+                    fingerprintAttributeExtra.Platform = fpModel.Platform;
+
+                    fingerprintAttributeExtra.Accept = headerModel.Accept;
+                    fingerprintAttributeExtra.Encoding = headerModel.Encoding;
+                    fingerprintAttributeExtra.Headers = headerModel.Headers;
+                }
 
                 var userAgentInfo = rawTransModel.UserAgentInfo;
-                result.UserAgent = userAgentInfo.UserAgent;
-                result.BrowserName = userAgentInfo.ClientName;
-                result.BrowserVersion = userAgentInfo.ClientVersion;
-                result.OSName = userAgentInfo.OSName;
+                if (userAgentInfo != null)
+                {
+                    fingerprintAttributeExtra.UserAgent = userAgentInfo.UserAgent;
+                    fingerprintAttributeExtra.BrowserName = userAgentInfo.ClientName;
+                    fingerprintAttributeExtra.BrowserVersion = userAgentInfo.ClientVersion;
+                    fingerprintAttributeExtra.OSName = userAgentInfo.OSName;
+                }
+
+                result.FPFingerPrintExtraCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerprintAttributeExtra));
+                result.FPFingerPrintExtraAttribute = fingerprintAttributeExtra;
             }
 
-            result.BrowserInstanceCode = HashBrowserInstanceCode(result);
-            result.BrowserFamilyCode = HashBrowserFamilyCode(result);
-            
-            var UserAgentCode = crypto.GetMD5Hash(result.UserAgent);
-            rawTransModel.UserAgentInfo.UserAgentCode = UserAgentCode;
-            rawTransModel.FP_UserAgentCode = UserAgentCode;
-            rawTransModel.BrowserInstanceCode = result.BrowserInstanceCode;
-            rawTransModel.BrowserFamilyCode = result.BrowserFamilyCode;
+            return result;
+        }
+
+        public static Dictionary<string, string> ConvertToStringDictionary(Dictionary<string, object> dictionary)
+        {
+            var result = new Dictionary<string, string>();
+
+            foreach (var kvp in dictionary)
+            {
+                result[kvp.Key] = JsonConvert.SerializeObject(kvp.Value);
+            }
 
             return result;
+        }
+
+        public static string ConvertToString(object value)
+        {
+            if (value is JObject jObject)
+            {
+                return jObject.ToString();
+            }
+            else if (value is JArray jArray)
+            {
+                return jArray.ToString();
+            }
+            else
+            {
+                return value?.ToString();
+            }
         }
 
         private static void TransformJSChallengeInfo(RawTransactionModel model, string jscKey, string jsChallenge)
@@ -176,39 +222,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
         }
 
-        private string HashBrowserFamilyCode(FingerprintAttributeModel model)
-        {
-            if (model == null) return string.Empty;
-
-            var json = JsonConvert.SerializeObject(new BrowserFamilyModel
-            {
-                OSName = model.OSName,
-                BrowserName = model.BrowserName,
-                Platform = model.Platform
-            });
-
-            return crypto.GetMD5Hash(json);
-        }
-
-        private string HashBrowserInstanceCode(FingerprintAttributeModel model)
-        {
-            if (model == null) return string.Empty;
-
-            var json = JsonConvert.SerializeObject(new BrowserInstanceModel
-            {
-                OSName = model.OSName,
-                BrowserName = model.BrowserName,
-                BrowserVersion = model.BrowserVersion,
-                Accept = model.Accept,
-                Encoding = model.Encoding,
-                Headers = model.Headers,
-                UserAgent = model.UserAgent,
-                Platform = model.Platform
-            });
-
-            return crypto.GetMD5Hash(json);
-        }
-
         private UserAgentInfoModel GetUserAgentInfo(string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
@@ -219,20 +232,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             deviceDetector.Parse();
 
             var userAgentInfo = new UserAgentInfoModel { UserAgent = userAgent };
-
-            if (deviceDetector.IsBot())
-            {
-                var botInfo = deviceDetector.GetBot();
-                if (botInfo != null && botInfo.Success)
-                {
-                    userAgentInfo.BotName = botInfo.Match.Name;
-                    userAgentInfo.BotCategory = botInfo.Match.Category;
-                }
-                else
-                {
-                    userAgentInfo.BotName = "Not detected";
-                }
-            }
 
             var clientInfo = deviceDetector.GetClient();
 
