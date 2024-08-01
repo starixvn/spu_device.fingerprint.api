@@ -9,5 +9,7 @@
         public string FPFingerPrintExtraCode { get; set; }
 
         public FPFingerprintAttributeExtraModel FPFingerPrintExtraAttribute { get; set; }
+
+        public string FPFingerPrintOldCode { get; set; }
     }
 }

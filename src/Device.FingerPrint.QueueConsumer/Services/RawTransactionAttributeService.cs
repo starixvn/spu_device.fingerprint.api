@@ -101,6 +101,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.FPTagging = DeviceEncoder.Decrypt(sessionKey.SessionKey);
                         model.FPFingerPrintCode = model.FingerprintAttribute.FPFingerPrintCode;
                         model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
+                        model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
                         model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
                         // Log Info Consumer
@@ -129,6 +130,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private InsertFPFingerprintDTO TransformFingerprintAttributes(RawTransactionModel rawTransModel, FingerprintModel fpModel, HeaderModel headerModel)
         {
             var result = new InsertFPFingerprintDTO();
+            var hasFPFingerPrint = false;
+            var hasFPFingerPrintExtra = false;
+
             if (fpModel != null && !string.IsNullOrEmpty(fpModel.Attributes))
             {
                 var stringDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(fpModel.Attributes)
@@ -141,12 +145,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     if (stringDictionary.TryGetValue(camelCaseName, out string value))
                     {
                         property.SetValue(fingerPrintAttribute, value);
+                        hasFPFingerPrint = true;
                     }
                 }
 
-                result.FPFingerPrintCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerPrintAttribute));
-                result.FPFingerPrintAttribute = fingerPrintAttribute;
-
+                // Fingerprint Extra
                 var fingerprintAttributeExtra = new FPFingerprintAttributeExtraModel();
                 if (headerModel != null)
                 {
@@ -155,6 +158,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     fingerprintAttributeExtra.Accept = headerModel.Accept;
                     fingerprintAttributeExtra.Encoding = headerModel.Encoding;
                     fingerprintAttributeExtra.Headers = headerModel.Headers;
+
+                    hasFPFingerPrintExtra = true;
                 }
 
                 var userAgentInfo = rawTransModel.UserAgentInfo;
@@ -164,10 +169,31 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     fingerprintAttributeExtra.BrowserName = userAgentInfo.ClientName;
                     fingerprintAttributeExtra.BrowserVersion = userAgentInfo.ClientVersion;
                     fingerprintAttributeExtra.OSName = userAgentInfo.OSName;
+
+                    hasFPFingerPrintExtra = true;
                 }
 
-                result.FPFingerPrintExtraCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerprintAttributeExtra));
-                result.FPFingerPrintExtraAttribute = fingerprintAttributeExtra;
+                if (hasFPFingerPrint)
+                {
+                    result.FPFingerPrintCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerPrintAttribute));
+                    result.FPFingerPrintAttribute = fingerPrintAttribute;
+
+                    // Fingerprint Old
+                    var fingerprintAttributeOld = new FPFingerprintAttributeOldModel
+                    {
+                        Canvas = fingerPrintAttribute.Canvas,
+                        Fonts = fingerPrintAttribute.Fonts
+                    };
+
+                    result.FPFingerPrintOldCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerprintAttributeOld));
+
+                }
+
+                if (hasFPFingerPrintExtra)
+                {
+                    result.FPFingerPrintExtraCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerprintAttributeExtra));
+                    result.FPFingerPrintExtraAttribute = fingerprintAttributeExtra;
+                }
             }
 
             return result;
@@ -255,6 +281,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
             userAgentInfo.Device = deviceDetector.GetDeviceName();
             userAgentInfo.Brand = deviceDetector.GetBrandName();
             userAgentInfo.Model = deviceDetector.GetModel();
+
+            userAgentInfo.FPUserAgentCode = crypto.GetMD5Hash(userAgent);
 
             return userAgentInfo;
         }

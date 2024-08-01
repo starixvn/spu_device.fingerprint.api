@@ -101,4 +101,11 @@
 
         public string Platform { get; set; }
     }
+
+    public class FPFingerprintAttributeOldModel
+    {
+        public string Canvas { get; set; }
+
+        public string Fonts { get; set; }
+    }
 }

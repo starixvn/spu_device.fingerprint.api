@@ -111,6 +111,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 PluginID = transaction.PluginID,
                 FPFingerPrintCode = transaction.FPFingerPrintCode,
                 FPFingerPrintExtraCode = transaction.FPFingerPrintExtraCode,
+                FPFingerPrintOldCode = transaction.FPFingerPrintOldCode,
                 FPUserAgentCode = transaction.FPUserAgentCode,
                 SubscriberName = transaction.SubscriberName,
                 TransStatus = transaction.TransStatus,

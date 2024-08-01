@@ -82,6 +82,8 @@ namespace Device.FingerPrint.Model
 
         public string FPFingerPrintExtraCode { get; set; }
 
+        public string FPFingerPrintOldCode { get; set; }
+
         public string FPUserAgentCode { get; set; }
 
         public InsertFPFingerprintDTO FingerprintAttribute { get; set; }
