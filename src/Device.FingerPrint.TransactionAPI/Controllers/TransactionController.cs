@@ -1,7 +1,5 @@
 ﻿namespace Device.FingerPrint.TransactionAPI.Controllers
 {
-    using System.Text.Json;
-    using System.Threading.Tasks;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
     using Device.FingerPrint.Redis;
@@ -9,10 +7,12 @@
     using Device.FingerPrint.TransactionAPI.Services;
     using Fanex.Logging;
     using Fanex.LogTrail.Service;
+    using MassTransit;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using ONEbook.UM.Models;
     using ONEbook.UM.Services;
+    using System.Threading.Tasks;
 
     [ApiController]
     public class TransactionController : ControllerBase
@@ -85,7 +85,7 @@
                     else
                     {
                         var errorMessage = GetTransactionResponse(responseCode);
-                        await logger.ErrorAsync($"CheckTransactionAsync responseCode = {JsonSerializer.Serialize(errorMessage)} \nTransRequest: {JsonSerializer.Serialize(transRequest)}");
+                        await logger.ErrorAsync($"CheckTransactionAsync responseCode = {System.Text.Json.JsonSerializer.Serialize(errorMessage)} \nTransRequest: {System.Text.Json.JsonSerializer.Serialize(transRequest)}");
                     }
                 }
                 catch (Exception ex)
@@ -99,6 +99,28 @@
             var response = GetTransactionResponse(responseCode);
             return Ok(response.ResultMessage);
         }
+
+        [HttpPost("FPS/InsertTransaction")]
+        public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
+        {
+            var di = transRequest.Di ?? transRequest.__di;
+            var transAttributesJoined = JoinStringAttributes(new List<string> {
+                        transRequest.AcceptsTypes,
+                        transRequest.Platform,
+                        (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
+                        transRequest.UserAgent,
+                        transRequest.Screen,
+                        transRequest.Ip,
+                        di,
+                        transRequest.Url,
+                        transRequest.DetecasAnalysis
+                    }, "###");
+
+            _ = PushToQueueAsync(transRequest, transAttributesJoined);
+
+            return Ok();
+        }
+
 
         [HttpGet("whoami")]
         public IActionResult WhoAmI()
@@ -199,52 +221,12 @@
             }
         }
 
-        [HttpGet]
-        [Route("FPS/TestRedis")]
-        public async Task<string> TestRedisAsync(string data)
-        {
-            await redisService.AddAsyncAndExpiryAsync("test:testing", data, DateTimeOffset.UtcNow.AddMinutes(1));
-
-            return await redisService.GetAsync<string>("test:testing");
-        }
-
-        [HttpGet]        
-        [Route("FPS/TestAPI/{message}")]
-        public string TestAPI(string message)
-        {
-            try
-            {
-                logger.Error(message);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-
-            return message;
-        }
 
         [HttpGet]
         [Route("FPS/TestUM")]
         public UnderMaintenanceTime TestUM()
         {
             return maintenanceService.GetUnderMaintenanceTime();
-        }
-
-        [HttpPost]
-        [Route("FPS/TestPostAPI")]
-        public string TestPostAPI([FromBody]string message)
-        {
-            try
-            {
-                logger.Error(message);
-            }
-            catch (Exception ex)
-            {
-                return ex.Message;
-            }
-
-            return message;
         }
     }
 }

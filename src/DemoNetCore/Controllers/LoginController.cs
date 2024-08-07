@@ -64,7 +64,7 @@ namespace DemoNetCore.Controllers
         private void FpsIntegrationVer115(string account, string action, string actionResult, string subscriber, DateTime loginTime)
         {
             var fpsAPI = configuration.GetSection("FPS_API").Value;
-            var fpsService = new FPS.Client.NetStandard.Service(); // (fpsAPI, HttpContext.Request);
+            var fpsService = new FPS.Client.NetStandard.Service();
             fpsService.InitialRequest(fpsAPI, HttpContext.Request).CheckTransaction(account, subscriber, action, loginTime);
         }
 
