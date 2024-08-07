@@ -21,6 +21,7 @@
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
+        private readonly ILogstashService logstashService;
 
         private const string hashKeyEverTagging = "EverTagging";
 
@@ -29,7 +30,8 @@
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
-                ILogger logger
+                ILogger logger,
+                ILogstashService logstashService
         )
         {
             this.rawTransactionService = rawTransactionService;
@@ -37,6 +39,7 @@
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
+            this.logstashService = logstashService;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -75,6 +78,7 @@
         {
             var tasks = new List<Task>
             {
+                InsertLogstash(transactionModels),
                 rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub)
             };
 
@@ -93,6 +97,20 @@
             await Task.WhenAll(tasks);
         }
 
+        private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
+        {
+            if (appSettings.IsEnableLogstash)
+            {
+                try
+                {
+                    await Task.WhenAll(transactions.Select(logstashService.PushLog));
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex);
+                }
+            }
+        }
 
         private async Task HandleClearRedisJsChallenge(IEnumerable<string> rawJsChallenges)
         {

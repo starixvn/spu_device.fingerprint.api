@@ -34,6 +34,10 @@ namespace Device.FingerPrint.Core
 
         string JWTAudience { get; }
 
+        bool IsEnableLogstash { get; }
+
+        string LogstashUrl { get; }
+
         bool IsExtraSub { get; }
 
         int MaxMonthsGetAssociationByDevice { get; }
@@ -78,6 +82,9 @@ namespace Device.FingerPrint.Core
 
         private readonly string jWT;
 
+        private readonly bool isEnableLogstash;
+        private readonly string logstashUrl;
+
         private readonly bool isExtraSub;
         
         private readonly int maxMonthsGetAssociationByDevice;
@@ -121,6 +128,10 @@ namespace Device.FingerPrint.Core
 
             jWT = GetValue<string>("AppConfig:JWT") ?? string.Empty;
 
+            isEnableLogstash = !string.IsNullOrEmpty(GetValue<string>("Logstash:IsEnable")) && Convert.ToBoolean(GetValue<string>("Logstash:IsEnable"));
+
+            logstashUrl = GetValue<string>("Logstash:Url") ?? string.Empty;
+
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
@@ -156,6 +167,10 @@ namespace Device.FingerPrint.Core
         public string JWTPassword => jWTPassword;
 
         public string JWT => jWT;
+
+        public bool IsEnableLogstash => isEnableLogstash;
+
+        public string LogstashUrl => logstashUrl;
 
         public bool IsExtraSub => isExtraSub;
 
