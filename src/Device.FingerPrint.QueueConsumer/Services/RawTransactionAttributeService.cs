@@ -184,7 +184,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     var fingerprintAttributeOld = new FPFingerprintAttributeOldModel
                     {
                         Canvas = fingerPrintAttribute.Canvas,
-                        Fonts = fingerPrintAttribute.Fonts
+                        Fonts = fingerPrintAttribute.Fonts,
+                        DeviceType = GetDeviceType(rawTransModel)
                     };
 
                     result.FPFingerPrintOldCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerprintAttributeOld));
@@ -321,6 +322,18 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 UserAgent = model.UserAgent
             };
         }
+
+        private string GetDeviceType(RawTransactionModel model)
+        {
+            var deviceNames = new string[] { "Others", "desktop", "tablet", "smartphone" };
+            var index = Array.IndexOf(deviceNames, model.UserAgentInfo.Device);
+            if (index == -1)
+            {
+                return "0";
+            }
+            return index.ToString();
+        }
+
         #endregion
     }
 }

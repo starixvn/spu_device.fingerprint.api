@@ -100,6 +100,8 @@
         public string UserAgent { get; set; }
 
         public string Platform { get; set; }
+
+        
     }
 
     public class FPFingerprintAttributeOldModel
@@ -107,5 +109,7 @@
         public string Canvas { get; set; }
 
         public string Fonts { get; set; }
+
+        public string DeviceType { get; set; }
     }
 }
