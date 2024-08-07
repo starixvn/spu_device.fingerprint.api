@@ -104,6 +104,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
                         model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
+                        model.IsIncognitoMode = true;
+
                         // Log Info Consumer
                         var subscriberName = model.SubscriberName;
                         if (appSettings.GetValue<bool>("Consumer:LogInfo")

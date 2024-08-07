@@ -146,8 +146,6 @@
         {
             try
             {
-                var redisEverTaggingDb = redisMultiplexService.GetRedisEverTaggingDb();
-
                 var tasks = everTaggings
                 .Select(code => redisMultiplexService.EverTagging_AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
                 .ToList();

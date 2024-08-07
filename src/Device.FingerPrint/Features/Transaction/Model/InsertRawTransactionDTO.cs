@@ -67,5 +67,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
         public string ChallengeCode { get; set; }
 
         public string FPUserAgentCode { get; set; }
+
+        public bool IsIncognitoMode { get; set; }
     }
 }

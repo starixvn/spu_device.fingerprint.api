@@ -117,7 +117,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 TransStatus = transaction.TransStatus,
                 TransTime = transaction.TransTime,
                 URL = transaction.URL,
-                UserAgent = transaction.UserAgent
+                UserAgent = transaction.UserAgent,
+                IsIncognitoMode = transaction.IsIncognitoMode
             }).ToList();
         }
 
