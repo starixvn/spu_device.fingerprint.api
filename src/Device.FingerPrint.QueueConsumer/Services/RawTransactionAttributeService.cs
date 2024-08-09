@@ -104,7 +104,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
                         model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
-                        model.IsIncognitoMode = true;
+                        model.IsIncognitoMode = GetIsIncognitoMode(model.FingerprintAttribute.FPFingerPrintAttribute);
 
                         // Log Info Consumer
                         var subscriberName = model.SubscriberName;
@@ -175,21 +175,33 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     hasFPFingerPrintExtra = true;
                 }
 
+                // Fingerprint Old
+                fingerprintAttributeExtra.Navigator = "eeaad5080693867762d6caec71976f3b";
+                fingerprintAttributeExtra.Plugins = "fa3a2d33dd4f9121a5da467a2cc5e0e4";
+                fingerprintAttributeExtra.Mimetypes = "929150a47300f5af954870efaa455134";
+                fingerprintAttributeExtra.Useragent = "362d7fe3d8b2581bffa359f0eeda7106";
+                fingerprintAttributeExtra.Fonts = "d4b61ce8d87405edba83ff57c7bacae6";
+                fingerprintAttributeExtra.Screen = "ac34d0a02701999d6f6aa3c74abe6bfa";
+                fingerprintAttributeExtra.Monitor = "1920@1080@24";
+                fingerprintAttributeExtra.Timezone = -420;
+                fingerprintAttributeExtra.GPUCode = "26e59377e714f98fea2c8fcab040a825";
+                fingerprintAttributeExtra.WebGL = "6b126b1881442159a392c37841667b14";
+                fingerprintAttributeExtra.Language = "en-US";
+                fingerprintAttributeExtra.CookieEnabled = true;
+                fingerprintAttributeExtra.DoNotTrack = false;
+                fingerprintAttributeExtra.SuperCookies = "110010";
+                fingerprintAttributeExtra.SystemTimeOffset = 0;
+                fingerprintAttributeExtra.Browser = "Chrome 127.0.0.0";
+                fingerprintAttributeExtra.DeviceType = GetDeviceType(rawTransModel);
+
                 if (hasFPFingerPrint)
                 {
                     result.FPFingerPrintCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerPrintAttribute));
                     result.FPFingerPrintAttribute = fingerPrintAttribute;
 
                     // Fingerprint Old
-                    var fingerprintAttributeOld = new FPFingerprintAttributeOldModel
-                    {
-                        Canvas = fingerPrintAttribute.Canvas,
-                        Fonts = fingerPrintAttribute.Fonts,
-                        DeviceType = GetDeviceType(rawTransModel)
-                    };
-
-                    result.FPFingerPrintOldCode = crypto.GetMD5Hash(JsonConvert.SerializeObject(fingerprintAttributeOld));
-
+                    result.FPFingerPrintOldCode = GetOldFingerprintCode(fingerprintAttributeExtra);
+                    
                 }
 
                 if (hasFPFingerPrintExtra)
@@ -323,17 +335,47 @@ namespace Device.FingerPrint.QueueConsumer.Services
             };
         }
 
-        private string GetDeviceType(RawTransactionModel model)
+        private int GetDeviceType(RawTransactionModel model)
         {
-            var deviceNames = new string[] { "Others", "desktop", "tablet", "smartphone" };
-            var index = Array.IndexOf(deviceNames, model.UserAgentInfo.Device);
-            if (index == -1)
-            {
-                return "0";
-            }
-            return index.ToString();
+            int _DEFAULTINDEX = 0;
+            var deviceNames = new string[] { "others", "desktop", "tablet", "smartphone" };
+            var index = Array.IndexOf(deviceNames, model.UserAgentInfo.Device.ToLower());
+            return index > -1 ? index : _DEFAULTINDEX;
         }
 
-        #endregion
+        private string GetOldFingerprintCode(FPFingerprintAttributeExtraModel fingerprintAttributeExtra)
+        {
+            var codes = new string[]
+            {
+                fingerprintAttributeExtra.Navigator,
+                fingerprintAttributeExtra.Plugins,
+                fingerprintAttributeExtra.Mimetypes,
+                fingerprintAttributeExtra.Useragent,
+                fingerprintAttributeExtra.Fonts,
+                fingerprintAttributeExtra.Screen,
+                fingerprintAttributeExtra.Monitor,
+                fingerprintAttributeExtra.Timezone.ToString(),
+                fingerprintAttributeExtra.GPUCode,
+                fingerprintAttributeExtra.WebGL,
+                fingerprintAttributeExtra.Language,
+                fingerprintAttributeExtra.CookieEnabled.ToString(),
+                fingerprintAttributeExtra.DoNotTrack.ToString(),
+                fingerprintAttributeExtra.SuperCookies,
+                fingerprintAttributeExtra.SystemTimeOffset.ToString(),
+                fingerprintAttributeExtra.Browser,
+                fingerprintAttributeExtra.DeviceType.ToString()
+            };
+            codes = Array.FindAll(codes, x => !string.IsNullOrEmpty(x));
+            return crypto.GetMD5Hash(string.Join("$", codes));
+        }
+
+        private bool GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
+        {
+            bool isIncognitoMode = false;
+            bool.TryParse(fingerprintAttribute.IsIncognitoMode, out isIncognitoMode);
+            return isIncognitoMode;
+        }
+        #endregion    
     }
+
 }

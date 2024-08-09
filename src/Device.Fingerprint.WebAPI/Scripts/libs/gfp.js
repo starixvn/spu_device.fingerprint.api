@@ -2676,107 +2676,160 @@ var gfpCode = (function (exports) {
         webGlExtensions: getWebGlExtensions,
     };
 
-    function detectIncognito() {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, new Promise(function (resolve, reject) {
-                            function newSafariTest() {
-                                var tmp_name = String(Math.random());
-                                try {
-                                    var db = window.indexedDB.open(tmp_name, 1);
-                                    db.onupgradeneeded = function (i) {
-                                        var _a, _b;
-                                        var res = (_a = i.target) === null || _a === void 0 ? void 0 : _a.result;
-                                        try {
-                                            res.createObjectStore('test', {
-                                                autoIncrement: true
-                                            }).put(new Blob());
-                                            resolve(false);
-                                        }
-                                        catch (e) {
-                                            var message = e;
-                                            if (e instanceof Error) {
-                                                message = (_b = e.message) !== null && _b !== void 0 ? _b : e;
-                                            }
-                                            if (typeof message !== 'string') {
-                                                resolve(false);
-                                                return;
-                                            }
-                                            var matchesExpectedError = message.includes('BlobURLs are not yet supported');
-                                            resolve(matchesExpectedError);
-                                            return;
-                                        }
-                                        finally {
-                                            res.close();
-                                            window.indexedDB.deleteDatabase(tmp_name);
-                                        }
-                                    };
-                                }
-                                catch (e) {
-                                    resolve(false);
-                                }
-                            }
-                            function safariPrivateTest() {
-                                newSafariTest();
-                            }
-                            function getChromeQuotaLimit() {
-                                var w = window;
-                                if (w.performance !== undefined &&
-                                    w.performance.memory !== undefined &&
-                                    w.performance.memory.jsHeapSizeLimit !== undefined) {
-                                    return performance.memory.jsHeapSizeLimit;
-                                }
-                                return 1073741824;
-                            }
-                            function storageQuotaChromePrivateTest() {
-                                navigator.webkitTemporaryStorage.queryUsageAndQuota(function (_, quota) {
-                                    var quotaInMib = Math.round(quota / (1024 * 1024));
-                                    var quotaLimitInMib = Math.round(getChromeQuotaLimit() / (1024 * 1024)) * 2;
-                                    resolve(quotaInMib < quotaLimitInMib);
-                                }, function (e) {
-                                    reject(new Error('detectIncognito somehow failed to query storage quota: ' +
-                                        e.message));
-                                });
-                            }
-                            function chromePrivateTest() {
-                                storageQuotaChromePrivateTest();
-                            }
-                            function firefoxPrivateTest() {
-                                resolve(navigator.serviceWorker === undefined);
-                            }
-                            function main() {
-                                if (isWebKit()) {
-                                    safariPrivateTest();
-                                }
-                                else if (isChromium()) {
-                                    chromePrivateTest();
-                                }
-                                else if (isGecko()) {
-                                    firefoxPrivateTest();
-                                }
-                                else {
-                                    reject(new Error('detectIncognito cannot determine the browser'));
-                                }
-                            }
-                            main();
-                        })];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
+    function incognitoModeCallback(callback) {
+        var ONE_GB = 1073741824;
+        function safariPrivateTest() {
+            var tmp_name = String(Math.random());
+            try {
+                var db = window.indexedDB.open(tmp_name, 1);
+                db.onupgradeneeded = function (i) {
+                    var _a, _b;
+                    var res = (_a = i.target) === null || _a === void 0 ? void 0 : _a.result;
+                    try {
+                        res.createObjectStore('test', {
+                            autoIncrement: true
+                        }).put(new Blob());
+                        callback(false);
+                    }
+                    catch (e) {
+                        var message = e;
+                        if (e instanceof Error) {
+                            message = (_b = e.message) !== null && _b !== void 0 ? _b : e;
+                        }
+                        if (typeof message !== 'string') {
+                            callback(false);
+                            return;
+                        }
+                        var matchesExpectedError = message.includes('BlobURLs are not yet supported');
+                        callback(matchesExpectedError);
+                        return;
+                    }
+                    finally {
+                        res.close();
+                        window.indexedDB.deleteDatabase(tmp_name);
+                    }
+                };
+            }
+            catch (e) {
+                callback(false);
+            }
+        }
+        function getChromeQuotaLimit() {
+            var w = window;
+            if (w.performance !== undefined &&
+                w.performance.memory !== undefined &&
+                w.performance.memory.jsHeapSizeLimit !== undefined) {
+                return performance.memory.jsHeapSizeLimit;
+            }
+            return ONE_GB;
+        }
+        function chromePrivateTest() {
+            navigator.webkitTemporaryStorage.queryUsageAndQuota(function (_, quota) {
+                var quotaInMib = Math.round(quota / (1024 * 1024));
+                var quotaLimitInMib = Math.round(getChromeQuotaLimit() / (1024 * 1024)) * 2;
+                callback(quotaInMib < quotaLimitInMib);
+            }, function (e) {
+                callback(false);
+                console.error('incognitoMode somehow failed to query storage quota: ' +
+                    e.message);
             });
+        }
+        (function () {
+            if (isWebKit()) {
+                safariPrivateTest();
+            }
+            else if (isChromium()) {
+                chromePrivateTest();
+            }
+            else if (isGecko()) {
+                callback(navigator.serviceWorker === undefined);
+            }
+            else {
+                callback(false);
+                console.error('incognitoMode cannot determine the browser');
+            }
+        })();
+    }
+    function incognitoMode() {
+        return new Promise(function (resolve, reject) {
+            incognitoModeCallback(resolve);
         });
     }
     if (typeof window !== 'undefined') {
-        window.detectIncognito = detectIncognito;
+        window.incognitoMode = incognitoMode;
     }
 
-    var listAttributeHash = ["canvas", "math", "webGlBasics", "webGlExtensions"];
+    function getNavigatorElementsAsJson(obj, currentDepth, maxDepth) {
+        if (currentDepth === void 0) { currentDepth = 0; }
+        if (maxDepth === void 0) { maxDepth = 3; }
+        if (currentDepth >= maxDepth) {
+            return null; // Stop if the maximum depth is reached
+        }
+        var result = {};
+        var ignoredProperties = [
+            'plugins',
+            'mimeTypes',
+            'userAgent',
+            'language',
+            'cookieEnabled',
+            'doNotTrack',
+            'userActivation',
+            'appVersion'
+        ];
+        for (var key in obj) {
+            if (ignoredProperties.includes(key)) {
+                continue; // Skip the ignored properties
+            }
+            try {
+                var value = obj[key];
+                // Ignore functions completely
+                if (typeof value === 'function') {
+                    continue; // Skip functions
+                }
+                else if (typeof value === 'object' && value !== null && currentDepth + 1 < maxDepth) {
+                    result[key] = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                }
+                else {
+                    if (value != null) {
+                        result[key] = value;
+                    }
+                }
+            }
+            catch (e) {
+                result[key] = "[Unable to retrieve value]";
+            }
+        }
+        return result;
+    }
+    function getNavigator() {
+        var start = Date.now();
+        var navigatorJson = getNavigatorElementsAsJson(navigator);
+        var result = JSON.stringify(navigatorJson, null, 2);
+        return { value: result, duration: Date.now() - start };
+    }
+    function getBrowser() {
+        var start = Date.now();
+        var parser = new window.UAParser();
+        var uaResult = parser.getResult();
+        return { value: uaResult.browser + " " + uaResult.version, duration: Date.now() - start };
+    }
+
     function getDoNotTrack() {
         var start = Date.now();
         var result = navigator.doNotTrack;
         return { value: result, duration: Date.now() - start };
     }
-    function componentsToJsonString(components, callback) {
+    function getIncognitoMode() {
+        var start = Date.now();
+        return incognitoMode().then(function (result) {
+            return Promise.resolve({ value: result, duration: Date.now() - start });
+        });
+    }
+    function hashPropertyByFunction(components, propertyName, hashFunction) {
+        components[propertyName].value = hashFunction(components[propertyName].value);
+        return components;
+    }
+    function componentsToJsonString(components) {
         var sortedKeys = Object.keys(components).sort();
         var result = "";
         var err = "";
@@ -2792,38 +2845,24 @@ var gfpCode = (function (exports) {
                 value = "\"undefined\"";
             }
             else {
-                if (listAttributeHash.includes(componentKey)) {
-                    value = JSON.stringify(callback(JSON.stringify(component.value)));
-                }
-                else {
-                    value = JSON.stringify(component.value);
-                }
+                value = JSON.stringify(component.value);
             }
             var escapedComponentKey = "\"" + componentKey.replace(/([:|\\])/g, "\\$1") + "\"";
             result += "" + (result ? "," : "{") + escapedComponentKey + ":" + value;
         }
         return result + "}";
     }
-    function getIncognitoMode(param) {
-        return detectIncognito().then(function (result) {
-            return {
-                components: param,
-                incognitoMode: result
-            };
-        });
-    }
     function getResult(callback) {
-        var _this = this;
         var fpPromise = loadSources(sources, {}, [])();
-        return fpPromise.then(function (result) { return __awaiter(_this, void 0, void 0, function () { return __generator(this, function (_a) {
-            return [2 /*return*/, getIncognitoMode(result)];
-        }); }); })
-            .then(function (res) {
-            var customComponents = __assign(__assign({}, res.components), { doNotTrack: getDoNotTrack(), isIncognitoMode: { value: res.incognitoMode } });
-            var properties = componentsToJsonString(customComponents, callback);
-            console.log('properties', properties);
-            return Promise.resolve({
-                Properties: properties
+        return fpPromise.then(function (components) {
+            components = hashPropertyByFunction(components, "canvas", callback);
+            return getIncognitoMode().then(function (mode) {
+                components.isIncognitoMode = mode;
+                var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), browser: getBrowser() });
+                var properties = componentsToJsonString(customComponents);
+                return Promise.resolve({
+                    Properties: properties
+                });
             });
         });
     }

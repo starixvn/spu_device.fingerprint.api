@@ -40,6 +40,8 @@
 
         public string InvertedColors { get; set; }
 
+        public string IsIncognitoMode { get; set; }
+
         public string Languages { get; set; }
 
         public string LocalStorage { get; set; }
@@ -101,15 +103,25 @@
 
         public string Platform { get; set; }
 
-        
-    }
-
-    public class FPFingerprintAttributeOldModel
-    {
-        public string Canvas { get; set; }
-
+        // Fingerprint Old
+        public string Navigator { get; set; }
+        public string Plugins { get; set; }
+        public string Mimetypes { get; set; }
+        public string Useragent { get; set; }
         public string Fonts { get; set; }
+        public string Screen { get; set; }
+        public string Monitor { get; set; }
+        public int Timezone { get; set; }
+        public string GPUCode { get; set; }
+        public string WebGL { get; set; }
+        public string Language { get; set; }
+        public bool CookieEnabled { get; set; }
+        public bool DoNotTrack { get; set; }
+        public string SuperCookies { get; set; }
+        public int SystemTimeOffset { get; set; }
+        public string Browser { get; set; }
+        public int DeviceType { get; set; }
 
-        public string DeviceType { get; set; }
     }
+
 }
