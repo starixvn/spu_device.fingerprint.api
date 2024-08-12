@@ -150,6 +150,18 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         hasFPFingerPrint = true;
                     }
                 }
+                var oldFingerPrintAttribute = new FPOldFingerprintAttributeModel();
+                foreach (var property in typeof(FPOldFingerprintAttributeModel).GetProperties())
+                {
+                    var camelCaseName = Char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
+                    if (stringDictionary.TryGetValue(camelCaseName, out string value))
+                    {
+                        property.SetValue(oldFingerPrintAttribute, value);
+                        hasFPFingerPrint = true;
+                    }
+                }
+                oldFingerPrintAttribute.DeviceType = GetDeviceType(rawTransModel);
+                
 
                 // Fingerprint Extra
                 var fingerprintAttributeExtra = new FPFingerprintAttributeExtraModel();
@@ -176,9 +188,13 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 }
 
                 // Fingerprint Old
-                fingerprintAttributeExtra.Navigator = "eeaad5080693867762d6caec71976f3b";
-                fingerprintAttributeExtra.TimezoneOffset = -420;
-                fingerprintAttributeExtra.DeviceType = GetDeviceType(rawTransModel);
+                oldFingerPrintAttribute.Useragent = fingerprintAttributeExtra.UserAgent;
+                oldFingerPrintAttribute.Browser = fingerprintAttributeExtra.BrowserName + " " + fingerprintAttributeExtra.BrowserVersion;
+
+                // Fingerprint Old - Extra
+                fingerprintAttributeExtra.Navigator = oldFingerPrintAttribute.Navigator;
+                fingerprintAttributeExtra.TimezoneOffset = oldFingerPrintAttribute.TimezoneOffset;
+                fingerprintAttributeExtra.DeviceType = oldFingerPrintAttribute.DeviceType;
 
                 if (hasFPFingerPrint)
                 {
@@ -186,7 +202,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     result.FPFingerPrintAttribute = fingerPrintAttribute;
 
                     // Fingerprint Old
-                    result.FPFingerPrintOldCode = GetOldFingerprintCode(fingerprintAttributeExtra);
+                    result.FPFingerPrintOldCode = GetMD5HashFromObject(oldFingerPrintAttribute);
                     
                 }
 

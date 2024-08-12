@@ -106,7 +106,7 @@
         // Fingerprint Old
         public string Navigator { get; set; }
         
-        public int TimezoneOffset { get; set; }
+        public string TimezoneOffset { get; set; }
         
         public int DeviceType { get; set; }
 
@@ -126,7 +126,7 @@
 
         public string Monitor { get; set; }
 
-        public int TimezoneOffset { get; set; }
+        public string TimezoneOffset { get; set; }
 
         public string GPUCode { get; set; }
 
