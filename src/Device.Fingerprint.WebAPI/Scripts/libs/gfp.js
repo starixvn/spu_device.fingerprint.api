@@ -1446,10 +1446,10 @@ var gfpCode = (function (exports) {
         }
         // For browsers that don't support timezone names
         // The minus is intentional because the JS offset is opposite to the real offset
-        var offset = -getTimezoneOffset();
+        var offset = -getTimezoneOffset$1();
         return "UTC".concat(offset >= 0 ? '+' : '').concat(offset);
     }
-    function getTimezoneOffset() {
+    function getTimezoneOffset$1() {
         var currentYear = new Date().getFullYear();
         // The timezone offset may change over time due to daylight saving time (DST) shifts.
         // The non-DST timezone offset is used as the result timezone offset.
@@ -2807,16 +2807,15 @@ var gfpCode = (function (exports) {
         var result = JSON.stringify(navigatorJson, null, 2);
         return { value: result, duration: Date.now() - start };
     }
-    function getBrowser() {
-        var start = Date.now();
-        var parser = new window.UAParser();
-        var uaResult = parser.getResult();
-        return { value: uaResult.browser + " " + uaResult.version, duration: Date.now() - start };
-    }
 
     function getDoNotTrack() {
         var start = Date.now();
         var result = navigator.doNotTrack;
+        return { value: result, duration: Date.now() - start };
+    }
+    function getTimezoneOffset() {
+        var start = Date.now();
+        var result = new Date().getTimezoneOffset().toString();
         return { value: result, duration: Date.now() - start };
     }
     function getIncognitoMode() {
@@ -2858,7 +2857,7 @@ var gfpCode = (function (exports) {
             components = hashPropertyByFunction(components, "canvas", callback);
             return getIncognitoMode().then(function (mode) {
                 components.isIncognitoMode = mode;
-                var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), browser: getBrowser() });
+                var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), timezoneOffset: getTimezoneOffset() });
                 var properties = componentsToJsonString(customComponents);
                 return Promise.resolve({
                     Properties: properties
