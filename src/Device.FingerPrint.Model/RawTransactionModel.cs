@@ -86,7 +86,7 @@ namespace Device.FingerPrint.Model
 
         public string FPUserAgentCode { get; set; }
 
-        public InsertFPFingerprintDTO FingerprintAttribute { get; set; }
+        public InsertFPFingerprintEntity FingerprintAttribute { get; set; }
 
         public string ChallengeCode { get; set; }
 

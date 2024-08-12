@@ -1,6 +1,6 @@
 ﻿namespace Device.FingerPrint.Model.DTO
 {
-    public class InsertFPFingerprintDTO
+    public class InsertFPFingerprintEntity
     {
         public string FPFingerPrintCode { get; set; }
 
