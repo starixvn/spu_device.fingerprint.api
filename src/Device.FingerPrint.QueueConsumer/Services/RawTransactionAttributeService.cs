@@ -15,8 +15,11 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using static MassTransit.ValidationResultExtensions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -160,7 +163,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         hasFPFingerPrint = true;
                     }
                 }
-                oldFingerPrintAttribute.DeviceType = GetDeviceType(rawTransModel);
+                
                 
 
                 // Fingerprint Extra
@@ -189,7 +192,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 // Fingerprint Old
                 oldFingerPrintAttribute.Useragent = fingerprintAttributeExtra.UserAgent;
+                oldFingerPrintAttribute.Screen = fingerPrintAttribute.ScreenResolution;
+                oldFingerPrintAttribute.Monitor = fingerPrintAttribute.ScreenFrame;
+                oldFingerPrintAttribute.GPUCode = fingerPrintAttribute.Canvas;
+                oldFingerPrintAttribute.WebGL = fingerPrintAttribute.WebGlExtensions;
+                oldFingerPrintAttribute.Language = fingerPrintAttribute.Languages;
+                oldFingerPrintAttribute.CookieEnabled = fingerPrintAttribute.CookiesEnabled;
+                oldFingerPrintAttribute.DoNotTrack = fingerPrintAttribute.DoNotTrack;
+                oldFingerPrintAttribute.SuperCookies = GetSuperCookies(fingerPrintAttribute);
                 oldFingerPrintAttribute.Browser = fingerprintAttributeExtra.BrowserName + " " + fingerprintAttributeExtra.BrowserVersion;
+                oldFingerPrintAttribute.DeviceType = GetDeviceType(rawTransModel);
+
 
                 // Fingerprint Old - Extra
                 fingerprintAttributeExtra.Navigator = oldFingerPrintAttribute.Navigator;
@@ -454,6 +467,16 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private string GetMD5HashFromObject(object value)
         {
             return crypto.GetMD5Hash(JsonConvert.SerializeObject(value));
+        }
+
+        private string GetSuperCookies(FPFingerprintAttributeModel fingerprintAttributeModel)
+        {
+            var localStorage = fingerprintAttributeModel.LocalStorage == "true" ? '1' : '0';
+            var sessionStorage = fingerprintAttributeModel.SessionStorage == "true" ? '1' : '0';
+            var openDatabase = fingerprintAttributeModel.OpenDatabase == "true" ? '1' : '0';
+            var indexedDb = fingerprintAttributeModel.IndexedDB == "true" ? '1' : '0';
+
+            return localStorage + "" + sessionStorage + openDatabase + indexedDb;
         }
         #endregion    
     }

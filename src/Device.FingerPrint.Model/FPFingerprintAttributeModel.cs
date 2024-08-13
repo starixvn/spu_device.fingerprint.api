@@ -26,6 +26,8 @@
 
         public string DomBlockers { get; set; }
 
+        public string DoNotTrack { get; set; }
+
         public string FontPreferences { get; set; }
 
         public string Fonts { get; set; }
@@ -134,9 +136,9 @@
 
         public string Language { get; set; }
 
-        public bool CookieEnabled { get; set; }
+        public string CookieEnabled { get; set; }
 
-        public bool DoNotTrack { get; set; }
+        public string DoNotTrack { get; set; }
 
         public string SuperCookies { get; set; }
 
