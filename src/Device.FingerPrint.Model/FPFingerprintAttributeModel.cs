@@ -124,19 +124,19 @@
 
         public string Fonts { get; set; }
 
-        public string Screen { get; set; }
+        public string ScreenResolution { get; set; }
 
-        public string Monitor { get; set; }
+        public string ScreenFrame { get; set; }
 
         public string TimezoneOffset { get; set; }
 
-        public string GPUCode { get; set; }
+        public string Canvas { get; set; }
 
-        public string WebGL { get; set; }
+        public string WebGlExtensions { get; set; }
 
-        public string Language { get; set; }
+        public string Languages { get; set; }
 
-        public string CookieEnabled { get; set; }
+        public string CookiesEnabled { get; set; }
 
         public string DoNotTrack { get; set; }
 
