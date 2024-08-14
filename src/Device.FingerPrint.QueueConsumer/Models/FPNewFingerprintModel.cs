@@ -21,10 +21,7 @@ namespace Device.FingerPrint.QueueConsumer.Models
             get { return _attributeModel; }
         }
 
-        public string Code
-        {
-            get { return Utilities.GetMD5HashFromObject(crypto, _attributeModel); }
-        }
+        public string Code => Utilities.GetMD5HashFromObject(crypto, _attributeModel);       
     }
 
     public class FPOldFingerprintModel
@@ -43,10 +40,8 @@ namespace Device.FingerPrint.QueueConsumer.Models
             get { return _attributeModel; }
         }
 
-        public string Code
-        {
-            get { return Utilities.GetMD5HashFromObject(crypto, _attributeModel); }
-        }
+        public string Code => Utilities.GetMD5HashFromObject(crypto, _attributeModel);
+        
     }
 
     public class FPFingerprintExtraModel
@@ -65,9 +60,7 @@ namespace Device.FingerPrint.QueueConsumer.Models
             get { return _attributeModel; }
         }
 
-        public string Code
-        {
-            get { return Utilities.GetMD5HashFromObject(crypto, _attributeModel); }
-        }
+        public string Code => Utilities.GetMD5HashFromObject(crypto, _attributeModel);
+        
     }
 }

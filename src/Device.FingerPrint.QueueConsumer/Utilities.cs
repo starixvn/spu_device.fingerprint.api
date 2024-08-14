@@ -5,7 +5,7 @@ namespace Device.FingerPrint.QueueConsumer
 {
     public class Utilities
     {
-        public static string GetMD5HashFromObject(ICrypto crypto, object? value)
+        public static string GetMD5HashFromObject<T>(ICrypto crypto, T value)
         {
             return crypto.GetMD5Hash(JsonConvert.SerializeObject(value));
         }
