@@ -19,7 +19,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
             }
             else
             {
-                return "DCS_DC_Transform_FP_Tagging_Insert";
+                return "DCS_DC_Transform_FP_TaggingInsert";
             }
         }
 

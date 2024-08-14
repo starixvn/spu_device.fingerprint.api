@@ -336,7 +336,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private bool GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
         {
-            bool.TryParse(fingerprintAttribute.IsIncognitoMode, out bool isIncognitoMode);
+            if(string.IsNullOrEmpty(fingerprintAttribute?.IsIncognitoMode)) return false;
+
+            _ = bool.TryParse(fingerprintAttribute.IsIncognitoMode, out bool isIncognitoMode);
             return isIncognitoMode;
         }
 
