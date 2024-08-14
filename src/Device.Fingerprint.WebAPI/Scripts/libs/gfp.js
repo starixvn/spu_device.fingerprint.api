@@ -2766,7 +2766,7 @@ var gfpCode = (function (exports) {
             return null; // Stop if the maximum depth is reached
         }
         var result = {};
-        var ignoredProperties = [
+        var ignoredProperties = new Set([
             'plugins',
             'mimeTypes',
             'userAgent',
@@ -2775,9 +2775,9 @@ var gfpCode = (function (exports) {
             'doNotTrack',
             'userActivation',
             'appVersion'
-        ];
+        ]);
         for (var key in obj) {
-            if (ignoredProperties.includes(key)) {
+            if (ignoredProperties.has(key)) {
                 continue; // Skip the ignored properties
             }
             try {
@@ -2804,7 +2804,7 @@ var gfpCode = (function (exports) {
     function getNavigator() {
         var start = Date.now();
         var navigatorJson = getNavigatorElementsAsJson(navigator);
-        var result = JSON.stringify(navigatorJson, null, 2);
+        var result = JSON.stringify(navigatorJson);
         return { value: result, duration: Date.now() - start };
     }
 
@@ -2824,8 +2824,16 @@ var gfpCode = (function (exports) {
             return Promise.resolve({ value: result, duration: Date.now() - start });
         });
     }
-    function hashPropertyByFunction(components, propertyName, hashFunction) {
-        components[propertyName].value = hashFunction(components[propertyName].value);
+    function applyHashToProperties(components, propertyNames, hashFunction) {
+        if (typeof hashFunction == 'function') {
+            for (var _i = 0, propertyNames_1 = propertyNames; _i < propertyNames_1.length; _i++) {
+                var propertyName = propertyNames_1[_i];
+                if (components.hasOwnProperty(propertyName) && components[propertyName] !== null) {
+                    var valueToHash = JSON.stringify(components[propertyName].value);
+                    components[propertyName].value = hashFunction(valueToHash);
+                }
+            }
+        }
         return components;
     }
     function componentsToJsonString(components) {
@@ -2854,14 +2862,13 @@ var gfpCode = (function (exports) {
     function getResult(callback) {
         var fpPromise = loadSources(sources, {}, [])();
         return fpPromise.then(function (components) {
-            components = hashPropertyByFunction(components, "canvas", callback);
-            return getIncognitoMode().then(function (mode) {
-                components.isIncognitoMode = mode;
-                var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), timezoneOffset: getTimezoneOffset() });
+            components = applyHashToProperties(components, ["canvas", "webGlExtensions"], callback);
+            return getIncognitoMode().then(function (isIncognitoMode) {
+                var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), timezoneOffset: getTimezoneOffset(), isIncognitoMode: isIncognitoMode });
                 var properties = componentsToJsonString(customComponents);
-                return Promise.resolve({
+                return {
                     Properties: properties
-                });
+                };
             });
         });
     }
