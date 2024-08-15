@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Model;
+using System.Collections.Generic;
 
 namespace Device.FingerPrint.QueueConsumer.Models
 {
@@ -7,5 +8,7 @@ namespace Device.FingerPrint.QueueConsumer.Models
         public RawTransactionModel Message { get; set; }
 
         public string Tags { get; set; }
+
+        public List<string> UnhandleAttributes { get; set; }
     }
 }

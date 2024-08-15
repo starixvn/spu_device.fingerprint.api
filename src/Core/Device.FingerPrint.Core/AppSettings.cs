@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Device.FingerPrint.Core
@@ -37,6 +38,8 @@ namespace Device.FingerPrint.Core
         bool IsEnableLogstash { get; }
 
         string LogstashUrl { get; }
+
+        List<string> UnhandleFingerprintAttributeValues { get; }
 
         bool IsExtraSub { get; }
 
@@ -85,6 +88,8 @@ namespace Device.FingerPrint.Core
         private readonly bool isEnableLogstash;
         private readonly string logstashUrl;
 
+        private readonly List<string> unhandleFingerprintAttributeValues;
+
         private readonly bool isExtraSub;
         
         private readonly int maxMonthsGetAssociationByDevice;
@@ -132,6 +137,9 @@ namespace Device.FingerPrint.Core
 
             logstashUrl = GetValue<string>("Logstash:Url") ?? string.Empty;
 
+            //if (configuration["Fingerprint:UnhandleAttributeValues"] != null)
+                unhandleFingerprintAttributeValues = GetSection<List<string>>("Fingerprint:UnhandleAttributeValues") ?? new List<string>();
+
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
@@ -171,6 +179,8 @@ namespace Device.FingerPrint.Core
         public bool IsEnableLogstash => isEnableLogstash;
 
         public string LogstashUrl => logstashUrl;
+
+        public List<string> UnhandleFingerprintAttributeValues => unhandleFingerprintAttributeValues;
 
         public bool IsExtraSub => isExtraSub;
 
