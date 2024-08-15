@@ -5,7 +5,7 @@ using System.Numerics;
 
 namespace Device.FingerPrint.Features.Transaction.Model
 {
-    public class InsertRawTransactionDTO
+    public class InsertRawTransactionEntity
     {
         public string LoginName { get; set; }
 
@@ -68,6 +68,6 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string FPUserAgentCode { get; set; }
 
-        public bool IsIncognitoMode { get; set; }
+        public bool? IsIncognitoMode { get; set; }
     }
 }

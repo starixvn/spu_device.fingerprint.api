@@ -96,7 +96,7 @@ namespace Device.FingerPrint.Model
 
         public JSChallengeInfo RawJsChallengeInfo { get; set; }
 
-        public bool IsIncognitoMode { get; set; }
+        public bool? IsIncognitoMode { get; set; }
     }
 
     public class ConvertBigInteger : ConverterBase

@@ -334,12 +334,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return _OTHERTYPE;
         }
 
-        private bool GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
+        private bool? GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
         {
-            if(string.IsNullOrEmpty(fingerprintAttribute?.IsIncognitoMode)) return false;
+            if(string.IsNullOrEmpty(fingerprintAttribute?.IsIncognitoMode)) return null;
 
-            _ = bool.TryParse(fingerprintAttribute.IsIncognitoMode, out bool isIncognitoMode);
-            return isIncognitoMode;
+            return fingerprintAttribute.IsIncognitoMode == "true";
         }
 
         private string GetSuperCookies(FPFingerprintAttributeModel fingerprintAttributeModel)

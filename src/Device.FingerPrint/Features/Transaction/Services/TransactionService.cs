@@ -86,9 +86,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             await transactionDataAccess.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
         }
 
-        private static IEnumerable<InsertRawTransactionDTO> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
+        private static IEnumerable<InsertRawTransactionEntity> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
         {
-            return transactions.Select(transaction => new InsertRawTransactionDTO
+            return transactions.Select(transaction => new InsertRawTransactionEntity
             {
                 Action = transaction.Action,
                 ActionResult = transaction.ActionResult,
@@ -119,7 +119,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 URL = transaction.URL,
                 UserAgent = transaction.UserAgent,
                 IsIncognitoMode = transaction.IsIncognitoMode
-            }).ToList();
+            });
         }
 
         public void InsertTransaction(IEnumerable<TransactionEntity> transactions)
