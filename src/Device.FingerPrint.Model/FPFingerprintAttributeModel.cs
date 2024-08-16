@@ -120,7 +120,7 @@
 
         public string Plugins { get; set; }
 
-        public string Useragent { get; set; }
+        public string UserAgent { get; set; }
 
         public string Fonts { get; set; }
 

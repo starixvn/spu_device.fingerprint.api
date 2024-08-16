@@ -268,7 +268,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             var userAgentInfo = rawTransModel.UserAgentInfo;
             if (userAgentInfo != null)
             {
-                oldFingerPrintAttribute.Useragent = userAgentInfo.UserAgent;
+                oldFingerPrintAttribute.UserAgent = userAgentInfo.UserAgent;
                 oldFingerPrintAttribute.Browser = userAgentInfo.ClientName + " " + userAgentInfo.ClientVersion;
                 oldFingerPrintAttribute.DeviceType = userAgentInfo.DeviceType;
             }
@@ -343,12 +343,12 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private string GetSuperCookies(FPFingerprintAttributeModel fingerprintAttributeModel)
         {
-            var localStorage = fingerprintAttributeModel.LocalStorage == "true" ? '1' : '0';
-            var sessionStorage = fingerprintAttributeModel.SessionStorage == "true" ? '1' : '0';
-            var openDatabase = fingerprintAttributeModel.OpenDatabase == "true" ? '1' : '0';
-            var indexedDb = fingerprintAttributeModel.IndexedDB == "true" ? '1' : '0';
+            var localStorage = fingerprintAttributeModel?.LocalStorage == "true";
+            var sessionStorage = fingerprintAttributeModel?.SessionStorage == "true";
+            var openDatabase = fingerprintAttributeModel?.OpenDatabase == "true";
+            var indexedDb = fingerprintAttributeModel?.IndexedDB == "true";
 
-            return localStorage + "" + sessionStorage + openDatabase + indexedDb;
+            return localStorage + "|" + sessionStorage + "|" + openDatabase + "|" + indexedDb;
         }
 
         #region Log Info
