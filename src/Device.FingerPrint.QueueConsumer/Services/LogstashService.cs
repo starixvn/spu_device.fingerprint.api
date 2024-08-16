@@ -31,17 +31,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     Message = transaction,
                     Tags = "LoginTransaction",
+                    FingerprintAttributes = GetHandledFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
+                    UnhandledAttributes = GetUnhandleAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
                 };
-
-                var unhandleFingerprintAttributes = new List<string>();
-
-                if (transaction.FingerprintAttribute != null)
-                {
-                    unhandleFingerprintAttributes.AddRange(GetUnhandleAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute));
-                    unhandleFingerprintAttributes.AddRange(GetUnhandleAttributes(transaction.FingerprintAttribute.FPFingerPrintExtraAttribute));
-                }
-
-                logMessage.UnhandleAttributes = unhandleFingerprintAttributes;
 
                 var jsonLogMessage = JsonConvert.SerializeObject(logMessage);
 
@@ -58,7 +50,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (fingerprintAttribute == null)
                 return unhandleAttributes;
 
-            var unhandleValues = appSettings.UnhandleFingerprintAttributeValues;
+            var unhandleValues = appSettings.UnhandledFingerprintAttributeValues;
 
             if(fingerprintAttribute != null)
             {
@@ -84,6 +76,40 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return unhandleAttributes;
+        }
+
+        public List<string> GetHandledFingerprintAttributes<T>(T fingerprintAttribute)
+        {
+            var attributes = new List<string>();
+
+            if (fingerprintAttribute == null)
+                return attributes;
+
+            var unhandleValues = appSettings.UnhandledFingerprintAttributeValues;
+
+            if (fingerprintAttribute != null)
+            {
+                foreach (var property in fingerprintAttribute.GetType().GetProperties())
+                {
+                    var propertyValue = property.GetValue(fingerprintAttribute);
+                    if (propertyValue == null)
+                        continue;
+
+                    if (propertyValue.GetType() == typeof(string))
+                    {
+                        var stringValue = propertyValue.ToString();
+                        if (string.IsNullOrEmpty(stringValue))
+                            continue;
+
+                        if (unhandleValues.Contains(stringValue.Trim('"').ToLower()))
+                            continue;
+                    }
+
+                    attributes.Add(property.Name);
+                }
+            }
+
+            return attributes;
         }
     }
 }

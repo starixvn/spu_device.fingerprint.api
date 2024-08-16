@@ -9,6 +9,8 @@ namespace Device.FingerPrint.QueueConsumer.Models
 
         public string Tags { get; set; }
 
-        public List<string> UnhandleAttributes { get; set; }
+        public List<string> FingerprintAttributes { get; set; }
+
+        public List<string> UnhandledAttributes { get; set; }
     }
 }
