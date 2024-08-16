@@ -11,6 +11,6 @@
     <Setting Key="DCS_DC_Association_GetAssociationByAccount" SpName="DCS_DC_Association_GetAssociationByAccount" DbName="MySQL.DCS_DataCenter.Reporter"/>
   </Function>
   <Function Name="RiskLevel">
-    <Setting Key="CTS_DC_CustClassification_GetLatestRiskLevel" SpName="CTS_DC_CustClassification_GetLatestRiskLevel_xtest" DbName="MySQL.CTS_DataCenter.Reporter"/>
+    <Setting Key="CTS_DC_CustClassification_GetLatestRiskLevel" SpName="CTS_DC_CustClassification_GetLatestRiskLevel_UAT4 " DbName="MySQL.CTS_DataCenter.Reporter"/>
   </Function>
 </Functions>
