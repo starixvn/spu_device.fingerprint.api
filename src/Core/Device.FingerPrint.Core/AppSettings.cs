@@ -37,7 +37,11 @@ namespace Device.FingerPrint.Core
 
         bool IsEnableLogstash { get; }
 
-        string LogstashUrl { get; }
+        string LogstashHttpUrl { get; }
+
+        string LogstashTcpHostname { get; }
+
+        int LogstashTcpPort { get; }
 
         List<string> UnhandledFingerprintAttributeValues { get; }
 
@@ -86,7 +90,9 @@ namespace Device.FingerPrint.Core
         private readonly string jWT;
 
         private readonly bool isEnableLogstash;
-        private readonly string logstashUrl;
+        private readonly string logstashHttpUrl;
+        private readonly string logstashTcpHostname;
+        private readonly int logstashTcpPort;
 
         private readonly List<string> unhandledFingerprintAttributeValues;
 
@@ -135,7 +141,11 @@ namespace Device.FingerPrint.Core
 
             isEnableLogstash = !string.IsNullOrEmpty(GetValue<string>("Logstash:IsEnable")) && Convert.ToBoolean(GetValue<string>("Logstash:IsEnable"));
 
-            logstashUrl = GetValue<string>("Logstash:Url") ?? string.Empty;
+            logstashHttpUrl = GetValue<string>("Logstash:HttpUrl") ?? string.Empty;
+
+            logstashTcpHostname = GetValue<string>("Logstash:Tcp:Hostname") ?? string.Empty;
+
+            logstashTcpPort = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Logstash:Tcp:Port")) ? "32705" : GetValue<string>("Logstash:Tcp:Port"));
 
             unhandledFingerprintAttributeValues = GetSection<List<string>>("Fingerprint:UnhandledAttributeValues") ?? new List<string>();
 
@@ -177,7 +187,11 @@ namespace Device.FingerPrint.Core
 
         public bool IsEnableLogstash => isEnableLogstash;
 
-        public string LogstashUrl => logstashUrl;
+        public string LogstashHttpUrl => logstashHttpUrl;
+
+        public string LogstashTcpHostname => logstashTcpHostname;
+
+        public int LogstashTcpPort => logstashTcpPort;
 
         public List<string> UnhandledFingerprintAttributeValues => unhandledFingerprintAttributeValues;
 

@@ -4,6 +4,7 @@ using Device.FingerPrint.QueueConsumer.Models;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +26,40 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task PushLog(RawTransactionModel transaction)
         {
+            PushLogUsingTCP(transaction);
+            await PushLogUsingHttp(transaction);
+        }
+
+        public void PushLogUsingTCP(RawTransactionModel transaction)
+        {
+            if (string.IsNullOrEmpty(appSettings.LogstashTcpHostname))
+                return;
+
+            using (TcpClient client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort))
+            {
+                var logMessage = new TransactionLogstashModel
+                {
+                    Message = transaction,
+                    Tags = "LoginTransaction",
+                    FingerprintAttributes = GetHandledFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
+                    UnhandledAttributes = GetUnhandleAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
+                };
+
+                var jsonLogMessage = JsonConvert.SerializeObject(logMessage);
+
+                NetworkStream stream = client.GetStream();
+                byte[] data = Encoding.UTF8.GetBytes(jsonLogMessage);
+
+                stream.Write(data, 0, data.Length);
+            }
+
+        }
+
+        public async Task PushLogUsingHttp(RawTransactionModel transaction)
+        {
+            if(string.IsNullOrEmpty(appSettings.LogstashHttpUrl))
+                return;
+
             using (var httpClient = new HttpClient())
             {
                 var logMessage = new TransactionLogstashModel
@@ -39,10 +74,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 var httpContent = new StringContent(jsonLogMessage, Encoding.UTF8, "application/json");
 
-                _ = await httpClient.PostAsync(appSettings.LogstashUrl, httpContent);
+                _ = await httpClient.PostAsync(appSettings.LogstashHttpUrl, httpContent);
             }
         }
-
         public List<string> GetUnhandleAttributes<T>(T fingerprintAttribute)
         {
             var unhandleAttributes = new List<string>();
