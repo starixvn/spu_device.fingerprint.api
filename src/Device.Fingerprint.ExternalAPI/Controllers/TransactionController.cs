@@ -1,10 +1,13 @@
 ﻿using Device.Fingerprint.ExternalAPI.Filters;
 using Device.Fingerprint.ExternalAPI.Models;
+using Device.FingerPrint.Features.RiskLevel.Model;
+using Device.FingerPrint.Features.RiskLevel.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Device.Fingerprint.WebAPI.Controllers
@@ -15,13 +18,16 @@ namespace Device.Fingerprint.WebAPI.Controllers
     {
         private readonly ISubscriberServices subscriberServices;
         private readonly ITransactionService transactionService;
+        private readonly IRiskLevelService riskLevelService;
         
         public TransactionController(          
             ISubscriberServices subscriberServices,
-            ITransactionService transactionService)
+            ITransactionService transactionService,
+            IRiskLevelService riskLevelService)
         {
             this.subscriberServices = subscriberServices;
             this.transactionService = transactionService; 
+            this.riskLevelService = riskLevelService;
         }
         
         [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
@@ -37,6 +43,13 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     var trans = transactionService.GetTransactionHistoryByTransIdSubscriber(subscriber.SubscriberId, trackingNumber, 1000);
 
+                    IEnumerable<RiskLevelByAccountEntity> riskLevels = null;
+
+                    var accountIDs = string.Join(',', trans.Select(x => x.AccountID).Distinct());
+
+                    if (!string.IsNullOrEmpty(accountIDs))
+                        riskLevels = riskLevelService.GetCustomerClassRiskLevelByAccount(accountIDs);
+
                     var transformedTrans = trans.Select(x => new TransactionHistoryModel
                     {
                         Action = x.Action,
@@ -48,7 +61,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
                         RobotTracking = x.RobotTracking,
                         TrackingNumber = x.TransID,
                         DateTime = x.TransTime,
-                        Account = x.UserName
+                        Account = x.UserName,
+                        RiskLevel = riskLevels?.FirstOrDefault(y => y.AccountID == x.AccountID)?.RiskLevel ?? string.Empty
                     });
 
                     return Ok(new TransactionHistoryList
