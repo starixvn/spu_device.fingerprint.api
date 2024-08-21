@@ -26,124 +26,100 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task PushLog(RawTransactionModel transaction)
         {
-            PushLogUsingTCP(transaction);
-            await PushLogUsingHttp(transaction);
+            var logMessage = TransformLogMessage(transaction);
+
+            PushLogUsingTCP(logMessage);
+            await PushLogUsingHttp(logMessage);
         }
 
-        public void PushLogUsingTCP(RawTransactionModel transaction)
+        public string TransformLogMessage(RawTransactionModel transaction)
+        {
+            var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute);
+
+            var logMessage = new TransactionLogstashModel
+            {
+                Message = transaction,
+                Tags = "LoginTransaction",
+                FingerprintAttributes = fingerprintLogstashModel.FingerprintAttributes,
+                UnhandledAttributes = fingerprintLogstashModel.UnhandledAttributes,
+            };
+
+            return JsonConvert.SerializeObject(logMessage);
+        }
+
+        public void PushLogUsingTCP(string logMessage)
         {
             if (string.IsNullOrEmpty(appSettings.LogstashTcpHostname))
                 return;
 
             using (TcpClient client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort))
             {
-                var logMessage = new TransactionLogstashModel
-                {
-                    Message = transaction,
-                    Tags = "LoginTransaction",
-                    FingerprintAttributes = GetHandledFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
-                    UnhandledAttributes = GetUnhandleAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
-                };
-
-                var jsonLogMessage = JsonConvert.SerializeObject(logMessage);
-
                 NetworkStream stream = client.GetStream();
-                byte[] data = Encoding.UTF8.GetBytes(jsonLogMessage);
+                byte[] data = Encoding.UTF8.GetBytes(logMessage);
 
                 stream.Write(data, 0, data.Length);
             }
 
         }
 
-        public async Task PushLogUsingHttp(RawTransactionModel transaction)
+        public async Task PushLogUsingHttp(string logMessage)
         {
             if(string.IsNullOrEmpty(appSettings.LogstashHttpUrl))
                 return;
 
             using (var httpClient = new HttpClient())
             {
-                var logMessage = new TransactionLogstashModel
-                {
-                    Message = transaction,
-                    Tags = "LoginTransaction",
-                    FingerprintAttributes = GetHandledFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
-                    UnhandledAttributes = GetUnhandleAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute),
-                };
-
-                var jsonLogMessage = JsonConvert.SerializeObject(logMessage);
-
-                var httpContent = new StringContent(jsonLogMessage, Encoding.UTF8, "application/json");
+                var httpContent = new StringContent(logMessage, Encoding.UTF8, "application/json");
 
                 _ = await httpClient.PostAsync(appSettings.LogstashHttpUrl, httpContent);
             }
         }
-        public List<string> GetUnhandleAttributes<T>(T fingerprintAttribute)
-        {
-            var unhandleAttributes = new List<string>();
 
-            if (fingerprintAttribute == null)
-                return unhandleAttributes;
-
-            var unhandleValues = appSettings.UnhandledFingerprintAttributeValues;
-
-            if(fingerprintAttribute != null)
-            {
-                foreach (var property in fingerprintAttribute.GetType().GetProperties())
-                {
-                    var propertyValue = property.GetValue(fingerprintAttribute);
-                    if (propertyValue == null)
-                    {
-                        unhandleAttributes.Add(property.Name);
-                        continue;
-                    }
-
-                    if (propertyValue.GetType() == typeof(string))
-                    {
-                        var stringValue = propertyValue.ToString();
-                        if (!string.IsNullOrEmpty(stringValue)
-                            && !unhandleValues.Contains(stringValue.Trim('"').ToLower()))
-                            continue;
-
-                        unhandleAttributes.Add(property.Name);
-                    }
-                }
-            }
-
-            return unhandleAttributes;
-        }
-
-        public List<string> GetHandledFingerprintAttributes<T>(T fingerprintAttribute)
+        public FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)
         {
             var attributes = new List<string>();
+            var unhandledAttributes = new List<string>();
 
             if (fingerprintAttribute == null)
-                return attributes;
+                return null;
 
-            var unhandleValues = appSettings.UnhandledFingerprintAttributeValues;
+            var unhandledValues = appSettings.UnhandledFingerprintAttributeValues;
 
-            if (fingerprintAttribute != null)
+            foreach (var property in fingerprintAttribute.GetType().GetProperties())
             {
-                foreach (var property in fingerprintAttribute.GetType().GetProperties())
+                var propertyValue = property.GetValue(fingerprintAttribute);
+
+                if (propertyValue == null)
                 {
-                    var propertyValue = property.GetValue(fingerprintAttribute);
-                    if (propertyValue == null)
-                        continue;
+                    unhandledAttributes.Add(property.Name);
+                    continue;
+                }
 
-                    if (propertyValue.GetType() == typeof(string))
+                if (propertyValue.GetType() == typeof(string))
+                {
+                    var stringValue = propertyValue.ToString();
+                    if (!string.IsNullOrEmpty(stringValue)
+                        && !unhandledValues.Contains(stringValue.Trim('"').ToLower()))
                     {
-                        var stringValue = propertyValue.ToString();
-                        if (string.IsNullOrEmpty(stringValue))
-                            continue;
-
-                        if (unhandleValues.Contains(stringValue.Trim('"').ToLower()))
-                            continue;
+                        attributes.Add(property.Name);
+                        continue;
                     }
 
+                    unhandledAttributes.Add(property.Name);
+                }
+                else
+                {
                     attributes.Add(property.Name);
                 }
             }
 
-            return attributes;
+            var fingerprintLogstashModel = new FingerprintLogstashModel
+            {
+                FingerprintAttributes = attributes,
+                UnhandledAttributes = unhandledAttributes
+            };
+
+            return fingerprintLogstashModel;
         }
     }
 }
