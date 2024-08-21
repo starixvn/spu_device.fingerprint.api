@@ -32,7 +32,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             await PushLogUsingHttp(logMessage);
         }
 
-        public string TransformLogMessage(RawTransactionModel transaction)
+        private string TransformLogMessage(RawTransactionModel transaction)
         {
             var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute);
 
@@ -47,7 +47,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return JsonConvert.SerializeObject(logMessage);
         }
 
-        public void PushLogUsingTCP(string logMessage)
+        private void PushLogUsingTCP(string logMessage)
         {
             if (string.IsNullOrEmpty(appSettings.LogstashTcpHostname))
                 return;
@@ -62,7 +62,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         }
 
-        public async Task PushLogUsingHttp(string logMessage)
+        private async Task PushLogUsingHttp(string logMessage)
         {
             if(string.IsNullOrEmpty(appSettings.LogstashHttpUrl))
                 return;
@@ -75,7 +75,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
         }
 
-        public FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)
+        private FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)
         {
             var attributes = new List<string>();
             var unhandledAttributes = new List<string>();
@@ -113,13 +113,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 }
             }
 
-            var fingerprintLogstashModel = new FingerprintLogstashModel
+            return new FingerprintLogstashModel
             {
                 FingerprintAttributes = attributes,
                 UnhandledAttributes = unhandledAttributes
             };
-
-            return fingerprintLogstashModel;
         }
     }
 }
