@@ -5,12 +5,13 @@
 		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="MySQL.CTS_Admin.Reporter"/>
 	</Function>
   <Function Name="Transaction">
-    <Setting Key="DCS_DC_Transaction_GetTransactionBySubscriber" SpName="DCS_DC_Transaction_GetTransactionBySubscriber" DbName="MySQL.DCS_DataCenter.Reporter"/>    
+    <Setting Key="DCS_DC_Transaction_GetTransactionBySubscriber" SpName="DCS_DC_Transaction_GetTransactionBySubscriber_xtest" DbName="MySQL.DCS_DataCenter.Reporter"/>    
   </Function>
   <Function Name="Association">
     <Setting Key="DCS_DC_Association_GetAssociationByAccount" SpName="DCS_DC_Association_GetAssociationByAccount" DbName="MySQL.DCS_DataCenter.Reporter"/>
   </Function>
   <Function Name="RiskLevel">
-    <Setting Key="CTS_DC_CustClassification_GetLatestRiskLevel" SpName="CTS_DC_CustClassification_GetLatestRiskLevel_xtest" DbName="MySQL.CTS_DataCenter.Reporter"/>
+    <Setting Key="CTS_DC_CustClassification_GetLatestRiskLevel" SpName="CTS_DC_CustClassification_GetLatestRiskLevel_UAT4 " DbName="MySQL.CTS_DataCenter.Reporter"/>
+	<Setting Key="CTS_DC_CustClassification_GetRiskLevelByAccount" SpName="CTS_DC_CustClassification_GetRiskLevelByAccount_xtest" DbName="MySQL.CTS_DataCenter.Reporter"/>
   </Function>
 </Functions>

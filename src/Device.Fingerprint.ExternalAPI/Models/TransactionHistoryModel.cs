@@ -10,6 +10,8 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string Account { get; set; }
 
+        public string RiskLevel { get; set; }
+
         public string Action { get; set; }
 
         public string Device { get; set; }

@@ -9,6 +9,8 @@ namespace Device.FingerPrint.Features.RiskLevel.Services
     public interface IRiskLevelService
     {
         IEnumerable<RiskLevelEntity> GetCustomerClassRiskLevel(int subscriberId, long lastId, int batchSize);
+
+        IEnumerable<RiskLevelByAccountEntity> GetCustomerClassRiskLevelByAccount(string accountIDs);
     }
 
     public class RiskLevelService : IRiskLevelService
@@ -23,6 +25,11 @@ namespace Device.FingerPrint.Features.RiskLevel.Services
         public IEnumerable<RiskLevelEntity> GetCustomerClassRiskLevel(int subscriberId, long lastId, int batchSize)
         {
             return riskLevelAccess.GetCustomerClassRiskLevel(subscriberId, lastId, batchSize);
+        }
+
+        public IEnumerable<RiskLevelByAccountEntity> GetCustomerClassRiskLevelByAccount(string accountIDs)
+        {
+            return riskLevelAccess.GetCustomerClassRiskLevelByAccount(accountIDs);
         }
     }
 }

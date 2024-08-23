@@ -14,6 +14,8 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string UserName { get; set; }
 
+        public long AccountID { get; set; }
+
         public string FirstDeviceCode { get; set; }
 
         public string Action { get; set; }
