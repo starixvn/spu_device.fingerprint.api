@@ -1,12 +1,16 @@
 ﻿using Device.FingerPrint.Core;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.QueueConsumer.Models;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Extensions;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Fanex.Logging;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -18,10 +22,12 @@ namespace Device.FingerPrint.QueueConsumer.Services
     public class LogstashService : ILogstashService
     {
         private readonly IAppSettings appSettings;
+        private readonly ILogger logger;
 
-        public LogstashService(IAppSettings appSettings)
+        public LogstashService(IAppSettings appSettings, ILogger logger)
         {
             this.appSettings = appSettings;
+            this.logger = logger;
         }
 
         public async Task PushLog(RawTransactionModel transaction)
@@ -34,14 +40,14 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private string TransformLogMessage(RawTransactionModel transaction)
         {
-            var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute.FPFingerPrintAttribute);
+            var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute?.FPFingerPrintAttribute);
 
             var logMessage = new TransactionLogstashModel
             {
                 Message = transaction,
                 Tags = "LoginTransaction",
-                FingerprintAttributes = fingerprintLogstashModel.FingerprintAttributes,
-                UnhandledAttributes = fingerprintLogstashModel.UnhandledAttributes,
+                FingerprintAttributes = fingerprintLogstashModel?.FingerprintAttributes,
+                UnhandledAttributes = fingerprintLogstashModel?.UnhandledAttributes,
             };
 
             return JsonConvert.SerializeObject(logMessage);
@@ -52,26 +58,39 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (string.IsNullOrEmpty(appSettings.LogstashTcpHostname))
                 return;
 
-            using (TcpClient client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort))
+            try
             {
-                NetworkStream stream = client.GetStream();
-                byte[] data = Encoding.UTF8.GetBytes(logMessage);
+                using (TcpClient client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort))
+                {
+                    NetworkStream stream = client.GetStream();
+                    byte[] data = Encoding.UTF8.GetBytes(logMessage);
 
-                stream.Write(data, 0, data.Length);
+                    stream.Write(data, 0, data.Length);
+                }
+            } 
+            catch(Exception ex)
+            {
+                LogException(ex);
             }
-
+            
         }
 
         private async Task PushLogUsingHttp(string logMessage)
         {
             if(string.IsNullOrEmpty(appSettings.LogstashHttpUrl))
                 return;
-
-            using (var httpClient = new HttpClient())
+            try
             {
-                var httpContent = new StringContent(logMessage, Encoding.UTF8, "application/json");
+                using (var httpClient = new HttpClient())
+                {
+                    var httpContent = new StringContent(logMessage, Encoding.UTF8, "application/json");
 
-                _ = await httpClient.PostAsync(appSettings.LogstashHttpUrl, httpContent);
+                    _ = await httpClient.PostAsync(appSettings.LogstashHttpUrl, httpContent);
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException(ex);
             }
         }
 
@@ -118,6 +137,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 FingerprintAttributes = attributes,
                 UnhandledAttributes = unhandledAttributes
             };
+        }
+
+        private void LogException(Exception ex)
+        {
+            var logMessage = new LogMessage(ex.Message)
+                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .ToString();
+
+            logger.Error(logMessage);
         }
     }
 }
