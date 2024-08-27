@@ -76,7 +76,7 @@ var gfpCode = (function (exports) {
     }
 
     /**
-     * FingerprintJS v1.0.3 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
+     * FingerprintJS v1.0.4 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -171,11 +171,13 @@ var gfpCode = (function (exports) {
     /**
      * Makes the given promise never emit an unhandled promise rejection console warning.
      * The promise will still pass errors to the next promises.
+     * Returns the input promise for convenience.
      *
      * Otherwise, promise emits a console warning unless it has a `catch` listener.
      */
     function suppressUnhandledRejectionWarning(promise) {
         promise.then(undefined, function () { return undefined; });
+        return promise;
     }
 
     /*
@@ -288,7 +290,7 @@ var gfpCode = (function (exports) {
      * waiting for one source to load before getting the components from the other sources.
      */
     function loadSource(source, sourceOptions) {
-        var sourceLoadPromise = new Promise(function (resolveLoad) {
+        var sourceLoadPromise = suppressUnhandledRejectionWarning(new Promise(function (resolveLoad) {
             var loadStartTime = Date.now();
             // `awaitIfAsync` is used instead of just `await` in order to measure the duration of synchronous sources
             // correctly (other microtasks won't affect the duration).
@@ -327,8 +329,7 @@ var gfpCode = (function (exports) {
                     });
                 });
             });
-        });
-        suppressUnhandledRejectionWarning(sourceLoadPromise);
+        }));
         return function getComponent() {
             return sourceLoadPromise.then(function (finalizeSource) { return finalizeSource(); });
         };
@@ -346,8 +347,7 @@ var gfpCode = (function (exports) {
         var includedSources = Object.keys(sources).filter(function (sourceKey) { return excludes(excludeSources, sourceKey); });
         // Using `mapWithBreaks` allows asynchronous sources to complete between synchronous sources
         // and measure the duration correctly
-        var sourceGettersPromise = mapWithBreaks(includedSources, function (sourceKey) { return loadSource(sources[sourceKey], sourceOptions); }, loopReleaseInterval);
-        suppressUnhandledRejectionWarning(sourceGettersPromise);
+        var sourceGettersPromise = suppressUnhandledRejectionWarning(mapWithBreaks(includedSources, function (sourceKey) { return loadSource(sources[sourceKey], sourceOptions); }, loopReleaseInterval));
         return function getComponents() {
             return __awaiter(this, void 0, void 0, function () {
                 var sourceGetters, componentPromises, componentArray, components, index;
@@ -356,11 +356,7 @@ var gfpCode = (function (exports) {
                         case 0: return [4 /*yield*/, sourceGettersPromise];
                         case 1:
                             sourceGetters = _a.sent();
-                            return [4 /*yield*/, mapWithBreaks(sourceGetters, function (sourceGetter) {
-                                    var componentPromise = sourceGetter();
-                                    suppressUnhandledRejectionWarning(componentPromise);
-                                    return componentPromise;
-                                }, loopReleaseInterval)];
+                            return [4 /*yield*/, mapWithBreaks(sourceGetters, function (sourceGetter) { return suppressUnhandledRejectionWarning(sourceGetter()); }, loopReleaseInterval)];
                         case 2:
                             componentPromises = _a.sent();
                             return [4 /*yield*/, Promise.all(componentPromises)
@@ -681,14 +677,13 @@ var gfpCode = (function (exports) {
         compressor.connect(context.destination);
         oscillator.start(0);
         var _a = startRenderingAudio(context), renderPromise = _a[0], finishRendering = _a[1];
-        var fingerprintPromise = renderPromise.then(function (buffer) { return getHash(buffer.getChannelData(0).subarray(hashFromIndex)); }, function (error) {
+        // Suppresses the console error message in case when the fingerprint fails before requested
+        var fingerprintPromise = suppressUnhandledRejectionWarning(renderPromise.then(function (buffer) { return getHash(buffer.getChannelData(0).subarray(hashFromIndex)); }, function (error) {
             if (error.name === "timeout" /* InnerErrorName.Timeout */ || error.name === "suspended" /* InnerErrorName.Suspended */) {
                 return -3 /* SpecialFingerprint.Timeout */;
             }
             throw error;
-        });
-        // Suppresses the console error message in case when the fingerprint fails before requested
-        suppressUnhandledRejectionWarning(fingerprintPromise);
+        }));
         return function () {
             finishRendering();
             return fingerprintPromise;
@@ -731,7 +726,7 @@ var gfpCode = (function (exports) {
                     var renderingPromise = context.startRendering();
                     // `context.startRendering` has two APIs: Promise and callback, we check that it's really a promise just in case
                     if (isPromise(renderingPromise)) {
-                        // Suppresses all unhadled rejections in case of scheduled redundant retries after successful rendering
+                        // Suppresses all unhandled rejections in case of scheduled redundant retries after successful rendering
                         suppressUnhandledRejectionWarning(renderingPromise);
                     }
                     switch (context.state) {
@@ -921,6 +916,31 @@ var gfpCode = (function (exports) {
                 var name_2 = match[1], value = match[2], priority = match[4];
                 style.setProperty(name_2, value, priority || ''); // The last argument can't be undefined in IE11
             }
+        }
+    }
+    /**
+     * Returns true if the code runs in an iframe, and any parent page's origin doesn't match the current origin
+     */
+    function isAnyParentCrossOrigin() {
+        var currentWindow = window;
+        for (;;) {
+            var parentWindow = currentWindow.parent;
+            if (!parentWindow || parentWindow === currentWindow) {
+                return false; // The top page is reached
+            }
+            try {
+                if (parentWindow.location.origin !== currentWindow.location.origin) {
+                    return true;
+                }
+            }
+            catch (error) {
+                // The error is thrown when `origin` is accessed on `parentWindow.location` when the parent is cross-origin
+                if (error instanceof Error && error.name === 'SecurityError') {
+                    return true;
+                }
+                throw error;
+            }
+            currentWindow = parentWindow;
         }
     }
 
@@ -2365,6 +2385,9 @@ var gfpCode = (function (exports) {
         if (typeof (ApplePaySession === null || ApplePaySession === void 0 ? void 0 : ApplePaySession.canMakePayments) !== 'function') {
             return -1 /* ApplePayState.NoAPI */;
         }
+        if (willPrintConsoleError()) {
+            return -3 /* ApplePayState.NotAvailableInFrame */;
+        }
         try {
             return ApplePaySession.canMakePayments() ? 1 /* ApplePayState.Enabled */ : 0 /* ApplePayState.Disabled */;
         }
@@ -2372,22 +2395,23 @@ var gfpCode = (function (exports) {
             return getStateFromError(error);
         }
     }
+    /**
+     * Starting from Safari 15 calling `ApplePaySession.canMakePayments()` produces this error message when FingerprintJS
+     * runs in an iframe with a cross-origin parent page, and the iframe on that page has no allow="payment *" attribute:
+     *   Feature policy 'Payment' check failed for element with origin 'https://example.com' and allow attribute ''.
+     * This function checks whether the error message is expected.
+     *
+     * We check for cross-origin parents, which is prone to false-positive results. Instead, we should check for allowed
+     * feature/permission, but we can't because none of these API works in Safari yet:
+     *   navigator.permissions.query({ name: ‘payment' })
+     *   navigator.permissions.query({ name: ‘payment-handler' })
+     *   document.featurePolicy
+     */
+    var willPrintConsoleError = isAnyParentCrossOrigin;
     function getStateFromError(error) {
-        if (error instanceof Error) {
-            // See full expected error messages in the test
-            if (error.name === 'InvalidAccessError') {
-                if (/\bfrom\b.*\binsecure\b/i.test(error.message)) {
-                    return -2 /* ApplePayState.NotAvailableInInsecureContext */;
-                }
-                if (/\bdifferent\b.*\borigin\b.*top.level\b.*\bframe\b/i.test(error.message)) {
-                    return -3 /* ApplePayState.NotAvailableInFrame */;
-                }
-            }
-            if (error.name === 'SecurityError') {
-                if (/\bthird.party iframes?.*\bnot.allowed\b/i.test(error.message)) {
-                    return -3 /* ApplePayState.NotAvailableInFrame */;
-                }
-            }
+        // See full expected error messages in the test
+        if (error instanceof Error && error.name === 'InvalidAccessError' && /\bfrom\b.*\binsecure\b/i.test(error.message)) {
+            return -2 /* ApplePayState.NotAvailableInInsecureContext */;
         }
         throw error;
     }
@@ -2804,6 +2828,11 @@ var gfpCode = (function (exports) {
     function getNavigator() {
         var start = Date.now();
         var navigatorJson = getNavigatorElementsAsJson(navigator);
+        if (typeof navigatorJson.connection === "object") {
+            navigatorJson.connection.downlink = null;
+            navigatorJson.connection.downlinkMax = null;
+            navigatorJson.connection.rtt = null;
+        }
         var result = JSON.stringify(navigatorJson);
         return { value: result, duration: Date.now() - start };
     }
