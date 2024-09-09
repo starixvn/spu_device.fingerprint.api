@@ -27,7 +27,7 @@ namespace Device.FingerPrint.Gateway.Handlers
                     {
                         var transactionRequest = JsonConvert.DeserializeObject<TransactionRequest>(content);
 
-                        LogService.Info($"this is log from gateway api: {transactionRequest.Subscriber} - {transactionRequest.Account}");
+                        LogService.Info($"this is log from gateway api: {transactionRequest.Subscriber}");
 
                         if (transactionRequest != null && !string.IsNullOrWhiteSpace(transactionRequest?.Subscriber) && !string.IsNullOrWhiteSpace(transactionRequest.Account))
                         {
