@@ -18,9 +18,9 @@ namespace Device.Fingerprint.ExternalAPI.Filters
         {           
             var actionDescriptor = ((ControllerBase)context.Controller).ControllerContext.ActionDescriptor;
             var actionName = actionDescriptor.ActionName;
-            var argument = context.ActionArguments["subscriberName"];
+            var argument = context.ActionArguments["subscriberName"].ToString().ToLower();
 
-            await _counterService.IncrementRequestCountAsync(argument + "_" + actionName);
+            await _counterService.IncrementRequestCountAsync(argument + ":" + actionName);
 
             await next();
         }

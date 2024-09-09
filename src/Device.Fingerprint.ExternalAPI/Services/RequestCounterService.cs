@@ -7,8 +7,7 @@ namespace Device.Fingerprint.ExternalAPI.Services
 {
     public class RequestCounterService
     {
-        private readonly IRedisService redisService;
-        private const string HashKey = "request_counters";        
+        private readonly IRedisService redisService;        
 
         public RequestCounterService(IRedisService redisService)
         {
@@ -17,7 +16,7 @@ namespace Device.Fingerprint.ExternalAPI.Services
 
         public async Task IncrementRequestCountAsync(string functionName)
         {             
-            await this.redisService.HashIncrementAsync(HashKey + "_" + functionName, DateTime.UtcNow.ToString("yyyy-MM-dd"), 1);
+            await this.redisService.HashIncrementAsync(functionName, DateTime.UtcNow.ToString("yyyy-MM-dd"), 1);
         }
     }
 }
