@@ -102,7 +102,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
                         model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
-                        model.IsIncognitoMode = GetIsIncognitoMode(model.FingerprintAttribute.FPFingerPrintAttribute, model.UserAgentInfo?.ClientName);
+                        model.IsIncognitoMode = GetIsIncognitoMode(model.FingerprintAttribute.FPFingerPrintAttribute);
 
                         // Log Info Consumer
                         var subscriberName = model.SubscriberName;
@@ -142,6 +142,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             if (HasData(fingerPrintAttribute))
             {
+                fingerPrintAttribute = ProcessForBrowserIgnoreDetectPrivateMode(fingerPrintAttribute, rawTransModel.UserAgentInfo);
                 result.FPFingerPrintCode = GetMD5HashFromObject(fingerPrintAttribute);
                 result.FPFingerPrintAttribute = fingerPrintAttribute;
             }
@@ -334,15 +335,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return _OTHERTYPE;
         }
 
-        private bool? GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute, string browserName)
+        private bool? GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
         {
-            string _UCBROWSER = "uc browser";
-            string _MIBROWSER = "miui browser";
-
-            if (browserName.ToLower().Contains(_UCBROWSER)) return false;  //no need to detect incognito mode
-
-            if (browserName.ToLower().Contains(_MIBROWSER)) return false;  //skip to detect incognito mode
-
             if (string.IsNullOrEmpty(fingerprintAttribute?.IsIncognitoMode)) return null;
 
             return fingerprintAttribute.IsIncognitoMode == "true";
@@ -356,6 +350,30 @@ namespace Device.FingerPrint.QueueConsumer.Services
             var indexedDb = fingerprintAttributeModel?.IndexedDB == "true";
 
             return localStorage + "|" + sessionStorage + "|" + openDatabase + "|" + indexedDb;
+        }
+
+        private FPFingerprintAttributeModel ProcessForBrowserIgnoreDetectPrivateMode(FPFingerprintAttributeModel fingerprintAttributeModel, UserAgentInfoModel userAgentInfo)
+        {
+            if (!string.IsNullOrEmpty(userAgentInfo?.ClientName))
+            {
+                if (IsIgnoreDetectPrivateMode(userAgentInfo.ClientName))
+                {
+                    fingerprintAttributeModel.IsIncognitoMode = "false";
+                }
+            }
+            return fingerprintAttributeModel;
+        }
+
+        private bool IsIgnoreDetectPrivateMode(string browserName)
+        {
+            string _UCBROWSER = "uc browser";
+            string _MIBROWSER = "miui browser";
+
+            if (browserName.ToLower().Contains(_UCBROWSER)) return true;  //no need to detect incognito mode
+
+            if (browserName.ToLower().Contains(_MIBROWSER)) return true;  //skip to detect incognito mode
+
+            return false;
         }
 
         #region Log Info
