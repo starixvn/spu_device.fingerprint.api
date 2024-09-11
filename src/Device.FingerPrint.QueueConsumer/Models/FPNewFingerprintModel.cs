@@ -35,11 +35,6 @@ namespace Device.FingerPrint.QueueConsumer.Models
             this.crypto = crypto;
         }
 
-        public FPOldFingerprintAttributeModel AttributeModel
-        {
-            get { return _attributeModel; }
-        }
-
         public string Code => Utilities.GetMD5HashFromObject(crypto, _attributeModel);
         
     }

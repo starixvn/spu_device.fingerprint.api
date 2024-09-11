@@ -143,50 +143,22 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (HasData(fingerPrintAttribute))
             {
                 fingerPrintAttribute = ProcessForBrowserIgnoreDetectPrivateMode(fingerPrintAttribute, rawTransModel.UserAgentInfo);
-                result.FPFingerPrintCode = GetMD5HashFromObject(fingerPrintAttribute);
-                result.FPFingerPrintAttribute = fingerPrintAttribute;
+                var newFingerprintModel = new FPNewFingerprintModel(fingerPrintAttribute, crypto);
+                result.FPFingerPrintCode = newFingerprintModel.Code;
+                result.FPFingerPrintAttribute = newFingerprintModel.AttributeModel;
             }
 
             if (HasData(oldFingerPrintAttribute))
             {
-                result.FPFingerPrintOldCode = GetMD5HashFromObject(oldFingerPrintAttribute);
+                var oldFingerprintModel = new FPOldFingerprintModel(oldFingerPrintAttribute, crypto);
+                result.FPFingerPrintOldCode = oldFingerprintModel.Code;
             }
 
             if (HasData(fingerprintAttributeExtra))
             {
-                result.FPFingerPrintExtraCode = GetMD5HashFromObject(fingerprintAttributeExtra);
-                result.FPFingerPrintExtraAttribute = fingerprintAttributeExtra;
-            }
-
-            return result;
-        }
-
-        private FPNewFingerprintModel TransformNewFingerprintJS(FingerprintModel fpModel)
-        {
-            FPNewFingerprintModel result = null;
-            var hasFPFingerPrint = false;
-
-            if (fpModel != null && !string.IsNullOrEmpty(fpModel.Attributes))
-            {
-                var stringDictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(fpModel.Attributes)
-                    .ToDictionary(kvp => kvp.Key, kvp => JsonConvert.SerializeObject(kvp.Value));
-
-                var fingerPrintAttribute = new FPFingerprintAttributeModel();
-                foreach (var property in typeof(FPFingerprintAttributeModel).GetProperties())
-                {
-                    var camelCaseName = Char.ToLowerInvariant(property.Name[0]) + property.Name.Substring(1);
-                    if (stringDictionary.TryGetValue(camelCaseName, out string value))
-                    {
-                        property.SetValue(fingerPrintAttribute, value);
-                        hasFPFingerPrint = true;
-                    }
-                }
-
-                if (hasFPFingerPrint)
-                {
-                    result = new FPNewFingerprintModel(fingerPrintAttribute, crypto);
-                }
-
+                var fingerprintExtraModel = new FPFingerprintExtraModel(fingerprintAttributeExtra, crypto);
+                result.FPFingerPrintExtraCode = fingerprintExtraModel.Code;
+                result.FPFingerPrintExtraAttribute = fingerprintExtraModel.AttributeModel;
             }
 
             return result;
@@ -295,11 +267,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             };
 
             return fingerprintAttributeExtra;
-        }
-
-        private string GetMD5HashFromObject(object obj)
-        {
-            return crypto.GetMD5Hash(JsonConvert.SerializeObject(obj));
         }
 
         private bool HasData<T>(T model)
