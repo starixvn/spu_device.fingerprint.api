@@ -2,15 +2,11 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:7.0-alpine AS builder
 
 WORKDIR /src
 
-COPY ["./src/FPS.Device.FingerPrint.Net.Standard.Client.Model", "FPS.Device.FingerPrint.Net.Standard.Client.Model/"]
-
-COPY ["./src/FPS.Device.FingerPrint.Net.Standard.Client", "FPS.Device.FingerPrint.Net.Standard.Client/"]
-
 COPY ["./src/DemoNetCore/DemoNetCore.csproj", "DemoNetCore/"]
 
 WORKDIR "/src/DemoNetCore"
 
-RUN dotnet nuget add source http://nuget.nexdev.net/api/v2
+RUN dotnet nuget add source https://nuget.nexdev.net/api/v2
 
 RUN dotnet restore -v n
 
