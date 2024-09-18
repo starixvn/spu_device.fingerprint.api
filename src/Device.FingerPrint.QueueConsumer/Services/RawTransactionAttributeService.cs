@@ -96,7 +96,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
 
-                        model.FPTagging = DeviceEncoder.Decrypt(sessionKey.SessionKey);
+                        var decryptSessionKey = DeviceEncoder.Decrypt(sessionKey.SessionKey);
+                        model.FPTagging = IsValidString(decryptSessionKey) ? decryptSessionKey : sessionKey.SessionKey;
                         model.FPFingerPrintCode = model.FingerprintAttribute.FPFingerPrintCode;
                         model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
                         model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
@@ -125,6 +126,18 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     }
                 }
             }
+        }
+        private static bool IsValidString(string decryptedText)
+        {
+            // Check if the string contains non-printable characters
+            foreach (char c in decryptedText)
+            {
+                if (!char.IsLetterOrDigit(c) && !char.IsPunctuation(c) && !char.IsWhiteSpace(c))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         private InsertFPFingerprintEntity TransformFingerprintAttributes(RawTransactionModel rawTransModel, FingerprintModel fpModel, HeaderModel headerModel)
