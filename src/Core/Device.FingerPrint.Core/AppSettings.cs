@@ -54,6 +54,8 @@ namespace Device.FingerPrint.Core
 
         long ApiEverTaggingCacheMaxAge { get; }
 
+        bool IsDisableJsChallenge { get; }
+
         IConfiguration Configuration { get; }
 
         T GetValue<T>(string key);
@@ -104,6 +106,8 @@ namespace Device.FingerPrint.Core
         
         
         private readonly long apiEverTaggingCacheMaxAge;
+
+        private readonly bool isDisableJsChallenge;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -157,6 +161,8 @@ namespace Device.FingerPrint.Core
             
 
             apiEverTaggingCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverTaggingCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverTaggingCacheMaxAge"));
+
+            isDisableJsChallenge = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsDisableJsChallenge")) && Convert.ToBoolean(GetValue<string>("Consumer:IsDisableJsChallenge"));
         }
 
         public string ApiUrl => apiUrl;
@@ -203,6 +209,8 @@ namespace Device.FingerPrint.Core
         
 
         public long ApiEverTaggingCacheMaxAge => apiEverTaggingCacheMaxAge;
+
+        public bool IsDisableJsChallenge => isDisableJsChallenge;
 
         public T GetValue<T>(string key)
         {

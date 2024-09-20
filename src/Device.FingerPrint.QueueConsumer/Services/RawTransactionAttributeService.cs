@@ -48,7 +48,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel)
         {
-            if (botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
+            if (!appSettings.IsDisableJsChallenge && botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
             {
                 var jscKey = botDModel.JscKey;
                 model.ChallengeCode = jscKey;
