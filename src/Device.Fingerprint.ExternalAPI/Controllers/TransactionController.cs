@@ -135,5 +135,55 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
+        [HttpGet("GetAssociationByDevice/{subscriberName}/{device}/{fromDate}/{toDate}")]
+        [ServiceFilter(typeof(RequestCounterFilter))]
+        public ActionResult<AssociationAccountUsageList> GetAssociationByDevice(string subscriberName, string device, DateTime fromDate, DateTime toDate)
+        {
+            try
+            {
+                if(DateTime.Compare(fromDate, toDate) > 0)
+                {
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorMessage = "ToDate cannot be less than FromDate"
+                    });
+                }
+
+                var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
+
+                if (subscriber != null)
+                {
+                    var associationBySubscriberDevice = transactionService.GetAssociationBySubscriberDevice(subscriber.SubscriberId, device, fromDate, toDate);
+
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty,
+                        FromDate = fromDate,
+                        ToDate = toDate,
+                        AssociatedAccounts = associationBySubscriberDevice.Count(),
+                        AssociatedAccountDetails = associationBySubscriberDevice.Select(x => new AssociationAccountUsageModel { Account = x.LoginName, MinUsageDate = x.MnUsageDate, MaxUsageDate = x.MaxUsageDate, UsageCount = x.UsageCount }),
+                    });
+                }
+                else
+                {
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.NotFound,
+                        ErrorMessage = "Subscriber cannot be null"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(new AssociationAccountUsageList
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
     }
 }
