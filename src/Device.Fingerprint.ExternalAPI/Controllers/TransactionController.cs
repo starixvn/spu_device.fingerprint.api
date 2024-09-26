@@ -137,13 +137,11 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         [HttpGet("GetAssociationByDevice/{subscriberName}/{device}/{fromDate}/{toDate}")]
         [ServiceFilter(typeof(RequestCounterFilter))]
-        public ActionResult<AssociationAccountUsageList> GetAssociationByDevice(string subscriberName, string device, string fromDate, string toDate)
+        public ActionResult<AssociationAccountUsageList> GetAssociationByDevice(string subscriberName, string device, DateTime fromDate, DateTime toDate)
         {
             try
             {
-                DateTime fromDateParsed = DateTime.ParseExact(fromDate, "yyyy-MM-dd", null);
-                DateTime toDateParsed = DateTime.ParseExact(toDate, "yyyy-MM-dd", null);
-                if (DateTime.Compare(fromDateParsed, toDateParsed) > 0)
+                if (DateTime.Compare(fromDate, toDate) > 0)
                 {
                     return Ok(new AssociationAccountUsageList
                     {
@@ -156,14 +154,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
                 if (subscriber != null)
                 {
-                    var associationBySubscriberDevice = transactionService.GetAssociationBySubscriberDevice(subscriber.SubscriberId, device, fromDateParsed, toDateParsed);
+                    var associationBySubscriberDevice = transactionService.GetAssociationBySubscriberDevice(subscriber.SubscriberId, device, fromDate, toDate);
 
                     return Ok(new AssociationAccountUsageList
                     {
                         StatusCode = System.Net.HttpStatusCode.OK,
                         ErrorMessage = string.Empty,
-                        FromDate = fromDateParsed,
-                        ToDate = toDateParsed,
+                        FromDate = fromDate,
+                        ToDate = toDate,
                         AssociatedAccounts = associationBySubscriberDevice.Count(),
                         AssociatedAccountDetails = associationBySubscriberDevice.Select(x => new AssociationAccountUsageModel { Account = x.LoginName, MinUsageDate = x.MnUsageDate, MaxUsageDate = x.MaxUsageDate, UsageCount = x.UsageCount }),
                     });
