@@ -156,14 +156,20 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 {
                     var associationBySubscriberDevice = transactionService.GetAssociationBySubscriberDevice(subscriber.SubscriberId, device, fromDate, toDate);
 
+                    string yyyyMMddFormat = "yyyy-MM-dd";
+
                     return Ok(new AssociationAccountUsageList
                     {
                         StatusCode = System.Net.HttpStatusCode.OK,
                         ErrorMessage = string.Empty,
-                        FromDate = fromDate,
-                        ToDate = toDate,
+                        FromDate = fromDate.ToString(yyyyMMddFormat),
+                        ToDate = toDate.ToString(yyyyMMddFormat),
                         AssociatedAccounts = associationBySubscriberDevice.Count(),
-                        AssociatedAccountDetails = associationBySubscriberDevice.Select(x => new AssociationAccountUsageModel { Account = x.LoginName, MinUsageDate = x.MnUsageDate, MaxUsageDate = x.MaxUsageDate, UsageCount = x.UsageCount }),
+                        AssociatedAccountDetails = associationBySubscriberDevice.Select(x => new AssociationAccountUsageModel { 
+                                                                                                    Account = x.LoginName,
+                                                                                                    MinUsageDate = x.MnUsageDate.ToString(yyyyMMddFormat),
+                                                                                                    MaxUsageDate = x.MaxUsageDate.ToString(yyyyMMddFormat),
+                                                                                                    UsageCount = x.UsageCount }),
                     });
                 }
                 else

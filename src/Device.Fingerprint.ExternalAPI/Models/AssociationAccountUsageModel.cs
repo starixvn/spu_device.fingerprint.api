@@ -6,9 +6,9 @@ namespace Device.Fingerprint.ExternalAPI.Models
     {
         public string Account { get; set; }
 
-        public DateTime MinUsageDate { get; set; }
+        public string MinUsageDate { get; set; }
 
-        public DateTime MaxUsageDate { get; set; }
+        public string MaxUsageDate { get; set; }
 
         public int UsageCount { get; set; }
     }
