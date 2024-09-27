@@ -1,5 +1,6 @@
 ﻿using Device.Fingerprint.ExternalAPI.Filters;
 using Device.Fingerprint.ExternalAPI.Models;
+using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.RiskLevel.Model;
 using Device.FingerPrint.Features.RiskLevel.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
@@ -19,15 +20,18 @@ namespace Device.Fingerprint.WebAPI.Controllers
         private readonly ISubscriberServices subscriberServices;
         private readonly ITransactionService transactionService;
         private readonly IRiskLevelService riskLevelService;
-        
+        private readonly IAppSettings appSettings;
+
         public TransactionController(          
             ISubscriberServices subscriberServices,
             ITransactionService transactionService,
-            IRiskLevelService riskLevelService)
+            IRiskLevelService riskLevelService,
+            IAppSettings appSettings)
         {
             this.subscriberServices = subscriberServices;
             this.transactionService = transactionService; 
             this.riskLevelService = riskLevelService;
+            this.appSettings = appSettings;
         }
         
         [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
@@ -150,6 +154,15 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     });
                 }
 
+                if (!IsDateRangeValid(fromDate, toDate))
+                {
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorMessage = "Invalid input: Date range cannot be more than " + appSettings.MaxMonths + " months."
+                    });
+                }
+
                 var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
 
                 if (subscriber != null)
@@ -189,6 +202,14 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     ErrorMessage = ex.Message
                 });
             }
+        }
+
+        private bool IsDateRangeValid(DateTime fromDate, DateTime toDate)
+        {
+            DateTime minValidDate = DateTime.Today.AddMonths(- appSettings.MaxMonths);
+
+            return DateTime.Compare(minValidDate, fromDate) <= 0 && DateTime.Compare(fromDate, DateTime.Today) <= 0
+                        && DateTime.Compare(minValidDate, toDate) <= 0 && DateTime.Compare(toDate, DateTime.Today) <= 0;
         }
 
     }
