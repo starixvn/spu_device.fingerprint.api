@@ -159,7 +159,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     return Ok(new AssociationAccountUsageList
                     {
                         StatusCode = System.Net.HttpStatusCode.BadRequest,
-                        ErrorMessage = "Invalid input: Date range cannot be more than " + appSettings.MaxMonths + " months."
+                        ErrorMessage = "Invalid input: Date range cannot be more than " + appSettings.MaxMonthsGetAssociationByDevice + " months."
                     });
                 }
 
@@ -206,7 +206,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
 
         private bool IsDateRangeValid(DateTime fromDate, DateTime toDate)
         {
-            DateTime minValidDate = DateTime.Today.AddMonths(- appSettings.MaxMonths);
+            DateTime minValidDate = DateTime.Today.AddMonths(- appSettings.MaxMonthsGetAssociationByDevice);
 
             return DateTime.Compare(minValidDate, fromDate) <= 0 && DateTime.Compare(fromDate, DateTime.Today) <= 0
                         && DateTime.Compare(minValidDate, toDate) <= 0 && DateTime.Compare(toDate, DateTime.Today) <= 0;

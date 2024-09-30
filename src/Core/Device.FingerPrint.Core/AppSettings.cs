@@ -42,7 +42,7 @@ namespace Device.FingerPrint.Core
 
         bool IsExtraSub { get; }
 
-        int MaxMonths { get; }
+        int MaxMonthsGetAssociationByDevice { get; }
 
         IConfiguration Configuration { get; }
 
@@ -83,7 +83,7 @@ namespace Device.FingerPrint.Core
 
         private readonly bool isExtraSub;
 
-        private readonly int maxMonths;
+        private readonly int maxMonthsGetAssociationByDevice;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -127,7 +127,7 @@ namespace Device.FingerPrint.Core
 
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
-            maxMonths = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("AppConfig:APIMaxMonthsGetData")) ? "0" : GetValue<string>("AppConfig:APIMaxMonthsGetData"));
+            maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
         }
 
         public string ApiUrl => apiUrl;
@@ -164,7 +164,7 @@ namespace Device.FingerPrint.Core
 
         public bool IsExtraSub => isExtraSub;
 
-        public int MaxMonths => maxMonths;
+        public int MaxMonthsGetAssociationByDevice => maxMonthsGetAssociationByDevice;
 
         public T GetValue<T>(string key)
         {
