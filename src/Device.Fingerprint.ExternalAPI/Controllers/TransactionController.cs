@@ -159,7 +159,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     return Ok(new AssociationAccountUsageList
                     {
                         StatusCode = System.Net.HttpStatusCode.BadRequest,
-                        ErrorMessage = "Invalid input: Date range cannot be more than " + appSettings.MaxMonthsGetAssociationByDevice + " months."
+                        ErrorMessage = "Invalid input: fromDate and toDate must be within " + appSettings.MaxMonthsGetAssociationByDevice + " months from the current date."
                     });
                 }
 
