@@ -17,6 +17,8 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class TransactionController : ControllerBase
     {
+        private static readonly string yyyyMMddFormat = "yyyy-MM-dd";
+
         private readonly ISubscriberServices subscriberServices;
         private readonly ITransactionService transactionService;
         private readonly IRiskLevelService riskLevelService;
@@ -168,8 +170,6 @@ namespace Device.Fingerprint.WebAPI.Controllers
                 if (subscriber != null)
                 {
                     var associationBySubscriberDevice = transactionService.GetAssociationBySubscriberDevice(subscriber.SubscriberId, device, fromDate, toDate);
-
-                    string yyyyMMddFormat = "yyyy-MM-dd";
 
                     return Ok(new AssociationAccountUsageList
                     {
