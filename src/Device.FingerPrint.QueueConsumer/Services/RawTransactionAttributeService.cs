@@ -11,6 +11,7 @@ using Device.FingerPrint.Redis;
 using DeviceDetectorNET;
 using Fanex.Logging;
 using Newtonsoft.Json;
+using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private readonly ILogInfoServices logInfoServices;
         private readonly IAppSettings appSettings;
         private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
+        private const string _realTaggingPrefix = "RealTagging:";
 
         public RawTransactionAttributeService(
             ICrypto crypto,
@@ -70,13 +72,15 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                     if (sessionKey != null && sessionKey.RedisDbIndex > 0)
                     {
-                        var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode));
-                        var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(RedisKey.Header));
+                        var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode));
+                        var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.Header));
+                        var taggingTask = redisMultiplexService.EverTagging_GetValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
 
-                        await Task.WhenAll(fingerPrintEncodeTask, headerTask);
+                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, taggingTask);
 
                         var fingerPrintEncode = fingerPrintEncodeTask.Result;
                         var header = headerTask.Result;
+                        var realTagging = Core.Utilities.RemoveRedisPrefix(taggingTask.Result, _realTaggingPrefix);
 
                         var fingerPrintModel = new FingerprintModel();
                         if (!string.IsNullOrEmpty(fingerPrintEncode))
@@ -96,12 +100,24 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                         model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
 
-                        var decryptSessionKey = DeviceEncoder.Decrypt(sessionKey.SessionKey);
-                        model.FPTagging = IsValidString(decryptSessionKey) ? decryptSessionKey : sessionKey.SessionKey;
                         model.FPFingerPrintCode = model.FingerprintAttribute.FPFingerPrintCode;
                         model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
                         model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
                         model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
+
+
+                        if (string.IsNullOrEmpty(realTagging))
+                        {
+                            var decryptSessionKey = DeviceEncoder.Decrypt(sessionKey.SessionKey);
+                            model.FPTagging = IsValidString(decryptSessionKey) ? decryptSessionKey : sessionKey.SessionKey;
+                        }
+                        else
+                        {
+                            var decryptSessionKey = DeviceEncoder.Decrypt(realTagging);
+                            model.FPTagging = IsValidString(decryptSessionKey) ? decryptSessionKey : realTagging;
+
+                            await redisMultiplexService.EverTagging_DeleteValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
+                        }
 
                         model.IsIncognitoMode = GetIsIncognitoMode(model.FingerprintAttribute.FPFingerPrintAttribute);
 

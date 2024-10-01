@@ -16,7 +16,6 @@
     using System.Linq;
     using System.Text.Json;
     using System.Threading.Tasks;
-    using YamlDotNet.Core.Tokens;
 
     [Route("api")]
     [ApiController]
@@ -63,6 +62,7 @@
         {
             var result = string.Empty;
             var ecValues = Request.Headers["Res-Ec-X"].ToString();
+            var sskValues = Request.Headers["Res-Ec-Y"].ToString();
 
             var etagValue = GetEtagValue();
             if (!string.IsNullOrEmpty(etagValue))
@@ -80,14 +80,17 @@
                     .Distinct()
                     .ToList();
 
-                var redisEcValue = await redisMultiplexService.EverTagging_GetValueFromRedis(everTaggingValues);
-
-                result = RemoveEverTaggingPrefix(redisEcValue);
+                var redisEcValue = await redisMultiplexService.EverTagging_GetValuesFromRedis(everTaggingValues);
 
                 if (string.IsNullOrEmpty(redisEcValue))
                 {
                     var firstEcValue = everTaggingValues.FirstOrDefault();
-                    result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : RemoveEverTaggingPrefix(firstEcValue);
+                    result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : Utilities.RemoveRedisPrefix(firstEcValue, "EverTagging:");
+                }
+                else
+                {
+                    result = Utilities.RemoveRedisPrefix(redisEcValue, "EverTagging:");
+                    UpdateRealTagging(sskValues, result);
                 }
             }
 
@@ -96,11 +99,30 @@
             return Ok(result);
         }
 
-        private void UpdateResponseHeaders(string etag)
+        [HttpGet("test/{sessionKey}")]
+        public void AddToRedis(string sessionKey)
+        {
+            redisMultiplexService.EverTagging_AddItemWithExpiryAsync("EverTagging", sessionKey, DateTime.Now.ToString(), TimeSpan.FromSeconds(3600));
+        }
+
+
+        private void UpdateRealTagging(string sessionKey, string tagging)
+        {
+            if (string.IsNullOrEmpty(sessionKey)
+                || string.IsNullOrEmpty(tagging)
+                || sessionKey == tagging)
+            {
+                return;
+            }
+
+            redisMultiplexService.EverTagging_AddItemWithExpiryAsync("RealTagging", sessionKey, tagging, TimeSpan.FromSeconds(3600));
+        }
+
+        private void UpdateResponseHeaders(string tagging)
         {
             var ApiEverTaggingCacheMaxAge = appSettings.ApiEverTaggingCacheMaxAge;
             Response.Headers["Cache-Control"] = $"max-age={ApiEverTaggingCacheMaxAge}, private";
-            Response.Headers["ETag"] = etag;
+            Response.Headers["ETag"] = tagging;
         }
 
         [HttpPost("c/l/e")]
@@ -268,16 +290,6 @@
                 .Where(format => !string.Equals(format, "br", StringComparison.OrdinalIgnoreCase));
 
             return string.Join(", ", normalizedFormats);
-        }
-
-        private static string RemoveEverTaggingPrefix(string input)
-        {
-            const string prefix = "EverTagging:";
-            if (input.StartsWith(prefix))
-            {
-                return input.Replace(prefix, string.Empty);
-            }
-            return input;
         }
 
         private string GetEtagValue()

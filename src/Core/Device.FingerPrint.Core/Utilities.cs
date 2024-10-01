@@ -350,5 +350,14 @@ namespace Device.FingerPrint.Core
                 return false;
             }
         }
+
+        public static string RemoveRedisPrefix(string input, string prefix)
+        {
+            if (input.StartsWith(prefix))
+            {
+                return input.Replace(prefix, string.Empty);
+            }
+            return input;
+        }
     }
 }
