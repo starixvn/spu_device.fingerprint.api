@@ -1,6 +1,7 @@
 ﻿using Device.FingerPrint.Features.Transaction.Criterias;
 using Device.FingerPrint.Features.Transaction.Model;
 using Fanex.Data.Repository;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
