@@ -131,13 +131,7 @@ namespace Device.FingerPrint.Redis
 
         public async Task<bool> EverTagging_DeleteValueFromRedis(string key)
         {
-            var result = await redisEverTaggingDb.StringGetDeleteAsync(key);
-            if (!result.IsNull)
-            {
-                return true;
-            }
-
-            return false;
+            return await redisEverTaggingDb.KeyDeleteAsync(key);
         }
     }
 }

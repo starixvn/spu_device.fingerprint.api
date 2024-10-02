@@ -80,7 +80,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                         var fingerPrintEncode = fingerPrintEncodeTask.Result;
                         var header = headerTask.Result;
-                        var realTagging = Core.Utilities.RemoveRedisPrefix(taggingTask.Result, _realTaggingPrefix);
+                        var realTagging = taggingTask.Result;
 
                         var fingerPrintModel = new FingerprintModel();
                         if (!string.IsNullOrEmpty(fingerPrintEncode))
@@ -105,17 +105,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
                         model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
 
+                        model.FPTagging = GetTaggingValue(realTagging, sessionKey.SessionKey);
 
-                        if (string.IsNullOrEmpty(realTagging))
+                        if (!string.IsNullOrEmpty(realTagging))
                         {
-                            var decryptSessionKey = DeviceEncoder.Decrypt(sessionKey.SessionKey);
-                            model.FPTagging = IsValidString(decryptSessionKey) ? decryptSessionKey : sessionKey.SessionKey;
-                        }
-                        else
-                        {
-                            var decryptSessionKey = DeviceEncoder.Decrypt(realTagging);
-                            model.FPTagging = IsValidString(decryptSessionKey) ? decryptSessionKey : realTagging;
-
                             await redisMultiplexService.EverTagging_DeleteValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
                         }
 
@@ -143,6 +136,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 }
             }
         }
+
         private static bool IsValidString(string decryptedText)
         {
             // Check if the string contains non-printable characters
@@ -370,6 +364,16 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (browserName.ToLower().Contains(_MIBROWSER)) return true;  //skip to detect incognito mode
 
             return false;
+        }
+
+        private static string GetTaggingValue(string realTagging, string sessionKey)
+        {
+            var taggingValue = string.IsNullOrEmpty(realTagging)
+                ? sessionKey
+                : Core.Utilities.RemoveRedisPrefix(realTagging, _realTaggingPrefix);
+
+            var decryptedTagging = DeviceEncoder.Decrypt(taggingValue);
+            return IsValidString(decryptedTagging) ? decryptedTagging : taggingValue;
         }
 
         #region Log Info
