@@ -23,7 +23,7 @@ namespace Device.Fingerprint.ExternalAPI.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if(this.appSettings.Environment == "PROD")
+            if(this.appSettings.Environment == "PROD" || this.appSettings.Environment == "UAT")
             {
                 if (!context.Request.Path.Value.Contains("generatetoken/audience"))
                 {
