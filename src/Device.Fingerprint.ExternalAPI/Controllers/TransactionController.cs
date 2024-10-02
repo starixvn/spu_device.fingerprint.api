@@ -1,5 +1,6 @@
 ﻿using Device.Fingerprint.ExternalAPI.Filters;
 using Device.Fingerprint.ExternalAPI.Models;
+using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.RiskLevel.Model;
 using Device.FingerPrint.Features.RiskLevel.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
@@ -16,18 +17,23 @@ namespace Device.Fingerprint.WebAPI.Controllers
     [ApiController]
     public class TransactionController : ControllerBase
     {
+        private static readonly string yyyyMMddFormat = "yyyy-MM-dd";
+
         private readonly ISubscriberServices subscriberServices;
         private readonly ITransactionService transactionService;
         private readonly IRiskLevelService riskLevelService;
-        
+        private readonly IAppSettings appSettings;
+
         public TransactionController(          
             ISubscriberServices subscriberServices,
             ITransactionService transactionService,
-            IRiskLevelService riskLevelService)
+            IRiskLevelService riskLevelService,
+            IAppSettings appSettings)
         {
             this.subscriberServices = subscriberServices;
             this.transactionService = transactionService; 
             this.riskLevelService = riskLevelService;
+            this.appSettings = appSettings;
         }
         
         [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
@@ -133,6 +139,77 @@ namespace Device.Fingerprint.WebAPI.Controllers
                     ErrorMessage = ex.Message
                 });
             }
+        }
+
+        [HttpGet("GetAssociationByDevice/{subscriberName}/{device}/{fromDate}/{toDate}")]
+        [ServiceFilter(typeof(RequestCounterFilter))]
+        public ActionResult<AssociationAccountUsageList> GetAssociationByDevice(string subscriberName, string device, DateTime fromDate, DateTime toDate)
+        {
+            try
+            {
+                if (DateTime.Compare(fromDate, toDate) > 0)
+                {
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorMessage = "ToDate cannot be less than FromDate"
+                    });
+                }
+
+                if (!IsDateRangeValid(fromDate, toDate))
+                {
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorMessage = "Invalid input: fromDate and toDate must be within " + appSettings.MaxMonthsGetAssociationByDevice + " months from the current date."
+                    });
+                }
+
+                var subscriber = subscriberServices.GetSubscriberByName(subscriberName);
+
+                if (subscriber != null)
+                {
+                    var associationBySubscriberDevice = transactionService.GetAssociationBySubscriberDevice(subscriber.SubscriberId, device, fromDate, toDate);
+
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty,
+                        FromDate = fromDate.ToString(yyyyMMddFormat),
+                        ToDate = toDate.ToString(yyyyMMddFormat),
+                        AssociatedAccounts = associationBySubscriberDevice.Count(),
+                        AssociatedAccountDetails = associationBySubscriberDevice.Select(x => new AssociationAccountUsageModel { 
+                                                                                                    Account = x.LoginName,
+                                                                                                    MinUsageDate = x.MnUsageDate.ToString(yyyyMMddFormat),
+                                                                                                    MaxUsageDate = x.MaxUsageDate.ToString(yyyyMMddFormat),
+                                                                                                    UsageCount = x.UsageCount }),
+                    });
+                }
+                else
+                {
+                    return Ok(new AssociationAccountUsageList
+                    {
+                        StatusCode = System.Net.HttpStatusCode.NotFound,
+                        ErrorMessage = "Subscriber cannot be null"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(new AssociationAccountUsageList
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
+        private bool IsDateRangeValid(DateTime fromDate, DateTime toDate)
+        {
+            DateTime minValidDate = DateTime.Today.AddMonths(- appSettings.MaxMonthsGetAssociationByDevice);
+
+            return DateTime.Compare(minValidDate, fromDate) <= 0 && DateTime.Compare(fromDate, DateTime.Today) <= 0
+                        && DateTime.Compare(minValidDate, toDate) <= 0 && DateTime.Compare(toDate, DateTime.Today) <= 0;
         }
 
     }

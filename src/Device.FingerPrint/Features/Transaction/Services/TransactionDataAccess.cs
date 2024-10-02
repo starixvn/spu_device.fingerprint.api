@@ -39,6 +39,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
 
+        IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate);
+
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -208,6 +210,19 @@ namespace Device.FingerPrint.Features.Transaction.Services
             };
 
             return repository.FetchMultiple<AssociationDeviceEntity, AssociationAccountEntity>(criteria);
+        }
+
+        public IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate)
+        {
+            var criteria = new GetAssociationBySubscriberDeviceCriteria
+            {
+                DeviceCode = deviceCode,
+                FromDate = fromDate,
+                ToDate = toDate,
+                SubscriberId = subscriberId,
+            };
+
+            return repository.Fetch<AssociationAccountUsageEntity>(criteria);
         }
     }
 }

@@ -38,6 +38,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
         IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);                
 
         (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
+
+        IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate);
     }
 
     public class TransactionService : ITransactionService
@@ -124,6 +126,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
         {
             return transactionDataAccess.GetAssociationByAccountSubscriber(subscriberId, account);
+        }
+
+        public IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate)
+        {
+            return transactionDataAccess.GetAssociationBySubscriberDevice(subscriberId, deviceCode, fromDate, toDate);
         }
     }
 }

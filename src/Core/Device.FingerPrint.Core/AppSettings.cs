@@ -42,6 +42,8 @@ namespace Device.FingerPrint.Core
 
         bool IsExtraSub { get; }
 
+        int MaxMonthsGetAssociationByDevice { get; }
+
         IConfiguration Configuration { get; }
 
         T GetValue<T>(string key);
@@ -80,6 +82,8 @@ namespace Device.FingerPrint.Core
         private readonly bool isEnableLogTrail;
 
         private readonly bool isExtraSub;
+
+        private readonly int maxMonthsGetAssociationByDevice;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -122,6 +126,8 @@ namespace Device.FingerPrint.Core
             isEnableLogTrail = !string.IsNullOrEmpty(GetValue<string>("LogTrail:IsEnable")) && Convert.ToBoolean(GetValue<string>("LogTrail:IsEnable"));
 
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
+
+            maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
         }
 
         public string ApiUrl => apiUrl;
@@ -157,6 +163,8 @@ namespace Device.FingerPrint.Core
         public bool IsEnableLogTrail => isEnableLogTrail;
 
         public bool IsExtraSub => isExtraSub;
+
+        public int MaxMonthsGetAssociationByDevice => maxMonthsGetAssociationByDevice;
 
         public T GetValue<T>(string key)
         {
