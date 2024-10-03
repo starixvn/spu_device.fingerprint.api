@@ -69,6 +69,8 @@
 
             ipdbService.TransformTransactionByIps(filterTransaction);
 
+            await rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub);
+
             await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
 
             _ = AdditionalProcessingNotAwait(filterTransaction);
@@ -76,11 +78,7 @@
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
-            var tasks = new List<Task>
-            {
-                InsertLogstash(transactionModels),
-                rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub)
-            };
+            var tasks = new List<Task>();
 
             var everTagging = transactionModels.Where(x => !string.IsNullOrEmpty(x.FPTagging))?.Select(x => DeviceEncoder.Encrypt(x.FPTagging));
             if (everTagging != null && everTagging.Any())

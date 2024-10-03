@@ -5,6 +5,7 @@
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
+    using Fanex.Logging;
     using Newtonsoft.Json;
     using System;
     using System.Collections;
@@ -173,40 +174,68 @@
 
         private async Task InsertFPTagging(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var taggings = GetFPTaggingInfo(transactions);
-            if (!string.IsNullOrEmpty(taggings))
+            try
             {
-                await transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
+                var taggings = GetFPTaggingInfo(transactions);
+                if (!string.IsNullOrEmpty(taggings))
+                {
+                    await transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
+                }
+            }
+            catch (Exception ex)
+            {
+                await LogService.ErrorAsync($"Error in InsertFPTagging: {ex.Message}");
             }
         }
 
         private async Task InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var userAgentInfos = GetValidInfo(transactions, t => t.UserAgentInfo);
-            if (userAgentInfos != null && userAgentInfos.Any())
+            try
             {
-                var userAgentJson = JsonConvert.SerializeObject(userAgentInfos);
-                await transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
+                var userAgentInfos = GetValidInfo(transactions, t => t.UserAgentInfo);
+                if (userAgentInfos != null && userAgentInfos.Any())
+                {
+                    var userAgentJson = JsonConvert.SerializeObject(userAgentInfos);
+                    await transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
+                }
+            }
+            catch (Exception ex)
+            {
+                await LogService.ErrorAsync($"Error in InsertFPUserAgent: {ex.Message}");
             }
         }
 
         private async Task InsertJSChallengeInfo(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var jsChallengeInfos = GetValidInfo(transactions, t => t.RawJsChallengeInfo);
-            if (jsChallengeInfos != null && jsChallengeInfos.Any())
+            try
             {
-                var jsChallengeInfoJson = JsonConvert.SerializeObject(jsChallengeInfos);
-                await transactionService.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
+                var jsChallengeInfos = GetValidInfo(transactions, t => t.RawJsChallengeInfo);
+                if (jsChallengeInfos != null && jsChallengeInfos.Any())
+                {
+                    var jsChallengeInfoJson = JsonConvert.SerializeObject(jsChallengeInfos);
+                    await transactionService.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
+                }
+            }
+            catch (Exception ex)
+            {
+                await LogService.ErrorAsync($"Error in InsertJSChallengeInfo: {ex.Message}");
             }
         }
 
         private async Task InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var fingerprintAttribute = GetValidInfo(transactions, t => t.FingerprintAttribute);
-            if (fingerprintAttribute != null && fingerprintAttribute.Any())
+            try
             {
-                var fingerPrintJson = JsonConvert.SerializeObject(fingerprintAttribute);
-                await transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
+                var fingerprintAttribute = GetValidInfo(transactions, t => t.FingerprintAttribute);
+                if (fingerprintAttribute != null && fingerprintAttribute.Any())
+                {
+                    var fingerPrintJson = JsonConvert.SerializeObject(fingerprintAttribute);
+                    await transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
+                }
+            }
+            catch (Exception ex)
+            {
+                await LogService.ErrorAsync($"Error in InsertFPFingerPrint: {ex.Message}");
             }
         }
 
