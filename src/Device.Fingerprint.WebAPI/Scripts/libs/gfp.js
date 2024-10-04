@@ -2766,7 +2766,7 @@ var gfpCode = (function (exports) {
                 chromePrivateTest();
             }
             else if (isGecko()) {
-                callback(navigator.serviceWorker === undefined);
+                window.location.protocol === "https:" ? callback(navigator.serviceWorker === undefined) : callback(false);
             }
             else {
                 callback(false);
@@ -2894,9 +2894,8 @@ var gfpCode = (function (exports) {
             components = applyHashToProperties(components, ["canvas", "webGlExtensions"], callback);
             return getIncognitoMode().then(function (isIncognitoMode) {
                 var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), timezoneOffset: getTimezoneOffset(), isIncognitoMode: isIncognitoMode });
-                var properties = componentsToJsonString(customComponents);
                 return {
-                    Properties: properties
+                    Properties: componentsToJsonString(customComponents)
                 };
             });
         });
