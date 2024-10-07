@@ -93,6 +93,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         if (!string.IsNullOrEmpty(header))
                         {
                             headerModel = JsonConvert.DeserializeObject<HeaderModel>(header);
+                            UpdateIPInfo(model, headerModel);
                         }
 
                         model.RawUserAgent = model.UserAgent;
@@ -135,6 +136,19 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     }
                 }
             }
+        }
+
+        private static void UpdateIPInfo(RawTransactionModel model, HeaderModel headerModel)
+        {
+            if (model == null || headerModel == null) return;
+
+            var realIP = headerModel.RealIP?.Trim();
+            var ipConverted = realIP.Ip2Long();
+
+            model.IP = realIP;
+            model.IPId = ipConverted?.IpNumber ?? 0;
+            model.FakeIP = headerModel.FakeIP?.Trim();
+            model.IsIPV6 = ipConverted?.IsIpV6 ?? false;
         }
 
         private static bool IsValidString(string decryptedText)

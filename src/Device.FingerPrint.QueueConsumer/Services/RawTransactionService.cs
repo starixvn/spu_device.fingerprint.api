@@ -1,7 +1,6 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Services
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Features.Transaction.Model;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
@@ -12,7 +11,6 @@
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using static MassTransit.ValidationResultExtensions;
 
     public interface IRawTransactionService
     {
@@ -82,9 +80,6 @@
                 transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
             }
 
-            var realIP = message.IP?.Trim();
-            var ipConverted = realIP.Ip2Long();
-
             var botDModel = botDetectionService.TransformBotdModel(message);
 
             var flaggedCode = botDetectionService.GetFlaggedCode(botDModel, deviceInfo.DeviceNo, userAgent);
@@ -99,10 +94,6 @@
                 SubscriberName = message.Subscriber,
                 SubscriberId = message.SubscriberId,
                 TransTime = Convert.ToDateTime(message.TransDate.ToString("yyyy-MM-dd HH:mm:ss.ffff")),
-                IP = realIP,
-                IPId = ipConverted.IpNumber,
-                FakeIP = message.FakeIP?.Trim(),
-                IsIPV6 = ipConverted.IsIpV6,
                 PluginID = 0,
                 URL = string.IsNullOrWhiteSpace(url) ? Utilities.ConvertNA2Empty(Utilities.SubStringUrl(deviceInfo.HRef)) : Utilities.SubStringUrl(url),
                 Action = message.Action,
