@@ -232,7 +232,7 @@
 
         private static string GetFPTaggingInfo(IEnumerable<RawTransactionModel> transactions)
         {
-            var result = string.Join(", ", transactions
+            var result = string.Join(",", transactions
                             .Where(t => !string.IsNullOrEmpty(t.FPTagging))
                             .Select(t => t.FPTagging)
                             .Distinct());
