@@ -10,6 +10,7 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Security.Policy;
     using System.Threading.Tasks;
 
     public interface IRawTransactionService
@@ -54,10 +55,18 @@
         public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
         {
             var invalidDevice = string.Empty;
-            var deviceCode = Utilities.GetDeviceCodeFromCapturedData(message.Device);
-            var deviceInfo = deviceService.GetDeviceInfo(deviceCode, message);
-            var url = Utilities.GetURLFromDeviceCode(message.Device);
-            var userAgent = Utilities.GetUserAgentFromDeviceCode(message.Device);
+            var deviceCode = string.Empty;
+            var url = string.Empty;
+            var userAgent = string.Empty;
+            var deviceInfo = new DeviceInfoModel();
+
+            if (message.Device != null)
+            {
+                deviceCode = message.Device.Di;
+                deviceInfo = deviceService.GetDeviceInfo(deviceCode, message);
+                url = message.Device.Url;
+                userAgent = message.Device.UserAgent;
+            }
 
             var transBit = new BitArray(16);
             if (string.IsNullOrWhiteSpace(deviceInfo.DeviceNo) || deviceInfo.DeviceNo == "N/A")

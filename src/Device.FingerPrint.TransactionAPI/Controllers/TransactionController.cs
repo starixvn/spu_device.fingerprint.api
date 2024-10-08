@@ -55,20 +55,9 @@
 
                     if (responseCode == TransactionResult.Success)
                     {
-                        var di = transRequest.Di ?? transRequest.__di;
-                        var transAttributesJoined = JoinStringAttributes(new List<string> {
-                            transRequest.AcceptsTypes,
-                            transRequest.Platform,
-                            (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
-                            transRequest.UserAgent,
-                            transRequest.Screen,
-                            transRequest.Ip,
-                            di,
-                            transRequest.Url,
-                            transRequest.DetecasAnalysis
-                        }, "###");
+                        var deviceModel = TransformDeviceModel(transRequest);
 
-                        await PushToQueueAsync(transRequest, transAttributesJoined);
+                        await PushToQueueAsync(transRequest, deviceModel);
                     }
                     else
                     {
@@ -91,24 +80,28 @@
         [HttpPost("FPS/InsertTransaction")]
         public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
         {
-            var di = transRequest.Di ?? transRequest.__di;
-            var transAttributesJoined = JoinStringAttributes(new List<string> {
-                        transRequest.AcceptsTypes,
-                        transRequest.Platform,
-                        (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
-                        transRequest.UserAgent,
-                        transRequest.Screen,
-                        transRequest.Ip,
-                        di,
-                        transRequest.Url,
-                        transRequest.DetecasAnalysis
-                    }, "###");
+            var deviceModel = TransformDeviceModel(transRequest);
 
-            _ = PushToQueueAsync(transRequest, transAttributesJoined);
+            _ = PushToQueueAsync(transRequest, deviceModel);
 
             return Ok();
         }
 
+        private static DeviceModel TransformDeviceModel(TransactionRequest transRequest)
+        {
+            return new DeviceModel
+            {
+                AcceptsTypes = transRequest.AcceptsTypes,
+                DetecasAnalysis = transRequest.DetecasAnalysis,
+                Di = transRequest.Di ?? transRequest.__di,
+                Ip = transRequest.Ip,
+                Url = transRequest.Url,
+                Platform = transRequest.Platform,
+                Screen = transRequest.Screen,
+                TotalMinutes = (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
+                UserAgent = transRequest.UserAgent
+            };
+        }
 
         [HttpGet("whoami")]
         public IActionResult WhoAmI()
@@ -140,12 +133,12 @@
             return string.Join(separator, attributes.ToArray());
         }
 
-        private async Task PushToQueueAsync(TransactionRequest transactionRequest, string transAttributesJoined)
+        private async Task PushToQueueAsync(TransactionRequest transactionRequest, DeviceModel deviceModel)
         {
             var dataEvent = new MessageQueue
             {
                 Account = transactionRequest.Account,
-                Device = transAttributesJoined,
+                Device = deviceModel,
                 Action = transactionRequest.Action,
                 ActionResult = transactionRequest.ActionResult,
                 Subscriber = transactionRequest.Subscriber,

@@ -11,7 +11,7 @@
 
         public string ActionResult { get; set; }
 
-        public string Device { get; set; }
+        public DeviceModel Device { get; set; }
 
         public string IP { get; set; }
 
