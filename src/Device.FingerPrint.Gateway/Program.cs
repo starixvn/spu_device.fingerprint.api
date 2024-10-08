@@ -37,7 +37,8 @@ builder.Services
     {
         x.WithDictionaryHandle();
     })
-    .AddDelegatingHandler<ValidateHandler>();
+    .AddDelegatingHandler<ValidateHandler>()
+    .AddDelegatingHandler<MobileRequestHandler>();
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
 
