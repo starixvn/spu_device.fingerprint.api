@@ -146,7 +146,12 @@
                 Token = transactionRequest.Token,
                 Recaptcha = "",
                 SessionKey = transactionRequest.SessionKey,
-                BotD = transactionRequest.Bi
+                BotD = transactionRequest.Bi,
+                MobileAndroidCode = transactionRequest.MobileAndroidCode,
+                MobileMediaDRMCode = transactionRequest.MobileMediaDRMCode,
+                MobileCustomCode = transactionRequest.MobileCustomCode,
+                IsMobileAppTrans = transactionRequest.IsMobileAppTrans,
+                IsMobileEmulator = transactionRequest.IsMobileEmulator    
             };
 
             var queueAddress = IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;

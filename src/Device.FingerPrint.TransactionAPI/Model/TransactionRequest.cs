@@ -1,7 +1,7 @@
 ﻿
 namespace Device.FingerPrint.TransactionAPI.Model
 {
-    public class TransactionRequest
+    public class TransactionRequest: MobileTransactionRequest
     {
         public string Account { get; set; }
 
@@ -41,6 +41,6 @@ namespace Device.FingerPrint.TransactionAPI.Model
 
         public string CaptchaResult { get; set; }
 
-        public string SessionKey { get; set; }
+        public string SessionKey { get; set; }        
     }
 }
