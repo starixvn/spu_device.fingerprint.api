@@ -10,6 +10,8 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
 
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "qctest5oct202019", "qatest05" };
+
         public ValidateHandler(ISubscriberService subscriberService)
         {
             this.subscriberService = subscriberService;
@@ -27,15 +29,30 @@ namespace Device.FingerPrint.Gateway.Handlers
                     {
                         var transactionRequest = JsonConvert.DeserializeObject<TransactionRequest>(content);
 
-                        //LogService.Info($"this is log from gateway api: {transactionRequest.Subscriber}");
-
                         if (transactionRequest != null && !string.IsNullOrWhiteSpace(transactionRequest?.Subscriber) && !string.IsNullOrWhiteSpace(transactionRequest.Account))
                         {
+                            if (DebugAccounts.Contains(transactionRequest.Account.ToLower()))
+                            {
+                                _ = LogService.InfoAsync($"Gateway Debug for Account:\n {JsonConvert.SerializeObject(transactionRequest)}");
+                            }
+
                             if (await this.subscriberService.ValidateAsync(transactionRequest?.Subscriber))
                             {
                                 return await base.SendAsync(request, cancellationToken);
                             }
+                            else
+                            {
+                                _ = LogService.InfoAsync($"Gateway Subscriber invalid:\n {JsonConvert.SerializeObject(transactionRequest)}");
+                            }
                         }
+                        else
+                        {
+                            _ = LogService.InfoAsync($"Gateway TransactionRequest invalid:\n {JsonConvert.SerializeObject(transactionRequest)}");
+                        }
+                    }
+                    else
+                    {
+                        _ = LogService.InfoAsync($"Gateway cannot read request.Content:\n {JsonConvert.SerializeObject(request.Content)}");
                     }
                 }
             }
