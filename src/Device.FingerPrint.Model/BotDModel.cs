@@ -1,4 +1,6 @@
-﻿namespace Device.FingerPrint.Model
+﻿using System.Text.Json.Serialization;
+
+namespace Device.FingerPrint.Model
 {
     public class BotDModel
     {
@@ -9,6 +11,8 @@
         public string Component { get; set; }
 
         public bool IsVer3 { get; set; } = false;
+
+        public string JscKey { get; set; }
     }
 
     public class BotDResultModel

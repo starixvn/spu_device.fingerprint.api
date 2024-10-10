@@ -3,6 +3,7 @@ using Device.FingerPrint.Model;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.Features.Transaction.Services
@@ -10,6 +11,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
     public interface ITransactionService
     {
         Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
+
+        Task InsertFPTagging(string taggings, bool isTransOfDBExtra);
+
+        Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
+
+        Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
+
+        Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
 
         void InsertTransaction(IEnumerable<TransactionEntity> transactions);
 
@@ -35,7 +44,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         void EvolutionRecoverDevice(string transJson);
 
-        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);                
+        IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit);
 
         (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account);
 
@@ -53,8 +62,65 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         public async Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var transJson = JsonConvert.SerializeObject(transactions);
+            var transJson = JsonConvert.SerializeObject(TransformInsertRawTransaction(transactions));
             await transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
+
+        }
+
+        public async Task InsertFPTagging(string taggings, bool isTransOfDBExtra)
+        {
+            await transactionDataAccess.InsertFPTagging(taggings, isTransOfDBExtra);
+        }
+
+        public async Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
+        {
+            await transactionDataAccess.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
+        }
+
+        public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
+        {
+            await transactionDataAccess.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
+        }
+
+        public async Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
+        {
+            await transactionDataAccess.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
+        }
+
+        private static IEnumerable<InsertRawTransactionEntity> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)
+        {
+            return transactions.Select(transaction => new InsertRawTransactionEntity
+            {
+                Action = transaction.Action,
+                ActionResult = transaction.ActionResult,
+                BotComponent = transaction.BotComponent,
+                BotDetection = transaction.BotDetection,
+                ChallengeCode = transaction.ChallengeCode,
+                FPTagging = transaction.FPTagging,
+                CreatedDate = transaction.CreatedDate,
+                DeviceCode = transaction.DeviceCode,
+                FakeIP = transaction.FakeIP,
+                FingerprintCode = transaction.FingerprintCode,
+                FingerprintMoreInfo = transaction.FingerprintMoreInfo,
+                FlaggedCode = transaction.FlaggedCode,
+                FPSTransId = transaction.FPSTransId,
+                InvalidDevice = transaction.InvalidDevice,
+                IP = transaction.IP,
+                IPId = transaction.IPId,
+                IsIPV6 = transaction.IsIPV6,
+                LoginName = transaction.LoginName,
+                PluginID = transaction.PluginID,
+                FPFingerPrintCode = transaction.FPFingerPrintCode,
+                FPFingerPrintExtraCode = transaction.FPFingerPrintExtraCode,
+                FPFingerPrintOldCode = transaction.FPFingerPrintOldCode,
+                FPUserAgentCode = transaction.FPUserAgentCode,
+                SubscriberName = transaction.SubscriberName,
+                TransStatus = transaction.TransStatus,
+                TransTime = transaction.TransTime,
+                URL = transaction.URL,
+                UserAgent = transaction.UserAgent,
+                IsIncognitoMode = transaction.IsIncognitoMode
+            });
         }
 
         public void InsertTransaction(IEnumerable<TransactionEntity> transactions)
@@ -116,12 +182,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void EvolutionRecoverDevice(string transJson)
         {
             transactionDataAccess.EvolutionRecoverDevice(transJson);
-        }        
+        }
 
         public IEnumerable<TransactionHistoryEntity> GetTransactionHistoryByTransIdSubscriber(int subscriberId, long transId, int limit)
         {
             return transactionDataAccess.GetTransactionHistoryByTransIdSubscriber(subscriberId, transId, limit);
-        }               
+        }
 
         public (IEnumerable<AssociationDeviceEntity>, IEnumerable<AssociationAccountEntity>) GetAssociationByAccountSubscriber(int subscriberId, string account)
         {

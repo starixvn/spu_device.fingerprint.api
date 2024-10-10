@@ -1,28 +1,20 @@
 {
-    "iisSettings": {
-        "windowsAuthentication": false,
-        "anonymousAuthentication": true,
-        "iisExpress": {
-            "applicationUrl": "http://localhost:13660",
-            "sslPort": 44319
-        }
-    },
-    "profiles": {
-        "IIS Express": {
-            "commandName": "Project",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            },
-            "nativeDebugging": false,
-            "applicationUrl": "http://localhost:5290"
-        },
-        "Device.FingerPrint.QueueConsumer": {
-            "commandName": "Project",
-            "dotnetRunMessages": "true",
-            "applicationUrl": "http://localhost:5290",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
-        }
+  "profiles": {
+    "Device.FingerPrint.QueueConsumer": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "dotnetRunMessages": "true",
+      "applicationUrl": "http://localhost:5290"
     }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:13660",
+      "sslPort": 44319
+    }
+  }
 }

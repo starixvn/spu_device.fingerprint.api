@@ -13,7 +13,6 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
-    using Fanex.LogTrail.Service;
     using MassTransit;
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -62,12 +61,6 @@ namespace Device.FingerPrint.QueueConsumer
                             Dsn = new Dsn(appSettings.SentryDsn)
                         })
                });
-
-            services.AddSingleton<ILogEvent>(serviceProvider =>
-            {
-                var logEvent = new LogEvent(appSettings.LogTrailBaseUrl);
-                return logEvent;
-            });
 
             ExceptionHandler
                 .UseConfig(new LoggingConfiguration())
@@ -156,6 +149,7 @@ namespace Device.FingerPrint.QueueConsumer
         private void RegisterRedis(IServiceCollection services)
         {
             var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
+            var redisDatabaseIndex = int.Parse(Configuration["Redis:EverTaggingDbIndex"]);
 
             services.AddSingleton(redisConfiguration);
 
@@ -178,7 +172,13 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
             services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
             services.AddSingleton<IRedisService, RedisService>();
-            services.AddSingleton<IRedisMultiplexService, RedisMultiplexService>();
+
+
+            services.AddSingleton<IRedisMultiplexService>(provider =>
+                new RedisMultiplexService(
+                    provider.GetRequiredService<IConnectionMultiplexer>(),
+                    redisDatabaseIndex
+            ));
         }
 
         private void InitService(IServiceCollection services)

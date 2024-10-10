@@ -18,6 +18,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             RegisterIPDBService(services);
             RegisterBotDetectionService(services);
             RegisterLogInfoService(services);
+            RegisterLogstashService(services);
         }
 
         private static void RegisterTransactionService(this IServiceCollection services)
@@ -56,6 +57,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             services.AddSingleton<ILogInfoDataAccess, LogInfoDataAccess>();
             services.AddSingleton<ILogInfoServices, LogInfoServices>();
+        }
+
+        private static void RegisterLogstashService(this IServiceCollection services)
+        {
+            services.AddSingleton<ILogstashService, LogstashService>();
         }
     }
 }

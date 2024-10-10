@@ -1,4 +1,4 @@
-var globalFP = (function (exports) {
+var gfpCode = (function (exports) {
     'use strict';
 
     /******************************************************************************
@@ -76,7 +76,7 @@ var globalFP = (function (exports) {
     }
 
     /**
-     * FingerprintJS v1.0.2 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
+     * FingerprintJS v1.0.4 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -87,8 +87,6 @@ var globalFP = (function (exports) {
      * Copyright 2015-present FingerprintJS, Inc.
      */
 
-    var version = "1.0.2";
-
     function wait(durationMs, resolveWith) {
         return new Promise(function (resolve) { return setTimeout(resolve, durationMs, resolveWith); });
     }
@@ -96,20 +94,15 @@ var globalFP = (function (exports) {
      * Allows asynchronous actions and microtasks to happen.
      */
     function releaseEventLoop() {
-        return wait(0);
-    }
-    function requestIdleCallbackIfAvailable(fallbackTimeout, deadlineTimeout) {
-        if (deadlineTimeout === void 0) { deadlineTimeout = Infinity; }
-        var requestIdleCallback = window.requestIdleCallback;
-        if (requestIdleCallback) {
-            // The function `requestIdleCallback` loses the binding to `window` here.
-            // `globalThis` isn't always equal `window` (see https://github.com/fingerprintjs/fingerprintjs/issues/683).
-            // Therefore, an error can occur. `call(window,` prevents the error.
-            return new Promise(function (resolve) { return requestIdleCallback.call(window, function () { return resolve(); }, { timeout: deadlineTimeout }); });
-        }
-        else {
-            return wait(Math.min(fallbackTimeout, deadlineTimeout));
-        }
+        // Don't use setTimeout because Chrome throttles it in some cases causing very long agent execution:
+        // https://stackoverflow.com/a/6032591/1118709
+        // https://github.com/chromium/chromium/commit/0295dd09496330f3a9103ef7e543fa9b6050409b
+        // Reusing a MessageChannel object gives no noticeable benefits
+        return new Promise(function (resolve) {
+            var channel = new MessageChannel();
+            channel.port1.onmessage = function () { return resolve(); };
+            channel.port2.postMessage(null);
+        });
     }
     function isPromise(value) {
         return !!value && typeof value.then === 'function';
@@ -163,10 +156,8 @@ var globalFP = (function (exports) {
                         now = Date.now();
                         if (!(now >= lastLoopReleaseTime + loopReleaseInterval)) return [3 /*break*/, 3];
                         lastLoopReleaseTime = now;
-                        // Allows asynchronous actions and microtasks to happen
-                        return [4 /*yield*/, wait(0)];
+                        return [4 /*yield*/, releaseEventLoop()];
                     case 2:
-                        // Allows asynchronous actions and microtasks to happen
                         _a.sent();
                         _a.label = 3;
                     case 3:
@@ -180,11 +171,13 @@ var globalFP = (function (exports) {
     /**
      * Makes the given promise never emit an unhandled promise rejection console warning.
      * The promise will still pass errors to the next promises.
+     * Returns the input promise for convenience.
      *
      * Otherwise, promise emits a console warning unless it has a `catch` listener.
      */
     function suppressUnhandledRejectionWarning(promise) {
         promise.then(undefined, function () { return undefined; });
+        return promise;
     }
 
     /*
@@ -283,300 +276,6 @@ var globalFP = (function (exports) {
         }
         return [tag, attributes];
     }
-    /**
-     * Converts a string to UTF8 bytes
-     */
-    function getUTF8Bytes(input) {
-        // Benchmark: https://jsbench.me/b6klaaxgwq/1
-        // If you want to just count bytes, see solutions at https://jsbench.me/ehklab415e/1
-        var result = new Uint8Array(input.length);
-        for (var i = 0; i < input.length; i++) {
-            // `charCode` is faster than encoding, so we prefer that when it's possible
-            var charCode = input.charCodeAt(i);
-            // In case of non-ASCII symbols we use proper encoding
-            if (charCode > 127) {
-                return new TextEncoder().encode(input);
-            }
-            result[i] = charCode;
-        }
-        return result;
-    }
-
-    /*
-     * Based on https://github.com/karanlyons/murmurHash3.js/blob/a33d0723127e2e5415056c455f8aed2451ace208/murmurHash3.js
-     */
-    /**
-     * Adds two 64-bit values (provided as tuples of 32-bit values)
-     * and updates (mutates) first value to write the result
-     */
-    function x64Add(m, n) {
-        var m0 = m[0] >>> 16, m1 = m[0] & 0xffff, m2 = m[1] >>> 16, m3 = m[1] & 0xffff;
-        var n0 = n[0] >>> 16, n1 = n[0] & 0xffff, n2 = n[1] >>> 16, n3 = n[1] & 0xffff;
-        var o0 = 0, o1 = 0, o2 = 0, o3 = 0;
-        o3 += m3 + n3;
-        o2 += o3 >>> 16;
-        o3 &= 0xffff;
-        o2 += m2 + n2;
-        o1 += o2 >>> 16;
-        o2 &= 0xffff;
-        o1 += m1 + n1;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o0 += m0 + n0;
-        o0 &= 0xffff;
-        m[0] = (o0 << 16) | o1;
-        m[1] = (o2 << 16) | o3;
-    }
-    /**
-     * Multiplies two 64-bit values (provided as tuples of 32-bit values)
-     * and updates (mutates) first value to write the result
-     */
-    function x64Multiply(m, n) {
-        var m0 = m[0] >>> 16, m1 = m[0] & 0xffff, m2 = m[1] >>> 16, m3 = m[1] & 0xffff;
-        var n0 = n[0] >>> 16, n1 = n[0] & 0xffff, n2 = n[1] >>> 16, n3 = n[1] & 0xffff;
-        var o0 = 0, o1 = 0, o2 = 0, o3 = 0;
-        o3 += m3 * n3;
-        o2 += o3 >>> 16;
-        o3 &= 0xffff;
-        o2 += m2 * n3;
-        o1 += o2 >>> 16;
-        o2 &= 0xffff;
-        o2 += m3 * n2;
-        o1 += o2 >>> 16;
-        o2 &= 0xffff;
-        o1 += m1 * n3;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o1 += m2 * n2;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o1 += m3 * n1;
-        o0 += o1 >>> 16;
-        o1 &= 0xffff;
-        o0 += m0 * n3 + m1 * n2 + m2 * n1 + m3 * n0;
-        o0 &= 0xffff;
-        m[0] = (o0 << 16) | o1;
-        m[1] = (o2 << 16) | o3;
-    }
-    /**
-     * Provides left rotation of the given int64 value (provided as tuple of two int32)
-     * by given number of bits. Result is written back to the value
-     */
-    function x64Rotl(m, bits) {
-        var m0 = m[0];
-        bits %= 64;
-        if (bits === 32) {
-            m[0] = m[1];
-            m[1] = m0;
-        }
-        else if (bits < 32) {
-            m[0] = (m0 << bits) | (m[1] >>> (32 - bits));
-            m[1] = (m[1] << bits) | (m0 >>> (32 - bits));
-        }
-        else {
-            bits -= 32;
-            m[0] = (m[1] << bits) | (m0 >>> (32 - bits));
-            m[1] = (m0 << bits) | (m[1] >>> (32 - bits));
-        }
-    }
-    /**
-     * Provides a left shift of the given int32 value (provided as tuple of [0, int32])
-     * by given number of bits. Result is written back to the value
-     */
-    function x64LeftShift(m, bits) {
-        bits %= 64;
-        if (bits === 0) {
-            return;
-        }
-        else if (bits < 32) {
-            m[0] = m[1] >>> (32 - bits);
-            m[1] = m[1] << bits;
-        }
-        else {
-            m[0] = m[1] << (bits - 32);
-            m[1] = 0;
-        }
-    }
-    /**
-     * Provides a XOR of the given int64 values(provided as tuple of two int32).
-     * Result is written back to the first value
-     */
-    function x64Xor(m, n) {
-        m[0] ^= n[0];
-        m[1] ^= n[1];
-    }
-    var F1 = [0xff51afd7, 0xed558ccd];
-    var F2 = [0xc4ceb9fe, 0x1a85ec53];
-    /**
-     * Calculates murmurHash3's final x64 mix of that block and writes result back to the input value.
-     * (`[0, h[0] >>> 1]` is a 33 bit unsigned right shift. This is the
-     * only place where we need to right shift 64bit ints.)
-     */
-    function x64Fmix(h) {
-        var shifted = [0, h[0] >>> 1];
-        x64Xor(h, shifted);
-        x64Multiply(h, F1);
-        shifted[1] = h[0] >>> 1;
-        x64Xor(h, shifted);
-        x64Multiply(h, F2);
-        shifted[1] = h[0] >>> 1;
-        x64Xor(h, shifted);
-    }
-    var C1 = [0x87c37b91, 0x114253d5];
-    var C2 = [0x4cf5ad43, 0x2745937f];
-    var M$1 = [0, 5];
-    var N1 = [0, 0x52dce729];
-    var N2 = [0, 0x38495ab5];
-    /**
-     * Given a string and an optional seed as an int, returns a 128 bit
-     * hash using the x64 flavor of MurmurHash3, as an unsigned hex.
-     * All internal functions mutates passed value to achieve minimal memory allocations and GC load
-     *
-     * Benchmark https://jsbench.me/p4lkpaoabi/1
-     */
-    function x64hash128(input, seed) {
-        var key = getUTF8Bytes(input);
-        seed = seed || 0;
-        var length = [0, key.length];
-        var remainder = length[1] % 16;
-        var bytes = length[1] - remainder;
-        var h1 = [0, seed];
-        var h2 = [0, seed];
-        var k1 = [0, 0];
-        var k2 = [0, 0];
-        var i;
-        for (i = 0; i < bytes; i = i + 16) {
-            k1[0] = key[i + 4] | (key[i + 5] << 8) | (key[i + 6] << 16) | (key[i + 7] << 24);
-            k1[1] = key[i] | (key[i + 1] << 8) | (key[i + 2] << 16) | (key[i + 3] << 24);
-            k2[0] = key[i + 12] | (key[i + 13] << 8) | (key[i + 14] << 16) | (key[i + 15] << 24);
-            k2[1] = key[i + 8] | (key[i + 9] << 8) | (key[i + 10] << 16) | (key[i + 11] << 24);
-            x64Multiply(k1, C1);
-            x64Rotl(k1, 31);
-            x64Multiply(k1, C2);
-            x64Xor(h1, k1);
-            x64Rotl(h1, 27);
-            x64Add(h1, h2);
-            x64Multiply(h1, M$1);
-            x64Add(h1, N1);
-            x64Multiply(k2, C2);
-            x64Rotl(k2, 33);
-            x64Multiply(k2, C1);
-            x64Xor(h2, k2);
-            x64Rotl(h2, 31);
-            x64Add(h2, h1);
-            x64Multiply(h2, M$1);
-            x64Add(h2, N2);
-        }
-        k1[0] = 0;
-        k1[1] = 0;
-        k2[0] = 0;
-        k2[1] = 0;
-        var val = [0, 0];
-        switch (remainder) {
-            case 15:
-                val[1] = key[i + 14];
-                x64LeftShift(val, 48);
-                x64Xor(k2, val);
-            // fallthrough
-            case 14:
-                val[1] = key[i + 13];
-                x64LeftShift(val, 40);
-                x64Xor(k2, val);
-            // fallthrough
-            case 13:
-                val[1] = key[i + 12];
-                x64LeftShift(val, 32);
-                x64Xor(k2, val);
-            // fallthrough
-            case 12:
-                val[1] = key[i + 11];
-                x64LeftShift(val, 24);
-                x64Xor(k2, val);
-            // fallthrough
-            case 11:
-                val[1] = key[i + 10];
-                x64LeftShift(val, 16);
-                x64Xor(k2, val);
-            // fallthrough
-            case 10:
-                val[1] = key[i + 9];
-                x64LeftShift(val, 8);
-                x64Xor(k2, val);
-            // fallthrough
-            case 9:
-                val[1] = key[i + 8];
-                x64Xor(k2, val);
-                x64Multiply(k2, C2);
-                x64Rotl(k2, 33);
-                x64Multiply(k2, C1);
-                x64Xor(h2, k2);
-            // fallthrough
-            case 8:
-                val[1] = key[i + 7];
-                x64LeftShift(val, 56);
-                x64Xor(k1, val);
-            // fallthrough
-            case 7:
-                val[1] = key[i + 6];
-                x64LeftShift(val, 48);
-                x64Xor(k1, val);
-            // fallthrough
-            case 6:
-                val[1] = key[i + 5];
-                x64LeftShift(val, 40);
-                x64Xor(k1, val);
-            // fallthrough
-            case 5:
-                val[1] = key[i + 4];
-                x64LeftShift(val, 32);
-                x64Xor(k1, val);
-            // fallthrough
-            case 4:
-                val[1] = key[i + 3];
-                x64LeftShift(val, 24);
-                x64Xor(k1, val);
-            // fallthrough
-            case 3:
-                val[1] = key[i + 2];
-                x64LeftShift(val, 16);
-                x64Xor(k1, val);
-            // fallthrough
-            case 2:
-                val[1] = key[i + 1];
-                x64LeftShift(val, 8);
-                x64Xor(k1, val);
-            // fallthrough
-            case 1:
-                val[1] = key[i];
-                x64Xor(k1, val);
-                x64Multiply(k1, C1);
-                x64Rotl(k1, 31);
-                x64Multiply(k1, C2);
-                x64Xor(h1, k1);
-            // fallthrough
-        }
-        x64Xor(h1, length);
-        x64Xor(h2, length);
-        x64Add(h1, h2);
-        x64Add(h2, h1);
-        x64Fmix(h1);
-        x64Fmix(h2);
-        x64Add(h1, h2);
-        x64Add(h2, h1);
-        return (('00000000' + (h1[0] >>> 0).toString(16)).slice(-8) +
-            ('00000000' + (h1[1] >>> 0).toString(16)).slice(-8) +
-            ('00000000' + (h2[0] >>> 0).toString(16)).slice(-8) +
-            ('00000000' + (h2[1] >>> 0).toString(16)).slice(-8));
-    }
-
-    /**
-     * Converts an error object to a plain object that can be used with `JSON.stringify`.
-     * If you just run `JSON.stringify(error)`, you'll get `'{}'`.
-     */
-    function errorToObject(error) {
-        var _a;
-        return __assign({ name: error.name, message: error.message, stack: (_a = error.stack) === null || _a === void 0 ? void 0 : _a.split('\n') }, error);
-    }
     function isFunctionNative(func) {
         return /^function\s.*?\{\s*\[native code]\s*}$/.test(String(func));
     }
@@ -591,7 +290,7 @@ var globalFP = (function (exports) {
      * waiting for one source to load before getting the components from the other sources.
      */
     function loadSource(source, sourceOptions) {
-        var sourceLoadPromise = new Promise(function (resolveLoad) {
+        var sourceLoadPromise = suppressUnhandledRejectionWarning(new Promise(function (resolveLoad) {
             var loadStartTime = Date.now();
             // `awaitIfAsync` is used instead of just `await` in order to measure the duration of synchronous sources
             // correctly (other microtasks won't affect the duration).
@@ -630,8 +329,7 @@ var globalFP = (function (exports) {
                     });
                 });
             });
-        });
-        suppressUnhandledRejectionWarning(sourceLoadPromise);
+        }));
         return function getComponent() {
             return sourceLoadPromise.then(function (finalizeSource) { return finalizeSource(); });
         };
@@ -645,14 +343,11 @@ var globalFP = (function (exports) {
      * Warning for package users:
      * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
      */
-    function loadSources(sources, sourceOptions, excludeSources) {
+    function loadSources(sources, sourceOptions, excludeSources, loopReleaseInterval) {
         var includedSources = Object.keys(sources).filter(function (sourceKey) { return excludes(excludeSources, sourceKey); });
         // Using `mapWithBreaks` allows asynchronous sources to complete between synchronous sources
         // and measure the duration correctly
-        var sourceGettersPromise = mapWithBreaks(includedSources, function (sourceKey) {
-            return loadSource(sources[sourceKey], sourceOptions);
-        });
-        suppressUnhandledRejectionWarning(sourceGettersPromise);
+        var sourceGettersPromise = suppressUnhandledRejectionWarning(mapWithBreaks(includedSources, function (sourceKey) { return loadSource(sources[sourceKey], sourceOptions); }, loopReleaseInterval));
         return function getComponents() {
             return __awaiter(this, void 0, void 0, function () {
                 var sourceGetters, componentPromises, componentArray, components, index;
@@ -661,11 +356,7 @@ var globalFP = (function (exports) {
                         case 0: return [4 /*yield*/, sourceGettersPromise];
                         case 1:
                             sourceGetters = _a.sent();
-                            return [4 /*yield*/, mapWithBreaks(sourceGetters, function (sourceGetter) {
-                                    var componentPromise = sourceGetter();
-                                    suppressUnhandledRejectionWarning(componentPromise);
-                                    return componentPromise;
-                                })];
+                            return [4 /*yield*/, mapWithBreaks(sourceGetters, function (sourceGetter) { return suppressUnhandledRejectionWarning(sourceGetter()); }, loopReleaseInterval)];
                         case 2:
                             componentPromises = _a.sent();
                             return [4 /*yield*/, Promise.all(componentPromises)
@@ -913,20 +604,185 @@ var globalFP = (function (exports) {
     function isAndroid() {
         var isItChromium = isChromium();
         var isItGecko = isGecko();
-        // Only 2 browser engines are presented on Android.
-        // Actually, there is also Android 4.1 browser, but it's not worth detecting it at the moment.
-        if (!isItChromium && !isItGecko) {
-            return false;
-        }
         var w = window;
+        var n = navigator;
+        var c = 'connection';
         // Chrome removes all words "Android" from `navigator` when desktop version is requested
         // Firefox keeps "Android" in `navigator.appVersion` when desktop version is requested
-        return (countTruthy([
-            'onorientationchange' in w,
-            'orientation' in w,
-            isItChromium && !('SharedWorker' in w),
-            isItGecko && /android/i.test(navigator.appVersion),
-        ]) >= 2);
+        if (isItChromium) {
+            return (countTruthy([
+                !('SharedWorker' in w),
+                // `typechange` is deprecated, but it's still present on Android (tested on Chrome Mobile 117)
+                // Removal proposal https://bugs.chromium.org/p/chromium/issues/detail?id=699892
+                // Note: this expression returns true on ChromeOS, so additional detectors are required to avoid false-positives
+                n[c] && 'ontypechange' in n[c],
+                !('sinkId' in new window.Audio()),
+            ]) >= 2);
+        }
+        else if (isItGecko) {
+            return countTruthy(['onorientationchange' in w, 'orientation' in w, /android/i.test(navigator.appVersion)]) >= 2;
+        }
+        else {
+            // Only 2 browser engines are presented on Android.
+            // Actually, there is also Android 4.1 browser, but it's not worth detecting it at the moment.
+            return false;
+        }
+    }
+
+    /**
+     * A deep description: https://fingerprint.com/blog/audio-fingerprinting/
+     * Inspired by and based on https://github.com/cozylife/audio-fingerprint
+     *
+     * A version of the entropy source with stabilization to make it suitable for static fingerprinting.
+     * Audio signal is noised in private mode of Safari 17, so audio fingerprinting is skipped in Safari 17.
+     */
+    function getAudioFingerprint() {
+        if (doesBrowserPerformAntifingerprinting$1()) {
+            return -4 /* SpecialFingerprint.KnownForAntifingerprinting */;
+        }
+        return getUnstableAudioFingerprint();
+    }
+    /**
+     * A version of the entropy source without stabilization.
+     *
+     * Warning for package users:
+     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
+     */
+    function getUnstableAudioFingerprint() {
+        var w = window;
+        var AudioContext = w.OfflineAudioContext || w.webkitOfflineAudioContext;
+        if (!AudioContext) {
+            return -2 /* SpecialFingerprint.NotSupported */;
+        }
+        // In some browsers, audio context always stays suspended unless the context is started in response to a user action
+        // (e.g. a click or a tap). It prevents audio fingerprint from being taken at an arbitrary moment of time.
+        // Such browsers are old and unpopular, so the audio fingerprinting is just skipped in them.
+        // See a similar case explanation at https://stackoverflow.com/questions/46363048/onaudioprocess-not-called-on-ios11#46534088
+        if (doesBrowserSuspendAudioContext()) {
+            return -1 /* SpecialFingerprint.KnownForSuspending */;
+        }
+        var hashFromIndex = 4500;
+        var hashToIndex = 5000;
+        var context = new AudioContext(1, hashToIndex, 44100);
+        var oscillator = context.createOscillator();
+        oscillator.type = 'triangle';
+        oscillator.frequency.value = 10000;
+        var compressor = context.createDynamicsCompressor();
+        compressor.threshold.value = -50;
+        compressor.knee.value = 40;
+        compressor.ratio.value = 12;
+        compressor.attack.value = 0;
+        compressor.release.value = 0.25;
+        oscillator.connect(compressor);
+        compressor.connect(context.destination);
+        oscillator.start(0);
+        var _a = startRenderingAudio(context), renderPromise = _a[0], finishRendering = _a[1];
+        // Suppresses the console error message in case when the fingerprint fails before requested
+        var fingerprintPromise = suppressUnhandledRejectionWarning(renderPromise.then(function (buffer) { return getHash(buffer.getChannelData(0).subarray(hashFromIndex)); }, function (error) {
+            if (error.name === "timeout" /* InnerErrorName.Timeout */ || error.name === "suspended" /* InnerErrorName.Suspended */) {
+                return -3 /* SpecialFingerprint.Timeout */;
+            }
+            throw error;
+        }));
+        return function () {
+            finishRendering();
+            return fingerprintPromise;
+        };
+    }
+    /**
+     * Checks if the current browser is known for always suspending audio context
+     */
+    function doesBrowserSuspendAudioContext() {
+        // Mobile Safari 11 and older
+        return isWebKit() && !isDesktopWebKit() && !isWebKit606OrNewer();
+    }
+    /**
+     * Checks if the current browser is known for applying anti-fingerprinting measures in all or some critical modes
+     */
+    function doesBrowserPerformAntifingerprinting$1() {
+        // Safari 17
+        return isWebKit() && isWebKit616OrNewer() && isSafariWebKit();
+    }
+    /**
+     * Starts rendering the audio context.
+     * When the returned function is called, the render process starts finishing.
+     */
+    function startRenderingAudio(context) {
+        var renderTryMaxCount = 3;
+        var renderRetryDelay = 500;
+        var runningMaxAwaitTime = 500;
+        var runningSufficientTime = 5000;
+        var finalize = function () { return undefined; };
+        var resultPromise = new Promise(function (resolve, reject) {
+            var isFinalized = false;
+            var renderTryCount = 0;
+            var startedRunningAt = 0;
+            context.oncomplete = function (event) { return resolve(event.renderedBuffer); };
+            var startRunningTimeout = function () {
+                setTimeout(function () { return reject(makeInnerError("timeout" /* InnerErrorName.Timeout */)); }, Math.min(runningMaxAwaitTime, startedRunningAt + runningSufficientTime - Date.now()));
+            };
+            var tryRender = function () {
+                try {
+                    var renderingPromise = context.startRendering();
+                    // `context.startRendering` has two APIs: Promise and callback, we check that it's really a promise just in case
+                    if (isPromise(renderingPromise)) {
+                        // Suppresses all unhandled rejections in case of scheduled redundant retries after successful rendering
+                        suppressUnhandledRejectionWarning(renderingPromise);
+                    }
+                    switch (context.state) {
+                        case 'running':
+                            startedRunningAt = Date.now();
+                            if (isFinalized) {
+                                startRunningTimeout();
+                            }
+                            break;
+                        // Sometimes the audio context doesn't start after calling `startRendering` (in addition to the cases where
+                        // audio context doesn't start at all). A known case is starting an audio context when the browser tab is in
+                        // background on iPhone. Retries usually help in this case.
+                        case 'suspended':
+                            // The audio context can reject starting until the tab is in foreground. Long fingerprint duration
+                            // in background isn't a problem, therefore the retry attempts don't count in background. It can lead to
+                            // a situation when a fingerprint takes very long time and finishes successfully. FYI, the audio context
+                            // can be suspended when `document.hidden === false` and start running after a retry.
+                            if (!document.hidden) {
+                                renderTryCount++;
+                            }
+                            if (isFinalized && renderTryCount >= renderTryMaxCount) {
+                                reject(makeInnerError("suspended" /* InnerErrorName.Suspended */));
+                            }
+                            else {
+                                setTimeout(tryRender, renderRetryDelay);
+                            }
+                            break;
+                    }
+                }
+                catch (error) {
+                    reject(error);
+                }
+            };
+            tryRender();
+            finalize = function () {
+                if (!isFinalized) {
+                    isFinalized = true;
+                    if (startedRunningAt > 0) {
+                        startRunningTimeout();
+                    }
+                }
+            };
+        });
+        return [resultPromise, finalize];
+    }
+    function getHash(signal) {
+        var hash = 0;
+        for (var i = 0; i < signal.length; ++i) {
+            hash += Math.abs(signal[i]);
+        }
+        return hash;
+    }
+    function makeInnerError(name) {
+        var error = new Error(name);
+        error.name = name;
+        return error;
     }
 
     /**
@@ -1063,273 +919,29 @@ var globalFP = (function (exports) {
         }
     }
     /**
-     * The returned promise resolves when the tab becomes visible (in foreground).
-     * If the tab is already visible, resolves immediately.
+     * Returns true if the code runs in an iframe, and any parent page's origin doesn't match the current origin
      */
-    function whenDocumentVisible() {
-        return new Promise(function (resolve) {
-            var d = document;
-            var eventName = 'visibilitychange';
-            var handleVisibilityChange = function () {
-                if (!d.hidden) {
-                    d.removeEventListener(eventName, handleVisibilityChange);
-                    resolve();
-                }
-            };
-            d.addEventListener(eventName, handleVisibilityChange);
-            handleVisibilityChange();
-        });
-    }
-
-    var sampleRate = 44100;
-    var cloneCount = 40000;
-    var stabilizationPrecision = 6.2;
-    /**
-     * A version of the entropy source with stabilization to make it suitable for static fingerprinting.
-     * Audio signal is noised in private mode of Safari 17.
-     */
-    function getAudioFingerprint() {
-        return __awaiter(this, void 0, void 0, function () {
-            var finish;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, getUnstableAudioFingerprint()];
-                    case 1:
-                        finish = _a.sent();
-                        return [2 /*return*/, function () {
-                                var rawFingerprint = finish();
-                                return stabilize(rawFingerprint, stabilizationPrecision);
-                            }];
-                }
-            });
-        });
-    }
-    /**
-     * A version of the entropy source without stabilization.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
-    function getUnstableAudioFingerprint() {
-        return __awaiter(this, void 0, void 0, function () {
-            var fingerprintResult, timeoutPromise, fingerprintPromise;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        timeoutPromise = whenDocumentVisible().then(function () { return wait(500); });
-                        fingerprintPromise = getBaseAudioFingerprint().then(function (result) { return (fingerprintResult = [true, result]); }, function (error) { return (fingerprintResult = [false, error]); });
-                        return [4 /*yield*/, Promise.race([timeoutPromise, fingerprintPromise])];
-                    case 1:
-                        _a.sent();
-                        return [2 /*return*/, function () {
-                                if (!fingerprintResult) {
-                                    return -3 /* SpecialFingerprint.Timeout */;
-                                }
-                                if (!fingerprintResult[0]) {
-                                    throw fingerprintResult[1];
-                                }
-                                return fingerprintResult[1];
-                            }];
-                }
-            });
-        });
-    }
-    function getBaseAudioFingerprint() {
-        return __awaiter(this, void 0, void 0, function () {
-            var w, AudioContext, baseSignal, context, sourceNode, clonedSignal, fingerprint;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        w = window;
-                        AudioContext = w.OfflineAudioContext || w.webkitOfflineAudioContext;
-                        if (!AudioContext) {
-                            return [2 /*return*/, -2 /* SpecialFingerprint.NotSupported */];
-                        }
-                        // In some browsers, audio context always stays suspended unless the context is started in response to a user action
-                        // (e.g. a click or a tap). It prevents audio fingerprint from being taken at an arbitrary moment of time.
-                        // Such browsers are old and unpopular, so the audio fingerprinting is just skipped in them.
-                        // See a similar case explanation at https://stackoverflow.com/questions/46363048/onaudioprocess-not-called-on-ios11#46534088
-                        if (doesBrowserSuspendAudioContext()) {
-                            return [2 /*return*/, -1 /* SpecialFingerprint.KnownForSuspending */];
-                        }
-                        return [4 /*yield*/, getBaseSignal(AudioContext)];
-                    case 1:
-                        baseSignal = _a.sent();
-                        if (!baseSignal) {
-                            return [2 /*return*/, -3 /* SpecialFingerprint.Timeout */];
-                        }
-                        context = new AudioContext(1, baseSignal.length - 1 + cloneCount, sampleRate);
-                        sourceNode = context.createBufferSource();
-                        sourceNode.buffer = baseSignal;
-                        sourceNode.loop = true;
-                        sourceNode.loopStart = (baseSignal.length - 1) / sampleRate;
-                        sourceNode.loopEnd = baseSignal.length / sampleRate;
-                        sourceNode.connect(context.destination);
-                        sourceNode.start();
-                        return [4 /*yield*/, renderAudio(context)];
-                    case 2:
-                        clonedSignal = _a.sent();
-                        if (!clonedSignal) {
-                            return [2 /*return*/, -3 /* SpecialFingerprint.Timeout */];
-                        }
-                        fingerprint = extractFingerprint(baseSignal, clonedSignal.getChannelData(0).subarray(baseSignal.length - 1));
-                        return [2 /*return*/, Math.abs(fingerprint)]; // The fingerprint is made positive to avoid confusion with the special fingerprints
-                }
-            });
-        });
-    }
-    /**
-     * Checks if the current browser is known for always suspending audio context.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
-    function doesBrowserSuspendAudioContext() {
-        // Mobile Safari 11 and older
-        return isWebKit() && !isDesktopWebKit() && !isWebKit606OrNewer();
-    }
-    /**
-     * Produces an arbitrary audio signal
-     */
-    function getBaseSignal(AudioContext) {
-        return __awaiter(this, void 0, void 0, function () {
-            var targetSampleIndex, context, oscillator, compressor, filter;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        targetSampleIndex = 3395;
-                        context = new AudioContext(1, targetSampleIndex + 1, sampleRate);
-                        oscillator = context.createOscillator();
-                        oscillator.type = 'square';
-                        oscillator.frequency.value = 1000;
-                        compressor = context.createDynamicsCompressor();
-                        compressor.threshold.value = -70;
-                        compressor.knee.value = 40;
-                        compressor.ratio.value = 12;
-                        compressor.attack.value = 0;
-                        compressor.release.value = 0.25;
-                        filter = context.createBiquadFilter();
-                        filter.type = 'allpass';
-                        filter.frequency.value = 5.239622852977861;
-                        filter.Q.value = 0.1;
-                        oscillator.connect(compressor);
-                        compressor.connect(filter);
-                        filter.connect(context.destination);
-                        oscillator.start(0);
-                        return [4 /*yield*/, renderAudio(context)];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
-            });
-        });
-    }
-    /**
-     * Renders the given audio context with configured nodes.
-     * Returns `null` when the rendering runs out of attempts.
-     *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
-     */
-    function renderAudio(context) {
-        return new Promise(function (resolve, reject) {
-            var retryDelay = 200;
-            var attemptsLeft = 25;
-            context.oncomplete = function (event) { return resolve(event.renderedBuffer); };
-            var tryRender = function () {
-                try {
-                    var renderingPromise = context.startRendering();
-                    // `context.startRendering` has two APIs: Promise and callback, we check that it's really a promise just in case
-                    if (isPromise(renderingPromise)) {
-                        // Suppresses all unhandled rejections in case of scheduled redundant retries after successful rendering
-                        suppressUnhandledRejectionWarning(renderingPromise);
-                    }
-                    // Sometimes the audio context doesn't start after calling `startRendering` (in addition to the cases where
-                    // audio context doesn't start at all). A known case is starting an audio context when the browser tab is in
-                    // background on iPhone. Retries usually help in this case.
-                    if (context.state === 'suspended') {
-                        // The audio context can reject starting until the tab is in foreground. Long fingerprint duration
-                        // in background isn't a problem, therefore the retry attempts don't count in background. It can lead to
-                        // a situation when a fingerprint takes very long time and finishes successfully. FYI, the audio context
-                        // can be suspended when `document.hidden === false` and start running after a retry.
-                        if (!document.hidden) {
-                            attemptsLeft--;
-                        }
-                        if (attemptsLeft > 0) {
-                            setTimeout(tryRender, retryDelay);
-                        }
-                        else {
-                            resolve(null);
-                        }
-                    }
-                }
-                catch (error) {
-                    reject(error);
-                }
-            };
-            tryRender();
-        });
-    }
-    function extractFingerprint(baseSignal, clonedSample) {
-        var fingerprint = undefined;
-        var needsDenoising = false;
-        for (var i = 0; i < clonedSample.length; i += Math.floor(clonedSample.length / 10)) {
-            if (clonedSample[i] === 0) ;
-            else if (fingerprint === undefined) {
-                fingerprint = clonedSample[i];
+    function isAnyParentCrossOrigin() {
+        var currentWindow = window;
+        for (;;) {
+            var parentWindow = currentWindow.parent;
+            if (!parentWindow || parentWindow === currentWindow) {
+                return false; // The top page is reached
             }
-            else if (fingerprint !== clonedSample[i]) {
-                needsDenoising = true;
-                break;
+            try {
+                if (parentWindow.location.origin !== currentWindow.location.origin) {
+                    return true;
+                }
             }
-        }
-        // The looped buffer source works incorrectly in old Safari versions (>14 desktop, >15 mobile).
-        // The looped signal contains only 0s. To fix it, the loop start should be `baseSignal.length - 1.00000000001` and
-        // the loop end should be `baseSignal.length + 0.00000000001` (there can be 10 or 11 0s after the point). But this
-        // solution breaks the looped signal in other browsers. Instead of checking the browser version, we check that the
-        // looped signals comprises only 0s, and if it does, we return the last value of the base signal, because old Safari
-        // versions don't add noise that we want to cancel.
-        if (fingerprint === undefined) {
-            fingerprint = baseSignal.getChannelData(0)[baseSignal.length - 1];
-        }
-        else if (needsDenoising) {
-            fingerprint = getMiddle(clonedSample);
-        }
-        return fingerprint;
-    }
-    /**
-     * Calculates the middle between the minimum and the maximum array item
-     */
-    function getMiddle(signal) {
-        var min = Infinity;
-        var max = -Infinity;
-        for (var i = 0; i < signal.length; i++) {
-            var value = signal[i];
-            // In very rare cases the signal is 0 on a short range for some reason. Ignoring such samples.
-            if (value === 0) {
-                continue;
+            catch (error) {
+                // The error is thrown when `origin` is accessed on `parentWindow.location` when the parent is cross-origin
+                if (error instanceof Error && error.name === 'SecurityError') {
+                    return true;
+                }
+                throw error;
             }
-            if (value < min) {
-                min = value;
-            }
-            if (value > max) {
-                max = value;
-            }
+            currentWindow = parentWindow;
         }
-        return (min + max) / 2;
-    }
-    /**
-     * Truncates some digits of the number to make it stable.
-     * `precision` is the number of significant digits to keep. The number may be not integer:
-     *  - If it ends with `.2`, the last digit is rounded to the nearest multiple of 5;
-     *  - If it ends with `.5`, the last digit is rounded to the nearest even number;
-     */
-    function stabilize(value, precision) {
-        if (value === 0) {
-            return value;
-        }
-        var power = Math.floor(Math.log10(Math.abs(value)));
-        var precisionPower = power - Math.floor(precision) + 1;
-        var precisionBase = Math.pow(10, -precisionPower) * ((precision * 10) % 10 || 1);
-        return Math.round(value * precisionBase) / precisionBase;
     }
 
     // We use m or w because these two characters take up the maximum width.
@@ -1406,66 +1018,58 @@ var globalFP = (function (exports) {
             return __awaiter(_this, void 0, void 0, function () {
                 var holder, spansContainer, defaultWidth, defaultHeight, createSpan, createSpanWithFonts, initializeBaseFontsSpans, initializeFontsSpans, isFontAvailable, baseFontsSpans, fontsSpans, index;
                 return __generator(this, function (_b) {
-                    switch (_b.label) {
-                        case 0:
-                            holder = document.body;
-                            holder.style.fontSize = textSize;
-                            spansContainer = document.createElement('div');
-                            spansContainer.style.setProperty('visibility', 'hidden', 'important');
-                            defaultWidth = {};
-                            defaultHeight = {};
-                            createSpan = function (fontFamily) {
-                                var span = document.createElement('span');
-                                var style = span.style;
-                                style.position = 'absolute';
-                                style.top = '0';
-                                style.left = '0';
-                                style.fontFamily = fontFamily;
-                                span.textContent = testString;
-                                spansContainer.appendChild(span);
-                                return span;
-                            };
-                            createSpanWithFonts = function (fontToDetect, baseFont) {
-                                return createSpan("'".concat(fontToDetect, "',").concat(baseFont));
-                            };
-                            initializeBaseFontsSpans = function () {
-                                return baseFonts.map(createSpan);
-                            };
-                            initializeFontsSpans = function () {
-                                // Stores {fontName : [spans for that font]}
-                                var spans = {};
-                                var _loop_1 = function (font) {
-                                    spans[font] = baseFonts.map(function (baseFont) { return createSpanWithFonts(font, baseFont); });
-                                };
-                                for (var _i = 0, fontList_1 = fontList; _i < fontList_1.length; _i++) {
-                                    var font = fontList_1[_i];
-                                    _loop_1(font);
-                                }
-                                return spans;
-                            };
-                            isFontAvailable = function (fontSpans) {
-                                return baseFonts.some(function (baseFont, baseFontIndex) {
-                                    return fontSpans[baseFontIndex].offsetWidth !== defaultWidth[baseFont] ||
-                                        fontSpans[baseFontIndex].offsetHeight !== defaultHeight[baseFont];
-                                });
-                            };
-                            baseFontsSpans = initializeBaseFontsSpans();
-                            fontsSpans = initializeFontsSpans();
-                            // add all the spans to the DOM
-                            holder.appendChild(spansContainer);
-                            return [4 /*yield*/, releaseEventLoop()
-                                // get the default width for the three base fonts
-                            ];
-                        case 1:
-                            _b.sent();
-                            // get the default width for the three base fonts
-                            for (index = 0; index < baseFonts.length; index++) {
-                                defaultWidth[baseFonts[index]] = baseFontsSpans[index].offsetWidth; // width for the default font
-                                defaultHeight[baseFonts[index]] = baseFontsSpans[index].offsetHeight; // height for the default font
-                            }
-                            // check available fonts
-                            return [2 /*return*/, fontList.filter(function (font) { return isFontAvailable(fontsSpans[font]); })];
+                    holder = document.body;
+                    holder.style.fontSize = textSize;
+                    spansContainer = document.createElement('div');
+                    spansContainer.style.setProperty('visibility', 'hidden', 'important');
+                    defaultWidth = {};
+                    defaultHeight = {};
+                    createSpan = function (fontFamily) {
+                        var span = document.createElement('span');
+                        var style = span.style;
+                        style.position = 'absolute';
+                        style.top = '0';
+                        style.left = '0';
+                        style.fontFamily = fontFamily;
+                        span.textContent = testString;
+                        spansContainer.appendChild(span);
+                        return span;
+                    };
+                    createSpanWithFonts = function (fontToDetect, baseFont) {
+                        return createSpan("'".concat(fontToDetect, "',").concat(baseFont));
+                    };
+                    initializeBaseFontsSpans = function () {
+                        return baseFonts.map(createSpan);
+                    };
+                    initializeFontsSpans = function () {
+                        // Stores {fontName : [spans for that font]}
+                        var spans = {};
+                        var _loop_1 = function (font) {
+                            spans[font] = baseFonts.map(function (baseFont) { return createSpanWithFonts(font, baseFont); });
+                        };
+                        for (var _i = 0, fontList_1 = fontList; _i < fontList_1.length; _i++) {
+                            var font = fontList_1[_i];
+                            _loop_1(font);
+                        }
+                        return spans;
+                    };
+                    isFontAvailable = function (fontSpans) {
+                        return baseFonts.some(function (baseFont, baseFontIndex) {
+                            return fontSpans[baseFontIndex].offsetWidth !== defaultWidth[baseFont] ||
+                                fontSpans[baseFontIndex].offsetHeight !== defaultHeight[baseFont];
+                        });
+                    };
+                    baseFontsSpans = initializeBaseFontsSpans();
+                    fontsSpans = initializeFontsSpans();
+                    // add all the spans to the DOM
+                    holder.appendChild(spansContainer);
+                    // get the default width for the three base fonts
+                    for (index = 0; index < baseFonts.length; index++) {
+                        defaultWidth[baseFonts[index]] = baseFontsSpans[index].offsetWidth; // width for the default font
+                        defaultHeight[baseFonts[index]] = baseFontsSpans[index].offsetHeight; // height for the default font
                     }
+                    // check available fonts
+                    return [2 /*return*/, fontList.filter(function (font) { return isFontAvailable(fontsSpans[font]); })];
                 });
             });
         });
@@ -1506,7 +1110,7 @@ var globalFP = (function (exports) {
      * A version of the entropy source with stabilization to make it suitable for static fingerprinting.
      * Canvas image is noised in private mode of Safari 17, so image rendering is skipped in Safari 17.
      */
-    function getCanvasFingerprint$1() {
+    function getCanvasFingerprint() {
         return getUnstableCanvasFingerprint(doesBrowserPerformAntifingerprinting());
     }
     /**
@@ -1516,42 +1120,35 @@ var globalFP = (function (exports) {
      * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
      */
     function getUnstableCanvasFingerprint(skipImages) {
-        return __awaiter(this, void 0, void 0, function () {
-            var winding, geometry, text, _a, canvas, context;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        winding = false;
-                        _a = makeCanvasContext$1(), canvas = _a[0], context = _a[1];
-                        if (!!isSupported$1(canvas, context)) return [3 /*break*/, 1];
-                        geometry = text = "unsupported" /* ImageStatus.Unsupported */;
-                        return [3 /*break*/, 4];
-                    case 1:
-                        winding = doesSupportWinding$1(context);
-                        if (!skipImages) return [3 /*break*/, 2];
-                        geometry = text = "skipped" /* ImageStatus.Skipped */;
-                        return [3 /*break*/, 4];
-                    case 2:
-                        return [4 /*yield*/, renderImages(canvas, context)];
-                    case 3:
-                        _b = _c.sent(), geometry = _b[0], text = _b[1];
-                        _c.label = 4;
-                    case 4: return [2 /*return*/, { winding: winding, geometry: geometry, text: text }];
-                }
-            });
-        });
+        var _a;
+        var winding = false;
+        var geometry;
+        var text;
+        var _b = makeCanvasContext(), canvas = _b[0], context = _b[1];
+        if (!isSupported(canvas, context)) {
+            geometry = text = "unsupported" /* ImageStatus.Unsupported */;
+        }
+        else {
+            winding = doesSupportWinding(context);
+            if (skipImages) {
+                geometry = text = "skipped" /* ImageStatus.Skipped */;
+            }
+            else {
+                _a = renderImages(canvas, context), geometry = _a[0], text = _a[1];
+            }
+        }
+        return { winding: winding, geometry: geometry, text: text };
     }
-    function makeCanvasContext$1() {
+    function makeCanvasContext() {
         var canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
         return [canvas, canvas.getContext('2d')];
     }
-    function isSupported$1(canvas, context) {
+    function isSupported(canvas, context) {
         return !!(context && canvas.toDataURL);
     }
-    function doesSupportWinding$1(context) {
+    function doesSupportWinding(context) {
         // https://web.archive.org/web/20170825024655/http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
         // https://github.com/Modernizr/Modernizr/blob/master/feature-detects/canvas/winding.js
         context.rect(0, 0, 10, 10);
@@ -1559,38 +1156,23 @@ var globalFP = (function (exports) {
         return !context.isPointInPath(5, 5, 'evenodd');
     }
     function renderImages(canvas, context) {
-        return __awaiter(this, void 0, void 0, function () {
-            var textImage1, textImage2, geometryImage;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        renderTextImage$1(canvas, context);
-                        return [4 /*yield*/, releaseEventLoop()];
-                    case 1:
-                        _a.sent();
-                        textImage1 = canvasToString$1(canvas);
-                        textImage2 = canvasToString$1(canvas) // It's slightly faster to double-encode the text image
-                        ;
-                        // Some browsers add a noise to the canvas: https://github.com/fingerprintjs/fingerprintjs/issues/791
-                        // The canvas is excluded from the fingerprint in this case
-                        if (textImage1 !== textImage2) {
-                            return [2 /*return*/, ["unstable" /* ImageStatus.Unstable */, "unstable" /* ImageStatus.Unstable */]];
-                        }
-                        // Text is unstable:
-                        // https://github.com/fingerprintjs/fingerprintjs/issues/583
-                        // https://github.com/fingerprintjs/fingerprintjs/issues/103
-                        // Therefore it's extracted into a separate image.
-                        renderGeometryImage$1(canvas, context);
-                        return [4 /*yield*/, releaseEventLoop()];
-                    case 2:
-                        _a.sent();
-                        geometryImage = canvasToString$1(canvas);
-                        return [2 /*return*/, [textImage1, geometryImage]];
-                }
-            });
-        });
+        renderTextImage(canvas, context);
+        var textImage1 = canvasToString(canvas);
+        var textImage2 = canvasToString(canvas); // It's slightly faster to double-encode the text image
+        // Some browsers add a noise to the canvas: https://github.com/fingerprintjs/fingerprintjs/issues/791
+        // The canvas is excluded from the fingerprint in this case
+        if (textImage1 !== textImage2) {
+            return ["unstable" /* ImageStatus.Unstable */, "unstable" /* ImageStatus.Unstable */];
+        }
+        // Text is unstable:
+        // https://github.com/fingerprintjs/fingerprintjs/issues/583
+        // https://github.com/fingerprintjs/fingerprintjs/issues/103
+        // Therefore it's extracted into a separate image.
+        renderGeometryImage(canvas, context);
+        var geometryImage = canvasToString(canvas);
+        return [geometryImage, textImage1];
     }
-    function renderTextImage$1(canvas, context) {
+    function renderTextImage(canvas, context) {
         // Resizing the canvas cleans it
         canvas.width = 240;
         canvas.height = 60;
@@ -1613,7 +1195,7 @@ var globalFP = (function (exports) {
         context.font = '18pt Arial';
         context.fillText(printedText, 4, 45);
     }
-    function renderGeometryImage$1(canvas, context) {
+    function renderGeometryImage(canvas, context) {
         // Resizing the canvas cleans it
         canvas.width = 122;
         canvas.height = 110;
@@ -1641,7 +1223,7 @@ var globalFP = (function (exports) {
         context.arc(60, 60, 20, 0, Math.PI * 2, true);
         context.fill('evenodd');
     }
-    function canvasToString$1(canvas) {
+    function canvasToString(canvas) {
         return canvas.toDataURL();
     }
     /**
@@ -1688,7 +1270,7 @@ var globalFP = (function (exports) {
         return navigator.oscpu;
     }
 
-    function getLanguages$1() {
+    function getLanguages() {
         var n = navigator;
         var result = [];
         var language = n.language || n.userLanguage || n.browserLanguage || n.systemLanguage;
@@ -1884,10 +1466,10 @@ var globalFP = (function (exports) {
         }
         // For browsers that don't support timezone names
         // The minus is intentional because the JS offset is opposite to the real offset
-        var offset = -getTimezoneOffset();
-        return "UTC".concat(offset >= 0 ? '+' : '').concat(Math.abs(offset));
+        var offset = -getTimezoneOffset$1();
+        return "UTC".concat(offset >= 0 ? '+' : '').concat(offset);
     }
-    function getTimezoneOffset() {
+    function getTimezoneOffset$1() {
         var currentYear = new Date().getFullYear();
         // The timezone offset may change over time due to daylight saving time (DST) shifts.
         // The non-DST timezone offset is used as the result timezone offset.
@@ -2393,9 +1975,6 @@ var globalFP = (function (exports) {
                         return [3 /*break*/, 1];
                     case 3:
                         d.body.appendChild(root);
-                        return [4 /*yield*/, releaseEventLoop()];
-                    case 4:
-                        _b.sent();
                         try {
                             // Then check which of the elements are blocked
                             for (i = 0; i < selectors.length; ++i) {
@@ -2797,10 +2376,17 @@ var globalFP = (function (exports) {
         return u8[3];
     }
 
+    /**
+     * The return type is a union instead of the enum, because it's too challenging to embed the const enum into another
+     * project. Turning it into a union is a simple and an elegant solution.
+     */
     function getApplePayState() {
         var ApplePaySession = window.ApplePaySession;
         if (typeof (ApplePaySession === null || ApplePaySession === void 0 ? void 0 : ApplePaySession.canMakePayments) !== 'function') {
             return -1 /* ApplePayState.NoAPI */;
+        }
+        if (willPrintConsoleError()) {
+            return -3 /* ApplePayState.NotAvailableInFrame */;
         }
         try {
             return ApplePaySession.canMakePayments() ? 1 /* ApplePayState.Enabled */ : 0 /* ApplePayState.Disabled */;
@@ -2810,28 +2396,22 @@ var globalFP = (function (exports) {
         }
     }
     /**
-     * The return type is a union instead of the enum, because it's too challenging to embed the const enum into another
-     * project. Turning it into a union is a simple and an elegant solution.
+     * Starting from Safari 15 calling `ApplePaySession.canMakePayments()` produces this error message when FingerprintJS
+     * runs in an iframe with a cross-origin parent page, and the iframe on that page has no allow="payment *" attribute:
+     *   Feature policy 'Payment' check failed for element with origin 'https://example.com' and allow attribute ''.
+     * This function checks whether the error message is expected.
      *
-     * Warning for package users:
-     * This function is out of Semantic Versioning, i.e. can change unexpectedly. Usage is at your own risk.
+     * We check for cross-origin parents, which is prone to false-positive results. Instead, we should check for allowed
+     * feature/permission, but we can't because none of these API works in Safari yet:
+     *   navigator.permissions.query({ name: ‘payment' })
+     *   navigator.permissions.query({ name: ‘payment-handler' })
+     *   document.featurePolicy
      */
+    var willPrintConsoleError = isAnyParentCrossOrigin;
     function getStateFromError(error) {
-        if (error instanceof Error) {
-            // See full expected error messages in the test
-            if (error.name === 'InvalidAccessError') {
-                if (/\bfrom\b.*\binsecure\b/i.test(error.message)) {
-                    return -2 /* ApplePayState.NotAvailableInInsecureContext */;
-                }
-                if (/\bdifferent\b.*\borigin\b.*top.level\b.*\bframe\b/i.test(error.message)) {
-                    return -3 /* ApplePayState.NotAvailableInFrame */;
-                }
-            }
-            if (error.name === 'SecurityError') {
-                if (/\bthird.party iframes?.*\bnot.allowed\b/i.test(error.message)) {
-                    return -3 /* ApplePayState.NotAvailableInFrame */;
-                }
-            }
+        // See full expected error messages in the test
+        if (error instanceof Error && error.name === 'InvalidAccessError' && /\bfrom\b.*\binsecure\b/i.test(error.message)) {
+            return -2 /* ApplePayState.NotAvailableInInsecureContext */;
         }
         throw error;
     }
@@ -2883,6 +2463,7 @@ var globalFP = (function (exports) {
     var shaderTypes = ['FRAGMENT_SHADER', 'VERTEX_SHADER'];
     var precisionTypes = ['LOW_FLOAT', 'MEDIUM_FLOAT', 'HIGH_FLOAT', 'LOW_INT', 'MEDIUM_INT', 'HIGH_INT'];
     var rendererInfoExtensionName = 'WEBGL_debug_renderer_info';
+    var polygonModeExtensionName = 'WEBGL_polygon_mode';
     /**
      * Gets the basic and simple WebGL parameters
      */
@@ -2943,7 +2524,8 @@ var globalFP = (function (exports) {
         if (extensions) {
             for (var _d = 0, extensions_1 = extensions; _d < extensions_1.length; _d++) {
                 var name_1 = extensions_1[_d];
-                if (name_1 === rendererInfoExtensionName && shouldAvoidDebugRendererInfo()) {
+                if ((name_1 === rendererInfoExtensionName && shouldAvoidDebugRendererInfo()) ||
+                    (name_1 === polygonModeExtensionName && shouldAvoidPolygonModeExtensions())) {
                     continue;
                 }
                 var extension = gl.getExtension(name_1);
@@ -3032,10 +2614,31 @@ var globalFP = (function (exports) {
         return isGecko();
     }
     /**
+     * Some browsers print a console warning when the WEBGL_polygon_mode extension is requested.
+     * JS Agent aims to avoid printing messages to console, so we avoid this extension in that browsers.
+     */
+    function shouldAvoidPolygonModeExtensions() {
+        return isChromium() || isWebKit();
+    }
+    /**
      * Some unknown browsers have no `getParameter` method
      */
     function isValidParameterGetter(gl) {
         return typeof gl.getParameter === 'function';
+    }
+
+    function getAudioContextBaseLatency() {
+        var _a;
+        // The signal emits warning in Chrome and Firefox, therefore it is enabled on Safari where it doesn't produce warning
+        // and on Android where it's less visible
+        var isAllowedPlatform = isAndroid() || isWebKit();
+        if (!isAllowedPlatform) {
+            return -2 /* SpecialFingerprint.Disabled */;
+        }
+        if (!window.AudioContext) {
+            return -1 /* SpecialFingerprint.NotSupported */;
+        }
+        return (_a = new AudioContext().baseLatency) !== null && _a !== void 0 ? _a : -1 /* SpecialFingerprint.NotSupported */;
     }
 
     /**
@@ -3058,9 +2661,9 @@ var globalFP = (function (exports) {
         fontPreferences: getFontPreferences,
         audio: getAudioFingerprint,
         screenFrame: getScreenFrame,
-        canvas: getCanvasFingerprint$1,
+        canvas: getCanvasFingerprint,
         osCpu: getOsCpu,
-        languages: getLanguages$1,
+        languages: getLanguages,
         colorDepth: getColorDepth,
         deviceMemory: getDeviceMemory,
         screenResolution: getScreenResolution,
@@ -3090,551 +2693,179 @@ var globalFP = (function (exports) {
         architecture: getArchitecture,
         applePay: getApplePayState,
         privateClickMeasurement: getPrivateClickMeasurement,
+        audioBaseLatency: getAudioContextBaseLatency,
         // Some sources can affect other sources (e.g. WebGL can affect canvas), so it's important to run these sources
         // after other sources.
         webGlBasics: getWebGlBasics,
         webGlExtensions: getWebGlExtensions,
     };
-    /**
-     * Loads the built-in entropy sources.
-     * Returns a function that collects the entropy components to make the visitor identifier.
-     */
-    function loadBuiltinSources(options) {
-        return loadSources(sources, options, []);
+
+    function incognitoModeCallback(callback) {
+        var ONE_GB = 1073741824;
+        function safariPrivateTest() {
+            var tmp_name = String(Math.random());
+            try {
+                var db = window.indexedDB.open(tmp_name, 1);
+                db.onupgradeneeded = function (i) {
+                    var _a, _b;
+                    var res = (_a = i.target) === null || _a === void 0 ? void 0 : _a.result;
+                    try {
+                        res.createObjectStore('test', {
+                            autoIncrement: true
+                        }).put(new Blob());
+                        callback(false);
+                    }
+                    catch (e) {
+                        var message = e;
+                        if (e instanceof Error) {
+                            message = (_b = e.message) !== null && _b !== void 0 ? _b : e;
+                        }
+                        if (typeof message !== 'string') {
+                            callback(false);
+                            return;
+                        }
+                        var matchesExpectedError = message.includes('BlobURLs are not yet supported');
+                        callback(matchesExpectedError);
+                        return;
+                    }
+                    finally {
+                        res.close();
+                        window.indexedDB.deleteDatabase(tmp_name);
+                    }
+                };
+            }
+            catch (e) {
+                callback(false);
+            }
+        }
+        function getChromeQuotaLimit() {
+            var w = window;
+            if (w.performance !== undefined &&
+                w.performance.memory !== undefined &&
+                w.performance.memory.jsHeapSizeLimit !== undefined) {
+                return performance.memory.jsHeapSizeLimit;
+            }
+            return ONE_GB;
+        }
+        function chromePrivateTest() {
+            navigator.webkitTemporaryStorage.queryUsageAndQuota(function (_, quota) {
+                var quotaInMib = Math.round(quota / (1024 * 1024));
+                var quotaLimitInMib = Math.round(getChromeQuotaLimit() / (1024 * 1024)) * 2;
+                callback(quotaInMib < quotaLimitInMib);
+            }, function (e) {
+                callback(false);
+                console.error('incognitoMode somehow failed to query storage quota: ' +
+                    e.message);
+            });
+        }
+        (function () {
+            if (isWebKit()) {
+                safariPrivateTest();
+            }
+            else if (isChromium()) {
+                chromePrivateTest();
+            }
+            else if (isGecko()) {
+                window.location.protocol === "https:" ? callback(navigator.serviceWorker === undefined) : callback(false);
+            }
+            else {
+                callback(false);
+                console.error('incognitoMode cannot determine the browser');
+            }
+        })();
+    }
+    function incognitoMode() {
+        return new Promise(function (resolve, reject) {
+            incognitoModeCallback(resolve);
+        });
+    }
+    if (typeof window !== 'undefined') {
+        window.incognitoMode = incognitoMode;
     }
 
-    var commentTemplate = '$ if upgrade to Pro: https://fpjs.dev/pro';
-    function getConfidence(components) {
-        var openConfidenceScore = getOpenConfidenceScore(components);
-        var proConfidenceScore = deriveProConfidenceScore(openConfidenceScore);
-        return { score: openConfidenceScore, comment: commentTemplate.replace(/\$/g, "".concat(proConfidenceScore)) };
-    }
-    function getOpenConfidenceScore(components) {
-        // In order to calculate the true probability of the visitor identifier being correct, we need to know the number of
-        // website visitors (the higher the number, the less the probability because the fingerprint entropy is limited).
-        // JS agent doesn't know the number of visitors, so we can only do an approximate assessment.
-        if (isAndroid()) {
-            return 0.4;
+    function getNavigatorElementsAsJson(obj, currentDepth, maxDepth) {
+        if (currentDepth === void 0) { currentDepth = 0; }
+        if (maxDepth === void 0) { maxDepth = 3; }
+        if (currentDepth >= maxDepth) {
+            return null; // Stop if the maximum depth is reached
         }
-        // Safari (mobile and desktop)
-        if (isWebKit()) {
-            return isDesktopWebKit() && !(isWebKit616OrNewer() && isSafariWebKit()) ? 0.5 : 0.3;
-        }
-        var platform = 'value' in components.platform ? components.platform.value : '';
-        // Windows
-        if (/^Win/.test(platform)) {
-            // The score is greater than on macOS because of the higher variety of devices running Windows.
-            // Chrome provides more entropy than Firefox according too
-            // https://netmarketshare.com/browser-market-share.aspx?options=%7B%22filter%22%3A%7B%22%24and%22%3A%5B%7B%22platform%22%3A%7B%22%24in%22%3A%5B%22Windows%22%5D%7D%7D%5D%7D%2C%22dateLabel%22%3A%22Trend%22%2C%22attributes%22%3A%22share%22%2C%22group%22%3A%22browser%22%2C%22sort%22%3A%7B%22share%22%3A-1%7D%2C%22id%22%3A%22browsersDesktop%22%2C%22dateInterval%22%3A%22Monthly%22%2C%22dateStart%22%3A%222019-11%22%2C%22dateEnd%22%3A%222020-10%22%2C%22segments%22%3A%22-1000%22%7D
-            // So we assign the same score to them.
-            return 0.6;
-        }
-        // macOS
-        if (/^Mac/.test(platform)) {
-            // Chrome provides more entropy than Safari and Safari provides more entropy than Firefox.
-            // Chrome is more popular than Safari and Safari is more popular than Firefox according to
-            // https://netmarketshare.com/browser-market-share.aspx?options=%7B%22filter%22%3A%7B%22%24and%22%3A%5B%7B%22platform%22%3A%7B%22%24in%22%3A%5B%22Mac%20OS%22%5D%7D%7D%5D%7D%2C%22dateLabel%22%3A%22Trend%22%2C%22attributes%22%3A%22share%22%2C%22group%22%3A%22browser%22%2C%22sort%22%3A%7B%22share%22%3A-1%7D%2C%22id%22%3A%22browsersDesktop%22%2C%22dateInterval%22%3A%22Monthly%22%2C%22dateStart%22%3A%222019-11%22%2C%22dateEnd%22%3A%222020-10%22%2C%22segments%22%3A%22-1000%22%7D
-            // So we assign the same score to them.
-            return 0.5;
-        }
-        // Another platform, e.g. a desktop Linux. It's rare, so it should be pretty unique.
-        return 0.7;
-    }
-    function deriveProConfidenceScore(openConfidenceScore) {
-        return round(0.99 + 0.01 * openConfidenceScore, 0.0001);
-    }
-
-    function componentsToCanonicalString(components) {
-        var result = '';
-        for (var _i = 0, _a = Object.keys(components).sort(); _i < _a.length; _i++) {
-            var componentKey = _a[_i];
-            var component = components[componentKey];
-            var value = 'error' in component ? 'error' : JSON.stringify(component.value);
-            result += "".concat(result ? '|' : '').concat(componentKey.replace(/([:|\\])/g, '\\$1'), ":").concat(value);
+        var result = {};
+        var ignoredProperties = new Set([
+            'plugins',
+            'mimeTypes',
+            'userAgent',
+            'language',
+            'cookieEnabled',
+            'doNotTrack',
+            'userActivation',
+            'appVersion'
+        ]);
+        for (var key in obj) {
+            if (ignoredProperties.has(key)) {
+                continue; // Skip the ignored properties
+            }
+            try {
+                var value = obj[key];
+                // Ignore functions completely
+                if (typeof value === 'function') {
+                    continue; // Skip functions
+                }
+                else if (typeof value === 'object' && value !== null && currentDepth + 1 < maxDepth) {
+                    result[key] = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                }
+                else {
+                    if (value != null) {
+                        result[key] = value;
+                    }
+                }
+            }
+            catch (e) {
+                result[key] = "[Unable to retrieve value]";
+            }
         }
         return result;
     }
-    function componentsToDebugString(components) {
-        return JSON.stringify(components, function (_key, value) {
-            if (value instanceof Error) {
-                return errorToObject(value);
-            }
-            return value;
-        }, 2);
-    }
-    function hashComponents(components) {
-        return x64hash128(componentsToCanonicalString(components));
-    }
-    /**
-     * Makes a GetResult implementation that calculates the visitor id hash on demand.
-     * Designed for optimisation.
-     */
-    function makeLazyGetResult(components) {
-        var visitorIdCache;
-        // This function runs very fast, so there is no need to make it lazy
-        var confidence = getConfidence(components);
-        // A plain class isn't used because its getters and setters aren't enumerable.
-        return {
-            get visitorId() {
-                if (visitorIdCache === undefined) {
-                    visitorIdCache = hashComponents(this.components);
-                }
-                return visitorIdCache;
-            },
-            set visitorId(visitorId) {
-                visitorIdCache = visitorId;
-            },
-            confidence: confidence,
-            components: components,
-            version: version,
-        };
-    }
-    /**
-     * A delay is required to ensure consistent entropy components.
-     * See https://github.com/fingerprintjs/fingerprintjs/issues/254
-     * and https://github.com/fingerprintjs/fingerprintjs/issues/307
-     * and https://github.com/fingerprintjs/fingerprintjs/commit/945633e7c5f67ae38eb0fea37349712f0e669b18
-     */
-    function prepareForSources(delayFallback) {
-        if (delayFallback === void 0) { delayFallback = 50; }
-        // A proper deadline is unknown. Let it be twice the fallback timeout so that both cases have the same average time.
-        return requestIdleCallbackIfAvailable(delayFallback, delayFallback * 2);
-    }
-    /**
-     * The function isn't exported from the index file to not allow to call it without `load()`.
-     * The hiding gives more freedom for future non-breaking updates.
-     *
-     * A factory function is used instead of a class to shorten the attribute names in the minified code.
-     * Native private class fields could've been used, but TypeScript doesn't allow them with `"target": "es5"`.
-     */
-    function makeAgent(getComponents, debug) {
-        var creationTime = Date.now();
-        return {
-            get: function (options) {
-                return __awaiter(this, void 0, void 0, function () {
-                    var startTime, components, result;
-                    return __generator(this, function (_a) {
-                        switch (_a.label) {
-                            case 0:
-                                startTime = Date.now();
-                                return [4 /*yield*/, getComponents()];
-                            case 1:
-                                components = _a.sent();
-                                result = makeLazyGetResult(components);
-                                if (debug || (options === null || options === void 0 ? void 0 : options.debug)) {
-                                    // console.log is ok here because it's under a debug clause
-                                    // eslint-disable-next-line no-console
-                                    console.log("Copy the text below to get the debug data:\n\n```\nversion: ".concat(result.version, "\nuserAgent: ").concat(navigator.userAgent, "\ntimeBetweenLoadAndGet: ").concat(startTime - creationTime, "\nvisitorId: ").concat(result.visitorId, "\ncomponents: ").concat(componentsToDebugString(components), "\n```"));
-                                }
-                                return [2 /*return*/, result];
-                        }
-                    });
-                });
-            },
-        };
-    }
-    /**
-     * Sends an unpersonalized AJAX request to collect installation statistics
-     */
-    function monitor() {
-        // The FingerprintJS CDN (https://github.com/fingerprintjs/cdn) replaces `window.__fpjs_d_m` with `true`
-        if (window.__fpjs_d_m || Math.random() >= 0.001) {
-            return;
-        }
-        try {
-            var request = new XMLHttpRequest();
-            request.open('get', "https://m1.openfpcdn.io/fingerprintjs/v".concat(version, "/npm-monitoring"), true);
-            request.send();
-        }
-        catch (error) {
-            // console.error is ok here because it's an unexpected error handler
-            // eslint-disable-next-line no-console
-            console.error(error);
-        }
-    }
-    /**
-     * Builds an instance of Agent and waits a delay required for a proper operation.
-     */
-    function load(options) {
-        var _a;
-        if (options === void 0) { options = {}; }
-        return __awaiter(this, void 0, void 0, function () {
-            var delayFallback, debug, getComponents;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        if ((_a = options.monitoring) !== null && _a !== void 0 ? _a : true) {
-                            monitor();
-                        }
-                        delayFallback = options.delayFallback, debug = options.debug;
-                        return [4 /*yield*/, prepareForSources(delayFallback)];
-                    case 1:
-                        _b.sent();
-                        getComponents = loadBuiltinSources({ cache: {}, debug: debug });
-                        return [2 /*return*/, makeAgent(getComponents, debug)];
-                }
-            });
-        });
-    }
-
-    // The default export is a syntax sugar (`import * as FP from '...' → import FP from '...'`).
-    // It should contain all the public exported values.
-    var index = { load: load, hashComponents: hashComponents, componentsToDebugString: componentsToDebugString };
-
-    function getWebglCanvas() {
-        var canvas = document.createElement("canvas");
-        var gl = null;
-        try {
-            gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
-        }
-        catch (e) {
-            /* squelch */
-        }
-        if (!gl) {
-            gl = null;
-        }
-        return gl;
-    }
-    function getWebglFp() {
-        var gl;
-        var fa2s = function (fa) {
-            gl.clearColor(0.0, 0.0, 0.0, 1.0);
-            gl.enable(gl.DEPTH_TEST);
-            gl.depthFunc(gl.LEQUAL);
-            gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-            return "[" + fa[0] + ", " + fa[1] + "]";
-        };
-        var maxAnisotropy = function (gl) {
-            var anisotropy, ext = gl.getExtension("EXT_texture_filter_anisotropic") ||
-                gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") ||
-                gl.getExtension("MOZ_EXT_texture_filter_anisotropic");
-            return ext
-                ? ((anisotropy = gl.getParameter(ext.MAX_TEXTURE_MAX_ANISOTROPY_EXT)),
-                    0 === anisotropy && (anisotropy = 2),
-                    anisotropy)
-                : null;
-        };
-        gl = getWebglCanvas();
-        if (!gl) {
-            return null;
-        }
-        // WebGL fingerprinting is a combination of techniques, found in MaxMind antifraud script & Augur fingerprinting.
-        // First it draws a gradient object with shaders and convers the image to the Base64 string.
-        // Then it enumerates all WebGL extensions & capabilities and appends them to the Base64 string, resulting in a huge WebGL string, potentially very unique on each device
-        // Since iOS supports webgl starting from version 8.1 and 8.1 runs on several graphics chips, the results may be different across ios devices, but we need to verify it.
-        var result = [];
-        var vShaderTemplate = "attribute vec2 attrVertex;varying vec2 varyinTexCoordinate;uniform vec2 uniformOffset;void main(){varyinTexCoordinate=attrVertex+uniformOffset;gl_Position=vec4(attrVertex,0,1);}";
-        var fShaderTemplate = "precision mediump float;varying vec2 varyinTexCoordinate;void main() {gl_FragColor=vec4(varyinTexCoordinate,0,1);}";
-        var vertexPosBuffer = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, vertexPosBuffer);
-        var vertices = new Float32Array([
-            -0.2, -0.9, 0, 0.4, -0.26, 0, 0, 0.732134444, 0,
-        ]);
-        gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-        vertexPosBuffer.itemSize = 3;
-        vertexPosBuffer.numItems = 3;
-        var program = gl.createProgram(), vshader = gl.createShader(gl.VERTEX_SHADER);
-        gl.shaderSource(vshader, vShaderTemplate);
-        gl.compileShader(vshader);
-        var fshader = gl.createShader(gl.FRAGMENT_SHADER);
-        gl.shaderSource(fshader, fShaderTemplate);
-        gl.compileShader(fshader);
-        gl.attachShader(program, vshader);
-        gl.attachShader(program, fshader);
-        gl.linkProgram(program);
-        gl.useProgram(program);
-        program.vertexPosAttrib = gl.getAttribLocation(program, "attrVertex");
-        program.offsetUniform = gl.getUniformLocation(program, "uniformOffset");
-        gl.enableVertexAttribArray(program.vertexPosArray);
-        gl.vertexAttribPointer(program.vertexPosAttrib, vertexPosBuffer.itemSize, gl.FLOAT, !1, 0, 0);
-        gl.uniform2f(program.offsetUniform, 1, 1);
-        gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexPosBuffer.numItems);
-        //   if (gl.canvas != null) {
-        //     result.push(gl.canvas.toDataURL());
-        //   }
-        result.push("extensions:" + gl.getSupportedExtensions().join(";"));
-        result.push("webgl aliased line width range:" +
-            fa2s(gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE)));
-        result.push("webgl aliased point size range:" +
-            fa2s(gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE)));
-        result.push("webgl alpha bits:" + gl.getParameter(gl.ALPHA_BITS));
-        result.push("webgl antialiasing:" + (gl.getContextAttributes().antialias ? "yes" : "no"));
-        result.push("webgl blue bits:" + gl.getParameter(gl.BLUE_BITS));
-        result.push("webgl depth bits:" + gl.getParameter(gl.DEPTH_BITS));
-        result.push("webgl green bits:" + gl.getParameter(gl.GREEN_BITS));
-        result.push("webgl max anisotropy:" + maxAnisotropy(gl));
-        result.push("webgl max combined texture image units:" +
-            gl.getParameter(gl.MAX_COMBINED_TEXTURE_IMAGE_UNITS));
-        result.push("webgl max cube map texture size:" +
-            gl.getParameter(gl.MAX_CUBE_MAP_TEXTURE_SIZE));
-        result.push("webgl max fragment uniform vectors:" +
-            gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS));
-        result.push("webgl max render buffer size:" + gl.getParameter(gl.MAX_RENDERBUFFER_SIZE));
-        result.push("webgl max texture image units:" +
-            gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
-        result.push("webgl max texture size:" + gl.getParameter(gl.MAX_TEXTURE_SIZE));
-        result.push("webgl max varying vectors:" + gl.getParameter(gl.MAX_VARYING_VECTORS));
-        result.push("webgl max vertex attribs:" + gl.getParameter(gl.MAX_VERTEX_ATTRIBS));
-        result.push("webgl max vertex texture image units:" +
-            gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS));
-        result.push("webgl max vertex uniform vectors:" +
-            gl.getParameter(gl.MAX_VERTEX_UNIFORM_VECTORS));
-        result.push("webgl max viewport dims:" + fa2s(gl.getParameter(gl.MAX_VIEWPORT_DIMS)));
-        result.push("webgl red bits:" + gl.getParameter(gl.RED_BITS));
-        result.push("webgl renderer:" + gl.getParameter(gl.RENDERER));
-        result.push("webgl shading language version:" +
-            gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
-        result.push("webgl stencil bits:" + gl.getParameter(gl.STENCIL_BITS));
-        result.push("webgl vendor:" + gl.getParameter(gl.VENDOR));
-        result.push("webgl version:" + gl.getParameter(gl.VERSION));
-        if (!gl.getShaderPrecisionFormat) {
-            return result.join("~");
-        }
-        result.push("webgl vertex shader high float precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).precision);
-        result.push("webgl vertex shader high float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).rangeMin);
-        result.push("webgl vertex shader high float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_FLOAT).rangeMax);
-        result.push("webgl vertex shader medium float precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).precision);
-        result.push("webgl vertex shader medium float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).rangeMin);
-        result.push("webgl vertex shader medium float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_FLOAT).rangeMax);
-        result.push("webgl vertex shader low float precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).precision);
-        result.push("webgl vertex shader low float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).rangeMin);
-        result.push("webgl vertex shader low float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_FLOAT).rangeMax);
-        result.push("webgl fragment shader high float precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).precision);
-        result.push("webgl fragment shader high float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).rangeMin);
-        result.push("webgl fragment shader high float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_FLOAT).rangeMax);
-        result.push("webgl fragment shader medium float precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).precision);
-        result.push("webgl fragment shader medium float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).rangeMin);
-        result.push("webgl fragment shader medium float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_FLOAT).rangeMax);
-        result.push("webgl fragment shader low float precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).precision);
-        result.push("webgl fragment shader low float precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).rangeMin);
-        result.push("webgl fragment shader low float precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_FLOAT).rangeMax);
-        result.push("webgl vertex shader high int precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).precision);
-        result.push("webgl vertex shader high int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).rangeMin);
-        result.push("webgl vertex shader high int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.HIGH_INT).rangeMax);
-        result.push("webgl vertex shader medium int precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).precision);
-        result.push("webgl vertex shader medium int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).rangeMin);
-        result.push("webgl vertex shader medium int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.MEDIUM_INT).rangeMax);
-        result.push("webgl vertex shader low int precision:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).precision);
-        result.push("webgl vertex shader low int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).rangeMin);
-        result.push("webgl vertex shader low int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.VERTEX_SHADER, gl.LOW_INT).rangeMax);
-        result.push("webgl fragment shader high int precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).precision);
-        result.push("webgl fragment shader high int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).rangeMin);
-        result.push("webgl fragment shader high int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.HIGH_INT).rangeMax);
-        result.push("webgl fragment shader medium int precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).precision);
-        result.push("webgl fragment shader medium int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).rangeMin);
-        result.push("webgl fragment shader medium int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.MEDIUM_INT).rangeMax);
-        result.push("webgl fragment shader low int precision:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).precision);
-        result.push("webgl fragment shader low int precision rangeMin:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).rangeMin);
-        result.push("webgl fragment shader low int precision rangeMax:" +
-            gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER, gl.LOW_INT).rangeMax);
-        return result.join("~");
-    }
-    function webglId(callback) {
-        try {
-            var n1 = getWebglFp();
-            var m1 = JSON.stringify(n1).replace(/,?"[0-9]+":/g, "");
-            var hash1 = callback(m1);
-            var n2 = getWebglFp();
-            var m2 = JSON.stringify(n2).replace(/,?"[0-9]+":/g, "");
-            var hash2 = callback(m2);
-            if (hash1 == hash2) {
-                return hash1;
-            }
-            return "unstable";
-        }
-        catch (error) {
-            console.log('error', error);
-            return 'error';
-        }
-    }
-
-    function checkFunctionCode(func, expectedName) {
-        var reg = new RegExp("^\\s*function " +
-            expectedName +
-            "\\s*\\(\\)\\s*\\{\\s*\\[native code\\]\\s*\\}\\s*$");
-        if (!func.toString().match(reg)) {
-            return true;
-        }
-        return false;
-    }
-    function isFnCanvasDefender() {
-        return checkFunctionCode(HTMLCanvasElement.prototype.toDataURL, "toDataURL");
-    }
-
-    function getCanvas(callback) {
-        var start = new Date();
-        if (!isFnCanvasDefender()) {
-            var result = getCanvasFingerprint();
-            if (result.geometry != "unstable") {
-                var hash = callback(JSON.stringify(result));
-                return { value: hash, duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
-            }
-        }
-        return { value: "unstable", duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
-    }
-    function getCanvasFingerprint() {
-        var winding = false;
-        var geometry;
-        var text;
-        var _a = makeCanvasContext(), canvas = _a[0], context = _a[1];
-        if (!isSupported(canvas, context)) {
-            geometry = text = ''; // The value will be 'unsupported' in v3.4
-        }
-        else {
-            winding = doesSupportWinding(context);
-            renderTextImage(canvas, context);
-            var textImage1 = canvasToString(canvas);
-            var textImage2 = canvasToString(canvas);
-            if (textImage1 !== textImage2) {
-                geometry = text = 'unstable';
-            }
-            else {
-                // text = textImage1
-                renderGeometryImage(canvas, context);
-                geometry = canvasToString(canvas);
-            }
-        }
-        return { winding: winding, geometry: geometry, text: text };
-    }
-    function makeCanvasContext() {
-        var canvas = document.createElement('canvas');
-        canvas.width = 1;
-        canvas.height = 1;
-        return [canvas, canvas.getContext('2d')];
-    }
-    function isSupported(canvas, context) {
-        return !!(context && canvas.toDataURL);
-    }
-    function doesSupportWinding(context) {
-        context.rect(0, 0, 10, 10);
-        context.rect(2, 2, 6, 6);
-        return !context.isPointInPath(5, 5, 'evenodd');
-    }
-    function renderTextImage(canvas, context) {
-        // Resizing the canvas cleans it
-        canvas.width = 240;
-        canvas.height = 60;
-        context.textBaseline = 'alphabetic';
-        context.fillStyle = '#f60';
-        context.fillRect(100, 1, 62, 20);
-        context.fillStyle = '#069';
-        context.font = '11pt "Times New Roman"';
-        var printedText = "Cwm fjordbank gly " + String.fromCharCode(55357, 56835) /* 😃 */;
-        context.fillText(printedText, 2, 15);
-        context.fillStyle = 'rgba(102, 204, 0, 0.2)';
-        context.font = '18pt Arial';
-        context.fillText(printedText, 4, 45);
-    }
-    function renderGeometryImage(canvas, context) {
-        // Resizing the canvas cleans it
-        canvas.width = 122;
-        canvas.height = 110;
-        // Canvas blending
-        context.globalCompositeOperation = 'multiply';
-        for (var _i = 0, _a = [
-            ['#f2f', 40, 40],
-            ['#2ff', 80, 40],
-            ['#ff2', 60, 80],
-        ]; _i < _a.length; _i++) {
-            var _b = _a[_i], color = _b[0], x = _b[1], y = _b[2];
-            context.fillStyle = color;
-            context.beginPath();
-            context.arc(x, y, 40, 0, Math.PI * 2, true);
-            context.closePath();
-            context.fill();
-        }
-        // Canvas winding
-        context.fillStyle = '#f9c';
-        context.arc(60, 60, 60, 0, Math.PI * 2, true);
-        context.arc(60, 60, 20, 0, Math.PI * 2, true);
-        context.fill('evenodd');
-    }
-    function canvasToString(canvas) {
-        return canvas.toDataURL();
-    }
-
-    var listAttributeHash = ["math", "fontPreferencePrint", "webGlExtensions"];
-    function getDevicePixelRatio() {
-        return window.devicePixelRatio;
-    }
-    function getCurrentResolution() {
-        var ratio = getDevicePixelRatio();
-        return screen.width * ratio + "x" + screen.height * ratio;
-    }
-    function getPixelDepth() {
-        return screen.pixelDepth;
-    }
-    function getScreenPrint() {
+    function getNavigator() {
         var start = Date.now();
-        var result = {
-            currentResolution: getCurrentResolution(),
-            pixelDepth: getPixelDepth(),
-        };
+        var navigatorJson = getNavigatorElementsAsJson(navigator);
+        if (typeof navigatorJson.connection === "object") {
+            navigatorJson.connection.downlink = null;
+            navigatorJson.connection.downlinkMax = null;
+            navigatorJson.connection.rtt = null;
+        }
+        var result = JSON.stringify(navigatorJson);
         return { value: result, duration: Date.now() - start };
     }
-    function getWebGL(callback) {
-        var start = new Date();
-        var result = webglId(callback);
-        return { value: result, duration: (new Date()).getMilliseconds() - start.getMilliseconds() };
-    }
+
     function getDoNotTrack() {
         var start = Date.now();
         var result = navigator.doNotTrack;
         return { value: result, duration: Date.now() - start };
     }
-    function getWebGLRenderer(webgl) {
+    function getTimezoneOffset() {
         var start = Date.now();
-        if (webgl && webgl.value == "unstable") {
-            return { value: "unstable", duration: Date.now() - start };
-        }
-        return { value: getGLRenderer(), duration: Date.now() - start };
+        var result = new Date().getTimezoneOffset().toString();
+        return { value: result, duration: Date.now() - start };
     }
-    function getGLRenderer() {
-        var canvas = document.createElement("canvas");
-        var gl = canvas.getContext("webgl");
-        if (gl &&
-            typeof gl.getExtension === "function" &&
-            gl.getExtension("WEBGL_debug_renderer_info") != null) {
-            return gl.getParameter(gl.getExtension("WEBGL_debug_renderer_info").UNMASKED_RENDERER_WEBGL);
-        }
-        return "";
+    function getIncognitoMode() {
+        var start = Date.now();
+        return incognitoMode().then(function (result) {
+            return Promise.resolve({ value: result, duration: Date.now() - start });
+        });
     }
-    function componentsToJsonString(components, callback) {
+    function applyHashToProperties(components, propertyNames, hashFunction) {
+        if (typeof hashFunction == 'function') {
+            for (var _i = 0, propertyNames_1 = propertyNames; _i < propertyNames_1.length; _i++) {
+                var propertyName = propertyNames_1[_i];
+                if (components.hasOwnProperty(propertyName) && components[propertyName] !== null) {
+                    var valueToHash = JSON.stringify(components[propertyName].value);
+                    components[propertyName].value = hashFunction(valueToHash);
+                }
+            }
+        }
+        return components;
+    }
+    function componentsToJsonString(components) {
         var sortedKeys = Object.keys(components).sort();
         var result = "";
         var err = "";
@@ -3650,101 +2881,27 @@ var globalFP = (function (exports) {
                 value = "\"undefined\"";
             }
             else {
-                if (listAttributeHash.includes(componentKey)) {
-                    value = JSON.stringify(callback(JSON.stringify(component.value)));
-                }
-                else {
-                    value = JSON.stringify(component.value);
-                }
+                value = JSON.stringify(component.value);
             }
             var escapedComponentKey = "\"" + componentKey.replace(/([:|\\])/g, "\\$1") + "\"";
             result += "" + (result ? "," : "{") + escapedComponentKey + ":" + value;
         }
         return result + "}";
     }
-    function getFontPreference() {
-        return __awaiter(this, void 0, void 0, function () {
-            var start, font, result;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        start = Date.now();
-                        return [4 /*yield*/, sources.fontPreferences()];
-                    case 1:
-                        font = _a.sent();
-                        result = {
-                            default: font["default"],
-                            apple: font["apple"],
-                            serif: font["serif"],
-                            sans: font["sans"],
-                            min: font["min"],
-                            system: font["system"],
-                        };
-                        return [2 /*return*/, { value: result, duration: Date.now() - start }];
-                }
+    function getResult(callback) {
+        var fpPromise = loadSources(sources, {}, [])();
+        return fpPromise.then(function (components) {
+            components = applyHashToProperties(components, ["canvas", "webGlExtensions"], callback);
+            return getIncognitoMode().then(function (isIncognitoMode) {
+                var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), timezoneOffset: getTimezoneOffset(), isIncognitoMode: isIncognitoMode });
+                return {
+                    Properties: componentsToJsonString(customComponents)
+                };
             });
         });
     }
-    function getLanguages() {
-        var start = Date.now();
-        var result = {
-            language: window.navigator.language,
-            languages: window.navigator.languages.join(","),
-            userLanguage: window.navigator["userLanguage"],
-            browserLanguage: window.navigator["browserLanguage"],
-            systemLanguage: window.navigator["systemLanguage"],
-        };
-        return { value: result, duration: Date.now() - start };
-    }
-    function getAudio() {
-        return sources.audio();
-    }
-    function getBrowserSupport() {
-        return {
-            isWebKit: isWebKit,
-            isAndroid: isAndroid,
-            isChromium: isChromium,
-            isGecko: isGecko,
-            isTrident: isTrident,
-        };
-    }
-    function getFP(callback) {
-        var _this = this;
-        var visitorId;
-        var fpPromise = loadSources(sources, {}, [
-            "screenResolution",
-            "screenFrame",
-            "canvas",
-            "fontPreferences",
-            "languages"
-        ])();
-        var canvas = getCanvas(callback);
-        var webgl = getWebGL(callback);
-        return fpPromise.then(function (components) { return __awaiter(_this, void 0, void 0, function () {
-            var customComponents, _a, properties;
-            var _b;
-            return __generator(this, function (_c) {
-                switch (_c.label) {
-                    case 0:
-                        _a = [__assign({}, components)];
-                        _b = { screenPrint: getScreenPrint() };
-                        return [4 /*yield*/, getFontPreference()];
-                    case 1:
-                        customComponents = __assign.apply(void 0, _a.concat([(_b.fontPreferencePrint = _c.sent(), _b.languagesPrint = getLanguages(), _b.canvasPrint = canvas, _b.webglPrint = webgl, _b.webglRenderer = getWebGLRenderer(webgl), _b.doNotTrack = getDoNotTrack(), _b)]));
-                        visitorId = index.hashComponents(customComponents);
-                        properties = componentsToJsonString(customComponents, callback);
-                        return [2 /*return*/, Promise.resolve({
-                                Id: visitorId,
-                                Properties: properties
-                            })];
-                }
-            });
-        }); });
-    }
 
-    exports.getAudio = getAudio;
-    exports.getBrowserSupport = getBrowserSupport;
-    exports.getFP = getFP;
+    exports.getResult = getResult;
 
     Object.defineProperty(exports, '__esModule', { value: true });
 

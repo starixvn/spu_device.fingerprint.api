@@ -11,6 +11,14 @@ namespace Device.FingerPrint.Features.Transaction.Services
     {
         Task InsertRawTransaction(string transJson, bool isTransOfDBExtra);
 
+        Task InsertFPTagging(string taggings, bool isTransOfDBExtra);
+
+        Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
+
+        Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
+
+        Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
+
         void InsertTransaction(string transJson);
 
         void DeviceIdentify(string transJson, int groupType);
@@ -57,6 +65,50 @@ namespace Device.FingerPrint.Features.Transaction.Services
             var criteria = new InsertRawTransactionCriteria
             {
                 RawTransJson = transJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertFPTagging(string taggings, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertFPTaggingCriteria
+            {
+                Taggings = taggings,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertFPUserAgentCriteria
+            {
+                UserAgentJson = userAgentJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertJSChallengeInfoCriteria
+            {
+                JSChallengeInfoJson = jsChallengeInfoJson,
+                IsTransOfDBExtra = isTransOfDBExtra
+            };
+
+            await repository.ExecuteAsync(criteria);
+        }
+
+        public async Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
+        {
+            var criteria = new InsertFPFingerPrintCriteria
+            {
+                FingerPrintJson = fingerPrintJson,
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 

@@ -33,7 +33,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string CookieCode { get; set; }
 
-        public FingerprintAttributeModel FingerprintAttribute { get; set; }
+        public FPFingerprintAttributeModel FingerprintAttribute { get; set; }
 
         public UserAgentInfoModel UserAgentInfo { get; set; }
 

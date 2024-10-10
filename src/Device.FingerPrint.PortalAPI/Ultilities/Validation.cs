@@ -1,4 +1,5 @@
-﻿using Device.FingerPrint.Redis;
+﻿using Device.FingerPrint.Core.Encoders;
+using Device.FingerPrint.Redis;
 using System;
 
 namespace Device.FingerPrint.PortalAPI.Ultilities
@@ -41,6 +42,14 @@ namespace Device.FingerPrint.PortalAPI.Ultilities
             }
 
             return true;
+        }
+
+        public static string GenerateSessionKey()
+        {
+            var guid = Guid.NewGuid();
+            var id = guid.ToString("N");
+
+            return DeviceEncoder.Encrypt(id);
         }
     }
 }

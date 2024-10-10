@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Device.FingerPrint.Model\Device.FingerPrint.Model.csproj" />
-    <ProjectReference Include="..\..\Fanex.LogTrail.Service\Fanex.LogTrail.Service.csproj" />
   </ItemGroup>
 
 </Project>

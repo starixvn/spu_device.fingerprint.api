@@ -1,6 +1,7 @@
 ﻿using System.Numerics;
 using System;
 using FileHelpers;
+using Device.FingerPrint.Model.DTO;
 
 namespace Device.FingerPrint.Model
 {
@@ -75,15 +76,27 @@ namespace Device.FingerPrint.Model
 
         public long IPInfoCode { get; set; }
 
-        public string CookieCode { get; set; }
+        public string FPTagging { get; set; }
 
-        public FingerprintAttributeModel FingerprintAttribute { get; set; }
+        public string FPFingerPrintCode { get; set; }
+
+        public string FPFingerPrintExtraCode { get; set; }
+
+        public string FPFingerPrintOldCode { get; set; }
+
+        public string FPUserAgentCode { get; set; }
+
+        public InsertFPFingerprintEntity FingerprintAttribute { get; set; }
+
+        public string ChallengeCode { get; set; }
 
         public string RawUserAgent { get; set; }
 
-        public UserAgentInfoModel RawUserAgentInfo { get; set; }
+        public UserAgentInfoModel UserAgentInfo { get; set; }
 
         public JSChallengeInfo RawJsChallengeInfo { get; set; }
+
+        public bool? IsIncognitoMode { get; set; }
     }
 
     public class ConvertBigInteger : ConverterBase

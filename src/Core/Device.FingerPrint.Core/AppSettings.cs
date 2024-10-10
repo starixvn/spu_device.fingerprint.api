@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace Device.FingerPrint.Core
@@ -34,15 +35,26 @@ namespace Device.FingerPrint.Core
 
         string JWTAudience { get; }
 
-        string LogTrailBaseUrl { get; }
-        
-        string SystemName {get; }
+        bool IsEnableLogstash { get; }
 
-        bool IsEnableLogTrail { get; }
+        string LogstashHttpUrl { get; }
+
+        string LogstashTcpHostname { get; }
+
+        int LogstashTcpPort { get; }
+
+        List<string> UnhandledFingerprintAttributeValues { get; }
 
         bool IsExtraSub { get; }
 
         int MaxMonthsGetAssociationByDevice { get; }
+        
+        long EverTaggingExpireSecond { get; }
+        
+
+        long ApiEverTaggingCacheMaxAge { get; }
+
+        bool IsDisableJsChallenge { get; }
 
         IConfiguration Configuration { get; }
 
@@ -54,6 +66,8 @@ namespace Device.FingerPrint.Core
     public class AppSettings : IAppSettings
     {
         private readonly IConfiguration configuration;
+
+        public const string DeviceIdEncryptKey = "&％#@?,:*!~^.";
 
         private readonly string cdnApiUrl;
         private readonly string portalApiUrl;
@@ -77,13 +91,23 @@ namespace Device.FingerPrint.Core
 
         private readonly string jWT;
 
-        private readonly string logTrailBaseUrl;
-        private readonly string systemName;
-        private readonly bool isEnableLogTrail;
+        private readonly bool isEnableLogstash;
+        private readonly string logstashHttpUrl;
+        private readonly string logstashTcpHostname;
+        private readonly int logstashTcpPort;
+
+        private readonly List<string> unhandledFingerprintAttributeValues;
 
         private readonly bool isExtraSub;
-
+        
         private readonly int maxMonthsGetAssociationByDevice;
+        
+        private readonly long everTaggingExpireSecond;
+        
+        
+        private readonly long apiEverTaggingCacheMaxAge;
+
+        private readonly bool isDisableJsChallenge;
 
         public AppSettings(IConfiguration configuration)
         {
@@ -109,7 +133,7 @@ namespace Device.FingerPrint.Core
 
             redisDatabase = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Database")) ? "0" : GetValue<string>("Redis:Database"));
 
-            redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "604800" : GetValue<string>("Redis:Expired"));
+            redisExpired = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:Expired")) ? "3600" : GetValue<string>("Redis:Expired"));
 
             jWTPassword = GetValue<string>("AppConfig:JWT:Password") ?? "!QAZxdr567890";
 
@@ -119,15 +143,26 @@ namespace Device.FingerPrint.Core
 
             jWT = GetValue<string>("AppConfig:JWT") ?? string.Empty;
 
-            logTrailBaseUrl = GetValue<string>("LogTrail:BaseUrl") ?? string.Empty;
+            isEnableLogstash = !string.IsNullOrEmpty(GetValue<string>("Logstash:IsEnable")) && Convert.ToBoolean(GetValue<string>("Logstash:IsEnable"));
 
-            systemName = GetValue<string>("LogTrail:SystemName") ?? string.Empty;
+            logstashHttpUrl = GetValue<string>("Logstash:HttpUrl") ?? string.Empty;
 
-            isEnableLogTrail = !string.IsNullOrEmpty(GetValue<string>("LogTrail:IsEnable")) && Convert.ToBoolean(GetValue<string>("LogTrail:IsEnable"));
+            logstashTcpHostname = GetValue<string>("Logstash:Tcp:Hostname") ?? string.Empty;
+
+            logstashTcpPort = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Logstash:Tcp:Port")) ? "32705" : GetValue<string>("Logstash:Tcp:Port"));
+
+            unhandledFingerprintAttributeValues = GetSection<List<string>>("Fingerprint:UnhandledAttributeValues") ?? new List<string>();
 
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
+            
+            everTaggingExpireSecond = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("Redis:EverTaggingExpireSecond")) ? "3600" : GetValue<string>("Redis:EverTaggingExpireSecond"));
+            
+
+            apiEverTaggingCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverTaggingCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverTaggingCacheMaxAge"));
+
+            isDisableJsChallenge = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsDisableJsChallenge")) && Convert.ToBoolean(GetValue<string>("Consumer:IsDisableJsChallenge"));
         }
 
         public string ApiUrl => apiUrl;
@@ -156,15 +191,26 @@ namespace Device.FingerPrint.Core
 
         public string JWT => jWT;
 
-        public string LogTrailBaseUrl => logTrailBaseUrl;
+        public bool IsEnableLogstash => isEnableLogstash;
 
-        public string SystemName => systemName;
+        public string LogstashHttpUrl => logstashHttpUrl;
 
-        public bool IsEnableLogTrail => isEnableLogTrail;
+        public string LogstashTcpHostname => logstashTcpHostname;
+
+        public int LogstashTcpPort => logstashTcpPort;
+
+        public List<string> UnhandledFingerprintAttributeValues => unhandledFingerprintAttributeValues;
 
         public bool IsExtraSub => isExtraSub;
 
         public int MaxMonthsGetAssociationByDevice => maxMonthsGetAssociationByDevice;
+        
+        public long EverTaggingExpireSecond => everTaggingExpireSecond;
+        
+
+        public long ApiEverTaggingCacheMaxAge => apiEverTaggingCacheMaxAge;
+
+        public bool IsDisableJsChallenge => isDisableJsChallenge;
 
         public T GetValue<T>(string key)
         {

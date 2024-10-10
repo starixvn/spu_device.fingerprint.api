@@ -1,4 +1,4 @@
-var fpNewCookie = (function (exports) {
+var gfpCandy = (function (exports) {
     'use strict';
 
     var cookieKey = 'gfp';
@@ -146,105 +146,28 @@ var fpNewCookie = (function (exports) {
                 key = "name";
                 if (isSet) {
                     var currentValue = window[key] || '';
-                    if (!isValidObject(currentValue) || validateUUID(currentValue)) {
+                    if (!isValidObject(currentValue)) {
                         window[key] = value;
                     }
                     resolve(null);
                 }
                 else {
-                    value = window[key];
-                    if (!validateUUID(value)) {
-                        value = null;
-                    }
-                    resolve(value);
+                    resolve(window[key] || null);
                 }
             }
             catch (exception) {
+                reject(exception);
             }
         });
     }
     function isValidObject(obj) {
         return typeof obj !== 'undefined' && !!obj;
     }
-    function generateUUIDv4() {
-        var uuid = '';
-        for (var i = 0; i < 32; i++) {
-            if (i === 8 || i === 12 || i === 16 || i === 20) {
-                uuid += '-';
-            }
-            var random = (Math.random() * 16) | 0;
-            if (i === 12) {
-                uuid += '4';
-            }
-            else if (i === 16) {
-                uuid += ((random & 3) | 8).toString(16);
-            }
-            else {
-                uuid += random.toString(16);
-            }
-        }
-        return uuid;
-    }
-    function validateUUID(uuid) {
-        var uuidRegex = /^[a-f\d]{8}-[a-f\d]{4}-4[a-f\d]{3}-[8|9|aA|bB][a-f\d]{3}-[a-f\d]{12}$/i;
-        if (!uuidRegex.test(uuid)) {
-            return false;
-        }
-        // Kiểm tra phiên bản UUID
-        var versionBits = parseInt(uuid.charAt(14), 16);
-        if (versionBits !== 4) {
-            return false;
-        }
-        // Kiểm tra trường hợp của ký tự
-        if (uuid !== uuid.toLowerCase()) {
-            return false;
-        }
-        return true;
-    }
     function waitAllWithTimeout(promises) {
         var timeoutPromise = new Promise(function (resolve, reject) {
             setTimeout(function () { return resolve(); }, timeout);
         });
         return Promise.all(promises.map(function (p) { return Promise.race([p, timeoutPromise]); }));
-    }
-    function getFirstMaxCountValue(arr) {
-        var count = {};
-        var maxCount = 0;
-        var maxValue = null;
-        if (arr && Array.isArray(arr) && arr.length > 0) {
-            for (var i = 0; i < arr.length; i++) {
-                if (count[arr[i]] === undefined) {
-                    count[arr[i]] = 1;
-                }
-                else {
-                    count[arr[i]]++;
-                }
-                if (count[arr[i]] > maxCount && arr[i] != undefined) {
-                    maxCount = count[arr[i]];
-                    maxValue = arr[i];
-                }
-            }
-        }
-        return new Promise(function (resolve) {
-            resolve(validateUUID(maxValue) ? maxValue : generateUUIDv4());
-        });
-    }
-    function get(key) {
-        try {
-            isSet = false;
-            var promises = storageHandlers.map(function (handler) {
-                return new Promise(function (resolve) {
-                    resolve(handler(key, null));
-                });
-            });
-            return waitAllWithTimeout(promises).then(function (cookies) {
-                return getFirstMaxCountValue(cookies).then(function (cookieValue) {
-                    return Promise.resolve(cookieValue);
-                });
-            });
-        }
-        catch (exception) {
-        }
     }
     function set(key, value) {
         try {
@@ -256,9 +179,25 @@ var fpNewCookie = (function (exports) {
         catch (exception) {
         }
     }
-    function getStorage(key) {
+    function getStorages(key) {
         if (key === void 0) { key = cookieKey; }
-        return get(key);
+        try {
+            isSet = false;
+            var promises = storageHandlers.map(function (handler) {
+                return new Promise(function (resolve) {
+                    resolve(handler(key, null));
+                });
+            });
+            return waitAllWithTimeout(promises).then(function (cookies) {
+                var joinedCookies = cookies
+                    .filter(function (cookie) { return cookie !== null && cookie !== undefined; })
+                    .filter(function (cookie, index, self) { return self.indexOf(cookie) === index; })
+                    .join(',');
+                return Promise.resolve(joinedCookies);
+            });
+        }
+        catch (exception) {
+        }
     }
     function setStorage(key, value) {
         if (key === void 0) { key = cookieKey; }
@@ -266,7 +205,7 @@ var fpNewCookie = (function (exports) {
             set(key, value);
     }
 
-    exports.getStorage = getStorage;
+    exports.getStorages = getStorages;
     exports.setStorage = setStorage;
 
     Object.defineProperty(exports, '__esModule', { value: true });

@@ -6,12 +6,12 @@
     using Device.FingerPrint.TransactionAPI.Model;
     using Device.FingerPrint.TransactionAPI.Services;
     using Fanex.Logging;
-    using Fanex.LogTrail.Service;
     using MassTransit;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using ONEbook.UM.Models;
     using ONEbook.UM.Services;
+    using System.Text.Json;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -20,20 +20,14 @@
         private readonly IMaintenanceService maintenanceService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly ILogEvent logEvent;
         private readonly IRedisService redisService;
         private readonly ISubscriberService subscriberService;
         private readonly IMassTransitProducer massTransitProducer;
-
-        private const string defaultDestination = "RabbitMQ";
-        private const string defaultMethod = "PushQueue";
-        private const string defaultSource = "API";
 
         public TransactionController(
             IMaintenanceService maintenanceService,
             IAppSettings appSettings,
             ILogger logger,
-            ILogEvent logEvent,
             IRedisService redisService,
             ISubscriberService subscriberService,
             IMassTransitProducer massTransitProducer)
@@ -41,7 +35,6 @@
             this.maintenanceService = maintenanceService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.logEvent = logEvent;
             this.redisService = redisService;
             this.subscriberService = subscriberService;
             this.massTransitProducer = massTransitProducer;
@@ -62,25 +55,9 @@
 
                     if (responseCode == TransactionResult.Success)
                     {
-                        var di = transRequest.Di ?? transRequest.__di;
-                        var transAttributesJoined = JoinStringAttributes(new List<string> {
-                        transRequest.AcceptsTypes,
-                        transRequest.Platform,
-                        (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
-                        transRequest.UserAgent,
-                        transRequest.Screen,
-                        transRequest.Ip,
-                        di,
-                        transRequest.Url,
-                        transRequest.DetecasAnalysis
-                    }, "###");
+                        var deviceModel = TransformDeviceModel(transRequest);
 
-                        await PushToQueueAsync(transRequest, transAttributesJoined);
-
-                        if (appSettings.LogTrailEnable)
-                        {
-                            _ = InsertLogEventAsync(transRequest.SubscriberId);
-                        }
+                        await PushToQueueAsync(transRequest, deviceModel);
                     }
                     else
                     {
@@ -103,24 +80,28 @@
         [HttpPost("FPS/InsertTransaction")]
         public IActionResult InsertTransactionAsync(TransactionRequest transRequest)
         {
-            var di = transRequest.Di ?? transRequest.__di;
-            var transAttributesJoined = JoinStringAttributes(new List<string> {
-                        transRequest.AcceptsTypes,
-                        transRequest.Platform,
-                        (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
-                        transRequest.UserAgent,
-                        transRequest.Screen,
-                        transRequest.Ip,
-                        di,
-                        transRequest.Url,
-                        transRequest.DetecasAnalysis
-                    }, "###");
+            var deviceModel = TransformDeviceModel(transRequest);
 
-            _ = PushToQueueAsync(transRequest, transAttributesJoined);
+            _ = PushToQueueAsync(transRequest, deviceModel);
 
             return Ok();
         }
 
+        private static DeviceModel TransformDeviceModel(TransactionRequest transRequest)
+        {
+            return new DeviceModel
+            {
+                AcceptsTypes = transRequest.AcceptsTypes,
+                DetecasAnalysis = transRequest.DetecasAnalysis,
+                Di = transRequest.Di ?? transRequest.__di,
+                Ip = transRequest.Ip,
+                Url = transRequest.Url,
+                Platform = transRequest.Platform,
+                Screen = transRequest.Screen,
+                TotalMinutes = (DateTime.UtcNow - DateTime.Now).TotalMinutes.ToString(),
+                UserAgent = transRequest.UserAgent
+            };
+        }
 
         [HttpGet("whoami")]
         public IActionResult WhoAmI()
@@ -152,12 +133,12 @@
             return string.Join(separator, attributes.ToArray());
         }
 
-        private async Task PushToQueueAsync(TransactionRequest transactionRequest, string transAttributesJoined)
+        private async Task PushToQueueAsync(TransactionRequest transactionRequest, DeviceModel deviceModel)
         {
             var dataEvent = new MessageQueue
             {
                 Account = transactionRequest.Account,
-                Device = transAttributesJoined,
+                Device = deviceModel,
                 Action = transactionRequest.Action,
                 ActionResult = transactionRequest.ActionResult,
                 Subscriber = transactionRequest.Subscriber,
@@ -177,20 +158,6 @@
             await massTransitProducer.SendAsync(dataEvent, queueAddress);
         }
 
-        private async Task InsertLogEventAsync(int subscriberId)
-        {
-            var logEventInfo = new LogEventInfo
-            {
-                EventDate = DateTime.Now,
-                SubscriberID = subscriberId,
-                SystemName = appSettings.LogTrailSystemName,
-                Source = defaultSource,
-                Destination = defaultDestination,
-                Method = defaultMethod,
-            };
-
-            await logEvent.WriteEventInfoAsync(logEventInfo);
-        }
 
         private bool IsExtraSubscriber(string subscriberName)
         {

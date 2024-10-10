@@ -1,17 +1,14 @@
 ﻿namespace Device.FingerPrint.QueueConsumer.Handlers
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Core.Model;
+    using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
-    using Device.FingerPrint.Queue;
     using Device.FingerPrint.QueueConsumer.Services;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.Database;
-    using Fanex.LogTrail.Service;
     using MassTransit;
-    using Microsoft.IdentityModel.Tokens;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -19,35 +16,30 @@
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
-        private readonly IMassTransitProducer massTransitProducer;
         private readonly IRawTransactionService rawTransactionService;
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly ILogEvent logEvent;
+        private readonly ILogstashService logstashService;
 
-        private const string defaultDestination = "DCS_RawTrans";
-        private const string defaultSource = "RabbitMQ";
-        private const string defaultMethod = "Consumer";
+        private const string hashKeyEverTagging = "EverTagging";
 
         public Consumer(
-                IMassTransitProducer massTransitProducer,
                 IRawTransactionService rawTransactionService,
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogger logger,
-                ILogEvent logEvent
+                ILogstashService logstashService
         )
         {
-            this.massTransitProducer = massTransitProducer;
             this.rawTransactionService = rawTransactionService;
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.logEvent = logEvent;
+            this.logstashService = logstashService;
         }
 
         public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
@@ -77,6 +69,8 @@
 
             ipdbService.TransformTransactionByIps(filterTransaction);
 
+            await rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub);
+
             await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
 
             _ = AdditionalProcessingNotAwait(filterTransaction);
@@ -84,12 +78,13 @@
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
-            var tasks = new List<Task>
+            var tasks = new List<Task>();
+
+            var everTagging = transactionModels.Where(x => !string.IsNullOrEmpty(x.FPTagging))?.Select(x => DeviceEncoder.Encrypt(x.FPTagging));
+            if (everTagging != null && everTagging.Any())
             {
-                InsertLogTrail(transactionModels),
-                //HandleClearRedis(transactionModels),
-                //PushTransactionToMonitorAsync(transactionModels)
-            };
+                tasks.Add(rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond));
+            }
 
             var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
             if (rawJsChallenges != null && rawJsChallenges.Any())
@@ -98,6 +93,21 @@
             }
 
             await Task.WhenAll(tasks);
+        }
+
+        private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
+        {
+            if (appSettings.IsEnableLogstash)
+            {
+                try
+                {
+                    await Task.WhenAll(transactions.Select(logstashService.PushLog));
+                }
+                catch (Exception ex)
+                {
+                    LogError(ex);
+                }
+            }
         }
 
         private async Task HandleClearRedisJsChallenge(IEnumerable<string> rawJsChallenges)
@@ -110,34 +120,6 @@
             catch (Exception ex)
             {
                 LogError(ex);
-            }
-        }
-
-        private async Task InsertLogTrail(IEnumerable<RawTransactionModel> transactions)
-        {
-            if (appSettings.IsEnableLogTrail)
-            {
-                try
-                {
-                    var logEvents = transactions.Select(x => new LogEventInfo
-                    {
-                        EventDate = DateTime.Now.Date,
-                        SubscriberID = x.SubscriberId,
-                        SystemName = appSettings.SystemName,
-                        Source = defaultSource,
-                        Destination = defaultDestination,
-                        Method = defaultMethod
-                    });
-
-                    await Task.WhenAll(logEvents.Select(async log =>
-                    {
-                        await logEvent.WriteEventInfoAsync(log);
-                    }));
-                }
-                catch (Exception ex)
-                {
-                    LogError(ex);
-                }
             }
         }
 

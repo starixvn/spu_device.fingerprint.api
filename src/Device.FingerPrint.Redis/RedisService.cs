@@ -49,7 +49,6 @@
 
         public IRedisDatabase RedisJSChallengeDatabase => redisJSChallengeDatabase;
 
-
         public Task<bool> HashSetAsync<T>(string hashKey, string key, T value, bool isForceUpdate)
         {
             return redisDatabase.HashSetAsync<T>(hashKey, key, value, nx: !isForceUpdate, flag: CommandFlags.FireAndForget);

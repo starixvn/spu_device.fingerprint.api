@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Device.FingerPrint.Core.Encoders;
+using Device.FingerPrint.Model;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Sockets;
 using System.Net;
+using System.Net.Sockets;
 using System.Numerics;
 using System.Text;
-using System.Xml.Serialization;
-using System.Xml;
-using Device.FingerPrint.Model;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Serialization;
 
 namespace Device.FingerPrint.Core
 {
@@ -328,7 +329,35 @@ namespace Device.FingerPrint.Core
 
         public static bool ValidationSessionKey(string guidStr)
         {
-            return Guid.TryParse(guidStr, out Guid _);
+            return Guid.TryParse(guidStr, out Guid _) || ValidationSessionKeyByEncrypt(guidStr);
+        }
+
+        public static bool ValidationSessionKeyByEncrypt(string deviceID)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(deviceID))
+                {
+                    return false;
+                }
+
+                var decryptStr = DeviceEncoder.Decrypt(deviceID);
+
+                return Guid.TryParse(decryptStr, out Guid newGuid);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public static string RemoveRedisPrefix(string input, string prefix)
+        {
+            if (input.StartsWith(prefix))
+            {
+                return input.Replace(prefix, string.Empty);
+            }
+            return input;
         }
     }
 }

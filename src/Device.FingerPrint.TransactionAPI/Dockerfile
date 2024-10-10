@@ -2,8 +2,6 @@ FROM hub.nexdev.net/base/dotnet/core/sdk:7.0-alpine AS builder
 
 WORKDIR /src
 
-COPY ["./src/Fanex.LogTrail.Service", "Fanex.LogTrail.Service/"]
-
 COPY ["./src/Core/Device.FingerPrint.Core", "Core/Device.FingerPrint.Core/"]
 
 COPY ["./src/Device.FingerPrint.Queue", "Device.FingerPrint.Queue/"]
