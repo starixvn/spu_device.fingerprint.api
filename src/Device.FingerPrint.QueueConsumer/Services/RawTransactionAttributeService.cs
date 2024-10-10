@@ -143,12 +143,20 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (model == null || headerModel == null) return;
 
             var realIP = headerModel.RealIP?.Trim();
-            var ipConverted = realIP.Ip2Long();
 
-            model.IP = realIP;
-            model.IPId = ipConverted?.IpNumber ?? 0;
-            model.FakeIP = headerModel.FakeIP?.Trim();
-            model.IsIPV6 = ipConverted?.IsIpV6 ?? false;
+            if(!string.IsNullOrEmpty(realIP))
+            {
+                var ipConverted = realIP.Ip2Long();
+
+                model.IP = realIP;
+                model.IPId = ipConverted?.IpNumber ?? 0;
+                model.IsIPV6 = ipConverted?.IsIpV6 ?? false;
+
+                if (!string.IsNullOrEmpty(headerModel.FakeIP))
+                {
+                    model.FakeIP = headerModel.FakeIP?.Trim();
+                }
+            }
         }
 
         private static bool IsValidString(string decryptedText)

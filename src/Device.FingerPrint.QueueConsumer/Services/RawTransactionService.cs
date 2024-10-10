@@ -94,6 +94,9 @@
             var flaggedCode = botDetectionService.GetFlaggedCode(botDModel, deviceInfo.DeviceNo, userAgent);
             var botDetection = botDModel?.IsVer3 == true ? botDModel?.Detection : botDetectionService.GetBotDetectionTrue(botDModel);
 
+            var realIP = message.IP?.Trim();
+            var ipConverted = realIP.Ip2Long();
+
             var rawTransModel = new RawTransactionModel
             {
                 DeviceCode = deviceInfo.DeviceNo,
@@ -113,7 +116,11 @@
                 SessionKey = message.SessionKey,
                 FlaggedCode = flaggedCode,
                 BotDetection = botDetection,
-                BotComponent = botDModel?.Component ?? string.Empty
+                BotComponent = botDModel?.Component ?? string.Empty,
+                IP = realIP,
+                IPId = ipConverted.IpNumber,
+                FakeIP = message.FakeIP?.Trim(),
+                IsIPV6 = ipConverted.IsIpV6
             };
 
             await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel, botDModel);
