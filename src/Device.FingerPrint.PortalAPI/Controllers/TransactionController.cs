@@ -1,6 +1,7 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Controllers
 {
     using Device.FingerPrint.Core;
+    using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
@@ -24,7 +25,6 @@
         private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IAppSettings appSettings;
-        private const string originService = "PortalAPI";
 
         public TransactionController(
             IAppSettings appSettings,
@@ -48,11 +48,12 @@
                     var headerModel = GetHeaderValue();
                     var keyValuePairs = new Dictionary<string, string>
                                         {
+                                            { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
                                             { RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data },
                                             { RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel) }
                                         };
 
-                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, keyValuePairs, appSettings.RedisExpired);
+                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, keyValuePairs, appSettings.RedisExpired);
                 }
             }
         }
@@ -155,6 +156,18 @@
             var timeToLive = await redisMultiplexService.GetTimeSpan(redisDbIndex, sessionKey);
 
             return timeToLive;
+        }
+
+        [HttpGet("decrypt/{str}")]
+        public string Decrypt(string str)
+        {
+            return DeviceEncoder.Decrypt(str);
+        }
+
+        [HttpGet("encrypt/{str}")]
+        public string Encrypt(string str)
+        {
+            return DeviceEncoder.Encrypt(str);
         }
 
         [HttpGet("hc")]
