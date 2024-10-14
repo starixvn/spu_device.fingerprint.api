@@ -3,6 +3,7 @@ using Device.FingerPrint.Queue;
 using Device.FingerPrint.TransactionAPI.Model;
 using Device.FingerPrint.TransactionAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Fanex.Logging;
 
 namespace Device.FingerPrint.TransactionAPI.Controllers
 {
@@ -10,13 +11,13 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
     public class MobileTransactionController : ControllerBase
     {
         private readonly IAppSettings appSettings;
-        private readonly ILogger logger;
+        private readonly Fanex.Logging.ILogger logger;
         private readonly ISubscriberService subscriberService;
         private readonly IMassTransitProducer massTransitProducer;
 
         public MobileTransactionController(
             IAppSettings appSettings,
-            ILogger logger,
+            Fanex.Logging.ILogger logger,
             ISubscriberService subscriberService,
             IMassTransitProducer massTransitProducer)
         {
@@ -67,6 +68,7 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                     CustomCode = transactionRequest.CustomCode,
                     IsEmulator = transactionRequest.IsEmulator,
                     IsMobileAppTrans = transactionRequest.IsMobileApp,
+                    UserAgent = transactionRequest.UserAgent,
                     Manufacturer = transactionRequest.Manufacturer,
                     MediaDRMCode = transactionRequest.MediaDRMCode,
                     ModelName = transactionRequest.ModelName,

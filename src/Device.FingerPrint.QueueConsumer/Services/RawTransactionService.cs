@@ -70,6 +70,11 @@
                     userAgent = message.Device.UserAgent;
                 }
 
+                if(message.Mobile != null)
+                {
+                    userAgent = string.IsNullOrEmpty(userAgent) ? message.Mobile.UserAgent : userAgent;
+                }
+
                 var transBit = new BitArray(16);
                 if (string.IsNullOrWhiteSpace(deviceInfo.DeviceNo) || deviceInfo.DeviceNo == "N/A")
                 {
@@ -121,6 +126,22 @@
                     ScriptVersion = deviceInfo.Version
                 };
 
+                if(message.Mobile != null)
+                {
+                    rawTransModel.MBAndroidCode = message.Mobile.AndroidCode;
+                    rawTransModel.MBCustomCode = message.Mobile.CustomCode;
+                    rawTransModel.MBMediaDRMCode = message.Mobile.MediaDRMCode;
+                    rawTransModel.MBIsMobileApp = message.Mobile.IsMobileAppTrans;
+                    rawTransModel.MBIsEmulator = message.Mobile.IsEmulator;
+                    rawTransModel.MBModelName = message.Mobile.ModelName;
+                    rawTransModel.MBManufacturer = message.Mobile.Manufacturer;
+                    rawTransModel.MBBrand = message.Mobile.Brand;
+                    rawTransModel.MBOS = message.Mobile.OS;
+                    rawTransModel.MBTimezone = message.Mobile.Timezone;
+                    rawTransModel.MBLanguage = message.Mobile.SystemLanguage;
+                    rawTransModel.MBCountry = message.Mobile.Country;
+                    rawTransModel.MBSDKVersion = message.Mobile.SdkVersion;
+                }
                 TransformRawTransModel = rawTransModel;
 
                 return this;

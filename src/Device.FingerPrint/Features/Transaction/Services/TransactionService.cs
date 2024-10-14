@@ -118,7 +118,20 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 TransTime = transaction.TransTime,
                 URL = transaction.URL,
                 UserAgent = transaction.UserAgent,
-                IsIncognitoMode = transaction.IsIncognitoMode
+                IsIncognitoMode = transaction.IsIncognitoMode,
+                MBAndroidCode = transaction.MBAndroidCode,
+                MBCustomCode = transaction.MBCustomCode,
+                MBMediaDRMCode = transaction.MBMediaDRMCode,
+                MBIsMobileApp = transaction.MBIsMobileApp,
+                MBIsEmulator = transaction.MBIsEmulator,
+                MBModelName = transaction.MBModelName,
+                MBManufacturer = transaction.MBManufacturer,
+                MBBrand = transaction.MBBrand,
+                MBSDKVersion = transaction.MBSDKVersion,
+                MBOS = transaction.MBOS,
+                MBTimezone = transaction.MBTimezone,
+                MBLanguage = transaction.MBLanguage,
+                MBCountry = transaction.MBCountry,
             });
         }
 
