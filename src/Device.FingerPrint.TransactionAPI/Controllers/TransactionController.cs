@@ -10,7 +10,6 @@
     using Microsoft.AspNetCore.Mvc;
     using ONEbook.UM.Models;
     using ONEbook.UM.Services;
-    using System.Text.Json;
     using System.Threading.Tasks;
 
     [ApiController]
@@ -47,7 +46,7 @@
             {
                 try
                 {
-                    responseCode = await subscriberService.ValidateAsync(transRequest, IsExtraSubscriber(transRequest.Subscriber));
+                    responseCode = await subscriberService.ValidateAsync(transRequest);
 
                     if (responseCode == TransactionResult.Success)
                     {
@@ -81,30 +80,6 @@
             _ = PushToQueueAsync(transRequest, deviceModel);
 
             return Ok();
-        }
-
-        [HttpPost("FPS/InsertMobileTransaction")]
-        public IActionResult InsertTransactionAsync(MobileTransactionRequest request)
-        {
-            var transaction = TransformTransactionRequest(request);
-            var deviceModel = TransformDeviceModel(transaction);
-
-            transaction.Ip = HttpContext.Request.Headers["X-Forwarded-For"].ToString();
-
-            _ = PushToQueueAsync(transaction, deviceModel);
-
-            return Ok();
-        }
-
-        private static TransactionRequest TransformTransactionRequest(MobileTransactionRequest request)
-        {
-            byte[] base64DecodedBytes = Convert.FromBase64String(request.Transaction);
-
-            string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
-
-            var transaction = Newtonsoft.Json.JsonConvert.DeserializeObject<TransactionRequest>(decodedString);
-
-            return transaction;
         }
 
         private static DeviceModel TransformDeviceModel(TransactionRequest transRequest)
@@ -148,11 +123,6 @@
             return ignoredSites.Any(s => s.Equals(site, StringComparison.OrdinalIgnoreCase));
         }
 
-        private string JoinStringAttributes(List<string> attributes, string separator)
-        {
-            return string.Join(separator, attributes.ToArray());
-        }
-
         private async Task PushToQueueAsync(TransactionRequest transactionRequest, DeviceModel deviceModel)
         {
             var dataEvent = new MessageQueue
@@ -173,20 +143,9 @@
                 BotD = transactionRequest.Bi, 
             };
 
-            var queueAddress = IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
+            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
 
             await massTransitProducer.SendAsync(dataEvent, queueAddress);
-        }
-
-
-        private bool IsExtraSubscriber(string subscriberName)
-        {
-            if (appSettings.ExtraSubscribers != null && appSettings.ExtraSubscribers.Any())
-            {
-                return appSettings.ExtraSubscribers.Exists(x => x.SubscriberName.ToLower() == subscriberName.ToLower());
-            }
-
-            return false;
         }
 
         private TransactionResponse GetTransactionResponse(string code)

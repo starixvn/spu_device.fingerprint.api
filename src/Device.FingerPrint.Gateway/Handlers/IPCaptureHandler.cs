@@ -1,5 +1,4 @@
 ﻿using Fanex.Logging;
-using System.Net.Http;
 
 namespace Device.FingerPrint.Gateway.Handlers
 {
