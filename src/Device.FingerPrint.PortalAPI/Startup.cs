@@ -190,7 +190,7 @@ namespace Device.FingerPrint.PortalAPI
 
         private void RegisterRedis(IServiceCollection services)
         {
-            services.AddSingleton<RedisMultiplexDbService, RedisMultiplexDbService>();
+            services.AddSingleton<IRedisMultiplexDbService, RedisMultiplexDbService>();
 
         }
     }

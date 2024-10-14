@@ -1,8 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using StackExchange.Redis;
+using StackExchange.Redis.Extensions.Core.Configuration;
 
 namespace Device.FingerPrint.Redis
 {
+
     public interface IRedisMultiplexDbService
     {
         IDatabase GetDatabase(int db = -1);  // Access Redis database with an optional index
@@ -20,8 +22,8 @@ namespace Device.FingerPrint.Redis
         // Constructor accepts configuration, such as Redis connection strings
         public RedisMultiplexDbService(IConfiguration configuration)
         {
-            var redisConfiguration = configuration.GetSection("Redis").ToString();
-
+            var redisConfiguration = configuration.GetSection("Redis").Get<RedisConfiguration>().ConfigurationOptions;
+            
             _connectionMultiplexer = ConnectionMultiplexer.Connect(redisConfiguration);
         }
 

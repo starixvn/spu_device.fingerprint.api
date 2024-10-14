@@ -1,7 +1,6 @@
 ﻿namespace Device.FingerPrint.PortalAPI.Controllers
 {
     using Device.FingerPrint.Core;
-    using Device.FingerPrint.Core.Encoders;
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
@@ -63,12 +62,13 @@
         [HttpGet("e/t")]
         public IActionResult GetEverTagging()
         {
-            var sesionKey = Request.Headers["Res-Ec-Y"].ToString();            
+            var sesionKey = Request.Headers["Res-Ec-Y"].ToString();
             var etagValue = GetEtagValue();
+            var result = sesionKey;
 
             if (!string.IsNullOrEmpty(etagValue))
             {
-                sesionKey = etagValue;
+                result = etagValue;
             }
             else
             {
@@ -76,42 +76,48 @@
 
                 var everTaggingValues = ecValues.Split(',');
 
-                foreach (var ec in everTaggingValues)
+                if (everTaggingValues.Length > 1)
                 {
-                    if (Utilities.ValidationSessionKey(ec))
-                    {       
-                        var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
-
-                        if (ecKeyExisting)
+                    foreach (var ec in everTaggingValues)
+                    {
+                        if (Utilities.ValidationSessionKey(ec))
                         {
-                            if(sesionKey != ec)
+                            var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
+
+                            if (ecKeyExisting)
                             {
-                                everTaggingRedisDB.StringSet($"RealTagging:{sesionKey}", ec);
-                                everTaggingRedisDB.KeyExpire($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
+                                result = ec;
+
+                                break;
                             }
-
-                            sesionKey = ec;
-
-                            break;
+                        }
+                        else
+                        {
+                            LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
                         }
                     }
-                    else
-                    {
-                        LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
-                    }
+                }
+                else if (everTaggingValues.Length == 1)
+                {
+                    result = everTaggingValues[0];
                 }
             }
 
-            UpdateResponseHeaders(sesionKey);
+            if (result != sesionKey)
+            {
+                everTaggingRedisDB.StringSet($"RealTagging:{sesionKey}", result);
+                everTaggingRedisDB.KeyExpire($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
+            }
 
-            return Ok(sesionKey);
+            UpdateResponseHeaders(result);
+
+            return Ok(result);
         }
 
-       
+
         private void UpdateResponseHeaders(string tagging)
         {
-            var ApiEverTaggingCacheMaxAge = appSettings.ApiEverTaggingCacheMaxAge;
-            Response.Headers["Cache-Control"] = $"max-age={ApiEverTaggingCacheMaxAge}, private";
+            Response.Headers["Cache-Control"] = "no-cache";
             Response.Headers["ETag"] = tagging;
         }
 

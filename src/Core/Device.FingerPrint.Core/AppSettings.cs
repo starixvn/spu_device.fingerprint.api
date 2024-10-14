@@ -161,7 +161,7 @@ namespace Device.FingerPrint.Core
             
             everTaggingExpireSecond = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("Redis:EverTaggingExpireSecond")) ? "3600" : GetValue<string>("Redis:EverTaggingExpireSecond"));
 
-            everTaggingDBIndex = GetValue<int>("Redis:EverTaggingDbIndex");
+            everTaggingDBIndex = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:EverTaggingDbIndex")) ? "0" : GetValue<string>("Redis:EverTaggingDbIndex"));
 
             apiEverTaggingCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverTaggingCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverTaggingCacheMaxAge"));
 
