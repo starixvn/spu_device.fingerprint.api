@@ -192,36 +192,6 @@ namespace Device.FingerPrint.PortalAPI
         {
             services.AddSingleton<RedisMultiplexDbService, RedisMultiplexDbService>();
 
-            //var redisConfiguration = Configuration.GetSection("Redis").Get<ConfigurationOptions>();
-            //var redisDatabaseIndex = int.Parse(Configuration["Redis:EverTaggingDbIndex"]);
-
-            //services.AddSingleton(redisConfiguration);
-
-            //services.AddSingleton<IConnectionMultiplexer>(sp =>
-            //{
-            //    //var configOptions = new ConfigurationOptions
-            //    //{
-            //    //    EndPoints = { $"{redisConfiguration.Hosts[0].Host}:{redisConfiguration.Hosts[0].Port}" },
-            //    //    Password = redisConfiguration.Password,
-            //    //    Ssl = redisConfiguration.Ssl,
-            //    //    ConnectTimeout = redisConfiguration.ConnectTimeout,
-            //    //    ConnectRetry = 3,
-            //    //    KeepAlive = 180,
-            //    //    DefaultDatabase = 0
-            //    //};
-            //    return ConnectionMultiplexer.Connect(redisConfiguration);
-            //});
-
-            //services.AddSingleton<IRedisClient, RedisClient>();
-            //services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
-            //services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
-            //services.AddSingleton<IRedisService, RedisService>();
-
-            //services.AddTransient<IRedisMultiplexService>(provider =>
-            //    new RedisMultiplexService(
-            //        provider.GetRequiredService<IConnectionMultiplexer>(),
-            //        redisDatabaseIndex
-            //));
         }
     }
 }

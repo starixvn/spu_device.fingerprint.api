@@ -1,6 +1,7 @@
 ﻿using Fanex.Logging;
 using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.Database;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.IO;
@@ -23,10 +24,10 @@ namespace Device.FingerPrint.PortalAPI
             {
                 await _next(httpContext);
             }
-            catch(IOException ex)
+            catch(ConnectionResetException ex)
             {
                 var logMessage = new LogMessage(ex.Message)
-                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .AddSection("ConnectionResetException Info", CommonInfoGetters.GetExceptionInfo(ex))
                    .ToString();
 
                 await _logger.ErrorAsync(logMessage);
