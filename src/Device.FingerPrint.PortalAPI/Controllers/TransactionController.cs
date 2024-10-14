@@ -83,17 +83,17 @@
                         var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
 
                         if (ecKeyExisting)
-                        {                           
+                        {
                             if(sesionKey != ec)
                             {
                                 everTaggingRedisDB.StringSet($"RealTagging:{sesionKey}", ec);
                                 everTaggingRedisDB.KeyExpire($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
-
-                                sesionKey = ec;                               
                             }
 
+                            sesionKey = ec;
+
                             break;
-                        }                        
+                        }
                     }
                     else
                     {
@@ -145,18 +145,6 @@
             var timeToLive = await redisMultiplexService.GetTimeSpan(redisDbIndex, sessionKey);
 
             return timeToLive;
-        }
-
-        [HttpGet("decrypt/{str}")]
-        public string Decrypt(string str)
-        {
-            return DeviceEncoder.Decrypt(str);
-        }
-
-        [HttpGet("encrypt/{str}")]
-        public string Encrypt(string str)
-        {
-            return DeviceEncoder.Encrypt(str);
         }
 
         [HttpGet("hc")]
