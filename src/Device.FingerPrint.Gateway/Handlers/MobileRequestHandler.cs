@@ -25,26 +25,31 @@ namespace Device.FingerPrint.Gateway.Handlers
 
                     if (!string.IsNullOrWhiteSpace(content))
                     {
-                        byte[] base64DecodedBytes = Convert.FromBase64String(content);
+                        var transactionRequest = JsonConvert.DeserializeObject<MobileTransactionRequest>(content);
 
-                        string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
-
-                        var transactionRequest = JsonConvert.DeserializeObject<TransactionRequest>(decodedString);
-
-                        if (transactionRequest != null && !string.IsNullOrWhiteSpace(transactionRequest?.Subscriber) && !string.IsNullOrWhiteSpace(transactionRequest.Account))
+                        if (transactionRequest != null)
                         {
-                            if (await this.subscriberService.ValidateAsync(transactionRequest?.Subscriber))
+                            byte[] base64DecodedBytes = Convert.FromBase64String(transactionRequest.Transaction);
+
+                            string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
+
+                            var transaction = JsonConvert.DeserializeObject<TransactionRequest>(decodedString);
+
+                            if (transactionRequest != null && !string.IsNullOrWhiteSpace(transaction?.Subscriber) && !string.IsNullOrWhiteSpace(transaction.Account))
                             {
-                                return await base.SendAsync(request, cancellationToken);
+                                if (await this.subscriberService.ValidateAsync(transaction.Subscriber))
+                                {
+                                    return await base.SendAsync(request, cancellationToken);
+                                }
                             }
-                        }
-                        else
-                        {
-                            return new HttpResponseMessage
+                            else
                             {
-                                StatusCode = System.Net.HttpStatusCode.BadRequest,
-                                Content = new StringContent("Subscriber or Account cannot be null.")
-                            };
+                                return new HttpResponseMessage
+                                {
+                                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                                    Content = new StringContent("Subscriber or Account cannot be null.")
+                                };
+                            }
                         }
                     }
                 }

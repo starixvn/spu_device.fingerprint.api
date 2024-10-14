@@ -83,6 +83,30 @@
             return Ok();
         }
 
+        [HttpPost("FPS/InsertMobileTransaction")]
+        public IActionResult InsertTransactionAsync(MobileTransactionRequest request)
+        {
+            var transaction = TransformTransactionRequest(request);
+            var deviceModel = TransformDeviceModel(transaction);
+
+            transaction.Ip = HttpContext.Request.Headers["X-Forwarded-For"].ToString();
+
+            _ = PushToQueueAsync(transaction, deviceModel);
+
+            return Ok();
+        }
+
+        private static TransactionRequest TransformTransactionRequest(MobileTransactionRequest request)
+        {
+            byte[] base64DecodedBytes = Convert.FromBase64String(request.Transaction);
+
+            string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
+
+            var transaction = Newtonsoft.Json.JsonConvert.DeserializeObject<TransactionRequest>(decodedString);
+
+            return transaction;
+        }
+
         private static DeviceModel TransformDeviceModel(TransactionRequest transRequest)
         {
             return new DeviceModel
@@ -146,12 +170,7 @@
                 Token = transactionRequest.Token,
                 Recaptcha = "",
                 SessionKey = transactionRequest.SessionKey,
-                BotD = transactionRequest.Bi,
-                MobileAndroidCode = transactionRequest.MobileAndroidCode,
-                MobileMediaDRMCode = transactionRequest.MobileMediaDRMCode,
-                MobileCustomCode = transactionRequest.MobileCustomCode,
-                IsMobileAppTrans = transactionRequest.IsMobileAppTrans,
-                IsMobileEmulator = transactionRequest.IsMobileEmulator    
+                BotD = transactionRequest.Bi, 
             };
 
             var queueAddress = IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;

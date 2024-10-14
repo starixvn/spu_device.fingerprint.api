@@ -1,7 +1,7 @@
 ﻿
 namespace Device.FingerPrint.TransactionAPI.Model
 {
-    public class TransactionRequest: MobileTransactionRequest
+    public class TransactionRequest
     {
         public string Account { get; set; }
 
