@@ -9,6 +9,7 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.Mvc.RazorPages;
     using Microsoft.Net.Http.Headers;
     using StackExchange.Redis;
     using System;
@@ -117,7 +118,8 @@
 
         private void UpdateResponseHeaders(string tagging)
         {
-            Response.Headers["Cache-Control"] = "no-cache";
+            var ApiEverTaggingCacheMaxAge = appSettings.ApiEverTaggingCacheMaxAge;
+            Response.Headers["Cache-Control"] = $"max - age ={ ApiEverTaggingCacheMaxAge}, private";
             Response.Headers["ETag"] = tagging;
         }
 
