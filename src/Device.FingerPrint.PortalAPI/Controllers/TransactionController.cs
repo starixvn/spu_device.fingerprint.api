@@ -93,7 +93,7 @@
                         }
                         else
                         {
-                            LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
+                            // LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
                         }
                     }
                 }
