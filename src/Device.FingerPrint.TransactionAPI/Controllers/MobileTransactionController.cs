@@ -45,7 +45,7 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
 
             var transaction = Newtonsoft.Json.JsonConvert.DeserializeObject<MobileTransactionModel>(decodedString);
 
-            transaction.IP = HttpContext.Request.Headers["X-Forwarded-For"].ToString();
+            transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
             return transaction;
         }
 
