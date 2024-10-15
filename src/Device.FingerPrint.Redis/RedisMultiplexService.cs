@@ -1,13 +1,10 @@
 ﻿using StackExchange.Redis;
-using StackExchange.Redis.Extensions.Core.Implementations;
 
 namespace Device.FingerPrint.Redis
 {
     public interface IRedisMultiplexService
     {
-        Task HashSetWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond);
-
-        Task HashSetMultipleFieldsWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond);
+        Task HashSetMultipleFieldsWithDbIndexAsync(int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond);
 
         Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey);
 
@@ -41,41 +38,16 @@ namespace Device.FingerPrint.Redis
             return redisEverTaggingDb;
         }
 
-        public async Task HashSetMultipleFieldsWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond = 0)
+        public async Task HashSetMultipleFieldsWithDbIndexAsync(int redisDatabaseIndex, string hashKey, Dictionary<string, string> fieldKeyValuePairs, long expireSecond = 0)
         {
             var db = connectionMultiplexer.GetDatabase(redisDatabaseIndex);
-
-            bool exists = await db.KeyExistsAsync(hashKey);
 
             foreach (var pair in fieldKeyValuePairs)
             {
                 await db.HashSetAsync(hashKey, pair.Key, pair.Value);
             }
 
-            if (!exists && expireSecond > 0)
-            {
-                await db.HashSetAsync(hashKey, "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"), When.NotExists, CommandFlags.FireAndForget);
-                await db.HashSetAsync(hashKey, "OriginService", originService, When.NotExists, CommandFlags.FireAndForget);
-
-                await db.KeyExpireAsync(hashKey, TimeSpan.FromSeconds(expireSecond));
-            }
-        }
-
-        public async Task HashSetWithDbIndexAsync(string originService, int redisDatabaseIndex, string hashKey, string fieldKey, string fieldValue, long expireSecond = 0)
-        {
-            var db = connectionMultiplexer.GetDatabase(redisDatabaseIndex);
-
-            bool exists = await db.KeyExistsAsync(hashKey);
-
-            await db.HashSetAsync(hashKey, fieldKey, fieldValue, When.NotExists, CommandFlags.FireAndForget);
-
-            if (!exists && expireSecond > 0)
-            {
-                await db.HashSetAsync(hashKey, "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"), When.NotExists, CommandFlags.FireAndForget);
-                await db.HashSetAsync(hashKey, "OriginService", originService, When.NotExists, CommandFlags.FireAndForget);
-
-                await db.KeyExpireAsync(hashKey, TimeSpan.FromSeconds(expireSecond));
-            }
+            await db.KeyExpireAsync(hashKey, TimeSpan.FromSeconds(expireSecond));
         }
 
         public async Task<string> HashGetWithDbIndexAsync(int redisDatabaseIndex, string hashKey, string fieldKey)

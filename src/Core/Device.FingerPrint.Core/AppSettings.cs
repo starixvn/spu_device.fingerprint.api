@@ -50,7 +50,8 @@ namespace Device.FingerPrint.Core
         int MaxMonthsGetAssociationByDevice { get; }
         
         long EverTaggingExpireSecond { get; }
-        
+
+        int EverTaggingDBIndex { get; }
 
         long ApiEverTaggingCacheMaxAge { get; }
 
@@ -104,6 +105,7 @@ namespace Device.FingerPrint.Core
         
         private readonly long everTaggingExpireSecond;
         
+        private readonly int everTaggingDBIndex;
         
         private readonly long apiEverTaggingCacheMaxAge;
 
@@ -158,7 +160,8 @@ namespace Device.FingerPrint.Core
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
             
             everTaggingExpireSecond = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("Redis:EverTaggingExpireSecond")) ? "3600" : GetValue<string>("Redis:EverTaggingExpireSecond"));
-            
+
+            everTaggingDBIndex = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Redis:EverTaggingDbIndex")) ? "0" : GetValue<string>("Redis:EverTaggingDbIndex"));
 
             apiEverTaggingCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverTaggingCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverTaggingCacheMaxAge"));
 
@@ -206,7 +209,8 @@ namespace Device.FingerPrint.Core
         public int MaxMonthsGetAssociationByDevice => maxMonthsGetAssociationByDevice;
         
         public long EverTaggingExpireSecond => everTaggingExpireSecond;
-        
+
+        public int EverTaggingDBIndex => everTaggingDBIndex;
 
         public long ApiEverTaggingCacheMaxAge => apiEverTaggingCacheMaxAge;
 

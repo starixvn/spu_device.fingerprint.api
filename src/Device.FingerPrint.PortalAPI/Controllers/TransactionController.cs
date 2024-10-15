@@ -4,13 +4,13 @@
     using Device.FingerPrint.Features.ClientTransaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.PortalAPI.Models;
-    using Device.FingerPrint.PortalAPI.Ultilities;
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Net.Http.Headers;
+    using StackExchange.Redis;
     using System;
     using System.Collections.Generic;
     using System.Linq;
@@ -21,19 +21,20 @@
     [ApiController]
     public class TransactionController : ControllerBase
     {
-        private readonly IRedisMultiplexService redisMultiplexService;
+        private readonly IRedisMultiplexDbService redisMultiplexService;
         private readonly IClientTransactionService clientTransactionService;
         private readonly IAppSettings appSettings;
-        private const string originService = "PortalAPI";
+        private readonly IDatabase everTaggingRedisDB;
 
         public TransactionController(
             IAppSettings appSettings,
-            IRedisMultiplexService redisMultiplexService,
+            IRedisMultiplexDbService redisMultiplexService,
             IClientTransactionService clientTransactionService)
         {
             this.redisMultiplexService = redisMultiplexService;
             this.clientTransactionService = clientTransactionService;
             this.appSettings = appSettings;
+            everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
         }
 
         [HttpPost("f/p")]
@@ -48,50 +49,64 @@
                     var headerModel = GetHeaderValue();
                     var keyValuePairs = new Dictionary<string, string>
                                         {
-                                            { RedisString.GetRedisKeyName(RedisKey.FingerPrintEncode), data.Data },
-                                            { RedisString.GetRedisKeyName(RedisKey.Header), JsonSerializer.Serialize(headerModel) }
+                                            { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
+                                            { RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode), data.Data },
+                                            { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonSerializer.Serialize(headerModel) }
                                         };
 
-                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(originService, sessionKey.RedisDbIndex, sessionKey.SessionKey, keyValuePairs, appSettings.RedisExpired);
+                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, keyValuePairs, appSettings.RedisExpired);
                 }
             }
         }
 
         [HttpGet("e/t")]
-        public async Task<IActionResult> GetEverTagging()
+        public IActionResult GetEverTagging()
         {
-            var result = string.Empty;
-            var ecValues = Request.Headers["Res-Ec-X"].ToString();
-            var sskValues = Request.Headers["Res-Ec-Y"].ToString();
-
+            var sesionKey = Request.Headers["Res-Ec-Y"].ToString();
             var etagValue = GetEtagValue();
+            var result = sesionKey;
+
             if (!string.IsNullOrEmpty(etagValue))
             {
                 result = etagValue;
             }
             else
             {
-                var everTaggingValues = new List<string> { GetEtagValue() }.Concat(ecValues.Split(','));
+                var ecValues = Request.Headers["Res-Ec-X"].ToString();
 
-                everTaggingValues = everTaggingValues
-                    .Select(value => Utilities.ParseSessionKey(value, appSettings.RedisDatabase))
-                    .Where(parsed => parsed != null)
-                    .Select(parsed => "EverTagging:" + parsed.SessionKey)
-                    .Distinct()
-                    .ToList();
+                var everTaggingValues = ecValues.Split(',');
 
-                var redisEcValue = await redisMultiplexService.EverTagging_GetValuesFromRedis(everTaggingValues);
-
-                if (string.IsNullOrEmpty(redisEcValue))
+                if (everTaggingValues.Length > 1)
                 {
-                    var firstEcValue = everTaggingValues.FirstOrDefault();
-                    result = string.IsNullOrEmpty(firstEcValue) ? Validation.GenerateSessionKey() : Utilities.RemoveRedisPrefix(firstEcValue, "EverTagging:");
+                    foreach (var ec in everTaggingValues)
+                    {
+                        if (Utilities.ValidationSessionKey(ec))
+                        {
+                            var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
+
+                            if (ecKeyExisting)
+                            {
+                                result = ec;
+
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            // LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
+                        }
+                    }
                 }
-                else
+                else if (everTaggingValues.Length == 1)
                 {
-                    result = Utilities.RemoveRedisPrefix(redisEcValue, "EverTagging:");
-                    UpdateRealTagging(sskValues, result);
+                    result = everTaggingValues[0];
                 }
+            }
+
+            if (result != sesionKey)
+            {
+                everTaggingRedisDB.StringSet($"RealTagging:{sesionKey}", result);
+                everTaggingRedisDB.KeyExpire($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
             }
 
             UpdateResponseHeaders(result);
@@ -99,29 +114,10 @@
             return Ok(result);
         }
 
-        [HttpGet("test/{sessionKey}")]
-        public void AddToRedis(string sessionKey)
-        {
-            redisMultiplexService.EverTagging_AddItemWithExpiryAsync("EverTagging", sessionKey, DateTime.Now.ToString(), TimeSpan.FromSeconds(3600));
-        }
-
-
-        private void UpdateRealTagging(string sessionKey, string tagging)
-        {
-            if (string.IsNullOrEmpty(sessionKey)
-                || string.IsNullOrEmpty(tagging)
-                || sessionKey == tagging)
-            {
-                return;
-            }
-
-            redisMultiplexService.EverTagging_AddItemWithExpiryAsync("RealTagging", sessionKey, tagging, TimeSpan.FromSeconds(3600));
-        }
 
         private void UpdateResponseHeaders(string tagging)
         {
-            var ApiEverTaggingCacheMaxAge = appSettings.ApiEverTaggingCacheMaxAge;
-            Response.Headers["Cache-Control"] = $"max-age={ApiEverTaggingCacheMaxAge}, private";
+            Response.Headers["Cache-Control"] = "no-cache";
             Response.Headers["ETag"] = tagging;
         }
 
