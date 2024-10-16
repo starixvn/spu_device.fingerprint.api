@@ -46,7 +46,8 @@
 
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
-                    var headerModel = GetHeaderValue();
+                    var headerModel = GetHeaderValue();                  
+
                     var keyValuePairs = new Dictionary<string, string>
                                         {
                                             { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
@@ -54,7 +55,9 @@
                                             { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonSerializer.Serialize(headerModel) }
                                         };
 
-                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, keyValuePairs, appSettings.RedisExpired);
+                    var hashRedisEntry = keyValuePairs.Select(x => new HashEntry(x.Key, x.Value)).ToArray();
+
+                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, hashRedisEntry, appSettings.RedisExpired);
                 }
             }
         }
@@ -105,8 +108,8 @@
 
             if (result != sesionKey)
             {
-                everTaggingRedisDB.StringSet($"RealTagging:{sesionKey}", result);
-                everTaggingRedisDB.KeyExpire($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
+                everTaggingRedisDB.StringSetAsync($"RealTagging:{sesionKey}", result);
+                everTaggingRedisDB.KeyExpireAsync($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
             }
 
             UpdateResponseHeaders(result);
