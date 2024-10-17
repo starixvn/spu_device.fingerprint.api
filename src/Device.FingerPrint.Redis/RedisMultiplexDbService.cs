@@ -13,6 +13,8 @@ namespace Device.FingerPrint.Redis
 
         Task HashSetMultipleFieldsWithDbIndexAsync(int dbIndex, string hashedKey, Dictionary<string, string> keyValuePairs, long expireInSecond);
 
+        void HashSetMultipleFieldsWithDbIndexAsync(int dbIndex, string hashedKey, HashEntry[] hashEntries, long expireInSecond);
+
         Task<double> GetTimeSpan(int dbIndex, string hashedKey);
     }
     public class RedisMultiplexDbService : IRedisMultiplexDbService
@@ -66,6 +68,15 @@ namespace Device.FingerPrint.Redis
             }
 
             return -1;
+        }
+
+        public void HashSetMultipleFieldsWithDbIndexAsync(int dbIndex, string hashedKey, HashEntry[] hashEntries, long expireInSecond)
+        {
+            var db = this.GetDatabase(dbIndex);
+
+            db.HashSetAsync(hashedKey, hashEntries);
+
+            db.KeyExpireAsync(hashedKey, TimeSpan.FromSeconds(expireInSecond));
         }
     }
 }
