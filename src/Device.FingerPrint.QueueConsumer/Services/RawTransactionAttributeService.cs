@@ -394,8 +394,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 ? sessionKey
                 : Core.Utilities.RemoveRedisPrefix(realTagging, _realTaggingPrefix);
 
-            var decryptedTagging = DeviceEncoder.Decrypt(taggingValue);
-            return IsValidString(decryptedTagging) ? decryptedTagging : taggingValue;
+            try
+            {
+                var decryptedTagging = DeviceEncoder.Decrypt(taggingValue);
+
+                return IsValidString(decryptedTagging) ? decryptedTagging : taggingValue;
+            }
+            catch 
+            {
+
+                return taggingValue;
+            }            
         }
 
         #region Log Info
