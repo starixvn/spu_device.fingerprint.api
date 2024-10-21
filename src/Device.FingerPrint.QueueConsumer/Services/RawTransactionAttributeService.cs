@@ -50,91 +50,99 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public async Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel)
         {
-            if (!appSettings.IsDisableJsChallenge && botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
+            try
             {
-                var jscKey = botDModel.JscKey;
-                model.ChallengeCode = jscKey;
-
-                var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{jscKey}");
-                var jsChallenge = jsChallengeTask.Result;
-                TransformJSChallengeInfo(model, jscKey, jsChallenge);
-            }
-
-            if (model != null && !string.IsNullOrEmpty(model.SessionKey))
-            {
-                if (!model.SessionKey.Contains(':'))
+                if (!appSettings.IsDisableJsChallenge && botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
                 {
-                    _ = LogService.InfoAsync($"{appSettings.Environment} - SessionKey does not contain a colon:\n {JsonConvert.SerializeObject(model)}");
+                    var jscKey = botDModel.JscKey;
+                    model.ChallengeCode = jscKey;
+
+                    var jsChallengeTask = redisService.RedisJSChallengeDatabase.GetAsync<string>($"Challenge:{jscKey}");
+                    var jsChallenge = jsChallengeTask.Result;
+                    TransformJSChallengeInfo(model, jscKey, jsChallenge);
                 }
-                else
+
+                if (model != null && !string.IsNullOrEmpty(model.SessionKey))
                 {
-                    var sessionKey = Core.Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
-
-                    if (sessionKey != null && sessionKey.RedisDbIndex > 0)
+                    if (!model.SessionKey.Contains(':'))
                     {
-                        var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode));
-                        var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.Header));
-                        var taggingTask = redisMultiplexService.EverTagging_GetValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
-
-                        await Task.WhenAll(fingerPrintEncodeTask, headerTask, taggingTask);
-
-                        var fingerPrintEncode = fingerPrintEncodeTask.Result;
-                        var header = headerTask.Result;
-                        var realTagging = taggingTask.Result;
-
-                        var fingerPrintModel = new FingerprintModel();
-                        if (!string.IsNullOrEmpty(fingerPrintEncode))
-                        {
-                            var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
-                            fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
-                        }
-
-                        var headerModel = new HeaderModel();
-                        if (!string.IsNullOrEmpty(header))
-                        {
-                            headerModel = JsonConvert.DeserializeObject<HeaderModel>(header);
-                            UpdateIPInfo(model, headerModel);
-                        }
-
-                        model.RawUserAgent = model.UserAgent;
-                        model.UserAgentInfo = GetUserAgentInfo(model.UserAgent);
-
-                        model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
-
-                        model.FPFingerPrintCode = model.FingerprintAttribute.FPFingerPrintCode;
-                        model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
-                        model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
-                        model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
-
-                        model.FPTagging = GetTaggingValue(realTagging, sessionKey.SessionKey);
-
-                        if (!string.IsNullOrEmpty(realTagging))
-                        {
-                            await redisMultiplexService.EverTagging_DeleteValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
-                        }
-
-                        model.IsIncognitoMode = GetIsIncognitoMode(model.FingerprintAttribute.FPFingerPrintAttribute);
-
-                        // Log Info Consumer
-                        var subscriberName = model.SubscriberName;
-                        if (appSettings.GetValue<bool>("Consumer:LogInfo")
-                            && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (string.IsNullOrEmpty(sessionKey.SessionKey))
-                            {
-                                LogSessionKeyEmpty(model);
-                            }
-                            else if (fingerPrintEncode == null && header == null)
-                            {
-                                LogRedisValueEmpty(model);
-                            }
-                        }
+                        _ = LogService.InfoAsync($"{appSettings.Environment} - SessionKey does not contain a colon:\n {JsonConvert.SerializeObject(model)}");
                     }
                     else
                     {
-                        _ = LogService.ErrorAsync($"{appSettings.Environment} - SessionKey cannot parse:\n {JsonConvert.SerializeObject(model)}");
+                        var sessionKey = Core.Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
+
+                        if (sessionKey != null && sessionKey.RedisDbIndex > 0)
+                        {
+                            var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode));
+                            var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.Header));
+                            var taggingTask = redisMultiplexService.EverTagging_GetValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
+
+                            await Task.WhenAll(fingerPrintEncodeTask, headerTask, taggingTask);
+
+                            var fingerPrintEncode = fingerPrintEncodeTask.Result;
+                            var header = headerTask.Result;
+                            var realTagging = taggingTask.Result;
+
+                            var fingerPrintModel = new FingerprintModel();
+
+                            if (!string.IsNullOrEmpty(fingerPrintEncode))
+                            {
+                                var decodeData = Base64.Decode(fingerPrintEncode, base64Key);
+                                fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
+                            }
+
+                            var headerModel = new HeaderModel();
+                            if (!string.IsNullOrEmpty(header))
+                            {
+                                headerModel = JsonConvert.DeserializeObject<HeaderModel>(header);
+                                UpdateIPInfo(model, headerModel);
+                            }
+
+                            model.RawUserAgent = model.UserAgent;
+                            model.UserAgentInfo = GetUserAgentInfo(model.UserAgent);
+
+                            model.FingerprintAttribute = TransformFingerprintAttributes(model, fingerPrintModel, headerModel);
+
+                            model.FPFingerPrintCode = model.FingerprintAttribute.FPFingerPrintCode;
+                            model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
+                            model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
+                            model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
+
+                            model.FPTagging = GetTaggingValue(realTagging, sessionKey.SessionKey);
+
+                            if (!string.IsNullOrEmpty(realTagging))
+                            {
+                                await redisMultiplexService.EverTagging_DeleteValueFromRedis(_realTaggingPrefix + sessionKey.SessionKey);
+                            }
+
+                            model.IsIncognitoMode = GetIsIncognitoMode(model.FingerprintAttribute.FPFingerPrintAttribute);
+
+                            // Log Info Consumer
+                            var subscriberName = model.SubscriberName;
+                            if (appSettings.GetValue<bool>("Consumer:LogInfo")
+                                && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (string.IsNullOrEmpty(sessionKey.SessionKey))
+                                {
+                                    LogSessionKeyEmpty(model);
+                                }
+                                else if (fingerPrintEncode == null && header == null)
+                                {
+                                    LogRedisValueEmpty(model);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            _ = LogService.ErrorAsync($"{appSettings.Environment} - SessionKey cannot parse:\n {JsonConvert.SerializeObject(model)}");
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                _ = LogService.ErrorAsync($"{appSettings.Environment} - GetTransactionAttribute has error:\n {ex.Message}");
             }
         }
 
@@ -144,7 +152,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             var realIP = headerModel.RealIP?.Trim();
 
-            if(!string.IsNullOrEmpty(realIP))
+            if (!string.IsNullOrEmpty(realIP))
             {
                 var ipConverted = realIP.Ip2Long();
 
@@ -400,11 +408,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 return IsValidString(decryptedTagging) ? decryptedTagging : taggingValue;
             }
-            catch 
+            catch
             {
 
                 return taggingValue;
-            }            
+            }
         }
 
         #region Log Info
