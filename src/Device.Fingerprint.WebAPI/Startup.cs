@@ -102,17 +102,15 @@ namespace Device.Fingerprint.WebAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
             }
 
             var gatewaySetting = app.ApplicationServices.GetRequiredService<IGatewaySetting>();
 
-            app.UseSwagger();
-
-            app.UseSwaggerUI(c =>
+            if (env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("AppConfig:Environment", "UAT") == "UAT")
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1");
-            });
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
+            }
 
             app.UseStaticFiles();
 
