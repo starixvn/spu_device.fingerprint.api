@@ -24,6 +24,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("s/f/p")]
+        [ETagFilter]
         public ActionResult FingerPrintScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
@@ -44,6 +45,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
         }
 
         [HttpGet("s/c/r/t")]
+        [ETagFilter]
         public ActionResult CryptScript()
         {
             var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
