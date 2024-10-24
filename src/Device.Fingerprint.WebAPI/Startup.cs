@@ -102,17 +102,15 @@ namespace Device.Fingerprint.WebAPI
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-
             }
 
             var gatewaySetting = app.ApplicationServices.GetRequiredService<IGatewaySetting>();
 
-            app.UseSwagger();
-
-            app.UseSwaggerUI(c =>
+            if (env.IsDevelopment() || this.Configuration.GetValue("AppConfig:Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("AppConfig:Environment", "UAT") == "UAT")
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1");
-            });
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Device.Fingerprint.WebAPI v1"));
+            }
 
             app.UseStaticFiles();
 
@@ -141,7 +139,8 @@ namespace Device.Fingerprint.WebAPI
                     new Microsoft.Net.Http.Headers.CacheControlHeaderValue()
                     {
                         Public = true,
-                        MaxAge = TimeSpan.FromMinutes(60)
+                        MaxAge = TimeSpan.FromHours(1),
+                        NoStore = false
                     };
                 context.Response.Headers[Microsoft.Net.Http.Headers.HeaderNames.Vary] =
                     new string[] { "Accept-Encoding", "version" };

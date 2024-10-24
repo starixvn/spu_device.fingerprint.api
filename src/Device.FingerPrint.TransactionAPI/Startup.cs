@@ -119,12 +119,16 @@ namespace Device.FingerPrint.TransactionAPI
                 Predicate = _ => true
             });
 
-            app.UseSwagger();
 
-            app.UseSwaggerUI(c =>
+            if (env.IsDevelopment() || this.Configuration.GetValue("Environment", "LOCAL") == "LOCAL" || this.Configuration.GetValue("Environment", "UAT") == "UAT")
             {
-                c.SwaggerEndpoint("v1/swagger.json", "Transaction API V1");
-            });
+                app.UseSwagger();
+
+                app.UseSwaggerUI(c =>
+                {
+                    c.SwaggerEndpoint("v1/swagger.json", "Transaction API V1");
+                });
+            }
 
             app.UseMiddleware<ExceptionMiddleware>();
             app.UseMiddleware<CustomJWTMiddleware>(appSettings.JWTEnable, appSettings.JWTPassword);

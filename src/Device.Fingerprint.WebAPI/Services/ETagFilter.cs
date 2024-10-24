@@ -38,6 +38,7 @@ namespace Device.Fingerprint.WebAPI.Services
                     {
                         context.Result = new StatusCodeResult(304);
                     }
+
                     context.HttpContext.Response.Headers.Add("ETag", new[] { etag });
                 }
             }
