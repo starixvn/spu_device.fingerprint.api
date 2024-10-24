@@ -67,13 +67,16 @@
 
             var filterTransaction = transactionModels.Where(x => x.TransStatus != (int)TransStatusEnum.InvalidLoginName);
 
-            ipdbService.TransformTransactionByIps(filterTransaction);
+            if(filterTransaction != null && filterTransaction.Any())
+            {
+                ipdbService.TransformTransactionByIps(filterTransaction);
 
-            await rawTransactionService.InsertRawTransactionDetail(transactionModels, appSettings.IsExtraSub);
+                await rawTransactionService.InsertRawTransactionDetail(filterTransaction, appSettings.IsExtraSub);
 
-            await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
+                await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
 
-            _ = AdditionalProcessingNotAwait(filterTransaction);
+                _ = AdditionalProcessingNotAwait(filterTransaction);
+            }
         }
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)

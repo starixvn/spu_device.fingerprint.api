@@ -35,6 +35,11 @@ namespace Device.FingerPrint.Core.Services
 
         public string Encrypt(string strPlainText)
         {
+            if (string.IsNullOrEmpty(strPlainText))
+            {
+                return string.Empty;
+            }
+
             byte[] strText = new UTF8Encoding().GetBytes(strPlainText);
             ICryptoTransform transform = myRijndael.CreateEncryptor();
             byte[] cipherText = transform.TransformFinalBlock(strText, 0, strText.Length);
@@ -44,6 +49,11 @@ namespace Device.FingerPrint.Core.Services
 
         public string Decrypt(string encryptedText)
         {
+            if (string.IsNullOrEmpty(encryptedText))
+            {
+                return string.Empty;
+            }
+
             byte[] encryptedBytes = Convert.FromBase64String(encryptedText);
             var decryptor = myRijndael.CreateDecryptor(myRijndael.Key, myRijndael.IV);
             byte[] originalBytes = decryptor.TransformFinalBlock(encryptedBytes, 0, encryptedBytes.Length);
@@ -70,6 +80,11 @@ namespace Device.FingerPrint.Core.Services
 
         public string GetMD5Hash(string str)
         {
+            if (string.IsNullOrEmpty(str))
+            {
+                return string.Empty;
+            }
+
             var md5 = new MD5CryptoServiceProvider();
             byte[] bytes = ASCIIEncoding.Default.GetBytes(str);
             byte[] encoded = md5.ComputeHash(bytes);
