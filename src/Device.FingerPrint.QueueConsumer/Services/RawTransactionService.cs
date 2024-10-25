@@ -70,7 +70,7 @@
                     userAgent = message.Device.UserAgent;
                 }
 
-                if(message.Mobile != null)
+                if (message.Mobile != null)
                 {
                     userAgent = string.IsNullOrEmpty(userAgent) ? message.Mobile.UserAgent : userAgent;
                 }
@@ -126,8 +126,10 @@
                     ScriptVersion = deviceInfo.Version
                 };
 
-                if(message.Mobile != null)
+                if (message.Mobile != null)
                 {
+                    rawTransModel.TransStatus = 0;
+                    rawTransModel.FlaggedCode = Flagged.Human.ToString();
                     rawTransModel.MBAndroidCode = message.Mobile.AndroidCode;
                     rawTransModel.MBCustomCode = message.Mobile.CustomCode;
                     rawTransModel.MBMediaDRMCode = message.Mobile.MediaDRMCode;
@@ -142,8 +144,8 @@
                     rawTransModel.MBCountry = message.Mobile.Country;
                     rawTransModel.MBSDKVersion = message.Mobile.SdkVersion;
                 }
-                TransformRawTransModel = rawTransModel;
 
+                TransformRawTransModel = rawTransModel;
                 return this;
             }
             catch (Exception ex)

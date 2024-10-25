@@ -74,7 +74,7 @@ namespace FPS.RawTransaction.Insert.Services
                     }
                     else if (transactionModels.Count > 0)
                     {
-                        transactionService.InsertRawTransaction(transactionModels, false).Wait();
+                        transactionService.InsertRawTransaction(transactionModels, false);
                     }
                 }
                 catch (Exception ex)
