@@ -34,7 +34,7 @@
             }
             catch (Exception ex)
             {
-                LogService.Info("Error GetDeviceInfo: " + ex.Message + "\n" + JsonConvert.SerializeObject(message));
+                //LogService.Info("Error GetDeviceInfo: " + ex.Message + "\n" + JsonConvert.SerializeObject(message));
             }
 
             return TransformEmptyDeviceInfo();
