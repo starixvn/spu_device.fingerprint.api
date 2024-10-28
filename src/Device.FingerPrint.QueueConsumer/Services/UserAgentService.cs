@@ -1,9 +1,20 @@
-﻿using Device.FingerPrint.Core.Services;
+﻿using Device.FingerPrint.Core;
+using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Model;
 using DeviceDetectorNET;
+using Fanex.Logging;
+using System;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
+    public enum DeviceType
+    {
+        Other = 0,
+        Desktop = 1, 
+        Tablet = 2, 
+        Mobile = 3
+    }
+
     public interface IUserAgentService
     {
         public UserAgentInfoModel GetUserAgentInfo(string userAgent);
@@ -12,66 +23,74 @@ namespace Device.FingerPrint.QueueConsumer.Services
     public class UserAgentService : IUserAgentService
     {
         private readonly ICrypto crypto;
+        private readonly IAppSettings appSettings;
 
-        public UserAgentService(ICrypto crypto)
+        public UserAgentService(
+            ICrypto crypto,
+            IAppSettings appSettings)
         {
             this.crypto = crypto;
+            this.appSettings = appSettings;
         }
 
         public UserAgentInfoModel GetUserAgentInfo(string userAgent)
         {
             if (string.IsNullOrEmpty(userAgent)) return new UserAgentInfoModel();
 
-            var deviceDetector = new DeviceDetector(userAgent);
-
-            deviceDetector.SkipBotDetection();
-            deviceDetector.Parse();
-
-            var userAgentInfo = new UserAgentInfoModel { UserAgent = userAgent };
-
-            var clientInfo = deviceDetector.GetClient();
-
-            if (clientInfo != null && clientInfo.Success)
+            try
             {
-                userAgentInfo.ClientType = clientInfo.Match.Type;
-                userAgentInfo.ClientName = clientInfo.Match.Name;
-                userAgentInfo.ClientVersion = clientInfo.Match.Version;
+                var deviceDetector = new DeviceDetector(userAgent);
+
+                deviceDetector.SkipBotDetection();
+                deviceDetector.Parse();
+
+                var userAgentInfo = new UserAgentInfoModel { UserAgent = userAgent };
+
+                var clientInfo = deviceDetector.GetClient();
+
+                if (clientInfo != null && clientInfo.Success)
+                {
+                    userAgentInfo.ClientType = clientInfo.Match.Type;
+                    userAgentInfo.ClientName = clientInfo.Match.Name;
+                    userAgentInfo.ClientVersion = clientInfo.Match.Version;
+                }
+
+                var osInfo = deviceDetector.GetOs();
+
+                if (osInfo != null && osInfo.Success)
+                {
+                    userAgentInfo.OSName = osInfo.Match.Name;
+                    userAgentInfo.OSShortName = osInfo.Match.ShortName;
+                    userAgentInfo.OSVersion = osInfo.Match.Version;
+                    userAgentInfo.OSPlatform = osInfo.Match.Platform;
+                }
+
+                userAgentInfo.Device = deviceDetector.GetDeviceName();
+                userAgentInfo.Brand = deviceDetector.GetBrandName();
+                userAgentInfo.Model = deviceDetector.GetModel();
+                userAgentInfo.DeviceType = (int)GetDeviceType(deviceDetector);
+
+                userAgentInfo.FPUserAgentCode = crypto.GetMD5Hash(userAgent);
+
+                return userAgentInfo;
             }
-
-            var osInfo = deviceDetector.GetOs();
-
-            if (osInfo != null && osInfo.Success)
+            catch(Exception ex)
             {
-                userAgentInfo.OSName = osInfo.Match.Name;
-                userAgentInfo.OSShortName = osInfo.Match.ShortName;
-                userAgentInfo.OSVersion = osInfo.Match.Version;
-                userAgentInfo.OSPlatform = osInfo.Match.Platform;
+                _ = LogService.ErrorAsync($"{appSettings.Environment} - GetUserAgentInfo has error:\n {ex.Message}");
+                return new UserAgentInfoModel();
             }
-
-            userAgentInfo.Device = deviceDetector.GetDeviceName();
-            userAgentInfo.Brand = deviceDetector.GetBrandName();
-            userAgentInfo.Model = deviceDetector.GetModel();
-            userAgentInfo.DeviceType = GetDeviceType(deviceDetector);
-
-            userAgentInfo.FPUserAgentCode = crypto.GetMD5Hash(userAgent);
-
-            return userAgentInfo;
+            
         }
 
-        private int GetDeviceType(DeviceDetector deviceDetector)
+        private DeviceType GetDeviceType(DeviceDetector deviceDetector)
         {
-            int _OTHERTYPE = 0;
-            int _DESTOPTYPE = 1;
-            int _TABLETTYPE = 2;
-            int _MOBILETYPE = 3;
+            if (deviceDetector.IsDesktop()) return DeviceType.Desktop;
 
-            if (deviceDetector.IsDesktop()) return _DESTOPTYPE;
+            if (deviceDetector.IsTablet()) return DeviceType.Tablet;
 
-            if (deviceDetector.IsTablet()) return _TABLETTYPE;
+            if (deviceDetector.IsMobile()) return DeviceType.Mobile;
 
-            if (deviceDetector.IsMobile()) return _MOBILETYPE;
-
-            return _OTHERTYPE;
+            return DeviceType.Other;
         }
     }
 }
