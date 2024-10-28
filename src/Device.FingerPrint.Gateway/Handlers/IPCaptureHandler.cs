@@ -18,6 +18,7 @@ namespace Device.FingerPrint.Gateway.Handlers
                 if (request != null && _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress != null)
                 {
                     var ipAddress = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+
                     if(!string.IsNullOrEmpty(ipAddress))
                         request.Headers.Add("Fps-Forwarded-For", ipAddress);
 

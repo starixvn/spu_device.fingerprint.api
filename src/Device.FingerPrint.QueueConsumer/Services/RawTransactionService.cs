@@ -31,6 +31,7 @@
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
         private readonly IDatabase everTaggingRedisDB;
+        private readonly IMobileRawTransactionService mobileRawTransactionService;
 
         public RawTransactionModel TransformRawTransModel { get; private set; }
 
@@ -40,7 +41,8 @@
             IDeviceService deviceService,
             IBotDetectionService botDetectionService,
             ITransactionService transactionService,
-            IAppSettings appSettings
+            IAppSettings appSettings,
+            IMobileRawTransactionService mobileRawTransactionService
         )
         {
             this.rawTransactionAttributeService = rawTransactionAttributeService;
@@ -50,12 +52,19 @@
             this.appSettings = appSettings;
 
             this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
+            this.mobileRawTransactionService = mobileRawTransactionService;
         }
 
         public RawTransactionService TransformRawTransaction(MessageQueue message)
         {
             try
             {
+                if(message.Mobile != null && message.Mobile.IsMobileAppTrans)
+                {
+                    TransformRawTransModel = mobileRawTransactionService.TransformRawTransaction(message);
+                    return this;
+                }
+
                 var invalidDevice = string.Empty;
                 var deviceCode = string.Empty;
                 var url = string.Empty;
@@ -68,11 +77,6 @@
                     deviceInfo = deviceService.GetDeviceInfo(deviceCode, message);
                     url = message.Device.Url;
                     userAgent = message.Device.UserAgent;
-                }
-
-                if (message.Mobile != null)
-                {
-                    userAgent = string.IsNullOrEmpty(userAgent) ? message.Mobile.UserAgent : userAgent;
                 }
 
                 var transBit = new BitArray(16);
@@ -126,26 +130,8 @@
                     ScriptVersion = deviceInfo.Version
                 };
 
-                if (message.Mobile != null)
-                {
-                    rawTransModel.TransStatus = 0;
-                    rawTransModel.FlaggedCode = Flagged.Human.ToString();
-                    rawTransModel.MBAndroidCode = message.Mobile.AndroidCode;
-                    rawTransModel.MBCustomCode = message.Mobile.CustomCode;
-                    rawTransModel.MBMediaDRMCode = message.Mobile.MediaDRMCode;
-                    rawTransModel.MBIsMobileApp = message.Mobile.IsMobileAppTrans;
-                    rawTransModel.MBIsEmulator = message.Mobile.IsEmulator;
-                    rawTransModel.MBModelName = message.Mobile.ModelName;
-                    rawTransModel.MBManufacturer = message.Mobile.Manufacturer;
-                    rawTransModel.MBBrand = message.Mobile.Brand;
-                    rawTransModel.MBOS = message.Mobile.OS;
-                    rawTransModel.MBTimezone = message.Mobile.Timezone;
-                    rawTransModel.MBLanguage = message.Mobile.SystemLanguage;
-                    rawTransModel.MBCountry = message.Mobile.Country;
-                    rawTransModel.MBSDKVersion = message.Mobile.SdkVersion;
-                }
-
                 TransformRawTransModel = rawTransModel;
+
                 return this;
             }
             catch (Exception ex)
