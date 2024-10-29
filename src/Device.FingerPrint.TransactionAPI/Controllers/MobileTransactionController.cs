@@ -79,7 +79,7 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 }
             };
 
-            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
+            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.MobileQueueName;
 
             await massTransitProducer.SendAsync(message, queueAddress);
         }
