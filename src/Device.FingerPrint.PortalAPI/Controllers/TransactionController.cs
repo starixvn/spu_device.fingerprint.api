@@ -142,9 +142,14 @@
 
             return new WhoAmIModel
             {
-                LocalIP = localIpAddress.ToString(),
                 ServerName = Environment.MachineName,
-                ServerTime = DateTime.Now
+                ServerTime = DateTime.Now,
+                LocalIP = localIpAddress.ToString(),
+                ClientIP = GetHeaderIP("X-Remote-IP"),
+                FakeIP = GetFakeIp(),
+                RealIP = GetRealIp(),
+                XFW = GetXForWarded(),
+                ActualIP = GetHeaderIP("X-Actual-IP")
             };
         }
 
@@ -159,6 +164,7 @@
         [HttpGet("hc")]
         public void HealthCheck()
         {
+
         }
 
         [HttpGet("hc-sentry")]

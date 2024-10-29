@@ -10,5 +10,15 @@ namespace Device.FingerPrint.PortalAPI.Models
 
         public DateTime  ServerTime { get; set; }
 
+        public string RealIP { get; set; }
+
+        public string FakeIP { get; set; }
+
+        public string XFW { get; set; }
+
+        public string ClientIP { get; set; }
+
+        public string ActualIP { get; set; }
+
     }
 }

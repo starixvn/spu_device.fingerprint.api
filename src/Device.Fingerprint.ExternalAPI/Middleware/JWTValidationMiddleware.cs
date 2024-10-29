@@ -25,7 +25,7 @@ namespace Device.Fingerprint.ExternalAPI.Middleware
         {
             if(this.appSettings.Environment == "PROD" || this.appSettings.Environment == "UAT")
             {
-                if (!context.Request.Path.Value.Contains("generatetoken/audience"))
+                if (!context.Request.Path.Value.Contains("generatetoken/audience") && !context.Request.Path.Value.Contains("whoami"))
                 {
                     var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ').Last();
 
