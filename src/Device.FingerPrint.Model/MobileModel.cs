@@ -12,8 +12,6 @@
 
         public bool IsEmulator { get; set; }
 
-        public string UserAgent { get; set; }
-
         public string ModelName { get; set; }
 
         public string Manufacturer { get; set; }

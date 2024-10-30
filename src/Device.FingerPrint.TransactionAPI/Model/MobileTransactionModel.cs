@@ -8,8 +8,6 @@
 
         public DateTime? LoginTime { get; set; }
 
-        public string UserAgent { get; set; }
-
         public string Action { get; set; }
 
         public string ActionResult { get; set; }

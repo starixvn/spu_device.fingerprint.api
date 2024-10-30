@@ -68,7 +68,6 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                     CustomCode = transactionRequest.CustomCode,
                     IsEmulator = transactionRequest.IsEmulator,
                     IsMobileAppTrans = transactionRequest.IsMobileApp,
-                    UserAgent = transactionRequest.UserAgent,
                     Manufacturer = transactionRequest.Manufacturer,
                     MediaDRMCode = transactionRequest.MediaDRMCode,
                     ModelName = transactionRequest.ModelName,

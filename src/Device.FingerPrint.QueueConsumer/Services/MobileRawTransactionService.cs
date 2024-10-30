@@ -57,8 +57,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 TransformIP(message, rawTransModel);
 
-                TransformUserAgent(message, rawTransModel);
-
                 return rawTransModel;
             }
             catch (Exception ex)
@@ -106,12 +104,5 @@ namespace Device.FingerPrint.QueueConsumer.Services
             model.IsIPV6 = ipConverted.IsIpV6;
         }
 
-        private void TransformUserAgent(MessageQueue message, RawTransactionModel model)
-        {
-            model.UserAgent = message.Mobile.UserAgent;
-            model.RawUserAgent = model.UserAgent;
-            model.UserAgentInfo = userAgentService.GetUserAgentInfo(model.UserAgent);
-            model.FPUserAgentCode = model.UserAgentInfo.FPUserAgentCode;
-        }
     }
 }
