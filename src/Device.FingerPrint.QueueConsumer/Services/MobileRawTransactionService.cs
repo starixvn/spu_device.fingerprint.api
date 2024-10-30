@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using Device.FingerPrint.Core;
 using Fanex.Logging;
+using EasyNetQ;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -51,9 +52,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     MBSDKVersion = message.Mobile.SdkVersion,
                 };
 
-                rawTransModel.TransStatus = GetTransStatus(message);
-
-                rawTransModel.FlaggedCode = GetFlaggedCode();
+                rawTransModel.FlaggedCode = GetFlaggedCode(message);
 
                 TransformIP(message, rawTransModel);
 
@@ -70,27 +69,16 @@ namespace Device.FingerPrint.QueueConsumer.Services
             };
         }
 
-        private int GetTransStatus(MessageQueue message)
+
+        private string GetFlaggedCode(MessageQueue message)
         {
-            var transBit = new BitArray(16);
-
-            if (Core.Utilities.ContainsUnicodeCharacter(message.Account))
-            {
-                transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
-            }
-
             if (string.IsNullOrEmpty(message.Mobile.AndroidCode)
                 && string.IsNullOrEmpty(message.Mobile.CustomCode)
                 && string.IsNullOrEmpty(message.Mobile.MediaDRMCode))
             {
-                transBit.Set((int)TransStatusEnum.DeviceCodeIsEmpty, true);
+                return Flagged.EmptyDevice.ToString();
             }
 
-            return Core.Utilities.ConvertBitArray2Int(transBit);
-        }
-
-        private string GetFlaggedCode()
-        {
             return Flagged.Human.ToString();
         }
 

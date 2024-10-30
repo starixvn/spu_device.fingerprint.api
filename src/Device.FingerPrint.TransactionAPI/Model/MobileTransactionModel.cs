@@ -18,8 +18,6 @@
 
         public string MediaDRMCode { get; set; }
 
-        public bool IsMobileApp { get; set; }
-
         public bool IsEmulator { get; set; }
 
         public string ModelName { get; set; }
