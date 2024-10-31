@@ -305,26 +305,29 @@ namespace Device.FingerPrint.Core
         public static SessionKeyModel ParseSessionKey(string sessionKey, int defaultRedisDatabase)
         {
             if (string.IsNullOrEmpty(sessionKey))
-            {
                 return null;
-            }
 
-            if (sessionKey.Contains(':'))
-            {
-                var parts = sessionKey.Split(':');
-                if (parts.Length > 1 && ValidationSessionKey(parts[0]))
-                {
-                    return new SessionKeyModel { SessionKey = parts[0], RedisDbIndex = int.Parse(parts[1]) };
-                }
-                return null;
-            }
+            if (sessionKey.Contains(':') && TryParseSessionKeyWithDbIndex(sessionKey, defaultRedisDatabase, out var sessionKeyModel))
+                return sessionKeyModel;
 
-            if (ValidationSessionKey(sessionKey))
-            {
+            if (!sessionKey.Contains(':') && ValidationSessionKey(sessionKey))
                 return new SessionKeyModel { SessionKey = sessionKey, RedisDbIndex = defaultRedisDatabase };
-            }
 
             return null;
+        }
+
+        private static bool TryParseSessionKeyWithDbIndex(string sessionKey, int defaultRedisDatabase, out SessionKeyModel sessionKeyModel)
+        {
+            sessionKeyModel = null;
+
+            var parts = sessionKey.Split(':');
+            if (parts.Length != 2 || !ValidationSessionKey(parts[0]))
+                return false;
+
+            int redisDbIndex = int.TryParse(parts[1], out var parsedIndex) ? parsedIndex : defaultRedisDatabase;
+
+            sessionKeyModel = new SessionKeyModel { SessionKey = parts[0], RedisDbIndex = redisDbIndex };
+            return true;
         }
 
         public static bool ValidationSessionKey(string guidStr)
