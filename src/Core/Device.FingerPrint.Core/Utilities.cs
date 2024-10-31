@@ -353,6 +353,8 @@ namespace Device.FingerPrint.Core
 
         public static string RemoveRedisPrefix(string input, string prefix)
         {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+
             if (input.StartsWith(prefix))
             {
                 return input.Replace(prefix, string.Empty);
