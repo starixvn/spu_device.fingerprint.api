@@ -404,7 +404,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return false;
         }
 
-        public static bool IsValidHexString(string input)
+        private static bool IsValidHexString(string input)
         {
             return !string.IsNullOrEmpty(input) && input.Length % 2 == 0 && System.Text.RegularExpressions.Regex.IsMatch(input, @"\A\b[0-9a-fA-F]+\b\Z");
         }
@@ -435,9 +435,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         #region Log Info
         private void LogConsumerError(RawTransactionModel model, LogType logType)
         {
-            var subscriberName = model.SubscriberName;
-            if (appSettings.GetValue<bool>("Consumer:LogInfo")
-                && !subscriberName.Contains("Alpha", StringComparison.OrdinalIgnoreCase))
+            if (appSettings.GetValue<bool>("Consumer:LogInfo"))
             {
                 var logInfoModel = TransformToLogInfoModel(model, (int)logType);
                 logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
@@ -452,7 +450,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return new LogInfoModel
             {
                 LogType = logType,
-                SessionKey = $"{appSettings.Environment} - SSK: {sessionKey} - Tagging: {tagging}",
+                SessionKey = $"{appSettings.Environment} - SSK: {sessionKey}",
                 LoginName = model.LoginName,
                 SubscriberName = model.SubscriberName,
                 TransTime = model.TransTime,
