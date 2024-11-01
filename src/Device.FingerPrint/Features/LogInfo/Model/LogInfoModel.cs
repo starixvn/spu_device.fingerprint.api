@@ -6,7 +6,13 @@ namespace Device.FingerPrint.Features.LogInfo.Model
     {
         public int LogType { get; set; }
 
+        public string Environment { get; set; }
+
+        public string ScriptVersion { get; set; }
+
         public string SessionKey { get; set; }
+
+        public string Tagging { get; set; }
 
         public string LoginName { get; set; }
 

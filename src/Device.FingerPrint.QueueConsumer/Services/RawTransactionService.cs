@@ -125,7 +125,8 @@
                     IP = realIP,
                     IPId = ipConverted.IpNumber,
                     FakeIP = message.FakeIP?.Trim(),
-                    IsIPV6 = ipConverted.IsIpV6
+                    IsIPV6 = ipConverted.IsIpV6,
+                    ScriptVersion = deviceInfo.Version
                 };
 
                 await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel, botDModel);

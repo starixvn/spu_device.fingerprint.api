@@ -32,6 +32,8 @@
 
         public bool InvalidDeviceId { get; set; }
 
+        public string Version { get; set; }
+
         public BotDModel BotD { get; set; }
     }
 }

@@ -450,7 +450,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return new LogInfoModel
             {
                 LogType = logType,
-                SessionKey = $"{appSettings.Environment} - SSK: {sessionKey}",
+                Environment = appSettings.Environment,
+                ScriptVersion = model.ScriptVersion,
+                SessionKey = sessionKey,
+                Tagging = tagging,
                 LoginName = model.LoginName,
                 SubscriberName = model.SubscriberName,
                 TransTime = model.TransTime,
