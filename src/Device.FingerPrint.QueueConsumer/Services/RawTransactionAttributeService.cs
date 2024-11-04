@@ -79,7 +79,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         {
                             var sessionKey = Core.Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
 
-                            if (sessionKey != null && sessionKey.RedisDbIndex > 0)
+                            if (sessionKey != null && sessionKey.RedisDbIndex >= 0)
                             {
                                 var fingerPrintEncodeTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode));
                                 var headerTask = redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, RedisString.GetRedisKeyName(Model.RedisKey.Header));
