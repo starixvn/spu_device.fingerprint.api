@@ -41,8 +41,7 @@ namespace Device.FingerPrint.PortalAPI
                     .UseStartup<Startup>().UseKestrel(opt =>
                     {
                         opt.Limits.MaxRequestBodySize= 737280000;
-                        opt.Limits.MinRequestBodyDataRate =
-            new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(10));
+                        opt.Limits.MinRequestBodyDataRate = null;
                         opt.Limits.KeepAliveTimeout= TimeSpan.FromMinutes(10);
                         opt.Limits.RequestHeadersTimeout= TimeSpan.FromMinutes(10);                        
                     });
