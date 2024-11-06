@@ -17,7 +17,7 @@ namespace Device.FingerPrint.Redis
 
         Task<double> GetTimeSpan(int dbIndex, string hashedKey);
 
-        Task<List<string?>> HashGetWithDbIndexAsync(int dbIndex, string hashKey, List<string> fieldKeys);
+        List<string?> HashGetWithDbIndex(int dbIndex, string hashKey, List<string> fieldKeys);
     }
     public class RedisMultiplexDbService : IRedisMultiplexDbService
     {
@@ -82,12 +82,12 @@ namespace Device.FingerPrint.Redis
         }
 
 
-        public async Task<List<string?>> HashGetWithDbIndexAsync(int dbIndex, string hashKey, List<string> fieldKeys)
+        public List<string?> HashGetWithDbIndex(int dbIndex, string hashKey, List<string> fieldKeys)
         {
             var db = this.GetDatabase(dbIndex);
 
             RedisValue[] fields = fieldKeys.Select(f => (RedisValue)f).ToArray();
-            RedisValue[] values = await db.HashGetAsync(hashKey, fields);
+            RedisValue[] values = db.HashGet(hashKey, fields);
 
             return values.Select(value => value.HasValue ? value.ToString() : null).ToList();
         }

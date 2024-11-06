@@ -11,15 +11,14 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading.Tasks;
 
     public interface IRawTransactionService
     {
-        Task<RawTransactionModel> TransformRawTransaction(MessageQueue message);
+        RawTransactionModel TransformRawTransaction(MessageQueue message);
 
-        Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
+        void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
-        Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
+        void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -49,7 +48,7 @@
             this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
         }
 
-        public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
+        public RawTransactionModel TransformRawTransaction(MessageQueue message)
         {
             try
             {
@@ -123,8 +122,6 @@
                     ScriptVersion = deviceInfo.Version
                 };
 
-                await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel, botDModel);
-
                 return rawTransModel;
             }
             catch (Exception ex)
@@ -138,13 +135,14 @@
             }
         }
 
-        public async Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)
+        public void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)
         {
             try
             {
                 foreach (var code in everTaggings)
                 {
                     var expiry = TimeSpan.FromSeconds(expireSeconds);
+
                     _ = everTaggingRedisDB.StringSetAsync(
                         key: $"{hashKey}:{code}",
                         value: DateTime.Now.ToString(),
@@ -157,39 +155,34 @@
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertOrUpdateEverTagging: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
 
-        public async Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        public void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            var tasks = new List<Task>
-            {
-                InsertFPTagging(transactions, isTransOfDBExtra),
-                InsertFPUserAgent(transactions, isTransOfDBExtra),
-                InsertFPFingerPrint(transactions, isTransOfDBExtra)
-            };
-
-            await Task.WhenAll(tasks);
+            InsertFPTagging(transactions, isTransOfDBExtra);
+            InsertFPFingerPrint(transactions, isTransOfDBExtra);
+            InsertFPUserAgent(transactions, isTransOfDBExtra);
         }
 
-        private async Task InsertFPTagging(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private void InsertFPTagging(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             try
             {
                 var taggings = GetFPTaggingInfo(transactions);
                 if (!string.IsNullOrEmpty(taggings))
                 {
-                    await transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
+                    transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
                 }
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertFPTagging: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
 
-        private async Task InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private void InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             try
             {
@@ -197,16 +190,16 @@
                 if (userAgentInfos != null && userAgentInfos.Any())
                 {
                     var userAgentJson = JsonConvert.SerializeObject(userAgentInfos);
-                    await transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
+                    transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
                 }
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertFPUserAgent: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
 
-        private async Task InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private void InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             try
             {
@@ -214,12 +207,12 @@
                 if (fingerprintAttribute != null && fingerprintAttribute.Any())
                 {
                     var fingerPrintJson = JsonConvert.SerializeObject(fingerprintAttribute);
-                    await transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
+                    transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
                 }
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertFPFingerPrint: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
 

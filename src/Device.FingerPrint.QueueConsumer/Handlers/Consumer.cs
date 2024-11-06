@@ -5,9 +5,6 @@
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.QueueConsumer.Services;
-    using Fanex.Logging;
-    using Fanex.Logging.Extensions;
-    using Fanex.Logging.Extensions.Database;
     using MassTransit;
     using System;
     using System.Collections.Generic;
@@ -17,28 +14,28 @@
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
         private readonly IRawTransactionService rawTransactionService;
+        private readonly IRawTransactionAttributeService rawTransactionAttributeService;
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
-        private readonly ILogger logger;
         private readonly ILogstashService logstashService;
 
         private const string hashKeyEverTagging = "EverTagging";
 
         public Consumer(
                 IRawTransactionService rawTransactionService,
+                IRawTransactionAttributeService rawTransactionAttributeService,
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
-                ILogger logger,
                 ILogstashService logstashService
         )
         {
             this.rawTransactionService = rawTransactionService;
+            this.rawTransactionAttributeService = rawTransactionAttributeService;
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
-            this.logger = logger;
             this.logstashService = logstashService;
         }
 
@@ -48,48 +45,70 @@
             {
                 if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
-                    await ProcessTransaction(context.Message);
+                    var rawTransModels = await ProcessTransformTransaction(context.Message);
+
+                    if (rawTransModels != null && rawTransModels.Any())
+                    {
+                        rawTransModels = ipdbService.TransformTransactionByIps(rawTransModels);
+
+                        rawTransactionService.InsertRawTransactionDetail(rawTransModels, appSettings.IsExtraSub);
+
+                        transactionService.InsertRawTransaction(rawTransModels, appSettings.IsExtraSub);
+
+                        _ = AdditionalProcessingNotAwait(rawTransModels);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                 throw;
             }
         }
 
-        private async Task ProcessTransaction(Batch<MessageQueue> messages)
+        private async Task<IEnumerable<RawTransactionModel>> ProcessTransformTransaction(Batch<MessageQueue> messages)
         {
-            var transactionModels = await Task.WhenAll(messages.Select(async x =>
-            {
-                return await rawTransactionService.TransformRawTransaction(x.Message);
-            }));
-
-            var filterTransaction = transactionModels.Where(x => x.TransStatus != (int)TransStatusEnum.InvalidLoginName);
-
-            if(filterTransaction != null && filterTransaction.Any())
-            {
-                ipdbService.TransformTransactionByIps(filterTransaction);
-
-                await rawTransactionService.InsertRawTransactionDetail(filterTransaction, appSettings.IsExtraSub);
-
-                await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
-
-                _ = AdditionalProcessingNotAwait(filterTransaction);
-            }
+            return (await Task.WhenAll(messages.Select(x => ProcessSingleTransaction(x))))
+                        .Where(model => model != null);
         }
 
-        private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
+        private Task<RawTransactionModel> ProcessSingleTransaction(ConsumeContext<MessageQueue> message)
         {
-            var tasks = new List<Task>();
-
-            var everTagging = transactionModels.Where(x => !string.IsNullOrEmpty(x.FPTagging))?.Select(x => DeviceEncoder.Encrypt(x.FPTagging));
-            if (everTagging != null && everTagging.Any())
+            return Task.Run(() =>
             {
-                tasks.Add(rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond));
+                var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
+
+                if (rawTransModel.TransStatus != (int)TransStatusEnum.InvalidLoginName)
+                {
+                    return rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
+                }
+
+                return null;
+            });
+        }
+
+        private Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
+        {
+            var everTagging = transactionModels
+                .Where(x => !string.IsNullOrEmpty(x.FPTagging))
+                .Select(x => DeviceEncoder.Encrypt(x.FPTagging));
+
+            if (everTagging.Any())
+            {
+                Task.Run(() =>
+                {
+                    try
+                    {
+                        rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond);
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = QueueConsumer.Utilities.LogErrorAsync(ex);
+                    }
+                });
             }
 
-            await Task.WhenAll(tasks);
+            return Task.CompletedTask;
         }
 
         private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
@@ -102,20 +121,9 @@
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                 }
             }
-        }
-
-        private void LogError(Exception ex)
-        {
-            var logMessage = new LogMessage(ex.Message)
-                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
-                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
-                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
-                   .ToString();
-
-            logger.Error(logMessage);
         }
     }
 }

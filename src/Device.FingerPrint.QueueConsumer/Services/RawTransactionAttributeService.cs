@@ -13,7 +13,6 @@ using Fanex.Logging;
 using Newtonsoft.Json;
 using StackExchange.Redis;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -22,7 +21,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 {
     public interface IRawTransactionAttributeService
     {
-        Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel);
+        RawTransactionModel GetTransactionAttribute(RawTransactionModel model);
     }
 
     public class RawTransactionAttributeService : IRawTransactionAttributeService
@@ -57,7 +56,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                             };
         }
 
-        public async Task GetTransactionAttribute(RawTransactionModel model, BotDModel botDModel)
+        public RawTransactionModel GetTransactionAttribute(RawTransactionModel model)
         {
             try
             {
@@ -73,19 +72,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     {
                         if (!model.SessionKey.Contains(':'))
                         {
-                            _ = LogConsumerError(model, LogType.SessionKeyColon);
+                            _ = LogConsumerErrorAsync(model, LogType.SessionKeyColon);
                             isLogged = true;
                         }
 
                         var sessionKey = Core.Utilities.ParseSessionKey(model.SessionKey, appSettings.RedisDatabase);
                         if (sessionKey != null)
                         {
-                            var redisValues = await redisMultiplexService.HashGetWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, fieldKeys);
+                            var redisValues = redisMultiplexService.HashGetWithDbIndex(sessionKey.RedisDbIndex, sessionKey.SessionKey, fieldKeys);
 
                             var fingerPrintEncode = redisValues[0];
                             var header = redisValues[1];
-
-                            var realTagging = await everTaggingRedisDB.StringGetAsync(_realTaggingPrefix + sessionKey.SessionKey);
 
                             var fingerPrintModel = new FingerprintModel();
                             if (!string.IsNullOrEmpty(fingerPrintEncode) && Utilities.IsBase64String(fingerPrintEncode))
@@ -128,13 +125,14 @@ namespace Device.FingerPrint.QueueConsumer.Services
                             model.FPFingerPrintExtraCode = model.FingerprintAttribute.FPFingerPrintExtraCode;
                             model.FPFingerPrintOldCode = model.FingerprintAttribute.FPFingerPrintOldCode;
 
-                            var taggingValue = GetTaggingValue(realTagging, sessionKey.SessionKey);
-                            model.FPTagging = taggingValue;
+
+                            var realTagging = everTaggingRedisDB.StringGet(_realTaggingPrefix + sessionKey.SessionKey);
+                            model.FPTagging = GetTaggingValue(realTagging, sessionKey.SessionKey);
 
                             // Log when FPTagging is wrong
-                            if (!string.IsNullOrEmpty(taggingValue) && taggingValue.Length != 32)
+                            if (!string.IsNullOrEmpty(model.FPTagging) && model.FPTagging.Length != 32)
                             {
-                                _ = LogConsumerError(model, LogType.TaggingLength);
+                                _ = LogConsumerErrorAsync(model, LogType.TaggingLength);
                             }
 
                             if (!string.IsNullOrEmpty(realTagging))
@@ -147,12 +145,12 @@ namespace Device.FingerPrint.QueueConsumer.Services
                         }
                         else if (!isLogged)
                         {
-                            _ = LogConsumerError(model, LogType.SessionKeyParse);
+                            _ = LogConsumerErrorAsync(model, LogType.SessionKeyParse);
                         }
                     }
                     else if (model.SessionKey == null)
                     {
-                        _ = LogConsumerError(model, LogType.SessionKeyNull);
+                        _ = LogConsumerErrorAsync(model, LogType.SessionKeyNull);
                     }
                 }
             }
@@ -160,6 +158,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
             {
                 _ = LogService.InfoAsync($"{appSettings.Environment} - GetTransactionAttribute has error:\n {ex.Message}");
             }
+
+            return model;
         }
 
         private static void UpdateIPInfo(RawTransactionModel model, HeaderModel headerModel)
@@ -463,7 +463,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         }
 
         #region Log Info
-        private async Task LogConsumerError(RawTransactionModel model, LogType logType)
+        private async Task LogConsumerErrorAsync(RawTransactionModel model, LogType logType)
         {
             if (appSettings.GetValue<bool>("Consumer:LogInfo"))
             {
