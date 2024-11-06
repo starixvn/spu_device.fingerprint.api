@@ -1,5 +1,4 @@
-﻿using Device.FingerPrint.Core.Encoders;
-using Device.FingerPrint.Model;
+﻿using Device.FingerPrint.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -304,51 +303,46 @@ namespace Device.FingerPrint.Core
 
         public static SessionKeyModel ParseSessionKey(string sessionKey, int defaultRedisDatabase)
         {
-            if (string.IsNullOrEmpty(sessionKey))
-                return null;
+            var parts = sessionKey.Split(':');
+            var sessionKeyModel = new SessionKeyModel();
 
-            if (sessionKey.Contains(':') && TryParseSessionKeyWithDbIndex(sessionKey, defaultRedisDatabase, out var sessionKeyModel))
+            if (parts.Length > 0)
+            {
+                sessionKeyModel.SessionKey = parts[0];
+                sessionKeyModel.RedisDbIndex = int.TryParse(parts[1], out var parsedIndex) ? parsedIndex : defaultRedisDatabase;
+            }
+            else
+            {
+                sessionKeyModel.SessionKey = sessionKey;
+                sessionKeyModel.RedisDbIndex = defaultRedisDatabase;
+            }
+
+            if (IsBase64(sessionKeyModel.SessionKey))
+            {
                 return sessionKeyModel;
-
-            if (!sessionKey.Contains(':') && ValidationSessionKey(sessionKey))
-                return new SessionKeyModel { SessionKey = sessionKey, RedisDbIndex = defaultRedisDatabase };
+            }
 
             return null;
         }
 
-        private static bool TryParseSessionKeyWithDbIndex(string sessionKey, int defaultRedisDatabase, out SessionKeyModel sessionKeyModel)
+        public static bool IsBase64(string base64String)
         {
-            sessionKeyModel = null;
-
-            var parts = sessionKey.Split(':');
-            if (parts.Length != 2 || !ValidationSessionKey(parts[0]))
+            if (string.IsNullOrEmpty(base64String))
+            {
                 return false;
+            }
 
-            int redisDbIndex = int.TryParse(parts[1], out var parsedIndex) ? parsedIndex : defaultRedisDatabase;
+            if (base64String.Length % 4 != 0)
+            {
+                return false;
+            }
 
-            sessionKeyModel = new SessionKeyModel { SessionKey = parts[0], RedisDbIndex = redisDbIndex };
-            return true;
-        }
-
-        public static bool ValidationSessionKey(string guidStr)
-        {
-            return Guid.TryParse(guidStr, out Guid _) || ValidationSessionKeyByEncrypt(guidStr);
-        }
-
-        public static bool ValidationSessionKeyByEncrypt(string deviceID)
-        {
             try
             {
-                if (string.IsNullOrEmpty(deviceID))
-                {
-                    return false;
-                }
-
-                var decryptStr = DeviceEncoder.Decrypt(deviceID);
-
-                return Guid.TryParse(decryptStr, out Guid newGuid);
+                Convert.FromBase64String(base64String);
+                return true;
             }
-            catch
+            catch (FormatException)
             {
                 return false;
             }

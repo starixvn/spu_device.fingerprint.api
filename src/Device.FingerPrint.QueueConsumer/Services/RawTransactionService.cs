@@ -6,18 +6,16 @@
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
     using Newtonsoft.Json;
+    using StackExchange.Redis;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Security.Policy;
     using System.Threading.Tasks;
 
     public interface IRawTransactionService
     {
         Task<RawTransactionModel> TransformRawTransaction(MessageQueue message);
-
-        Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
 
         Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
 
@@ -29,16 +27,17 @@
     public class RawTransactionService : IRawTransactionService
     {
         private readonly IRawTransactionAttributeService rawTransactionAttributeService;
-        private readonly IRedisService redisService;
-        private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IDeviceService deviceService;
         private readonly IBotDetectionService botDetectionService;
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
+        //private readonly IDatabase jsChallengeRedisDB;
+        private readonly IDatabase everTaggingRedisDB;
+
+        private readonly int REDIS_JSCHALLENGE_DATABASE = 10;
 
         public RawTransactionService(
-            IRedisService redisService,
-            IRedisMultiplexService redisMultiplexService,
+            IRedisMultiplexDbService redisMultiplexService,
             IRawTransactionAttributeService rawTransactionAttributeService,
             IDeviceService deviceService,
             IBotDetectionService botDetectionService,
@@ -47,12 +46,13 @@
         )
         {
             this.rawTransactionAttributeService = rawTransactionAttributeService;
-            this.redisService = redisService;
-            this.redisMultiplexService = redisMultiplexService;
             this.deviceService = deviceService;
             this.botDetectionService = botDetectionService;
             this.transactionService = transactionService;
             this.appSettings = appSettings;
+
+            //this.jsChallengeRedisDB = redisMultiplexService.GetDatabase(REDIS_JSCHALLENGE_DATABASE);
+            this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
         }
 
         public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
@@ -144,37 +144,31 @@
             }
         }
 
-        public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
-        {
-            var groupByTrans = transactions
-                .Where(x => x.SessionKey != null)
-                .GroupBy(x => x.SessionKey);
-
-            var tasks = groupByTrans
-                .Select(transGroup => redisService.HashDeleteAsync(transGroup.Key, RedisString.GetRedisKeyNames()))
-                .ToList();
-
-            await Task.WhenAll(tasks);
-        }
-
         public async Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes)
         {
-            var tasks = jsChallengeCodes
-            .Select(code => redisService.RedisJSChallengeDatabase.RemoveAsync($"Challenge:{code}", StackExchange.Redis.CommandFlags.FireAndForget))
-            .ToList();
+            //var tasks = jsChallengeCodes
+            //.Select(code => jsChallengeRedisDB.RemoveAsync($"Challenge:{code}", StackExchange.Redis.CommandFlags.FireAndForget))
+            //.ToList();
 
-            await Task.WhenAll(tasks);
+            //await Task.WhenAll(tasks);
         }
 
-        public async Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond)
+        public async Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)
         {
             try
             {
-                var tasks = everTaggings
-                .Select(code => redisMultiplexService.EverTagging_AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
-                .ToList();
-
-                await Task.WhenAll(tasks);
+                foreach (var code in everTaggings)
+                {
+                    var expiry = TimeSpan.FromSeconds(expireSeconds);
+                    _ = everTaggingRedisDB.StringSetAsync(
+                        key: $"{hashKey}:{code}",
+                        value: DateTime.Now.ToString(),
+                        expiry: expiry,
+                        keepTtl: false,
+                        when: When.Always,
+                        flags: CommandFlags.FireAndForget
+                    );
+                }
             }
             catch (Exception ex)
             {

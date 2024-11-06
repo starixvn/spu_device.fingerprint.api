@@ -10,6 +10,7 @@
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Net.Http.Headers;
+    using Newtonsoft.Json;
     using StackExchange.Redis;
     using System;
     using System.Collections.Generic;
@@ -46,7 +47,7 @@
 
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
-                    var headerModel = GetHeaderValue();                  
+                    var headerModel = GetHeaderValue();
 
                     var keyValuePairs = new Dictionary<string, string>
                                         {
@@ -83,7 +84,8 @@
                 {
                     foreach (var ec in everTaggingValues)
                     {
-                        if (Utilities.ValidationSessionKey(ec))
+                        var sessionKey = Utilities.ParseSessionKey(ec, 0);
+                        if (sessionKey != null)
                         {
                             var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
 
@@ -164,7 +166,6 @@
         [HttpGet("hc")]
         public void HealthCheck()
         {
-
         }
 
         [HttpGet("hc-sentry")]

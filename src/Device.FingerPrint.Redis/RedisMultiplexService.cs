@@ -14,7 +14,7 @@ namespace Device.FingerPrint.Redis
 
         Task EverTagging_AddItemWithExpiryAsync(string hashKey, string itemKey, string value, TimeSpan expiry);
 
-        Task<string> EverTagging_GetValueFromRedis(string value);
+        Task<string> EverTagging_GetValueFromRedisAsync(string value);
 
         Task<string> EverTagging_GetValuesFromRedis(IEnumerable<string> values);
 
@@ -77,7 +77,7 @@ namespace Device.FingerPrint.Redis
             await redisEverTaggingDb.KeyExpireAsync(expiryKey, expiry);
         }
 
-        public async Task<string> EverTagging_GetValueFromRedis(string value)
+        public async Task<string> EverTagging_GetValueFromRedisAsync(string value)
         {
             var result = await redisEverTaggingDb.StringGetAsync(value);
             if (result.HasValue)
