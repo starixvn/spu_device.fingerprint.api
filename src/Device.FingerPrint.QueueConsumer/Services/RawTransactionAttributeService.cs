@@ -32,9 +32,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private readonly ILogInfoServices logInfoServices;
         private readonly IAppSettings appSettings;
         private readonly IDatabase everTaggingRedisDB;
-        //private readonly IDatabase jsChallengeRedisDB;
-
-        //private readonly int REDIS_JSCHALLENGE_DATABASE = 10;
 
         private const string base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
         private const string _realTaggingPrefix = "RealTagging:";
@@ -52,7 +49,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.appSettings = appSettings;
 
             everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
-            //jsChallengeRedisDB = redisMultiplexService.GetDatabase(REDIS_JSCHALLENGE_DATABASE);
 
             fieldKeys = new List<string>
                             {
@@ -65,15 +61,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             try
             {
-                //if (!appSettings.IsDisableJsChallenge && botDModel != null && !string.IsNullOrEmpty(botDModel.JscKey))
-                //{
-                //    var jscKey = botDModel.JscKey;
-                //    model.ChallengeCode = jscKey;
-
-                //    var jsChallengeTask = jsChallengeRedisDB.HashGet($"Challenge:{jscKey}");
-                //    var jsChallenge = jsChallengeTask.Result;
-                //    TransformJSChallengeInfo(model, jscKey, jsChallenge);
-                //}
                 var isLogged = false;
 
                 if (model != null)
@@ -236,27 +223,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return result;
-        }
-
-        private static void TransformJSChallengeInfo(RawTransactionModel model, string jscKey, string jsChallenge)
-        {
-            if (!string.IsNullOrEmpty(jsChallenge))
-            {
-                var jsChallengeInfo = JsonConvert.DeserializeObject<JSChallengeInfo>(jsChallenge);
-                if (string.IsNullOrEmpty(jsChallengeInfo.Expect))
-                {
-                    jsChallengeInfo.Expect = jsChallengeInfo.Expected;
-                }
-
-                if (jsChallengeInfo.Expect != jsChallengeInfo.Actual && jsChallengeInfo.Result == 0)
-                {
-                    jsChallengeInfo.Result = 1;
-                }
-                jsChallengeInfo.ChallengeCode = jscKey;
-                model.RawJsChallengeInfo = jsChallengeInfo;
-
-                model.ChallengeCode = jscKey;
-            }
         }
 
         private UserAgentInfoModel GetUserAgentInfo(string userAgent)

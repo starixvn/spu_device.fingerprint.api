@@ -89,12 +89,6 @@
                 tasks.Add(rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond));
             }
 
-            var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
-            if (rawJsChallenges != null && rawJsChallenges.Any())
-            {
-                tasks.Add(HandleClearRedisJsChallenge(rawJsChallenges));
-            }
-
             await Task.WhenAll(tasks);
         }
 
@@ -110,19 +104,6 @@
                 {
                     LogError(ex);
                 }
-            }
-        }
-
-        private async Task HandleClearRedisJsChallenge(IEnumerable<string> rawJsChallenges)
-        {
-            try
-            {
-                await rawTransactionService.ClearRedisJsChallenge(rawJsChallenges);
-
-            }
-            catch (Exception ex)
-            {
-                LogError(ex);
             }
         }
 

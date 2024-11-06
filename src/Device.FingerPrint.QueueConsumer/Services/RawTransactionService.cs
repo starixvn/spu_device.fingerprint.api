@@ -17,8 +17,6 @@
     {
         Task<RawTransactionModel> TransformRawTransaction(MessageQueue message);
 
-        Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
-
         Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
         Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
@@ -31,10 +29,7 @@
         private readonly IBotDetectionService botDetectionService;
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
-        //private readonly IDatabase jsChallengeRedisDB;
         private readonly IDatabase everTaggingRedisDB;
-
-        private readonly int REDIS_JSCHALLENGE_DATABASE = 10;
 
         public RawTransactionService(
             IRedisMultiplexDbService redisMultiplexService,
@@ -51,7 +46,6 @@
             this.transactionService = transactionService;
             this.appSettings = appSettings;
 
-            //this.jsChallengeRedisDB = redisMultiplexService.GetDatabase(REDIS_JSCHALLENGE_DATABASE);
             this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
         }
 
@@ -144,15 +138,6 @@
             }
         }
 
-        public async Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes)
-        {
-            //var tasks = jsChallengeCodes
-            //.Select(code => jsChallengeRedisDB.RemoveAsync($"Challenge:{code}", StackExchange.Redis.CommandFlags.FireAndForget))
-            //.ToList();
-
-            //await Task.WhenAll(tasks);
-        }
-
         public async Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)
         {
             try
@@ -182,8 +167,7 @@
             {
                 InsertFPTagging(transactions, isTransOfDBExtra),
                 InsertFPUserAgent(transactions, isTransOfDBExtra),
-                InsertFPFingerPrint(transactions, isTransOfDBExtra),
-                InsertJSChallengeInfo(transactions, isTransOfDBExtra)
+                InsertFPFingerPrint(transactions, isTransOfDBExtra)
             };
 
             await Task.WhenAll(tasks);
@@ -219,23 +203,6 @@
             catch (Exception ex)
             {
                 await LogService.ErrorAsync($"Error in InsertFPUserAgent: {ex.Message}");
-            }
-        }
-
-        private async Task InsertJSChallengeInfo(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
-        {
-            try
-            {
-                var jsChallengeInfos = GetValidInfo(transactions, t => t.RawJsChallengeInfo);
-                if (jsChallengeInfos != null && jsChallengeInfos.Any())
-                {
-                    var jsChallengeInfoJson = JsonConvert.SerializeObject(jsChallengeInfos);
-                    await transactionService.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
-                }
-            }
-            catch (Exception ex)
-            {
-                await LogService.ErrorAsync($"Error in InsertJSChallengeInfo: {ex.Message}");
             }
         }
 
