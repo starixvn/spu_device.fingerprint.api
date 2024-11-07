@@ -85,7 +85,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                             var header = redisValues[1];
 
                             var fingerPrintModel = new FingerprintModel();
-                            if (!string.IsNullOrEmpty(fingerPrintEncode) && Utilities.IsBase64String(fingerPrintEncode))
+                            if (!string.IsNullOrEmpty(fingerPrintEncode))
                             {
                                 try
                                 {
@@ -95,13 +95,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
                                         fingerPrintModel = JsonConvert.DeserializeObject<FingerprintModel>(decodeData);
                                     }
                                 }
-                                catch (FormatException ex)
+                                catch (Exception ex)
                                 {
-                                    _ = LogService.InfoAsync($"{appSettings.Environment} - FormatException has error:\nfingerPrintEncode: {fingerPrintEncode}\n{ex.Message}");
-                                }
-                                catch (JsonException ex)
-                                {
-                                    _ = LogService.InfoAsync($"{appSettings.Environment} - JsonException has error:\nfingerPrintEncode: {fingerPrintEncode}\n{ex.Message}");
+                                    _ = LogService.InfoAsync($"{appSettings.Environment} - Deserialize fingerPrint has error: {ex.Message}\n{fingerPrintEncode}");
                                 }
                             }
 
@@ -113,9 +109,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
                                     headerModel = JsonConvert.DeserializeObject<HeaderModel>(header);
                                     UpdateIPInfo(model, headerModel);
                                 }
-                                catch (JsonException ex)
+                                catch (Exception ex)
                                 {
-                                    _ = LogService.InfoAsync($"{appSettings.Environment} - JsonException header has error:\nheader: {header}\n {ex.Message}");
+                                    _ = LogService.InfoAsync($"{appSettings.Environment} - Deserialize header has error:\nheader: {header}\n {ex.Message}");
                                 }
                             }
 
@@ -265,7 +261,12 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return userAgentInfo;
         }
 
-        private static Dictionary<string, string> DeserializeToDictionary(string attributesJson)
+        private Dictionary<string, string> DeserializeToDictionary(string attributesJson)
+        {
+            return JsonConvert.DeserializeObject<Dictionary<string, object>>(attributesJson)
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value == null ? null : JsonConvert.SerializeObject(kvp.Value));
+        }
+        private static Dictionary<string, string> DeserializeToDictionary1(string attributesJson)
         {
             if (string.IsNullOrEmpty(attributesJson) || !Utilities.IsValidJson(attributesJson))
             {
@@ -289,10 +290,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
                                                         : JsonConvert.SerializeObject(kvp.Value))
                                             );
             }
-            catch (JsonSerializationException ex)
-            {
-                _ = Utilities.LogInfoAsync(ex);
-            }
             catch (Exception ex)
             {
                 _ = Utilities.LogInfoAsync(ex);
@@ -303,6 +300,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private FPOldFingerprintAttributeModel TransformOldFingerprintAttribute(Dictionary<string, string> attributesDictionary, FPFingerprintAttributeModel fingerPrintAttribute, RawTransactionModel rawTransModel)
         {
+
             var oldFingerPrintAttribute = JsonConvert.DeserializeObject<FPOldFingerprintAttributeModel>(JsonConvert.SerializeObject(attributesDictionary));
 
             oldFingerPrintAttribute.SuperCookies = GetSuperCookies(fingerPrintAttribute);

@@ -15,6 +15,8 @@ namespace Device.FingerPrint.Core
 {
     public static class Utilities
     {
+        private const int _countRedisDB = 16;
+
         public static string GetURLFromDeviceCode(string di)
         {
             if (string.IsNullOrWhiteSpace(di))
@@ -304,17 +306,19 @@ namespace Device.FingerPrint.Core
         public static SessionKeyModel ParseSessionKey(string sessionKey, int defaultRedisDatabase)
         {
             var parts = sessionKey.Split(':');
-            var sessionKeyModel = new SessionKeyModel();
+            var sessionKeyModel = new SessionKeyModel { RedisDbIndex = defaultRedisDatabase };
 
             if (parts.Length > 0)
             {
                 sessionKeyModel.SessionKey = parts[0];
-                sessionKeyModel.RedisDbIndex = int.TryParse(parts[1], out var parsedIndex) ? parsedIndex : defaultRedisDatabase;
+                if (parts.Length > 1 && int.TryParse(parts[1], out var parsedIndex))
+                {
+                    sessionKeyModel.RedisDbIndex = parsedIndex < _countRedisDB ? parsedIndex : defaultRedisDatabase;
+                }
             }
             else
             {
                 sessionKeyModel.SessionKey = sessionKey;
-                sessionKeyModel.RedisDbIndex = defaultRedisDatabase;
             }
 
             if (IsBase64(sessionKeyModel.SessionKey))

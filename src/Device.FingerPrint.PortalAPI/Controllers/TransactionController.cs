@@ -15,7 +15,6 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
 
     [Route("api")]
@@ -53,7 +52,7 @@
                                         {
                                             { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
                                             { RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode), data.Data },
-                                            { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonSerializer.Serialize(headerModel) }
+                                            { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonConvert.SerializeObject(headerModel) }
                                         };
 
                     var hashRedisEntry = keyValuePairs.Select(x => new HashEntry(x.Key, x.Value)).ToArray();

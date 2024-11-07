@@ -71,13 +71,7 @@
 
         private async Task<IEnumerable<RawTransactionModel>> ProcessTransformTransaction(Batch<MessageQueue> messages)
         {
-            return (await Task.WhenAll(messages.Select(x => ProcessSingleTransaction(x))))
-                        .Where(model => model != null);
-        }
-
-        private Task<RawTransactionModel> ProcessSingleTransaction(ConsumeContext<MessageQueue> message)
-        {
-            return Task.Run(() =>
+            return (await Task.WhenAll(messages.Select(async message =>
             {
                 var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
 
@@ -87,7 +81,8 @@
                 }
 
                 return null;
-            });
+            })))
+            .Where(model => model != null);
         }
 
         private Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
@@ -112,21 +107,6 @@
             }
 
             return Task.CompletedTask;
-        }
-
-        private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
-        {
-            if (appSettings.IsEnableLogstash)
-            {
-                try
-                {
-                    await Task.WhenAll(transactions.Select(logstashService.PushLog));
-                }
-                catch (Exception ex)
-                {
-                    _ = QueueConsumer.Utilities.LogErrorAsync(ex);
-                }
-            }
         }
     }
 }
