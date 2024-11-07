@@ -3,21 +3,20 @@ using Device.FingerPrint.Features.Transaction.Model;
 using Fanex.Data.Repository;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionDataAccess
     {
-        Task InsertRawTransaction(string transJson, bool isTransOfDBExtra);
+        void InsertRawTransaction(string transJson, bool isTransOfDBExtra);
 
-        Task InsertFPTagging(string taggings, bool isTransOfDBExtra);
+        void InsertFPTagging(string taggings, bool isTransOfDBExtra);
 
-        Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
+        void InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
 
-        Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
+        void InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
 
-        Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
+        void InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
 
         void InsertTransaction(string transJson);
 
@@ -60,7 +59,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
             repository = new DynamicRepository();
         }
 
-        public async Task InsertRawTransaction(string transJson, bool isTransOfDBExtra)
+        public void InsertRawTransaction(string transJson, bool isTransOfDBExtra)
         {
             var criteria = new InsertRawTransactionCriteria
             {
@@ -68,10 +67,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
-            await repository.ExecuteAsync(criteria);
+            repository.Execute(criteria);
         }
 
-        public async Task InsertFPTagging(string taggings, bool isTransOfDBExtra)
+        public void InsertFPTagging(string taggings, bool isTransOfDBExtra)
         {
             var criteria = new InsertFPTaggingCriteria
             {
@@ -79,10 +78,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
-            await repository.ExecuteAsync(criteria);
+            repository.Execute(criteria);
         }
 
-        public async Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
+        public void InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
         {
             var criteria = new InsertFPUserAgentCriteria
             {
@@ -90,10 +89,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
-            await repository.ExecuteAsync(criteria);
+            repository.Execute(criteria);
         }
 
-        public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
+        public void InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
         {
             var criteria = new InsertJSChallengeInfoCriteria
             {
@@ -101,10 +100,10 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
-            await repository.ExecuteAsync(criteria);
+            repository.Execute(criteria);
         }
 
-        public async Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
+        public void InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
         {
             var criteria = new InsertFPFingerPrintCriteria
             {
@@ -112,7 +111,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 IsTransOfDBExtra = isTransOfDBExtra
             };
 
-            await repository.ExecuteAsync(criteria);
+            repository.Execute(criteria);
         }
 
         public void InsertTransaction(string transJson)

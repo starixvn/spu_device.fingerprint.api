@@ -4,21 +4,20 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
     public interface ITransactionService
     {
-        Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
+        void InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
 
-        Task InsertFPTagging(string taggings, bool isTransOfDBExtra);
+        void InsertFPTagging(string taggings, bool isTransOfDBExtra);
 
-        Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
+        void InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra);
 
-        Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
+        void InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra);
 
-        Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
+        void InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra);
 
         void InsertTransaction(IEnumerable<TransactionEntity> transactions);
 
@@ -60,31 +59,31 @@ namespace Device.FingerPrint.Features.Transaction.Services
             this.transactionDataAccess = transactionDataAccess;
         }
 
-        public async Task InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        public void InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             var transJson = JsonConvert.SerializeObject(TransformInsertRawTransaction(transactions));
-            await transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
+            transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
 
         }
 
-        public async Task InsertFPTagging(string taggings, bool isTransOfDBExtra)
+        public void InsertFPTagging(string taggings, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertFPTagging(taggings, isTransOfDBExtra);
+            transactionDataAccess.InsertFPTagging(taggings, isTransOfDBExtra);
         }
 
-        public async Task InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
+        public void InsertFPUserAgent(string userAgentJson, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
+            transactionDataAccess.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
         }
 
-        public async Task InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
+        public void InsertJSChallengeInfo(string jsChallengeInfoJson, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
+            transactionDataAccess.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
         }
 
-        public async Task InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
+        public void InsertFPFingerPrint(string fingerPrintJson, bool isTransOfDBExtra)
         {
-            await transactionDataAccess.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
+            transactionDataAccess.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
         }
 
         private static IEnumerable<InsertRawTransactionEntity> TransformInsertRawTransaction(IEnumerable<RawTransactionModel> transactions)

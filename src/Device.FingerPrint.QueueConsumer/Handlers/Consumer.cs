@@ -49,7 +49,10 @@
 
                     if (rawTransModels != null && rawTransModels.Any())
                     {
-                        rawTransModels = ipdbService.TransformTransactionByIps(rawTransModels);
+                        if (appSettings.IsExtraSub)
+                        {
+                            rawTransModels = ipdbService.TransformTransactionByIps(rawTransModels);
+                        }
 
                         rawTransactionService.InsertRawTransactionDetail(rawTransModels, appSettings.IsExtraSub);
 
