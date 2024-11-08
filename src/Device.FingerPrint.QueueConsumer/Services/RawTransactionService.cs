@@ -161,25 +161,8 @@
 
         public void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            InsertFPTagging(transactions, isTransOfDBExtra);
             InsertFPFingerPrint(transactions, isTransOfDBExtra);
             InsertFPUserAgent(transactions, isTransOfDBExtra);
-        }
-
-        private void InsertFPTagging(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
-        {
-            try
-            {
-                var taggings = GetFPTaggingInfo(transactions);
-                if (!string.IsNullOrEmpty(taggings))
-                {
-                    transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
-                }
-            }
-            catch (Exception ex)
-            {
-                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
-            }
         }
 
         private void InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
