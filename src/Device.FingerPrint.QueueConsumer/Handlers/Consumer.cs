@@ -9,6 +9,7 @@
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading;
     using System.Threading.Tasks;
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
@@ -68,22 +69,37 @@
                 throw;
             }
         }
-
         private async Task<IEnumerable<RawTransactionModel>> ProcessTransformTransaction(Batch<MessageQueue> messages)
         {
-            return (await Task.WhenAll(messages.Select(async message =>
+            var maxDegreeOfParallelism = 10;
+            var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
+            var tasks = new List<Task<RawTransactionModel>>();
+
+            foreach (var message in messages)
             {
-                var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
-
-                if (rawTransModel.TransStatus != (int)TransStatusEnum.InvalidLoginName)
+                await semaphore.WaitAsync();
+                tasks.Add(Task.Run(() =>
                 {
-                    return rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
-                }
+                    try
+                    {
+                        var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
+                        if (rawTransModel.TransStatus != (int)TransStatusEnum.InvalidLoginName)
+                        {
+                            return rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
+                        }
+                        return null;
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }));
+            }
 
-                return null;
-            })))
-            .Where(model => model != null);
+            var results = await Task.WhenAll(tasks);
+            return results.Where(model => model != null);
         }
+
 
         private Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
