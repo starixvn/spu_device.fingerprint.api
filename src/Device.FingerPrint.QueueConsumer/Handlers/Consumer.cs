@@ -46,7 +46,7 @@
             {
                 if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
-                    var rawTransModels = await ProcessTransformTransaction(context.Message);
+                    var rawTransModels = await TransformRawTransactionModel(context.Message);
 
                     if (rawTransModels != null && rawTransModels.Any())
                     {
@@ -69,7 +69,7 @@
                 throw;
             }
         }
-        private async Task<IEnumerable<RawTransactionModel>> ProcessTransformTransaction(Batch<MessageQueue> messages)
+        private async Task<IEnumerable<RawTransactionModel>> TransformRawTransactionModel(Batch<MessageQueue> messages)
         {
             var maxDegreeOfParallelism = 10;
             var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
@@ -89,6 +89,10 @@
                         }
                         return null;
                     }
+                    catch (Exception)
+                    {
+                        throw;
+                    }
                     finally
                     {
                         semaphore.Release();
@@ -101,28 +105,40 @@
         }
 
 
-        private Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
+        private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
-            var everTagging = transactionModels
-                .Where(x => !string.IsNullOrEmpty(x.FPTagging))
-                .Select(x => DeviceEncoder.Encrypt(x.FPTagging));
-
-            if (everTagging.Any())
+            try
             {
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond);
-                    }
-                    catch (Exception ex)
-                    {
-                        _ = QueueConsumer.Utilities.LogErrorAsync(ex);
-                    }
-                });
-            }
+                var everTagging = transactionModels
+                                .Where(x => !string.IsNullOrEmpty(x.FPTagging))
+                                .Select(x => DeviceEncoder.Encrypt(x.FPTagging));
 
-            return Task.CompletedTask;
+                if (everTagging.Any())
+                {
+                    rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond);
+                }
+
+                await InsertLogstash(transactionModels);
+            }
+            catch (Exception ex)
+            {
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
+            }
+        }
+
+        private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
+        {
+            if (appSettings.IsEnableLogstash)
+            {
+                try
+                {
+                    await Task.WhenAll(transactions.Select(logstashService.PushLog));
+                }
+                catch (Exception ex)
+                {
+                    _ = QueueConsumer.Utilities.LogErrorAsync(ex);
+                }
+            }
         }
     }
 }

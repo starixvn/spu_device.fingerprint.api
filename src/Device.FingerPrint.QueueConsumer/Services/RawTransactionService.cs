@@ -143,7 +143,7 @@
                 {
                     var expiry = TimeSpan.FromSeconds(expireSeconds);
 
-                    _ = everTaggingRedisDB.StringSetAsync(
+                    everTaggingRedisDB.StringSet(
                         key: $"{hashKey}:{code}",
                         value: DateTime.Now.ToString(),
                         expiry: expiry,

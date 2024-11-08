@@ -22,6 +22,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.Hosting;
     using Sentry;
     using StackExchange.Redis;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -75,6 +76,9 @@ namespace Device.FingerPrint.QueueConsumer
                     .SetMessageLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchSizeLimit"))
                     .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:Masstransit:BatchTimeLimit"))
                     .SetConcurrencyLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchConcurrencyLimit")));
+
+                    cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+
                 }).Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
