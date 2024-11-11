@@ -82,11 +82,6 @@
                     }
                 }
 
-                if (Utilities.ContainsUnicodeCharacter(message.Account))
-                {
-                    transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
-                }
-
                 var botDModel = botDetectionService.TransformBotdModel(message);
 
                 var flaggedCode = botDetectionService.GetFlaggedCode(botDModel, deviceInfo.DeviceNo, userAgent);
@@ -128,10 +123,7 @@
             {
                 _ = LogService.ErrorAsync($"{appSettings.Environment} - TransformRawTransaction has error:\n {ex.Message}");
 
-                return new RawTransactionModel
-                {
-                    TransStatus = (int)TransStatusEnum.InvalidLoginName
-                };
+                return null;
             }
         }
 
@@ -197,16 +189,6 @@
             {
                 _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
-        }
-
-        private static string GetFPTaggingInfo(IEnumerable<RawTransactionModel> transactions)
-        {
-            var result = string.Join(",", transactions
-                            .Where(t => !string.IsNullOrEmpty(t.FPTagging))
-                            .Select(t => t.FPTagging)
-                            .Distinct());
-
-            return result;
         }
 
         private static IEnumerable<TResult> GetValidInfo<TResult>(IEnumerable<RawTransactionModel> transactions, Func<RawTransactionModel, TResult> selector)

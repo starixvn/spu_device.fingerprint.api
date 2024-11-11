@@ -82,11 +82,14 @@
                 {
                     try
                     {
-                        var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
-                        if (rawTransModel.TransStatus != (int)TransStatusEnum.InvalidLoginName)
+                        if (message?.Message != null 
+                            && !string.IsNullOrEmpty(message.Message.Account)
+                            && !Utilities.ContainsUnicodeCharacter(message.Message.Account))
                         {
+                            var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
                             return rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
                         }
+
                         return null;
                     }
                     catch (Exception)

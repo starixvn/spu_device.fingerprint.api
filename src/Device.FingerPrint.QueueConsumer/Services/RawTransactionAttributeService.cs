@@ -261,41 +261,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return userAgentInfo;
         }
 
-        private Dictionary<string, string> DeserializeToDictionary(string attributesJson)
+        private static Dictionary<string, string> DeserializeToDictionary(string attributesJson)
         {
             return JsonConvert.DeserializeObject<Dictionary<string, object>>(attributesJson)
                 .ToDictionary(kvp => kvp.Key, kvp => kvp.Value == null ? null : JsonConvert.SerializeObject(kvp.Value));
-        }
-        private static Dictionary<string, string> DeserializeToDictionary1(string attributesJson)
-        {
-            if (string.IsNullOrEmpty(attributesJson) || !Utilities.IsValidJson(attributesJson))
-            {
-                return new Dictionary<string, string>();
-            }
-
-            try
-            {
-                var dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(attributesJson);
-
-                if (dictionary == null || !dictionary.Any())
-                {
-                    return new Dictionary<string, string>();
-                }
-
-                return dictionary.ToDictionary(kvp => kvp.Key,
-                                                kvp => kvp.Value == null
-                                                    ? null
-                                                    : (kvp.Value is string
-                                                        ? kvp.Value.ToString()
-                                                        : JsonConvert.SerializeObject(kvp.Value))
-                                            );
-            }
-            catch (Exception ex)
-            {
-                _ = Utilities.LogInfoAsync(ex);
-            };
-
-            return new Dictionary<string, string>();
         }
 
         private FPOldFingerprintAttributeModel TransformOldFingerprintAttribute(Dictionary<string, string> attributesDictionary, FPFingerprintAttributeModel fingerPrintAttribute, RawTransactionModel rawTransModel)
@@ -316,7 +285,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return oldFingerPrintAttribute;
         }
 
-        private FPFingerprintAttributeExtraModel TransformFingerprintAttributeExtra(FingerprintModel fpModel, HeaderModel headerModel, RawTransactionModel rawTransModel, FPOldFingerprintAttributeModel oldFingerPrintAttribute)
+        private static FPFingerprintAttributeExtraModel TransformFingerprintAttributeExtra(FingerprintModel fpModel, HeaderModel headerModel, RawTransactionModel rawTransModel, FPOldFingerprintAttributeModel oldFingerPrintAttribute)
         {
             var fingerprintAttributeExtra = new FPFingerprintAttributeExtraModel
             {
@@ -336,7 +305,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return fingerprintAttributeExtra;
         }
 
-        private bool HasData<T>(T model)
+        private static bool HasData<T>(T model)
         {
             var properties = model.GetType().GetProperties();
 
@@ -353,7 +322,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return false;
         }
 
-        private int GetDeviceType(DeviceDetector deviceDetector)
+        private static int GetDeviceType(DeviceDetector deviceDetector)
         {
             int _OTHERTYPE = 0;
             int _DESTOPTYPE = 1;
@@ -369,14 +338,14 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return _OTHERTYPE;
         }
 
-        private bool? GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
+        private static bool? GetIsIncognitoMode(FPFingerprintAttributeModel fingerprintAttribute)
         {
             if (string.IsNullOrEmpty(fingerprintAttribute?.IsIncognitoMode)) return null;
 
             return fingerprintAttribute.IsIncognitoMode == "true";
         }
 
-        private string GetSuperCookies(FPFingerprintAttributeModel fingerprintAttributeModel)
+        private static string GetSuperCookies(FPFingerprintAttributeModel fingerprintAttributeModel)
         {
             var localStorage = fingerprintAttributeModel?.LocalStorage == "true";
             var sessionStorage = fingerprintAttributeModel?.SessionStorage == "true";
@@ -386,7 +355,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return localStorage + "|" + sessionStorage + "|" + openDatabase + "|" + indexedDb;
         }
 
-        private FPFingerprintAttributeModel ProcessForBrowserIgnoreDetectPrivateMode(FPFingerprintAttributeModel fingerprintAttributeModel, UserAgentInfoModel userAgentInfo)
+        private static FPFingerprintAttributeModel ProcessForBrowserIgnoreDetectPrivateMode(FPFingerprintAttributeModel fingerprintAttributeModel, UserAgentInfoModel userAgentInfo)
         {
             if (!string.IsNullOrEmpty(userAgentInfo?.ClientName))
             {
@@ -398,7 +367,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             return fingerprintAttributeModel;
         }
 
-        private bool IsIgnoreDetectPrivateMode(string browserName)
+        private static bool IsIgnoreDetectPrivateMode(string browserName)
         {
             string _UCBROWSER = "uc browser";
             string _MIBROWSER = "miui browser";

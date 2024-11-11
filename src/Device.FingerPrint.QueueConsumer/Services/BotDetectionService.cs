@@ -42,7 +42,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 {
                     var botD = Base64.Decode(message.BotD);
 
-                    if (!string.IsNullOrEmpty(botD))
+                    if (!string.IsNullOrEmpty(botD) && Utilities.IsValidJson(botD))
                     {
                         return JsonConvert.DeserializeObject<BotDModel>(botD);
                     }
