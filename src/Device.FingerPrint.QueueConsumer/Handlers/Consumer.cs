@@ -7,9 +7,9 @@
     using Device.FingerPrint.QueueConsumer.Services;
     using MassTransit;
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Threading;
     using System.Threading.Tasks;
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
@@ -40,13 +40,13 @@
             this.logstashService = logstashService;
         }
 
-        public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
+        public Task Consume(ConsumeContext<Batch<MessageQueue>> context)
         {
             try
             {
                 if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
-                    var rawTransModels = await TransformRawTransactionModel(context.Message);
+                    var rawTransModels = TransformRawTransactionModel(context.Message);
 
                     if (rawTransModels != null && rawTransModels.Any())
                     {
@@ -62,6 +62,8 @@
                         _ = AdditionalProcessingNotAwait(rawTransModels);
                     }
                 }
+
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
@@ -69,44 +71,33 @@
                 throw;
             }
         }
-        private async Task<IEnumerable<RawTransactionModel>> TransformRawTransactionModel(Batch<MessageQueue> messages)
-        {
-            var maxDegreeOfParallelism = 10;
-            var semaphore = new SemaphoreSlim(maxDegreeOfParallelism);
-            var tasks = new List<Task<RawTransactionModel>>();
 
-            foreach (var message in messages)
+        private IEnumerable<RawTransactionModel> TransformRawTransactionModel(Batch<MessageQueue> messages)
+        {
+            var transformedDataBag = new ConcurrentBag<RawTransactionModel>();
+
+            Parallel.ForEach(messages, new ParallelOptions { MaxDegreeOfParallelism = 10 }, message =>
             {
-                await semaphore.WaitAsync();
-                tasks.Add(Task.Run(() =>
+                if (message?.Message != null
+                    && !string.IsNullOrEmpty(message.Message.Account)
+                    && !Utilities.ContainsUnicodeCharacter(message.Message.Account))
                 {
                     try
                     {
-                        if (message?.Message != null 
-                            && !string.IsNullOrEmpty(message.Message.Account)
-                            && !Utilities.ContainsUnicodeCharacter(message.Message.Account))
-                        {
-                            var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
-                            return rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
-                        }
+                        var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
+                        rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
 
-                        return null;
+                        transformedDataBag.Add(rawTransModel);
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
-                        throw;
+                        _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                     }
-                    finally
-                    {
-                        semaphore.Release();
-                    }
-                }));
-            }
+                }
+            });
 
-            var results = await Task.WhenAll(tasks);
-            return results.Where(model => model != null);
+            return transformedDataBag;
         }
-
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
