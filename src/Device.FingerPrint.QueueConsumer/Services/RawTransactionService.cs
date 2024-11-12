@@ -11,14 +11,16 @@
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
+    using System.Threading.Tasks;
 
     public interface IRawTransactionService
     {
-        RawTransactionModel TransformRawTransaction(MessageQueue message);
+        RawTransactionService TransformRawTransaction(MessageQueue message);
 
         void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
         void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
+
     }
 
     public class RawTransactionService : IRawTransactionService
@@ -29,6 +31,8 @@
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
         private readonly IDatabase everTaggingRedisDB;
+
+        public RawTransactionModel TransformRawTransModel { get; private set; }
 
         public RawTransactionService(
             IRedisMultiplexDbService redisMultiplexService,
@@ -48,7 +52,7 @@
             this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
         }
 
-        public RawTransactionModel TransformRawTransaction(MessageQueue message)
+        public RawTransactionService TransformRawTransaction(MessageQueue message)
         {
             try
             {
@@ -117,7 +121,9 @@
                     ScriptVersion = deviceInfo.Version
                 };
 
-                return rawTransModel;
+                TransformRawTransModel = rawTransModel;
+
+                return this;
             }
             catch (Exception ex)
             {
@@ -125,6 +131,11 @@
 
                 return null;
             }
+        }
+
+        public RawTransactionModel GetRawTransAttributes()
+        {
+            return rawTransactionAttributeService.GetTransactionAttribute(TransformRawTransModel);
         }
 
         public void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)
@@ -153,8 +164,10 @@
 
         public void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
-            InsertFPFingerPrint(transactions, isTransOfDBExtra);
-            InsertFPUserAgent(transactions, isTransOfDBExtra);
+            Parallel.Invoke(
+                () => InsertFPFingerPrint(transactions, isTransOfDBExtra),
+                () => InsertFPUserAgent(transactions, isTransOfDBExtra)
+            );
         }
 
         private void InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)

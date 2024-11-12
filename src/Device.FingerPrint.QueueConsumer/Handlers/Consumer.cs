@@ -14,8 +14,7 @@
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
-        private readonly IRawTransactionService rawTransactionService;
-        private readonly IRawTransactionAttributeService rawTransactionAttributeService;
+        private readonly IRawTransactionService rawTransactionService;        
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
@@ -24,16 +23,14 @@
         private const string hashKeyEverTagging = "EverTagging";
 
         public Consumer(
-                IRawTransactionService rawTransactionService,
-                IRawTransactionAttributeService rawTransactionAttributeService,
+                IRawTransactionService rawTransactionService,                
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogstashService logstashService
         )
         {
-            this.rawTransactionService = rawTransactionService;
-            this.rawTransactionAttributeService = rawTransactionAttributeService;
+            this.rawTransactionService = rawTransactionService;            
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
@@ -84,8 +81,9 @@
                 {
                     try
                     {
-                        var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
-                        rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
+                        var rawTransModel = rawTransactionService
+                                                .TransformRawTransaction(message.Message)
+                                                .GetRawTransAttributes();                       
 
                         transformedDataBag.Add(rawTransModel);
                     }
