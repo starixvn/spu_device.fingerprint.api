@@ -43,6 +43,8 @@ namespace Device.FingerPrint.Core
 
         List<string> UnhandledFingerprintAttributeValues { get; }
 
+        List<string> LogstashAllowSubscribers { get; }
+
         bool IsExtraSub { get; }
 
         int MaxMonthsGetAssociationByDevice { get; }
@@ -98,6 +100,8 @@ namespace Device.FingerPrint.Core
 
         private readonly List<string> unhandledFingerprintAttributeValues;
 
+        private readonly List<string> logstashAllowSubscribers;
+
         private readonly bool isExtraSub;
         
         private readonly int maxMonthsGetAssociationByDevice;
@@ -152,6 +156,8 @@ namespace Device.FingerPrint.Core
 
             unhandledFingerprintAttributeValues = GetSection<List<string>>("Fingerprint:UnhandledAttributeValues") ?? new List<string>();
 
+            logstashAllowSubscribers = GetSection<List<string>>("Logstash:AllowSubscribers") ?? new List<string>();
+
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
             maxMonthsGetAssociationByDevice = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("API:MaxMonthsGetAssociationByDevice")) ? "0" : GetValue<string>("API:MaxMonthsGetAssociationByDevice"));
@@ -198,6 +204,8 @@ namespace Device.FingerPrint.Core
         public int LogstashTcpPort => logstashTcpPort;
 
         public List<string> UnhandledFingerprintAttributeValues => unhandledFingerprintAttributeValues;
+
+        public List<string> LogstashAllowSubscribers => logstashAllowSubscribers;
 
         public bool IsExtraSub => isExtraSub;
 

@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Fanex.Logging;
+using System.Linq;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -32,6 +33,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
         
         public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
         {
+            transactions = transactions.Where(it => appSettings.LogstashAllowSubscribers.Contains(it.SubscriberName));
+
+            if (transactions.Count() == 0)
+                return;
+
             using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
             using var stream = client.GetStream();
 
