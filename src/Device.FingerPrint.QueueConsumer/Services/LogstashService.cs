@@ -16,7 +16,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 {
     public interface ILogstashService
     {
-        Task PushLog(RawTransactionModel transaction);
+        Task PushLogAsync(IEnumerable<RawTransactionModel> transactions);
     }
 
     public class LogstashService : ILogstashService
@@ -29,13 +29,19 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.appSettings = appSettings;
             this.logger = logger;
         }
-
-        public async Task PushLog(RawTransactionModel transaction)
+        
+        public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            var logMessage = TransformLogMessage(transaction);
+            using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+            using var stream = client.GetStream();
 
-            PushLogUsingTCP(logMessage);
-            await PushLogUsingHttp(logMessage);
+            foreach (var transaction in transactions)
+            {
+                var logMessage = TransformLogMessage(transaction);
+
+                byte[] data = Encoding.UTF8.GetBytes(logMessage);
+                await stream.WriteAsync(data, 0, data.Length);
+            }
         }
 
         private string TransformLogMessage(RawTransactionModel transaction)
@@ -51,47 +57,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             };
 
             return JsonConvert.SerializeObject(logMessage);
-        }
-
-        private void PushLogUsingTCP(string logMessage)
-        {
-            if (string.IsNullOrEmpty(appSettings.LogstashTcpHostname))
-                return;
-
-            try
-            {
-                using (TcpClient client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort))
-                {
-                    NetworkStream stream = client.GetStream();
-                    byte[] data = Encoding.UTF8.GetBytes(logMessage);
-
-                    stream.Write(data, 0, data.Length);
-                }
-            } 
-            catch(Exception ex)
-            {
-                LogException(ex);
-            }
-            
-        }
-
-        private async Task PushLogUsingHttp(string logMessage)
-        {
-            if(string.IsNullOrEmpty(appSettings.LogstashHttpUrl))
-                return;
-            try
-            {
-                using (var httpClient = new HttpClient())
-                {
-                    var httpContent = new StringContent(logMessage, Encoding.UTF8, "application/json");
-
-                    _ = await httpClient.PostAsync(appSettings.LogstashHttpUrl, httpContent);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
         }
 
         private FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)
