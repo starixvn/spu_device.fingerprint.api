@@ -8,7 +8,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 {
     public interface IIPDBService
     {
-        void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions);
+        IEnumerable<RawTransactionModel> TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions);
     }
 
     public class IPDBService : IIPDBService
@@ -22,28 +22,27 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.ipdbServices = ipdbServices;
         }
 
-        public void TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions)
+        public IEnumerable<RawTransactionModel> TransformTransactionByIps(IEnumerable<RawTransactionModel> transactions)
         {
-            if (appSettings.IsExtraSub)
+            var ipInfoList = GetIpInfos(transactions);
+            if (ipInfoList != null && ipInfoList.Any())
             {
-                var ipInfoList = GetIpInfos(transactions);
-                if (ipInfoList != null && ipInfoList.Any())
+                transactions = transactions.Select(x =>
                 {
-                    transactions = transactions.Select(x =>
-                    {
-                        var ipInfo = ipInfoList.FirstOrDefault(y => x.IPId == y.IP);
+                    var ipInfo = ipInfoList.FirstOrDefault(y => x.IPId == y.IP);
 
-                        x.Country = ipInfo?.Country;
-                        x.CountryCode = ipInfo?.CountryCode;
-                        x.Region = ipInfo?.Region;
-                        x.City = ipInfo?.City;
-                        x.ISP = ipInfo?.ISP;
-                        x.IPInfoCode = Cipher.Hashing2Int(string.Join(";", ipInfo?.CountryCode, ipInfo?.Region, ipInfo?.City, ipInfo?.ISP));
+                    x.Country = ipInfo?.Country;
+                    x.CountryCode = ipInfo?.CountryCode;
+                    x.Region = ipInfo?.Region;
+                    x.City = ipInfo?.City;
+                    x.ISP = ipInfo?.ISP;
+                    x.IPInfoCode = Cipher.Hashing2Int(string.Join(";", ipInfo?.CountryCode, ipInfo?.Region, ipInfo?.City, ipInfo?.ISP));
 
-                        return x;
-                    }).ToList();
-                }
+                    return x;
+                }).ToList();
             }
+
+            return transactions;
         }
 
         private IEnumerable<IpInfoModel> GetIpInfos(IEnumerable<RawTransactionModel> transactions)

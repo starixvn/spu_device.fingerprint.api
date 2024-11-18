@@ -10,11 +10,11 @@
     using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.Net.Http.Headers;
+    using Newtonsoft.Json;
     using StackExchange.Redis;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Text.Json;
     using System.Threading.Tasks;
 
     [Route("api")]
@@ -46,13 +46,13 @@
 
                 if (sessionKey != null && sessionKey.RedisDbIndex > -1)
                 {
-                    var headerModel = GetHeaderValue();                  
+                    var headerModel = GetHeaderValue();
 
                     var keyValuePairs = new Dictionary<string, string>
                                         {
                                             { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
                                             { RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode), data.Data },
-                                            { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonSerializer.Serialize(headerModel) }
+                                            { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonConvert.SerializeObject(headerModel) }
                                         };
 
                     var hashRedisEntry = keyValuePairs.Select(x => new HashEntry(x.Key, x.Value)).ToArray();
@@ -83,7 +83,8 @@
                 {
                     foreach (var ec in everTaggingValues)
                     {
-                        if (Utilities.ValidationSessionKey(ec))
+                        var sessionKey = Utilities.ParseSessionKey(ec, 0);
+                        if (sessionKey != null)
                         {
                             var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
 
@@ -164,7 +165,6 @@
         [HttpGet("hc")]
         public void HealthCheck()
         {
-
         }
 
         [HttpGet("hc-sentry")]

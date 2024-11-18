@@ -6,39 +6,36 @@
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
     using Newtonsoft.Json;
+    using StackExchange.Redis;
     using System;
     using System.Collections;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Security.Policy;
     using System.Threading.Tasks;
 
     public interface IRawTransactionService
     {
-        Task<RawTransactionModel> TransformRawTransaction(MessageQueue message);
+        RawTransactionService TransformRawTransaction(MessageQueue message);
 
-        Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions);
+        void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
-        Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes);
+        void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
 
-        Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
-
-        Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
     }
 
     public class RawTransactionService : IRawTransactionService
     {
         private readonly IRawTransactionAttributeService rawTransactionAttributeService;
-        private readonly IRedisService redisService;
-        private readonly IRedisMultiplexService redisMultiplexService;
         private readonly IDeviceService deviceService;
         private readonly IBotDetectionService botDetectionService;
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
+        private readonly IDatabase everTaggingRedisDB;
+
+        public RawTransactionModel TransformRawTransModel { get; private set; }
 
         public RawTransactionService(
-            IRedisService redisService,
-            IRedisMultiplexService redisMultiplexService,
+            IRedisMultiplexDbService redisMultiplexService,
             IRawTransactionAttributeService rawTransactionAttributeService,
             IDeviceService deviceService,
             IBotDetectionService botDetectionService,
@@ -47,15 +44,15 @@
         )
         {
             this.rawTransactionAttributeService = rawTransactionAttributeService;
-            this.redisService = redisService;
-            this.redisMultiplexService = redisMultiplexService;
             this.deviceService = deviceService;
             this.botDetectionService = botDetectionService;
             this.transactionService = transactionService;
             this.appSettings = appSettings;
+
+            this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
         }
 
-        public async Task<RawTransactionModel> TransformRawTransaction(MessageQueue message)
+        public RawTransactionService TransformRawTransaction(MessageQueue message)
         {
             try
             {
@@ -89,11 +86,6 @@
                     }
                 }
 
-                if (Utilities.ContainsUnicodeCharacter(message.Account))
-                {
-                    transBit.Set((int)TransStatusEnum.InvalidLoginName, true);
-                }
-
                 var botDModel = botDetectionService.TransformBotdModel(message);
 
                 var flaggedCode = botDetectionService.GetFlaggedCode(botDModel, deviceInfo.DeviceNo, userAgent);
@@ -125,92 +117,60 @@
                     IP = realIP,
                     IPId = ipConverted.IpNumber,
                     FakeIP = message.FakeIP?.Trim(),
-                    IsIPV6 = ipConverted.IsIpV6
+                    IsIPV6 = ipConverted.IsIpV6,
+                    ScriptVersion = deviceInfo.Version
                 };
 
-                await rawTransactionAttributeService.GetTransactionAttribute(rawTransModel, botDModel);
+                TransformRawTransModel = rawTransModel;
 
-                return rawTransModel;
+                return this;
             }
             catch (Exception ex)
             {
                 _ = LogService.ErrorAsync($"{appSettings.Environment} - TransformRawTransaction has error:\n {ex.Message}");
 
-                return new RawTransactionModel
-                {
-                    TransStatus = (int)TransStatusEnum.InvalidLoginName
-                };
+                return null;
             }
         }
 
-        public async Task ClearRedisAsync(IEnumerable<RawTransactionModel> transactions)
+        public RawTransactionModel GetRawTransAttributes()
         {
-            var groupByTrans = transactions
-                .Where(x => x.SessionKey != null)
-                .GroupBy(x => x.SessionKey);
-
-            var tasks = groupByTrans
-                .Select(transGroup => redisService.HashDeleteAsync(transGroup.Key, RedisString.GetRedisKeyNames()))
-                .ToList();
-
-            await Task.WhenAll(tasks);
+            return rawTransactionAttributeService.GetTransactionAttribute(TransformRawTransModel);
         }
 
-        public async Task ClearRedisJsChallenge(IEnumerable<string> jsChallengeCodes)
-        {
-            var tasks = jsChallengeCodes
-            .Select(code => redisService.RedisJSChallengeDatabase.RemoveAsync($"Challenge:{code}", StackExchange.Redis.CommandFlags.FireAndForget))
-            .ToList();
-
-            await Task.WhenAll(tasks);
-        }
-
-        public async Task InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond)
+        public void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)
         {
             try
             {
-                var tasks = everTaggings
-                .Select(code => redisMultiplexService.EverTagging_AddItemWithExpiryAsync(hashKey, code, DateTime.Now.ToString(), TimeSpan.FromSeconds(expireSecond)))
-                .ToList();
-
-                await Task.WhenAll(tasks);
-            }
-            catch (Exception ex)
-            {
-                await LogService.ErrorAsync($"Error in InsertOrUpdateEverTagging: {ex.Message}");
-            }
-        }
-
-        public async Task InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
-        {
-            var tasks = new List<Task>
-            {
-                InsertFPTagging(transactions, isTransOfDBExtra),
-                InsertFPUserAgent(transactions, isTransOfDBExtra),
-                InsertFPFingerPrint(transactions, isTransOfDBExtra),
-                InsertJSChallengeInfo(transactions, isTransOfDBExtra)
-            };
-
-            await Task.WhenAll(tasks);
-        }
-
-        private async Task InsertFPTagging(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
-        {
-            try
-            {
-                var taggings = GetFPTaggingInfo(transactions);
-                if (!string.IsNullOrEmpty(taggings))
+                foreach (var code in everTaggings)
                 {
-                    await transactionService.InsertFPTagging(taggings, isTransOfDBExtra);
+                    var expiry = TimeSpan.FromSeconds(expireSeconds);
+
+                    everTaggingRedisDB.StringSet(
+                        key: $"{hashKey}:{code}",
+                        value: DateTime.Now.ToString(),
+                        expiry: expiry,
+                        keepTtl: false,
+                        when: When.Always,
+                        flags: CommandFlags.FireAndForget
+                    );
                 }
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertFPTagging: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
 
-        private async Task InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        public void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        {
+            Parallel.Invoke(
+                () => InsertFPFingerPrint(transactions, isTransOfDBExtra),
+                () => InsertFPUserAgent(transactions, isTransOfDBExtra)
+            );
+        }
+
+        private void InsertFPUserAgent(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             try
             {
@@ -218,33 +178,16 @@
                 if (userAgentInfos != null && userAgentInfos.Any())
                 {
                     var userAgentJson = JsonConvert.SerializeObject(userAgentInfos);
-                    await transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
+                    transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
                 }
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertFPUserAgent: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
 
-        private async Task InsertJSChallengeInfo(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
-        {
-            try
-            {
-                var jsChallengeInfos = GetValidInfo(transactions, t => t.RawJsChallengeInfo);
-                if (jsChallengeInfos != null && jsChallengeInfos.Any())
-                {
-                    var jsChallengeInfoJson = JsonConvert.SerializeObject(jsChallengeInfos);
-                    await transactionService.InsertJSChallengeInfo(jsChallengeInfoJson, isTransOfDBExtra);
-                }
-            }
-            catch (Exception ex)
-            {
-                await LogService.ErrorAsync($"Error in InsertJSChallengeInfo: {ex.Message}");
-            }
-        }
-
-        private async Task InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
+        private void InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             try
             {
@@ -252,23 +195,13 @@
                 if (fingerprintAttribute != null && fingerprintAttribute.Any())
                 {
                     var fingerPrintJson = JsonConvert.SerializeObject(fingerprintAttribute);
-                    await transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
+                    transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
                 }
             }
             catch (Exception ex)
             {
-                await LogService.ErrorAsync($"Error in InsertFPFingerPrint: {ex.Message}");
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
-        }
-
-        private static string GetFPTaggingInfo(IEnumerable<RawTransactionModel> transactions)
-        {
-            var result = string.Join(",", transactions
-                            .Where(t => !string.IsNullOrEmpty(t.FPTagging))
-                            .Select(t => t.FPTagging)
-                            .Distinct());
-
-            return result;
         }
 
         private static IEnumerable<TResult> GetValidInfo<TResult>(IEnumerable<RawTransactionModel> transactions, Func<RawTransactionModel, TResult> selector)

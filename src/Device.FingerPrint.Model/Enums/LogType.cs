@@ -4,6 +4,9 @@
     {
         SessionKeyNull = 1,
         SessionKeyEmpty = 2,
-        RedisValueEmpty = 3
+        RedisValueEmpty = 3,
+        SessionKeyColon = 4,
+        SessionKeyParse = 5,
+        TaggingLength = 6
     }
 }

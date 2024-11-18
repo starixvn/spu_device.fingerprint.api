@@ -42,8 +42,6 @@
 
         public string InvertedColors { get; set; }
 
-        public string IsIncognitoMode { get; set; }
-
         public string Languages { get; set; }
 
         public string LocalStorage { get; set; }
@@ -111,7 +109,6 @@
         public string TimezoneOffset { get; set; }
         
         public int DeviceType { get; set; }
-
     }
 
     public class FPOldFingerprintAttributeModel

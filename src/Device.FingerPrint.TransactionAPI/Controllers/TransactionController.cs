@@ -2,7 +2,6 @@
 {
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Queue;
-    using Device.FingerPrint.Redis;
     using Device.FingerPrint.TransactionAPI.Model;
     using Device.FingerPrint.TransactionAPI.Services;
     using Fanex.Logging;
@@ -20,7 +19,6 @@
         private readonly IMaintenanceService maintenanceService;
         private readonly IAppSettings appSettings;
         private readonly ILogger logger;
-        private readonly IRedisService redisService;
         private readonly ISubscriberService subscriberService;
         private readonly IMassTransitProducer massTransitProducer;
 
@@ -28,14 +26,12 @@
             IMaintenanceService maintenanceService,
             IAppSettings appSettings,
             ILogger logger,
-            IRedisService redisService,
             ISubscriberService subscriberService,
             IMassTransitProducer massTransitProducer)
         {
             this.maintenanceService = maintenanceService;
             this.appSettings = appSettings;
             this.logger = logger;
-            this.redisService = redisService;
             this.subscriberService = subscriberService;
             this.massTransitProducer = massTransitProducer;
         }
@@ -62,7 +58,7 @@
                     else
                     {
                         var errorMessage = GetTransactionResponse(responseCode);
-                        await logger.ErrorAsync($"CheckTransactionAsync responseCode = {System.Text.Json.JsonSerializer.Serialize(errorMessage)} \nTransRequest: {System.Text.Json.JsonSerializer.Serialize(transRequest)}");
+                        await logger.ErrorAsync($"CheckTransactionAsync responseCode = {JsonSerializer.Serialize(errorMessage)} \nTransRequest: {JsonSerializer.Serialize(transRequest)}");
                     }
                 }
                 catch (Exception ex)

@@ -5,97 +5,117 @@
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.QueueConsumer.Services;
-    using Fanex.Logging;
-    using Fanex.Logging.Extensions;
-    using Fanex.Logging.Extensions.Database;
     using MassTransit;
     using System;
+    using System.Collections.Concurrent;
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
-        private readonly IRawTransactionService rawTransactionService;
+        private readonly IRawTransactionService rawTransactionService;        
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
-        private readonly ILogger logger;
         private readonly ILogstashService logstashService;
 
         private const string hashKeyEverTagging = "EverTagging";
 
         public Consumer(
-                IRawTransactionService rawTransactionService,
+                IRawTransactionService rawTransactionService,                
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
-                ILogger logger,
                 ILogstashService logstashService
         )
         {
-            this.rawTransactionService = rawTransactionService;
+            this.rawTransactionService = rawTransactionService;            
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
-            this.logger = logger;
             this.logstashService = logstashService;
         }
 
-        public async Task Consume(ConsumeContext<Batch<MessageQueue>> context)
+        public Task Consume(ConsumeContext<Batch<MessageQueue>> context)
         {
             try
             {
                 if (appSettings.GetValue<bool>("Consumer:IsConsume"))
                 {
-                    await ProcessTransaction(context.Message);
+                    var rawTransModels = TransformRawTransactionModel(context.Message);
+
+                    if (rawTransModels != null && rawTransModels.Any())
+                    {
+                        if (appSettings.IsExtraSub)
+                        {
+                            rawTransModels = ipdbService.TransformTransactionByIps(rawTransModels);
+                        }
+
+                        rawTransactionService.InsertRawTransactionDetail(rawTransModels, appSettings.IsExtraSub);
+
+                        transactionService.InsertRawTransaction(rawTransModels, appSettings.IsExtraSub);
+
+                        _ = AdditionalProcessingNotAwait(rawTransModels);
+                    }
                 }
+
+                return Task.CompletedTask;
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                 throw;
             }
         }
 
-        private async Task ProcessTransaction(Batch<MessageQueue> messages)
+        private IEnumerable<RawTransactionModel> TransformRawTransactionModel(Batch<MessageQueue> messages)
         {
-            var transactionModels = await Task.WhenAll(messages.Select(async x =>
+            var transformedDataBag = new ConcurrentBag<RawTransactionModel>();
+
+            Parallel.ForEach(messages, new ParallelOptions { MaxDegreeOfParallelism = 10 }, message =>
             {
-                return await rawTransactionService.TransformRawTransaction(x.Message);
-            }));
+                if (message?.Message != null
+                    && !string.IsNullOrEmpty(message.Message.Account)
+                    && !Utilities.ContainsUnicodeCharacter(message.Message.Account))
+                {
+                    try
+                    {
+                        var rawTransModel = rawTransactionService
+                                                .TransformRawTransaction(message.Message)
+                                                .GetRawTransAttributes();                       
 
-            var filterTransaction = transactionModels.Where(x => x.TransStatus != (int)TransStatusEnum.InvalidLoginName);
+                        transformedDataBag.Add(rawTransModel);
+                    }
+                    catch (Exception ex)
+                    {
+                        _ = QueueConsumer.Utilities.LogErrorAsync(ex);
+                    }
+                }
+            });
 
-            if(filterTransaction != null && filterTransaction.Any())
-            {
-                ipdbService.TransformTransactionByIps(filterTransaction);
-
-                await rawTransactionService.InsertRawTransactionDetail(filterTransaction, appSettings.IsExtraSub);
-
-                await transactionService.InsertRawTransaction(filterTransaction, appSettings.IsExtraSub);
-
-                _ = AdditionalProcessingNotAwait(filterTransaction);
-            }
+            return transformedDataBag;
         }
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
         {
-            var tasks = new List<Task>();
-
-            var everTagging = transactionModels.Where(x => !string.IsNullOrEmpty(x.FPTagging))?.Select(x => DeviceEncoder.Encrypt(x.FPTagging));
-            if (everTagging != null && everTagging.Any())
+            try
             {
-                tasks.Add(rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond));
-            }
+                var everTagging = transactionModels
+                                .Where(x => !string.IsNullOrEmpty(x.FPTagging))
+                                .Select(x => DeviceEncoder.Encrypt(x.FPTagging));
 
-            var rawJsChallenges = transactionModels.Where(x => !string.IsNullOrEmpty(x.RawJsChallengeInfo?.ChallengeCode))?.Select(x => x.RawJsChallengeInfo?.ChallengeCode);
-            if (rawJsChallenges != null && rawJsChallenges.Any())
+                if (everTagging.Any())
+                {
+                    rawTransactionService.InsertOrUpdateEverTagging(hashKeyEverTagging, everTagging, appSettings.EverTaggingExpireSecond);
+                }
+
+                await InsertLogstash(transactionModels);
+            }
+            catch (Exception ex)
             {
-                tasks.Add(HandleClearRedisJsChallenge(rawJsChallenges));
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
-
-            await Task.WhenAll(tasks);
         }
 
         private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
@@ -108,33 +128,9 @@
                 }
                 catch (Exception ex)
                 {
-                    LogError(ex);
+                    _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                 }
             }
-        }
-
-        private async Task HandleClearRedisJsChallenge(IEnumerable<string> rawJsChallenges)
-        {
-            try
-            {
-                await rawTransactionService.ClearRedisJsChallenge(rawJsChallenges);
-
-            }
-            catch (Exception ex)
-            {
-                LogError(ex);
-            }
-        }
-
-        private void LogError(Exception ex)
-        {
-            var logMessage = new LogMessage(ex.Message)
-                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
-                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
-                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
-                   .ToString();
-
-            logger.Error(logMessage);
         }
     }
 }

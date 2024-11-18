@@ -22,11 +22,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.Hosting;
     using Sentry;
     using StackExchange.Redis;
-    using StackExchange.Redis.Extensions.Core;
-    using StackExchange.Redis.Extensions.Core.Abstractions;
-    using StackExchange.Redis.Extensions.Core.Configuration;
-    using StackExchange.Redis.Extensions.Core.Implementations;
-    using StackExchange.Redis.Extensions.MsgPack;
+    using System;
     using System.Collections.Generic;
     using System.Linq;
 
@@ -80,6 +76,9 @@ namespace Device.FingerPrint.QueueConsumer
                     .SetMessageLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchSizeLimit"))
                     .SetTimeLimit(s: appSettings.GetValue<int>("Consumer:Masstransit:BatchTimeLimit"))
                     .SetConcurrencyLimit(appSettings.GetValue<int>("Consumer:Masstransit:BatchConcurrencyLimit")));
+
+                    cfg.UseMessageRetry(r => r.Interval(3, TimeSpan.FromSeconds(5)));
+
                 }).Endpoint(e =>
                 {
                     e.ConfigureConsumeTopology = false;
@@ -148,37 +147,7 @@ namespace Device.FingerPrint.QueueConsumer
 
         private void RegisterRedis(IServiceCollection services)
         {
-            var redisConfiguration = Configuration.GetSection("Redis").Get<RedisConfiguration>();
-            var redisDatabaseIndex = int.Parse(Configuration["Redis:EverTaggingDbIndex"]);
-
-            services.AddSingleton(redisConfiguration);
-
-            services.AddSingleton<IConnectionMultiplexer>(sp =>
-            {
-                var configOptions = new ConfigurationOptions
-                {
-                    EndPoints = { $"{redisConfiguration.Hosts[0].Host}:{redisConfiguration.Hosts[0].Port}" },
-                    Password = redisConfiguration.Password,
-                    Ssl = redisConfiguration.Ssl,
-                    ConnectTimeout = redisConfiguration.ConnectTimeout,
-                    ConnectRetry = 3,
-                    KeepAlive = 180,
-                    DefaultDatabase = 0
-                };
-                return ConnectionMultiplexer.Connect(configOptions);
-            });
-
-            services.AddSingleton<IRedisClient, RedisClient>();
-            services.AddSingleton<IRedisConnectionPoolManager, RedisConnectionPoolManager>();
-            services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
-            services.AddSingleton<IRedisService, RedisService>();
-
-
-            services.AddSingleton<IRedisMultiplexService>(provider =>
-                new RedisMultiplexService(
-                    provider.GetRequiredService<IConnectionMultiplexer>(),
-                    redisDatabaseIndex
-            ));
+            services.AddSingleton<IRedisMultiplexDbService, RedisMultiplexDbService>();
         }
 
         private void InitService(IServiceCollection services)

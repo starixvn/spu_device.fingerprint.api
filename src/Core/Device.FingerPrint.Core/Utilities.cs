@@ -1,5 +1,4 @@
-﻿using Device.FingerPrint.Core.Encoders;
-using Device.FingerPrint.Model;
+﻿using Device.FingerPrint.Model;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +15,8 @@ namespace Device.FingerPrint.Core
 {
     public static class Utilities
     {
+        private const int _TotalRedisDB = 16;
+
         public static string GetURLFromDeviceCode(string di)
         {
             if (string.IsNullOrWhiteSpace(di))
@@ -304,48 +305,53 @@ namespace Device.FingerPrint.Core
 
         public static SessionKeyModel ParseSessionKey(string sessionKey, int defaultRedisDatabase)
         {
-            if (string.IsNullOrEmpty(sessionKey))
+            if (sessionKey == null)
             {
                 return null;
             }
 
-            if (sessionKey.Contains(':'))
+            var parts = sessionKey.Split(':');
+            var sessionKeyModel = new SessionKeyModel { RedisDbIndex = defaultRedisDatabase };
+
+            if (parts.Length > 0)
             {
-                var parts = sessionKey.Split(':');
-                if (parts.Length > 1 && ValidationSessionKey(parts[0]))
+                sessionKeyModel.SessionKey = parts[0];
+                if (parts.Length > 1 && int.TryParse(parts[1], out var parsedIndex))
                 {
-                    return new SessionKeyModel { SessionKey = parts[0], RedisDbIndex = int.Parse(parts[1]) };
+                    sessionKeyModel.RedisDbIndex = parsedIndex < _TotalRedisDB ? parsedIndex : defaultRedisDatabase;
                 }
-                return null;
+            }
+            else
+            {
+                sessionKeyModel.SessionKey = sessionKey;
             }
 
-            if (ValidationSessionKey(sessionKey))
+            if (IsBase64(sessionKeyModel.SessionKey))
             {
-                return new SessionKeyModel { SessionKey = sessionKey, RedisDbIndex = defaultRedisDatabase };
+                return sessionKeyModel;
             }
 
             return null;
         }
 
-        public static bool ValidationSessionKey(string guidStr)
+        public static bool IsBase64(string base64String)
         {
-            return Guid.TryParse(guidStr, out Guid _) || ValidationSessionKeyByEncrypt(guidStr);
-        }
+            if (string.IsNullOrEmpty(base64String))
+            {
+                return false;
+            }
 
-        public static bool ValidationSessionKeyByEncrypt(string deviceID)
-        {
+            if (base64String.Length % 4 != 0)
+            {
+                return false;
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(deviceID))
-                {
-                    return false;
-                }
-
-                var decryptStr = DeviceEncoder.Decrypt(deviceID);
-
-                return Guid.TryParse(decryptStr, out Guid newGuid);
+                Convert.FromBase64String(base64String);
+                return true;
             }
-            catch
+            catch (FormatException)
             {
                 return false;
             }
@@ -353,6 +359,8 @@ namespace Device.FingerPrint.Core
 
         public static string RemoveRedisPrefix(string input, string prefix)
         {
+            if (string.IsNullOrEmpty(input)) return string.Empty;
+
             if (input.StartsWith(prefix))
             {
                 return input.Replace(prefix, string.Empty);
