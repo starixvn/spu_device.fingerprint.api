@@ -37,8 +37,7 @@ builder.Services
     {
         x.WithDictionaryHandle();
     })
-    .AddDelegatingHandler<ValidateHandler>()
-    .AddDelegatingHandler<LogstashHandler>();
+    .AddDelegatingHandler<ValidateHandler>();
 
 var appSettings = new Device.FingerPrint.Gateway.AppSettings(builder.Configuration);
 
