@@ -38,11 +38,13 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (transactions.Count() == 0)
                 return;
 
-            using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
-            using var stream = client.GetStream();
+           
 
             foreach (var transaction in transactions)
             {
+                using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+                using var stream = client.GetStream();
+
                 var logMessage = TransformLogMessage(transaction);
 
                 byte[] data = Encoding.UTF8.GetBytes(logMessage);
