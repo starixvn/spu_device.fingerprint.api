@@ -305,6 +305,11 @@ namespace Device.FingerPrint.Core
 
         public static SessionKeyModel ParseSessionKey(string sessionKey, int defaultRedisDatabase)
         {
+            if (sessionKey == null)
+            {
+                return null;
+            }
+
             var parts = sessionKey.Split(':');
             var sessionKeyModel = new SessionKeyModel { RedisDbIndex = defaultRedisDatabase };
 
