@@ -105,7 +105,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
             catch (Exception ex)
             {
-                _ = LogService.InfoAsync($"{appSettings.Environment} - GetTransactionAttribute has error:\n {ex.Message}");
+                Utilities.LogInfo(ex);
             }
 
             return model;
@@ -116,8 +116,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
             var realTagging = everTaggingRedisDB.StringGet(_realTaggingPrefix + sessionKey);
             model.FPTagging = GetTaggingValue(realTagging, sessionKey);
 
-            // Log when FPTagging is wrong
-            if (!string.IsNullOrEmpty(model.FPTagging) && model.FPTagging.Length != 32)
+            if (string.IsNullOrEmpty(model.FPTagging))
+            {
+                _ = LogConsumerErrorAsync(model, LogType.TaggingEncrypt);
+            }
+            else if (model.FPTagging.Length != 32)
             {
                 _ = LogConsumerErrorAsync(model, LogType.TaggingLength);
             }
@@ -478,10 +481,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
         #region Log Info
         private async Task LogConsumerErrorAsync(RawTransactionModel model, LogType logType)
         {
-            if (appSettings.GetValue<bool>("Consumer:LogInfo"))
+            try
             {
-                var logInfoModel = TransformToLogInfoModel(model, (int)logType);
-                await logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
+                if (appSettings.GetValue<bool>("Consumer:LogInfo"))
+                {
+                    var logInfoModel = TransformToLogInfoModel(model, (int)logType);
+                    await logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
+                }
+            }
+            catch (Exception ex)
+            {
+                Utilities.LogInfo(ex);
             }
         }
 

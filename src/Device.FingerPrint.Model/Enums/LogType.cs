@@ -7,6 +7,7 @@
         RedisValueEmpty = 3,
         SessionKeyColon = 4,
         SessionKeyParse = 5,
-        TaggingLength = 6
+        TaggingLength = 6,
+        TaggingEncrypt = 7
     }
 }

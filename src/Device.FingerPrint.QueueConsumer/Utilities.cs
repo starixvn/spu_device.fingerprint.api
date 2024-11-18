@@ -22,9 +22,19 @@ namespace Device.FingerPrint.QueueConsumer
                    (data.StartsWith("[") && data.EndsWith("]"));
         }
 
+        public static void LogInfo(Exception ex)
+        {
+            LogService.Info(GetLogMessage(ex));
+        }
+
         public static async Task LogInfoAsync(Exception ex)
         {
             await LogService.InfoAsync(GetLogMessage(ex));
+        }
+
+        public static void LogError(Exception ex)
+        {
+            LogService.Error(GetLogMessage(ex));
         }
 
         public static async Task LogErrorAsync(Exception ex)
