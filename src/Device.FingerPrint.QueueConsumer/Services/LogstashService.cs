@@ -31,43 +31,23 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.appSettings = appSettings;
             this.logger = logger;
         }
-        
-        //public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
-        //{
-        //    transactions = transactions.Where(it => appSettings.LogstashAllowSubscribers.Contains(it.SubscriberName.ToLower()));
-
-        //    if (transactions.Count() == 0)
-        //        return;
-
-        //    foreach (var transaction in transactions)
-        //    {
-        //        using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
-        //        using var stream = client.GetStream();
-
-        //        var logMessage = TransformLogMessage(transaction);
-
-        //        byte[] data = Encoding.UTF8.GetBytes(logMessage);
-        //        await stream.WriteAsync(data, 0, data.Length);
-        //    }
-        //}
 
         public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            using var tcpClient = new TcpClient();
-            await tcpClient.ConnectAsync(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
-            using var networkStream = tcpClient.GetStream();
+            using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+            using var stream = client.GetStream();
 
-            foreach (var log in transactions)
+            foreach (var transaction in transactions)
             {
-                var logMessage = TransformLogMessage(log);
+                if (!appSettings.LogstashAllowSubscribers.Contains(transaction.SubscriberName.ToLower()))
+                    continue;
 
-                // Serialize each log to JSON
+                var logMessage = TransformLogMessage(transaction);
+
                 string jsonLog = JsonConvert.SerializeObject(logMessage);
 
-                // Send the log to Logstash as a JSON line
-                byte[] data = Encoding.UTF8.GetBytes(jsonLog + "\n"); // Ensure newline delimiter for JSON lines
-
-                await networkStream.WriteAsync(data);
+                byte[] data = Encoding.UTF8.GetBytes(jsonLog + "\n");
+                await stream.WriteAsync(data);
             }
         }
 
