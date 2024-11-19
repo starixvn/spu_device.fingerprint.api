@@ -38,8 +38,6 @@ namespace Device.FingerPrint.QueueConsumer.Services
             if (transactions.Count() == 0)
                 return;
 
-           
-
             foreach (var transaction in transactions)
             {
                 using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
