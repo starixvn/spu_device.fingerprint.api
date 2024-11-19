@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Fanex.Logging;
 using System.Linq;
+using System.Transactions;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -31,26 +32,46 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.logger = logger;
         }
         
+        //public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
+        //{
+        //    transactions = transactions.Where(it => appSettings.LogstashAllowSubscribers.Contains(it.SubscriberName.ToLower()));
+
+        //    if (transactions.Count() == 0)
+        //        return;
+
+        //    foreach (var transaction in transactions)
+        //    {
+        //        using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+        //        using var stream = client.GetStream();
+
+        //        var logMessage = TransformLogMessage(transaction);
+
+        //        byte[] data = Encoding.UTF8.GetBytes(logMessage);
+        //        await stream.WriteAsync(data, 0, data.Length);
+        //    }
+        //}
+
         public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            transactions = transactions.Where(it => appSettings.LogstashAllowSubscribers.Contains(it.SubscriberName.ToLower()));
+            using var tcpClient = new TcpClient();
+            await tcpClient.ConnectAsync(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+            using var networkStream = tcpClient.GetStream();
 
-            if (transactions.Count() == 0)
-                return;
-
-            foreach (var transaction in transactions)
+            foreach (var log in transactions)
             {
-                using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
-                using var stream = client.GetStream();
+                var logMessage = TransformLogMessage(log);
 
-                var logMessage = TransformLogMessage(transaction);
+                // Serialize each log to JSON
+                string jsonLog = JsonConvert.SerializeObject(logMessage);
 
-                byte[] data = Encoding.UTF8.GetBytes(logMessage);
-                await stream.WriteAsync(data, 0, data.Length);
+                // Send the log to Logstash as a JSON line
+                byte[] data = Encoding.UTF8.GetBytes(jsonLog + "\n"); // Ensure newline delimiter for JSON lines
+
+                await networkStream.WriteAsync(data);
             }
         }
 
-        private string TransformLogMessage(RawTransactionModel transaction)
+        private TransactionLogstashModel TransformLogMessage(RawTransactionModel transaction)
         {
             var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute?.FPFingerPrintAttribute);
 
@@ -64,7 +85,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 UnhandledAttributes = fingerprintLogstashModel?.UnhandledAttributes,
             };
 
-            return JsonConvert.SerializeObject(logMessage);
+            return logMessage;
         }
 
         private FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)
