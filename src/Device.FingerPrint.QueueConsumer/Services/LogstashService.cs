@@ -33,7 +33,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
         
         public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            transactions = transactions.Where(it => appSettings.LogstashAllowSubscribers.Contains(it.SubscriberName));
+            transactions = transactions.Where(it => appSettings.LogstashAllowSubscribers.Contains(it.SubscriberName.ToLower()));
 
             if (transactions.Count() == 0)
                 return;
