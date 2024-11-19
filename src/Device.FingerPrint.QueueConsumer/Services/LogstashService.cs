@@ -54,6 +54,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute?.FPFingerPrintAttribute);
 
+            transaction.SubscriberName = transaction.SubscriberName.ToLower();
+
             var logMessage = new TransactionLogstashModel
             {
                 Message = transaction,
