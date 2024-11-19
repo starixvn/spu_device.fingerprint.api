@@ -64,6 +64,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 if (model != null)
                 {
+
+                    CheckScriptVersion(model);
+
                     model.RawUserAgent = model.UserAgent;
                     model.UserAgentInfo = GetUserAgentInfo(model.UserAgent);
                     model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
@@ -105,10 +108,45 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
             catch (Exception ex)
             {
-                _ = LogService.InfoAsync($"{appSettings.Environment} - GetTransactionAttribute has error:\n {ex.Message}");
+                Utilities.LogInfo(ex);
             }
 
             return model;
+        }
+
+        private void CheckScriptVersion(RawTransactionModel model)
+        {
+            var curScriptVersion = appSettings.GetSection<string>("Consumer:ScriptVersion");
+            var compareScriptVersion = CompareVersionsWithTryParse(model.ScriptVersion, curScriptVersion);
+            if (compareScriptVersion == 0)
+            {
+                _ = LogConsumerErrorAsync(model, LogType.ScriptVersionOld);
+            }
+            else if (compareScriptVersion == -1)
+            {
+                int maxLength = 10;
+                if (!string.IsNullOrEmpty(model.ScriptVersion) && model.ScriptVersion.Length > maxLength)
+                {
+                    model.ScriptVersion = model.ScriptVersion.Substring(0, maxLength);
+                }
+
+                _ = LogConsumerErrorAsync(model, LogType.ScriptVersionParse);
+            }
+        }
+
+        private static int CompareVersionsWithTryParse(string versionA, string versionB)
+        {
+            if (Version.TryParse(versionA, out Version verA) && Version.TryParse(versionB, out Version verB))
+            {
+                if (verA.Major != verB.Major)
+                {
+                    return 0;
+                }
+
+                return verA < verB ? 0 : 1;
+            }
+
+            return -1;
         }
 
         private void HandleTaggingProcess(RawTransactionModel model, string sessionKey)
@@ -116,8 +154,11 @@ namespace Device.FingerPrint.QueueConsumer.Services
             var realTagging = everTaggingRedisDB.StringGet(_realTaggingPrefix + sessionKey);
             model.FPTagging = GetTaggingValue(realTagging, sessionKey);
 
-            // Log when FPTagging is wrong
-            if (!string.IsNullOrEmpty(model.FPTagging) && model.FPTagging.Length != 32)
+            if (string.IsNullOrEmpty(model.FPTagging))
+            {
+                _ = LogConsumerErrorAsync(model, LogType.TaggingEncrypt);
+            }
+            else if (model.FPTagging.Length != 32)
             {
                 _ = LogConsumerErrorAsync(model, LogType.TaggingLength);
             }
@@ -223,7 +264,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private static void UpdateIsIncognitoMode(RawTransactionModel rawTransModel, Dictionary<string, string> attributesDictionary, string browserName)
         {
-            if (attributesDictionary.TryGetValue("isIncognitoMode", out string value) && bool.TryParse(value, out bool result))
+            if (!string.IsNullOrEmpty(browserName) && attributesDictionary.TryGetValue("isIncognitoMode", out string value) && bool.TryParse(value, out bool result))
             {
                 rawTransModel.IsIncognitoMode = result;
                 if (IgnoreDetectPrivateMode(browserName))
@@ -478,10 +519,17 @@ namespace Device.FingerPrint.QueueConsumer.Services
         #region Log Info
         private async Task LogConsumerErrorAsync(RawTransactionModel model, LogType logType)
         {
-            if (appSettings.GetValue<bool>("Consumer:LogInfo"))
+            try
             {
-                var logInfoModel = TransformToLogInfoModel(model, (int)logType);
-                await logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
+                if (appSettings.GetValue<bool>("Consumer:LogInfo"))
+                {
+                    var logInfoModel = TransformToLogInfoModel(model, (int)logType);
+                    await logInfoServices.InsertDCSConsumerLogAsync(logInfoModel);
+                }
+            }
+            catch (Exception ex)
+            {
+                Utilities.LogInfo(ex);
             }
         }
 
