@@ -8,6 +8,8 @@
         SessionKeyColon = 4,
         SessionKeyParse = 5,
         TaggingLength = 6,
-        TaggingEncrypt = 7
+        TaggingEncrypt = 7,
+        ScriptVersionOld = 8,
+        ScriptVersionParse = 9
     }
 }

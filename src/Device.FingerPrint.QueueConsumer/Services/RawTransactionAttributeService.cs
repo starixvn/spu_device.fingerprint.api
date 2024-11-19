@@ -64,6 +64,9 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
                 if (model != null)
                 {
+
+                    CheckScriptVersion(model);
+
                     model.RawUserAgent = model.UserAgent;
                     model.UserAgentInfo = GetUserAgentInfo(model.UserAgent);
                     model.FPUserAgentCode = crypto.GetMD5Hash(model.UserAgent);
@@ -109,6 +112,41 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return model;
+        }
+
+        private void CheckScriptVersion(RawTransactionModel model)
+        {
+            var curScriptVersion = appSettings.GetSection<string>("Consumer:ScriptVersion");
+            var compareScriptVersion = CompareVersionsWithTryParse(model.ScriptVersion, curScriptVersion);
+            if (compareScriptVersion == 0)
+            {
+                _ = LogConsumerErrorAsync(model, LogType.ScriptVersionOld);
+            }
+            else if (compareScriptVersion == -1)
+            {
+                int maxLength = 10;
+                if (!string.IsNullOrEmpty(model.ScriptVersion) && model.ScriptVersion.Length > maxLength)
+                {
+                    model.ScriptVersion = model.ScriptVersion.Substring(0, maxLength);
+                }
+
+                _ = LogConsumerErrorAsync(model, LogType.ScriptVersionParse);
+            }
+        }
+
+        private static int CompareVersionsWithTryParse(string versionA, string versionB)
+        {
+            if (Version.TryParse(versionA, out Version verA) && Version.TryParse(versionB, out Version verB))
+            {
+                if (verA.Major != verB.Major)
+                {
+                    return 0;
+                }
+
+                return verA < verB ? 0 : 1;
+            }
+
+            return -1;
         }
 
         private void HandleTaggingProcess(RawTransactionModel model, string sessionKey)
