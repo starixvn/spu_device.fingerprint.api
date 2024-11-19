@@ -226,7 +226,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private static void UpdateIsIncognitoMode(RawTransactionModel rawTransModel, Dictionary<string, string> attributesDictionary, string browserName)
         {
-            if (attributesDictionary.TryGetValue("isIncognitoMode", out string value) && bool.TryParse(value, out bool result))
+            if (!string.IsNullOrEmpty(browserName) && attributesDictionary.TryGetValue("isIncognitoMode", out string value) && bool.TryParse(value, out bool result))
             {
                 rawTransModel.IsIncognitoMode = result;
                 if (IgnoreDetectPrivateMode(browserName))
