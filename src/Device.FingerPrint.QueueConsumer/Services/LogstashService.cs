@@ -11,12 +11,14 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Fanex.Logging;
+using System.Linq;
+using System.Transactions;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
     public interface ILogstashService
     {
-        Task PushLog(RawTransactionModel transaction);
+        Task PushLogAsync(IEnumerable<RawTransactionModel> transactions);
     }
 
     public class LogstashService : ILogstashService
@@ -30,17 +32,30 @@ namespace Device.FingerPrint.QueueConsumer.Services
             this.logger = logger;
         }
 
-        public async Task PushLog(RawTransactionModel transaction)
+        public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
         {
-            var logMessage = TransformLogMessage(transaction);
+            using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+            using var stream = client.GetStream();
 
-            PushLogUsingTCP(logMessage);
-            await PushLogUsingHttp(logMessage);
+            foreach (var transaction in transactions)
+            {
+                if (!appSettings.LogstashAllowSubscribers.Contains(transaction.SubscriberName.ToLower()))
+                    continue;
+
+                var logMessage = TransformLogMessage(transaction);
+
+                string jsonLog = JsonConvert.SerializeObject(logMessage);
+
+                byte[] data = Encoding.UTF8.GetBytes(jsonLog + "\n");
+                await stream.WriteAsync(data);
+            }
         }
 
-        private string TransformLogMessage(RawTransactionModel transaction)
+        private TransactionLogstashModel TransformLogMessage(RawTransactionModel transaction)
         {
             var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute?.FPFingerPrintAttribute);
+
+            transaction.SubscriberName = transaction.SubscriberName.ToLower();
 
             var logMessage = new TransactionLogstashModel
             {
@@ -50,48 +65,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 UnhandledAttributes = fingerprintLogstashModel?.UnhandledAttributes,
             };
 
-            return JsonConvert.SerializeObject(logMessage);
-        }
-
-        private void PushLogUsingTCP(string logMessage)
-        {
-            if (string.IsNullOrEmpty(appSettings.LogstashTcpHostname))
-                return;
-
-            try
-            {
-                using (TcpClient client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort))
-                {
-                    NetworkStream stream = client.GetStream();
-                    byte[] data = Encoding.UTF8.GetBytes(logMessage);
-
-                    stream.Write(data, 0, data.Length);
-                }
-            } 
-            catch(Exception ex)
-            {
-                LogException(ex);
-            }
-            
-        }
-
-        private async Task PushLogUsingHttp(string logMessage)
-        {
-            if(string.IsNullOrEmpty(appSettings.LogstashHttpUrl))
-                return;
-            try
-            {
-                using (var httpClient = new HttpClient())
-                {
-                    var httpContent = new StringContent(logMessage, Encoding.UTF8, "application/json");
-
-                    _ = await httpClient.PostAsync(appSettings.LogstashHttpUrl, httpContent);
-                }
-            }
-            catch (Exception ex)
-            {
-                LogException(ex);
-            }
+            return logMessage;
         }
 
         private FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)

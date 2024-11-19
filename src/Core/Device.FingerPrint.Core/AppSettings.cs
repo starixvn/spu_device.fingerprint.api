@@ -37,13 +37,13 @@ namespace Device.FingerPrint.Core
 
         bool IsEnableLogstash { get; }
 
-        string LogstashHttpUrl { get; }
-
         string LogstashTcpHostname { get; }
 
         int LogstashTcpPort { get; }
 
         List<string> UnhandledFingerprintAttributeValues { get; }
+
+        List<string> LogstashAllowSubscribers { get; }
 
         bool IsExtraSub { get; }
 
@@ -93,11 +93,14 @@ namespace Device.FingerPrint.Core
         private readonly string jWT;
 
         private readonly bool isEnableLogstash;
-        private readonly string logstashHttpUrl;
+
         private readonly string logstashTcpHostname;
+
         private readonly int logstashTcpPort;
 
         private readonly List<string> unhandledFingerprintAttributeValues;
+
+        private readonly List<string> logstashAllowSubscribers;
 
         private readonly bool isExtraSub;
         
@@ -147,13 +150,13 @@ namespace Device.FingerPrint.Core
 
             isEnableLogstash = !string.IsNullOrEmpty(GetValue<string>("Logstash:IsEnable")) && Convert.ToBoolean(GetValue<string>("Logstash:IsEnable"));
 
-            logstashHttpUrl = GetValue<string>("Logstash:HttpUrl") ?? string.Empty;
-
             logstashTcpHostname = GetValue<string>("Logstash:Tcp:Hostname") ?? string.Empty;
 
             logstashTcpPort = Convert.ToInt32(string.IsNullOrEmpty(GetValue<string>("Logstash:Tcp:Port")) ? "32705" : GetValue<string>("Logstash:Tcp:Port"));
 
             unhandledFingerprintAttributeValues = GetSection<List<string>>("Fingerprint:UnhandledAttributeValues") ?? new List<string>();
+
+            logstashAllowSubscribers = GetSection<List<string>>("Logstash:AllowSubscribers") ?? new List<string>();
 
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
@@ -196,13 +199,13 @@ namespace Device.FingerPrint.Core
 
         public bool IsEnableLogstash => isEnableLogstash;
 
-        public string LogstashHttpUrl => logstashHttpUrl;
-
         public string LogstashTcpHostname => logstashTcpHostname;
 
         public int LogstashTcpPort => logstashTcpPort;
 
         public List<string> UnhandledFingerprintAttributeValues => unhandledFingerprintAttributeValues;
+
+        public List<string> LogstashAllowSubscribers => logstashAllowSubscribers;
 
         public bool IsExtraSub => isExtraSub;
 

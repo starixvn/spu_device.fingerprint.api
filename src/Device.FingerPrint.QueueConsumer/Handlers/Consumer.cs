@@ -124,7 +124,7 @@
             {
                 try
                 {
-                    await Task.WhenAll(transactions.Select(logstashService.PushLog));
+                    await logstashService.PushLogAsync(transactions);
                 }
                 catch (Exception ex)
                 {
