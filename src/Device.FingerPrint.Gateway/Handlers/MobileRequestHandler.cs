@@ -10,6 +10,8 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
 
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19" };
+
         public MobileRequestHandler(ISubscriberService subscriberService)
         {
             this.subscriberService = subscriberService;
@@ -37,6 +39,11 @@ namespace Device.FingerPrint.Gateway.Handlers
 
                             if (transactionRequest != null && !string.IsNullOrWhiteSpace(transaction?.Subscriber) && !string.IsNullOrWhiteSpace(transaction.Account))
                             {
+                                if (DebugAccounts.Contains(transaction.Account.ToLower()))
+                                {
+                                    _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
+                                }
+
                                 if (await this.subscriberService.ValidateAsync(transaction.Subscriber))
                                 {
                                     return await base.SendAsync(request, cancellationToken);
