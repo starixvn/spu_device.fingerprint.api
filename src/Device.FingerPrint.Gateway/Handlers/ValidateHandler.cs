@@ -10,7 +10,7 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
 
-        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "qctest5oct202019", "qatest05" };
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "qctest5oct202019", "qatest05", "member19" };
 
         public ValidateHandler(ISubscriberService subscriberService)
         {
@@ -33,7 +33,7 @@ namespace Device.FingerPrint.Gateway.Handlers
                         {
                             if (DebugAccounts.Contains(transactionRequest.Account.ToLower()))
                             {
-                                _ = LogService.InfoAsync($"Gateway Debug for Account:\n {JsonConvert.SerializeObject(transactionRequest)}");
+                                _ = LogService.InfoAsync($"Gateway Debug for Account:{transactionRequest.Account}\n {JsonConvert.SerializeObject(transactionRequest)}");
                             }
 
                             if (await this.subscriberService.ValidateAsync(transactionRequest?.Subscriber))
