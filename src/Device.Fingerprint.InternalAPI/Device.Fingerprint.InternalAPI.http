@@ -1,0 +1,6 @@
+@Device.Fingerprint.InternalAPI_HostAddress = http://localhost:5066
+
+GET {{Device.Fingerprint.InternalAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
