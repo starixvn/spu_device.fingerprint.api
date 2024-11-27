@@ -2,6 +2,6 @@
 
 <Functions>
 	<Function Name="SAI">
-		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo" DbName="MySQL.DCS_DataCenter.Reporter"/>
+		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo_xtest" DbName="MySQL.DCS_DataCenter.Reporter"/>
 	</Function>
 </Functions>
