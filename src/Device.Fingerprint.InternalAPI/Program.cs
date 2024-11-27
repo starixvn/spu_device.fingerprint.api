@@ -11,6 +11,7 @@ using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -18,6 +19,19 @@ using Sentry;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
+var port = builder.Environment.IsDevelopment() ? "5001" : "5000";
+
+builder.WebHost.UseKestrel()
+    .UseUrls($"http://*:{port}")
+    .ConfigureAppConfiguration((hostingContext, config) =>
+    {
+        var env = hostingContext.HostingEnvironment;
+
+        config.SetBasePath(env.ContentRootPath)
+              .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+              .AddEnvironmentVariables();
+    });
+
 
 // Add services to the container.
 var appSettings = new AppSettings(builder.Configuration);
@@ -139,6 +153,17 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = _ => true
+});
+
+app.UseRouting();
+
+app.UseCors();
+
+app.UseResponseCaching();
 
 app.UseMiddleware<ExceptionMiddleware>();
 
