@@ -19,10 +19,8 @@ using Sentry;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
-var port = builder.Environment.IsDevelopment() ? "5001" : "5000";
 
 builder.WebHost.UseKestrel()
-    .UseUrls($"http://*:{port}")
     .ConfigureAppConfiguration((hostingContext, config) =>
     {
         var env = hostingContext.HostingEnvironment;
