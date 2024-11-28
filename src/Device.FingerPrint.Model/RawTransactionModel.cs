@@ -99,7 +99,32 @@ namespace Device.FingerPrint.Model
         public bool? IsIncognitoMode { get; set; }
 
         public string ScriptVersion { get; set; }
-        
+
+        public string MBAndroidCode { get; set; }
+
+        public string MBCustomCode { get; set; }
+
+        public string MBMediaDRMCode { get; set; }
+
+        public bool MBIsMobileApp { get; set; }
+
+        public bool MBIsEmulator { get; set; }
+
+        public string MBModelName { get; set; }
+
+        public string MBManufacturer { get; set; }
+
+        public string MBBrand { get; set; }
+
+        public string MBSDKVersion { get; set; }
+
+        public string MBOS { get; set; }
+
+        public string MBTimezone { get; set; }
+
+        public string MBLanguage { get; set; }
+
+        public string MBCountry { get; set; }
     }
 
     public class ConvertBigInteger : ConverterBase

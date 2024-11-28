@@ -6,7 +6,9 @@
 
     public interface ISubscriberService
     {
-        Task<string> ValidateAsync(TransactionRequest transactionRequest, bool isExtraSubscriber);
+        Task<string> ValidateAsync(TransactionRequest transactionRequest);
+
+        bool IsExtraSubscriber(string subscriberName);
     }
 
     public class SubscriberService : ISubscriberService
@@ -20,8 +22,7 @@
             this.redisService = redisService;
         }
 
-        public async Task<string> ValidateAsync(TransactionRequest transactionRequest, bool isExtraSubscriber)
-
+        public async Task<string> ValidateAsync(TransactionRequest transactionRequest)
         {
             if (string.IsNullOrEmpty(transactionRequest.Account))
             {
@@ -30,7 +31,7 @@
 
             if (!string.IsNullOrWhiteSpace(transactionRequest.Subscriber))
             {
-                var subscriber = await GetSubscriberInfoAsync(transactionRequest.Subscriber, isExtraSubscriber, appSettings.ExtraSubscribers);
+                var subscriber = await GetSubscriberInfoAsync(transactionRequest.Subscriber, appSettings.ExtraSubscribers);
 
                 if (subscriber != null && subscriber.SubscriberId != 0)
                 {
@@ -43,7 +44,17 @@
             return TransactionResult.NotExistSubscriber;
         }
 
-        private async Task<SubscriberModel> GetSubscriberInfoAsync(string subName, bool isExtraSubscriber, List<SubscriberModel> listExtraSubscribersModel)
+        public bool IsExtraSubscriber(string subscriberName)
+        {
+            if (appSettings.ExtraSubscribers != null && appSettings.ExtraSubscribers.Any())
+            {
+                return appSettings.ExtraSubscribers.Exists(x => x.SubscriberName.ToLower() == subscriberName.ToLower());
+            }
+
+            return false;
+        }
+
+        private async Task<SubscriberModel> GetSubscriberInfoAsync(string subName, List<SubscriberModel> listExtraSubscribersModel)
         {
 
             if (!string.IsNullOrWhiteSpace(subName))
@@ -57,7 +68,7 @@
                     return subInfo;
                 }
 
-                if (isExtraSubscriber)
+                if (IsExtraSubscriber(subName))
                 {
                     return GetExtraSubscriberInfo(subName, listExtraSubscribersModel);
                 }
@@ -99,7 +110,6 @@
 
             return new SubscriberModel();
         }
-
 
         private async Task<SubscriberModel> GetDataSubscriberAndSetCacheAsync(string subName, string cacheKey)
         {

@@ -34,5 +34,7 @@
         public string SessionKey { get; set; }
 
         public string BotD { get; set; }
+
+        public MobileModel Mobile { get; set; }
     }
 }

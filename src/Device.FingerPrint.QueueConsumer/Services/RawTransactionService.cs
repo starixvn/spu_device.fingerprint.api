@@ -31,6 +31,7 @@
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
         private readonly IDatabase everTaggingRedisDB;
+        private readonly IMobileRawTransactionService mobileRawTransactionService;
 
         public RawTransactionModel TransformRawTransModel { get; private set; }
 
@@ -40,7 +41,8 @@
             IDeviceService deviceService,
             IBotDetectionService botDetectionService,
             ITransactionService transactionService,
-            IAppSettings appSettings
+            IAppSettings appSettings,
+            IMobileRawTransactionService mobileRawTransactionService
         )
         {
             this.rawTransactionAttributeService = rawTransactionAttributeService;
@@ -50,12 +52,19 @@
             this.appSettings = appSettings;
 
             this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
+            this.mobileRawTransactionService = mobileRawTransactionService;
         }
 
         public RawTransactionService TransformRawTransaction(MessageQueue message)
         {
             try
             {
+                if(message.Mobile != null && message.Mobile.IsMobileAppTrans)
+                {
+                    TransformRawTransModel = mobileRawTransactionService.TransformRawTransaction(message);
+                    return this;
+                }
+
                 var invalidDevice = string.Empty;
                 var deviceCode = string.Empty;
                 var url = string.Empty;

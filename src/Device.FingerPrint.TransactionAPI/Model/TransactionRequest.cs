@@ -41,6 +41,6 @@ namespace Device.FingerPrint.TransactionAPI.Model
 
         public string CaptchaResult { get; set; }
 
-        public string SessionKey { get; set; }
+        public string SessionKey { get; set; }        
     }
 }

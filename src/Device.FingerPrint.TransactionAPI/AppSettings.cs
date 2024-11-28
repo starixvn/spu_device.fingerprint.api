@@ -10,6 +10,8 @@ namespace Device.FingerPrint.TransactionAPI
 
         string ExtraQueueName { get; }
 
+        string MobileQueueName { get; }
+
         List<SubscriberModel> ExtraSubscribers { get; }
 
         bool IsUM { get; }
@@ -35,6 +37,8 @@ namespace Device.FingerPrint.TransactionAPI
 
         private readonly string extraQueueName;
 
+        private readonly string mobileQueueName;
+
         private readonly List<SubscriberModel> extraSubscribers;
 
         private readonly bool isUM;
@@ -59,6 +63,8 @@ namespace Device.FingerPrint.TransactionAPI
 
             extraQueueName = GetValue<string>("RabbitMQ:ExtraQueue");
 
+            mobileQueueName = GetValue<string>("RabbitMQ:MobileQueue");
+
             extraSubscribers = GetExtraSubscribers();
 
             isUM = GetValue<bool>("IsUM");
@@ -79,6 +85,8 @@ namespace Device.FingerPrint.TransactionAPI
         public string QueueName => queueName;
 
         public string ExtraQueueName => extraQueueName;
+
+        public string MobileQueueName => mobileQueueName;
 
         public List<SubscriberModel> ExtraSubscribers => extraSubscribers;
 

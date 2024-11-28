@@ -47,7 +47,7 @@
             {
                 try
                 {
-                    responseCode = await subscriberService.ValidateAsync(transRequest, IsExtraSubscriber(transRequest.Subscriber));
+                    responseCode = await subscriberService.ValidateAsync(transRequest);
 
                     if (responseCode == TransactionResult.Success)
                     {
@@ -124,11 +124,6 @@
             return ignoredSites.Any(s => s.Equals(site, StringComparison.OrdinalIgnoreCase));
         }
 
-        private string JoinStringAttributes(List<string> attributes, string separator)
-        {
-            return string.Join(separator, attributes.ToArray());
-        }
-
         private async Task PushToQueueAsync(TransactionRequest transactionRequest, DeviceModel deviceModel)
         {
             var dataEvent = new MessageQueue
@@ -146,23 +141,12 @@
                 Token = transactionRequest.Token,
                 Recaptcha = "",
                 SessionKey = transactionRequest.SessionKey,
-                BotD = transactionRequest.Bi
+                BotD = transactionRequest.Bi, 
             };
 
-            var queueAddress = IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
+            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
 
             await massTransitProducer.SendAsync(dataEvent, queueAddress);
-        }
-
-
-        private bool IsExtraSubscriber(string subscriberName)
-        {
-            if (appSettings.ExtraSubscribers != null && appSettings.ExtraSubscribers.Any())
-            {
-                return appSettings.ExtraSubscribers.Exists(x => x.SubscriberName.ToLower() == subscriberName.ToLower());
-            }
-
-            return false;
         }
 
         private TransactionResponse GetTransactionResponse(string code)

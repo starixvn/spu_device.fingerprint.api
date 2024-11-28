@@ -33,7 +33,7 @@ namespace Device.FingerPrint.Gateway.Handlers
                         {
                             if (DebugAccounts.Contains(transactionRequest.Account.ToLower()))
                             {
-                                _ = LogService.InfoAsync($"Gateway Debug for Account:\n {JsonConvert.SerializeObject(transactionRequest)}");
+                                _ = LogService.InfoAsync($"Gateway Debug for Account:{transactionRequest.Account}\n {JsonConvert.SerializeObject(transactionRequest)}");
                             }
 
                             if (await this.subscriberService.ValidateAsync(transactionRequest?.Subscriber))
