@@ -48,6 +48,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate);
 
+        IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize);
+
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -274,6 +276,17 @@ namespace Device.FingerPrint.Features.Transaction.Services
             };
 
             return repository.Fetch<AssociationAccountUsageEntity>(criteria);
+        }
+
+        public IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize)
+        {
+            var criteria = new GetTransactionInfoCriteria
+            {
+                LastTransID = lastTransID,
+                BatchSize = batchSize
+            };
+
+            return repository.Fetch<TransactionInfoEntity>(criteria);
         }
     }
 }
