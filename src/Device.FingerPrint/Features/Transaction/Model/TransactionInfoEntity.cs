@@ -29,6 +29,16 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public string UserAgent { get; set; }
 
+        public string OSName { get; set; }
+
+        public string OSVersion { get; set; }
+
+        public string BrowserName { get; set; }
+
+        public string BrowserVersion { get; set; }
+
+        public string DeviceType { get; set; }
+
         public string IP { get; set; }
 
         public string IPID { get; set; }
@@ -64,13 +74,5 @@ namespace Device.FingerPrint.Features.Transaction.Model
         public ulong DeviceFingerprintID { get; set; }
 
         public string FingerprintCode { get; set; }
-
-        public string OSName { get; set; }
-
-        public string OSVersion { get; set; }
-
-        public string BrowserName { get; set; }
-
-        public string BrowserVersion { get; set; }
     }
 }

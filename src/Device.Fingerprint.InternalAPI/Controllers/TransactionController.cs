@@ -55,6 +55,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                         DeviceFingerprintID = x.DeviceFingerprintID,
                         DeviceID = x.DeviceID,
                         DeviceStatus = x.DeviceStatus,
+                        DeviceType = x.DeviceType,
                         FakeIP = x.FakeIP,
                         FingerprintCode = x.FingerprintCode,
                         FirstDeviceCode = x.FirstDeviceCode,
