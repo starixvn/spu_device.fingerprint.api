@@ -65,7 +65,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FPS.Client.NetStandard", "s
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.FingerPrint.Gateway", "src\Device.FingerPrint.Gateway\Device.FingerPrint.Gateway.csproj", "{66AF0E10-FEAE-4DFE-8E11-CD77659EE14A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.Fingerprint.InternalAPI", "src\Device.Fingerprint.InternalAPI\Device.Fingerprint.InternalAPI.csproj", "{06218EA7-C574-41F5-B5DE-1C45C0CB610F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Device.Fingerprint.InternalAPI", "src\Device.Fingerprint.InternalAPI\Device.Fingerprint.InternalAPI.csproj", "{06218EA7-C574-41F5-B5DE-1C45C0CB610F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Device.Identification", "src\Device.Identification\Device.Identification.csproj", "{75B76194-23B8-4029-B3E8-333426DDCC7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -177,6 +179,10 @@ Global
 		{06218EA7-C574-41F5-B5DE-1C45C0CB610F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06218EA7-C574-41F5-B5DE-1C45C0CB610F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06218EA7-C574-41F5-B5DE-1C45C0CB610F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75B76194-23B8-4029-B3E8-333426DDCC7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75B76194-23B8-4029-B3E8-333426DDCC7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75B76194-23B8-4029-B3E8-333426DDCC7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75B76194-23B8-4029-B3E8-333426DDCC7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -208,6 +214,7 @@ Global
 		{6AE2F7D7-4489-4ED2-BD8E-64B04097AFBE} = {C43090E7-0405-43CE-9A36-AF2AE4033C1A}
 		{66AF0E10-FEAE-4DFE-8E11-CD77659EE14A} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
 		{06218EA7-C574-41F5-B5DE-1C45C0CB610F} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
+		{75B76194-23B8-4029-B3E8-333426DDCC7E} = {28D8DFFC-C657-4735-B2B5-A8D571BF4667}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9DAF95AC-F742-40C6-B4F4-8ADF4A546ACD}
