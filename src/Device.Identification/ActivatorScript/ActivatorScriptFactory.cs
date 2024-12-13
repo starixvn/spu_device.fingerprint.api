@@ -12,7 +12,7 @@
             _bundleConfig = bundleConfig ?? throw new ArgumentNullException(nameof(bundleConfig));
         }
 
-        public void CreateConfigScript(
+        public ActivatorScriptFactory CreateConfigScript(
             string cachedDeviceId,
             string defaultDeviceId,
             string accept,
@@ -20,8 +20,9 @@
             string domainName,
             string fdiKey)
         {
-            // Tải nội dung script từ BundleConfig
             _configScript = _scriptLoader.LoadConfigScript(cachedDeviceId, defaultDeviceId, accept, headers, domainName, fdiKey);
+
+            return this;
         }
 
         // Secondary constructor for scenarios where config script is not immediately needed
