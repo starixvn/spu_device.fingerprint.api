@@ -22,25 +22,33 @@
         [HttpGet("activator.ashx")]
         public async Task<IActionResult> ActivatorAshx()
         {
-            if (_appSettings.IsDisabledDI)
+            try
             {
-                return BadRequest("Feature is disabled.");
-            }
+                if (_appSettings.IsDisabledDI)
+                {
+                    return BadRequest("Feature is disabled.");
+                }
 
-            var cachedDeviceId = GetCachedCandidateDeviceId();
-            var defaultDeviceId = cachedDeviceId;
-            if (string.IsNullOrEmpty(defaultDeviceId))
+                var cachedDeviceId = GetCachedCandidateDeviceId();
+                var defaultDeviceId = cachedDeviceId;
+                if (string.IsNullOrEmpty(defaultDeviceId))
+                {
+                    defaultDeviceId = DeviceFactory.GenerateDeviceId();
+                }
+
+                SetEtagIfDeviceIdIsValid(defaultDeviceId);
+
+                var fdiKey = GetDeviceIdFromCookie(_fdiCookieKey);
+                _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
+                await WriteContent(cachedDeviceId, defaultDeviceId, fdiKey);
+
+                return Ok("Process completed successfully.");
+            }
+            catch (Exception ex)
             {
-                defaultDeviceId = DeviceFactory.GenerateDeviceId();
+                var err = ex.Message;
+                return NoContent();
             }
-
-            SetEtagIfDeviceIdIsValid(defaultDeviceId);
-
-            var fdiKey = GetDeviceIdFromCookie(_fdiCookieKey);
-            await WriteContent(cachedDeviceId, defaultDeviceId, fdiKey);
-            _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
-
-            return Ok("Process completed successfully.");
         }
 
         private string GetCachedCandidateDeviceId()

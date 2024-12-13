@@ -119,8 +119,11 @@
 
         public virtual void UpdateCachingWithExpiredSeconds(int expiredSeconds)
         {
-            SetPrivateCache();
-            SetExpiredSeconds(expiredSeconds);
+            if (!_response.HasStarted)
+            {
+                SetPrivateCache();
+                SetExpiredSeconds(expiredSeconds);
+            }
         }
 
         public virtual void UpdateCachingWithExpiredSecondsAndModifiedTime(int expiredSeconds)

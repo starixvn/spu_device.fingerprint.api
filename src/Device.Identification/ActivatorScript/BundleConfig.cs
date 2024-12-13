@@ -66,5 +66,21 @@
                 return stringBuilder.ToString();
             });
         }
+        public void RegisterBundles()
+        {
+            foreach (var bundleName in _bundleDefinitions.Keys)
+            {
+                // Chỉ cần gọi `GetBundle` để tạo cache
+                try
+                {
+                    GetBundle(bundleName);
+                    Console.WriteLine($"Bundle '{bundleName}' registered successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error registering bundle '{bundleName}': {ex.Message}");
+                }
+            }
+        }
     }
 }

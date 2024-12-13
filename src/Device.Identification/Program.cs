@@ -24,21 +24,22 @@ builder.Services.AddTransient<JwtToken>();
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
+builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
+builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(builder.Environment.WebRootPath));
 builder.Services.AddTransient<HttpCachingWrapper>();
 builder.Services.AddSingleton<NumberGenerator>();
 builder.Services.AddTransient<ScriptLoader>();
 builder.Services.AddSingleton<BundleConfig>();
+builder.Services.AddTransient<ActivatorScriptFactory>();
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddMemoryCache();
-builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
-builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(builder.Environment.WebRootPath));
 
 var app = builder.Build();
-
+app.UseStaticFiles();
 //app.UseAshxMiddleware();
 
 // Configure the HTTP request pipeline.
@@ -47,6 +48,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+// RegisterBundles
+var bundleConfig = app.Services.GetRequiredService<BundleConfig>();
+bundleConfig.RegisterBundles();
 
 var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
 var fileProvider = app.Services.GetRequiredService<IFileProvider>();
