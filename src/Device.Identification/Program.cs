@@ -24,8 +24,10 @@ builder.Services.AddTransient<JwtToken>();
 
 // Add services to the container.
 builder.Services.AddHttpContextAccessor();
-builder.Environment.WebRootPath = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
-builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(builder.Environment.WebRootPath));
+
+var currentDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
+builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(currentDirectory));
+
 builder.Services.AddTransient<HttpCachingWrapper>();
 builder.Services.AddSingleton<NumberGenerator>();
 builder.Services.AddTransient<ScriptLoader>();

@@ -4,6 +4,7 @@
     using Device.Identification.Factory;
     using Device.Identification.Model;
     using Device.Identification.Services;
+    using Microsoft.Ajax.Utilities;
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
@@ -20,13 +21,13 @@
         private readonly string _fdiCookieKey = "gfp";
 
         [HttpGet("activator.ashx")]
-        public async Task<IActionResult> ActivatorAshx()
+        public async Task ActivatorAshx()
         {
             try
             {
                 if (_appSettings.IsDisabledDI)
                 {
-                    return BadRequest("Feature is disabled.");
+                    return;
                 }
 
                 var cachedDeviceId = GetCachedCandidateDeviceId();
@@ -34,26 +35,39 @@
                 if (string.IsNullOrEmpty(defaultDeviceId))
                 {
                     defaultDeviceId = DeviceFactory.GenerateDeviceId();
+                    var checkValid = DeviceFactory.IsValidDeviceId(defaultDeviceId);
                 }
 
                 SetEtagIfDeviceIdIsValid(defaultDeviceId);
 
-                var fdiKey = GetDeviceIdFromCookie(_fdiCookieKey);
+                var fdiKey = GetCookieValue(_fdiCookieKey);
                 _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
                 await WriteContent(cachedDeviceId, defaultDeviceId, fdiKey);
-
-                return Ok("Process completed successfully.");
             }
             catch (Exception ex)
             {
                 var err = ex.Message;
-                return NoContent();
+            }
+        }
+
+        [HttpGet("tkexp.ashx")]
+        public async Task TKexpAshx()
+        {
+            try
+            {
+                var subscriberScript = _scriptFactory.CreateSubscriberTokenScript();
+
+                await subscriberScript.WriteScript(Response);
+            }
+            catch (Exception ex)
+            {
+                var err = ex.Message;
             }
         }
 
         private string GetCachedCandidateDeviceId()
         {
-            var cachedDeviceId = GetDeviceIdFromCookie(_appSettings.CookieStorage);
+            var cachedDeviceId = GetCookieValue(_appSettings.CookieStorage, headerKey: "(global.c3)");
             if (string.IsNullOrEmpty(cachedDeviceId))
             {
                 cachedDeviceId = GetDeviceIdFromETag();
@@ -62,11 +76,51 @@
             return cachedDeviceId;
         }
 
-        private string GetDeviceIdFromCookie(string key)
+        private string GetCookieValue(string key, string headerKey = "")
         {
-            if (Request.Cookies.TryGetValue(key, out var deviceId))
+            string cookieValue = GetCookieFromRequestCookies(key) ?? GetCookieFromHeaders(headerKey);
+
+            if (!string.IsNullOrEmpty(cookieValue) && DeviceFactory.IsValidDeviceId(cookieValue))
             {
-                return DeviceFactory.IsValidDeviceId(deviceId) ? deviceId : string.Empty;
+                return cookieValue;
+            }
+
+            return string.Empty;
+        }
+
+        private string? GetCookieFromRequestCookies(string key)
+        {
+            if (Request.Cookies.TryGetValue(key, out var value))
+            {
+                return value;
+            }
+
+            return null;
+        }
+
+        private string GetCookieFromHeaders(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return string.Empty;
+            }
+
+            var rawCookies = Request.Headers.Cookie.ToString();
+            if (string.IsNullOrEmpty(rawCookies))
+            {
+                return string.Empty;
+            }
+
+            var cookies = rawCookies.Split(';')
+                .Select(cookie => cookie.Split(['='], 2))
+                .ToDictionary(
+                    parts => parts[0].Trim(),
+                    parts => parts.Length > 1 ? parts[1].Trim() : string.Empty
+                );
+
+            if (cookies.TryGetValue(key, out var headerValue))
+            {
+                return headerValue;
             }
 
             return string.Empty;
@@ -99,7 +153,7 @@
             var headers = string.Join(",", GetHeaders());
             var rawUrl = new Uri($"{Request.Scheme}://{Request.Host}{Request.Path}{Request.QueryString}");
 
-            var domainName = rawUrl.Host == "localhost" ? rawUrl.Host + ":" + rawUrl.Port : rawUrl.Host;
+            var domainName = $"{Request.Scheme}://{Request.Host}";
 
 
             var scriptFactory = _scriptFactory.CreateConfigScript(

@@ -33,8 +33,16 @@
                 throw new ArgumentException("Encrypted text cannot be null or empty", nameof(encryptedText));
             }
 
+            // Decode từ Hex
             var decodedText = Hex.Decode(encryptedText);
+            if (string.IsNullOrEmpty(decodedText))
+            {
+                throw new FormatException("Hex.Decode returned an invalid result.");
+            }
+
+            // Giải mã với RC4
             var decryptedText = Rc4.Decrypt(Configurations.DeviceIdEncryptKey, decodedText);
+
             return decryptedText;
         }
     }

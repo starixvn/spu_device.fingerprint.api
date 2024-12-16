@@ -12,30 +12,32 @@
     public class BundleConfig
     {
         private readonly IMemoryCache _cache;
-        private readonly IWebHostEnvironment _env;
         private readonly IFileProvider _fileProvider;
+
+        // Sử dụng ReadOnlyDictionary để đảm bảo không bị thay đổi trong runtime
+        private readonly IReadOnlyDictionary<string, List<string>> _bundleDefinitions;
 
         public BundleConfig(IMemoryCache cache, IWebHostEnvironment env)
         {
             _cache = cache;
-            _env = env;
-            _fileProvider = env.WebRootFileProvider;
-        }
+            _fileProvider = env.WebRootFileProvider ?? throw new ArgumentNullException(nameof(env.WebRootFileProvider));
 
-        private readonly Dictionary<string, List<string>> _bundleDefinitions = new()
-    {
-        { "config", new List<string> { "/ScriptsDetecas/fp.js", "/ScriptsDetecas/Detecas.Config.js" } },
-        { "api", new List<string> { "/ScriptsDetecas/Detecas.Api.js" } },
-        { "common", new List<string>
+            // Định nghĩa các bundle
+            _bundleDefinitions = new Dictionary<string, List<string>>
             {
-                "/ScriptsUtility/file1.js",
-                "/ScriptsUtility/file2.js",
-                "/ScriptsDetecas/Detecas.Core.js",
-                "/ScriptsDetecas/Detecas.Device.js"
-            }
-        },
-        { "token", new List<string> { "/ScriptsDetecas/Detecas.ConfigToken.js" } }
-    };
+                { "config", new List<string> { "/ScriptsDetecas/fp.js", "/ScriptsDetecas/Detecas.Config.js" } },
+                { "api", new List<string> { "/ScriptsDetecas/Detecas.Api.js" } },
+                { "common", new List<string>
+                    {
+                        "/ScriptsUtility/file1.js",
+                        "/ScriptsUtility/file2.js",
+                        "/ScriptsDetecas/Detecas.Core.js",
+                        "/ScriptsDetecas/Detecas.Device.js"
+                    }
+                },
+                { "token", new List<string> { "/ScriptsDetecas/Detecas.ConfigToken.js" } }
+            };
+        }
 
         public string GetBundle(string bundleName)
         {
@@ -47,18 +49,17 @@
             return _cache.GetOrCreate($"Bundle_{bundleName}", entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-
                 var stringBuilder = new StringBuilder();
 
                 foreach (var file in files)
                 {
-                    var filePath = _fileProvider.GetFileInfo(file);
-                    if (!filePath.Exists)
+                    var fileInfo = _fileProvider.GetFileInfo(file);
+                    if (!fileInfo.Exists)
                     {
                         throw new FileNotFoundException($"File '{file}' in bundle '{bundleName}' does not exist.");
                     }
 
-                    using var stream = filePath.CreateReadStream();
+                    using var stream = fileInfo.CreateReadStream();
                     using var reader = new StreamReader(stream);
                     stringBuilder.AppendLine(reader.ReadToEnd());
                 }
@@ -66,14 +67,14 @@
                 return stringBuilder.ToString();
             });
         }
+
         public void RegisterBundles()
         {
             foreach (var bundleName in _bundleDefinitions.Keys)
             {
-                // Chỉ cần gọi `GetBundle` để tạo cache
                 try
                 {
-                    GetBundle(bundleName);
+                    GetBundle(bundleName); // Chỉ cần gọi GetBundle để tạo cache
                     Console.WriteLine($"Bundle '{bundleName}' registered successfully.");
                 }
                 catch (Exception ex)
@@ -81,6 +82,11 @@
                     Console.WriteLine($"Error registering bundle '{bundleName}': {ex.Message}");
                 }
             }
+        }
+
+        public bool BundleExists(string bundleName)
+        {
+            return _bundleDefinitions.ContainsKey(bundleName);
         }
     }
 }
