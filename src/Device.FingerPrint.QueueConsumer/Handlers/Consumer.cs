@@ -5,7 +5,9 @@
     using Device.FingerPrint.Features.Transaction.Services;
     using Device.FingerPrint.Model;
     using Device.FingerPrint.QueueConsumer.Services;
+    using Fanex.Logging;
     using MassTransit;
+    using Newtonsoft.Json;
     using System;
     using System.Collections.Concurrent;
     using System.Collections.Generic;
@@ -14,7 +16,7 @@
 
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
-        private readonly IRawTransactionService rawTransactionService;        
+        private readonly IRawTransactionService rawTransactionService;
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
@@ -23,14 +25,14 @@
         private const string hashKeyEverTagging = "EverTagging";
 
         public Consumer(
-                IRawTransactionService rawTransactionService,                
+                IRawTransactionService rawTransactionService,
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogstashService logstashService
         )
         {
-            this.rawTransactionService = rawTransactionService;            
+            this.rawTransactionService = rawTransactionService;
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
@@ -81,11 +83,18 @@
                 {
                     try
                     {
-                        var rawTransModel = rawTransactionService
-                                                .TransformRawTransaction(message.Message)
-                                                .GetRawTransAttributes();                       
+                        if (message.Message.Account.Length > 100)
+                        {
+                            LogService.Error($"LoginName.Length > 100:{message.Message.Account}\n {JsonConvert.SerializeObject(message.Message)}");
+                        }
+                        else
+                        {
+                            var rawTransModel = rawTransactionService
+                                                    .TransformRawTransaction(message.Message)
+                                                    .GetRawTransAttributes();
 
-                        transformedDataBag.Add(rawTransModel);
+                            transformedDataBag.Add(rawTransModel);
+                        }
                     }
                     catch (Exception ex)
                     {

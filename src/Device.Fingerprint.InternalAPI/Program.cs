@@ -2,7 +2,11 @@ using Device.Fingerprint.InternalAPI.Middleware;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Model;
 using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Transaction.Services;
+using Device.FingerPrint.Queue;
+using Device.FingerPrint.QueueConsumer.Services;
+using Device.FingerPrint.Redis;
 using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
@@ -51,7 +55,19 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IAppSettings>(appSettings);
 builder.Services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
 builder.Services.AddSingleton<ITransactionService, TransactionService>();
+builder.Services.AddSingleton<Fanex.Logging.ILogger, Logger>();
 
+builder.Services.AddSingleton<IRedisMultiplexDbService, RedisMultiplexDbService>();
+builder.Services.AddSingleton<IRawTransactionService, RawTransactionService>();
+builder.Services.AddSingleton<IRawTransactionAttributeService, RawTransactionAttributeService>();
+builder.Services.AddSingleton<ICrypto, Crypto>();
+builder.Services.AddSingleton<IUserAgentService, UserAgentService>();
+builder.Services.AddSingleton<IMobileRawTransactionService, MobileRawTransactionService>();
+builder.Services.AddSingleton<ILogInfoDataAccess, LogInfoDataAccess>();
+builder.Services.AddSingleton<ILogInfoServices, LogInfoServices>();
+builder.Services.AddSingleton<IDeviceService, DeviceService>();
+builder.Services.AddSingleton<IBotDetectionService, BotDetectionService>();
+builder.Services.AddSingleton<ILogstashService, LogstashService>();
 
 var rateLimiterConfig = appSettings.GetSection<RateLimiterConfig>("AppConfig:RateLimiter");
 builder.Services.AddRateLimiter(options =>
@@ -93,6 +109,7 @@ builder.Services.AddAuthentication(option =>
 
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCaching();
+
 
 FanexDataConfig(builder.Configuration, appSettings);
 
