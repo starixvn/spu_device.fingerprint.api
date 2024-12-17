@@ -20,7 +20,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Core\Device.FingerPrint.Core\Device.FingerPrint.Core.csproj" />
-		<ProjectReference Include="..\Device.FingerPrint.QueueConsumer\Device.FingerPrint.QueueConsumer.csproj" />
 		<ProjectReference Include="..\Device.FingerPrint\Device.FingerPrint.csproj" />
 	</ItemGroup>
 

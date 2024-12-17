@@ -1,8 +1,9 @@
 ﻿using Device.Fingerprint.InternalAPI.Model;
+using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
-using Device.FingerPrint.QueueConsumer.Services;
+using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;
@@ -55,7 +56,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
             }
             catch (Exception ex)
             {
-                _ = FingerPrint.QueueConsumer.Utilities.LogErrorAsync(ex);
+                LogService.Error(Utilities.GetLogMessage(ex));
             }
         }
 

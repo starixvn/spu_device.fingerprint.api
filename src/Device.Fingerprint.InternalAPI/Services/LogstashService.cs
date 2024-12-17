@@ -1,0 +1,119 @@
+﻿using Device.FingerPrint.Model;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Extensions;
+using Newtonsoft.Json;
+using System.Net.Sockets;
+using Device.FingerPrint.Core;
+using System.Text;
+using Device.Fingerprint.InternalAPI.Model;
+using Fanex.Logging;
+
+namespace Device.Fingerprint.InternalAPI.Services
+{
+    public interface ILogstashService
+    {
+        Task PushLogAsync(IEnumerable<RawTransactionModel> transactions);
+    }
+
+    public class LogstashService : ILogstashService
+    {
+        private readonly IAppSettings appSettings;
+
+        public LogstashService(IAppSettings appSettings)
+        {
+            this.appSettings = appSettings;
+        }
+
+        public async Task PushLogAsync(IEnumerable<RawTransactionModel> transactions)
+        {
+            using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
+            using var stream = client.GetStream();
+
+            foreach (var transaction in transactions)
+            {
+                if (!appSettings.LogstashAllowSubscribers.Contains(transaction.SubscriberName.ToLower()))
+                    continue;
+
+                var logMessage = TransformLogMessage(transaction);
+
+                string jsonLog = JsonConvert.SerializeObject(logMessage);
+
+                byte[] data = Encoding.UTF8.GetBytes(jsonLog + "\n");
+                await stream.WriteAsync(data);
+            }
+        }
+
+        private TransactionLogstashModel TransformLogMessage(RawTransactionModel transaction)
+        {
+            var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute?.FPFingerPrintAttribute);
+
+            transaction.SubscriberName = transaction.SubscriberName.ToLower();
+
+            var logMessage = new TransactionLogstashModel
+            {
+                Message = transaction,
+                Tags = "LoginTransaction",
+                FingerprintAttributes = fingerprintLogstashModel?.FingerprintAttributes,
+                UnhandledAttributes = fingerprintLogstashModel?.UnhandledAttributes,
+            };
+
+            return logMessage;
+        }
+
+        private FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)
+        {
+            var attributes = new List<string>();
+            var unhandledAttributes = new List<string>();
+
+            if (fingerprintAttribute == null)
+                return null;
+
+            var unhandledValues = appSettings.UnhandledFingerprintAttributeValues;
+
+            foreach (var property in fingerprintAttribute.GetType().GetProperties())
+            {
+                var propertyValue = property.GetValue(fingerprintAttribute);
+
+                if (propertyValue == null)
+                {
+                    unhandledAttributes.Add(property.Name);
+                    continue;
+                }
+
+                if (propertyValue.GetType() == typeof(string))
+                {
+                    var stringValue = propertyValue.ToString();
+                    if (!string.IsNullOrEmpty(stringValue)
+                        && !unhandledValues.Contains(stringValue.Trim('"').ToLower()))
+                    {
+                        attributes.Add(property.Name);
+                        continue;
+                    }
+
+                    unhandledAttributes.Add(property.Name);
+                }
+                else
+                {
+                    attributes.Add(property.Name);
+                }
+            }
+
+            return new FingerprintLogstashModel
+            {
+                FingerprintAttributes = attributes,
+                UnhandledAttributes = unhandledAttributes
+            };
+        }
+
+        private void LogException(Exception ex)
+        {
+            var logMessage = new LogMessage(ex.Message)
+                   .AddSection("Database Info", DatabaseInfoGetters.GetDbExceptionInfo(ex))
+                   .AddSection("Server Info", CommonInfoGetters.GetServerInfo())
+                   .AddSection("Exception Info", CommonInfoGetters.GetExceptionInfo(ex))
+                   .ToString();
+
+            LogService.Error(logMessage);
+        }
+    }
+}
