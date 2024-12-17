@@ -74,6 +74,7 @@
         private IEnumerable<RawTransactionModel> TransformRawTransactionModel(Batch<MessageQueue> messages)
         {
             var transformedDataBag = new ConcurrentBag<RawTransactionModel>();
+            var errorDataBag = new List<MessageQueue>();
 
             Parallel.ForEach(messages, new ParallelOptions { MaxDegreeOfParallelism = 10 }, message =>
             {
@@ -85,7 +86,7 @@
                     {
                         if (message.Message.Account.Length > 100)
                         {
-                            LogService.Error($"LoginName.Length > 100:{message.Message.Account}\n {JsonConvert.SerializeObject(message.Message)}");
+                            errorDataBag.Add(message.Message);
                         }
                         else
                         {
@@ -102,6 +103,10 @@
                     }
                 }
             });
+            if (errorDataBag.Any())
+            {
+                LogService.Error($"LoginName.Length > 100:\n {JsonConvert.SerializeObject(errorDataBag)}");
+            }
 
             return transformedDataBag;
         }
