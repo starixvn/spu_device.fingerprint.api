@@ -1,7 +1,9 @@
 using Device.Fingerprint.InternalAPI.Middleware;
+using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Model;
 using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
@@ -51,7 +53,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IAppSettings>(appSettings);
 builder.Services.AddSingleton<ITransactionDataAccess, TransactionDataAccess>();
 builder.Services.AddSingleton<ITransactionService, TransactionService>();
+builder.Services.AddSingleton<Fanex.Logging.ILogger, Logger>();
 
+builder.Services.AddSingleton<ICrypto, Crypto>();
+builder.Services.AddSingleton<ILogInfoDataAccess, LogInfoDataAccess>();
+builder.Services.AddSingleton<ILogInfoServices, LogInfoServices>();
+builder.Services.AddSingleton<ILogstashService, LogstashService>();
 
 var rateLimiterConfig = appSettings.GetSection<RateLimiterConfig>("AppConfig:RateLimiter");
 builder.Services.AddRateLimiter(options =>
@@ -93,6 +100,7 @@ builder.Services.AddAuthentication(option =>
 
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCaching();
+
 
 FanexDataConfig(builder.Configuration, appSettings);
 

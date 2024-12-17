@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <Functions>
+	<Function Name="RawTrans">
+		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+	</Function>
 	<Function Name="SAI">
 		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo" DbName="MySQL.DCS_DataCenter.Reporter"/>
 	</Function>
