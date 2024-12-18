@@ -86,34 +86,28 @@
             {
                 if (message?.Message != null
                     && !string.IsNullOrEmpty(message.Message.Account)
-                    && !Utilities.ContainsUnicodeCharacter(message.Message.Account))
+                    && !Utilities.ContainsUnicodeCharacter(message.Message.Account)
+                    && message.Message.Account.Length <= 100)
                 {
                     try
                     {
-                        if (message.Message.Account.Length > 100)
+                        if (message.Message.Mobile != null && message.Message.Mobile.IsMobileAppTrans)
                         {
-                            errorDataBag.Add(message.Message);
+                            var rawTransFinalModel = mobileRawTransactionService.TransformRawTransaction(message.Message);
+
+                            if (rawTransFinalModel != null)
+                            {
+                                transformedDataBag.Add(rawTransFinalModel);
+                            }
                         }
                         else
                         {
-                            if (message.Message.Mobile != null && message.Message.Mobile.IsMobileAppTrans)
-                            {
-                                var rawTransFinalModel = mobileRawTransactionService.TransformRawTransaction(message.Message);
+                            var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
+                            var rawTransFinalModel = rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
 
-                                if (rawTransFinalModel != null)
-                                {
-                                    transformedDataBag.Add(rawTransFinalModel);
-                                }
-                            }
-                            else
+                            if (rawTransFinalModel != null)
                             {
-                                var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
-                                var rawTransFinalModel = rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
-
-                                if (rawTransFinalModel != null)
-                                {
-                                    transformedDataBag.Add(rawTransFinalModel);
-                                }
+                                transformedDataBag.Add(rawTransFinalModel);
                             }
                         }
                     }
@@ -121,6 +115,10 @@
                     {
                         _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                     }
+                }
+                else
+                {
+                    errorDataBag.Add(message.Message);
                 }
             });
 
