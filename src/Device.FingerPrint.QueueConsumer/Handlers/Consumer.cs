@@ -17,6 +17,8 @@
     public class Consumer : IConsumer<Batch<MessageQueue>>
     {
         private readonly IRawTransactionService rawTransactionService;
+        private readonly IRawTransactionAttributeService rawTransactionAttributeService;
+        private readonly IMobileRawTransactionService mobileRawTransactionService;
         private readonly ITransactionService transactionService;
         private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
@@ -26,6 +28,8 @@
 
         public Consumer(
                 IRawTransactionService rawTransactionService,
+                IRawTransactionAttributeService rawTransactionAttributeService,
+                IMobileRawTransactionService mobileRawTransactionService,
                 ITransactionService transactionService,
                 IIPDBService ipdbService,
                 IAppSettings appSettings,
@@ -33,6 +37,8 @@
         )
         {
             this.rawTransactionService = rawTransactionService;
+            this.rawTransactionAttributeService = rawTransactionAttributeService;
+            this.mobileRawTransactionService = mobileRawTransactionService;
             this.transactionService = transactionService;
             this.ipdbService = ipdbService;
             this.appSettings = appSettings;
@@ -90,11 +96,25 @@
                         }
                         else
                         {
-                            var rawTransModel = rawTransactionService
-                                                    .TransformRawTransaction(message.Message)
-                                                    .GetRawTransAttributes();
+                            if (message.Message.Mobile != null && message.Message.Mobile.IsMobileAppTrans)
+                            {
+                                var rawTransFinalModel = mobileRawTransactionService.TransformRawTransaction(message.Message);
 
-                            transformedDataBag.Add(rawTransModel);
+                                if (rawTransFinalModel != null)
+                                {
+                                    transformedDataBag.Add(rawTransFinalModel);
+                                }
+                            }
+                            else
+                            {
+                                var rawTransModel = rawTransactionService.TransformRawTransaction(message.Message);
+                                var rawTransFinalModel = rawTransactionAttributeService.GetTransactionAttribute(rawTransModel);
+
+                                if (rawTransFinalModel != null)
+                                {
+                                    transformedDataBag.Add(rawTransFinalModel);
+                                }
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -103,12 +123,13 @@
                     }
                 }
             });
+
             if (errorDataBag.Any())
             {
                 LogService.Error($"LoginName.Length > 100:\n {JsonConvert.SerializeObject(errorDataBag)}");
             }
 
-            return transformedDataBag;
+            return transformedDataBag.ToList();
         }
 
         private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
@@ -125,6 +146,8 @@
                 }
 
                 await InsertLogstash(transactionModels);
+
+                ValidDuplicateTrans(transactionModels);
             }
             catch (Exception ex)
             {
@@ -144,6 +167,18 @@
                 {
                     _ = QueueConsumer.Utilities.LogErrorAsync(ex);
                 }
+            }
+        }
+
+        private static void ValidDuplicateTrans(IEnumerable<RawTransactionModel> listTrans)
+        {
+            var dupTrans = listTrans.GroupBy(x => new { x.LoginName, x.TransTime })
+                                    .Where(g => g.Count() > 1)
+                                    .SelectMany(g => g)
+                                    .ToList();
+            if (dupTrans.Count > 0)
+            {
+                LogService.Error($"DuplicateTrans:\n {JsonConvert.SerializeObject(dupTrans)}");
             }
         }
     }

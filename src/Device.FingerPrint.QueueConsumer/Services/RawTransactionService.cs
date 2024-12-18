@@ -15,7 +15,7 @@
 
     public interface IRawTransactionService
     {
-        RawTransactionService TransformRawTransaction(MessageQueue message);
+        RawTransactionModel TransformRawTransaction(MessageQueue message);
 
         void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
@@ -25,46 +25,32 @@
 
     public class RawTransactionService : IRawTransactionService
     {
-        private readonly IRawTransactionAttributeService rawTransactionAttributeService;
         private readonly IDeviceService deviceService;
         private readonly IBotDetectionService botDetectionService;
         private readonly ITransactionService transactionService;
         private readonly IAppSettings appSettings;
         private readonly IDatabase everTaggingRedisDB;
-        private readonly IMobileRawTransactionService mobileRawTransactionService;
-
-        public RawTransactionModel TransformRawTransModel { get; private set; }
 
         public RawTransactionService(
             IRedisMultiplexDbService redisMultiplexService,
-            IRawTransactionAttributeService rawTransactionAttributeService,
             IDeviceService deviceService,
             IBotDetectionService botDetectionService,
             ITransactionService transactionService,
-            IAppSettings appSettings,
-            IMobileRawTransactionService mobileRawTransactionService
+            IAppSettings appSettings
         )
         {
-            this.rawTransactionAttributeService = rawTransactionAttributeService;
             this.deviceService = deviceService;
             this.botDetectionService = botDetectionService;
             this.transactionService = transactionService;
             this.appSettings = appSettings;
 
             this.everTaggingRedisDB = redisMultiplexService.GetDatabase(appSettings.EverTaggingDBIndex);
-            this.mobileRawTransactionService = mobileRawTransactionService;
         }
 
-        public RawTransactionService TransformRawTransaction(MessageQueue message)
+        public RawTransactionModel TransformRawTransaction(MessageQueue message)
         {
             try
             {
-                if(message.Mobile != null && message.Mobile.IsMobileAppTrans)
-                {
-                    TransformRawTransModel = mobileRawTransactionService.TransformRawTransaction(message);
-                    return this;
-                }
-
                 var invalidDevice = string.Empty;
                 var deviceCode = string.Empty;
                 var url = string.Empty;
@@ -130,9 +116,8 @@
                     ScriptVersion = deviceInfo.Version
                 };
 
-                TransformRawTransModel = rawTransModel;
+                return rawTransModel;
 
-                return this;
             }
             catch (Exception ex)
             {
@@ -140,11 +125,6 @@
 
                 return null;
             }
-        }
-
-        public RawTransactionModel GetRawTransAttributes()
-        {
-            return rawTransactionAttributeService.GetTransactionAttribute(TransformRawTransModel);
         }
 
         public void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSeconds)

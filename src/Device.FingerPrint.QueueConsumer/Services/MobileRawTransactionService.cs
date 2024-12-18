@@ -63,10 +63,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                 _ = LogService.ErrorAsync($"{appSettings.Environment} - Transform Mobile RawTransaction has error:\n {ex.Message}");
             }
 
-            return new RawTransactionModel
-            {
-                TransStatus = (int)TransStatusEnum.InvalidLoginName
-            };
+            return null;
         }
 
 
