@@ -12,8 +12,6 @@ namespace Device.Identification
 
         string ScriptHostCDN { get; }
 
-        string ScriptDomain { get; }
-
         string ScriptVersion { get; }
 
         DateTime ScriptTime { get; }
@@ -56,8 +54,6 @@ namespace Device.Identification
 
         private readonly string scriptHostCDN;
 
-        private readonly string scriptDomain;
-
         private readonly string scriptVersion;
 
         private readonly DateTime scriptTime;
@@ -98,8 +94,6 @@ namespace Device.Identification
 
             scriptHostCDN = GetValue<string>("AppConfig:ScriptHostCDN") ?? string.Empty;
 
-            scriptDomain = GetScriptDomain(ScriptHost);
-
             scriptVersion = GetValue<string>("AppConfig:ScriptVersion") ?? string.Empty;
 
             scriptTime = Convert.ToDateTime(GetValue<string>("AppConfig:ScriptTime") ?? string.Empty).ToLocalTime();
@@ -136,8 +130,6 @@ namespace Device.Identification
         public string ScriptHost => scriptHost;
 
         public string ScriptHostCDN => scriptHostCDN;
-
-        public string ScriptDomain => scriptDomain;
 
         public string ScriptVersion => scriptVersion;
 
@@ -192,13 +184,5 @@ namespace Device.Identification
 
         public IConfiguration Configuration => configuration;
 
-
-        private static string GetScriptDomain(string scriptHost)
-        {
-            if (string.IsNullOrEmpty(scriptHost)) return string.Empty;
-
-            var scriptUri = new Uri(scriptHost);
-            return scriptUri.Host;
-        }
     }
 }
