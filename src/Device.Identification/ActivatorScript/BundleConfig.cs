@@ -14,8 +14,7 @@
         private readonly IMemoryCache _cache;
         private readonly IFileProvider _fileProvider;
 
-        // Sử dụng ReadOnlyDictionary để đảm bảo không bị thay đổi trong runtime
-        private readonly IReadOnlyDictionary<string, List<string>> _bundleDefinitions;
+        private readonly Dictionary<string, List<string>> _bundleDefinitions;
 
         public BundleConfig(IMemoryCache cache, IWebHostEnvironment env)
         {
@@ -27,16 +26,28 @@
             {
                 { "config", new List<string> { "/ScriptsDetecas/fp.js", "/ScriptsDetecas/Detecas.Config.js" } },
                 { "api", new List<string> { "/ScriptsDetecas/Detecas.Api.js" } },
-                { "common", new List<string>
-                    {
-                        "/ScriptsUtility/file1.js",
-                        "/ScriptsUtility/file2.js",
-                        "/ScriptsDetecas/Detecas.Core.js",
-                        "/ScriptsDetecas/Detecas.Device.js"
-                    }
+                { "common", new List<string> {
+                                                "/ScriptsDetecas/Detecas.BotD.js",
+                                                "/ScriptsDetecas/Detecas.Debug.js",
+                                                "/ScriptsDetecas/Detecas.Geolocation.js",
+                                                "/ScriptsDetecas/Detecas.Common.js",
+                                                "/ScriptsDetecas/Detecas.Cookie.js",
+                                                "/ScriptsDetecas/Detecas.GPU.js",
+                                                "/ScriptsDetecas/Detecas.WebGL.js",
+                                                "/ScriptsDetecas/Detecas.RTC.js",
+                                                "/ScriptsDetecas/Detecas.UserAgent.js",
+                                                "/ScriptsDetecas/Detecas.Fonts.js",
+                                                "/ScriptsDetecas/Detecas.Browser.js",
+                                                "/ScriptsDetecas/Detecas.Device.js",
+                                                "/ScriptsDetecas/Detecas.DeviceDetail.js",
+                                                "/ScriptsDetecas/Detecas.Storages.js",
+                                                "/ScriptsDetecas/Detecas.Core.js"
+                                            }
                 },
                 { "token", new List<string> { "/ScriptsDetecas/Detecas.ConfigToken.js" } }
             };
+
+            LoadCommonScriptsFromDirectory();
         }
 
         public string GetBundle(string bundleName)
@@ -87,6 +98,63 @@
         public bool BundleExists(string bundleName)
         {
             return _bundleDefinitions.ContainsKey(bundleName);
+        }
+
+        public void LoadCommonScriptsFromDirectory()
+        {
+            const string directoryPath = "/ScriptsUtility";
+            var filesFromDirectory = GetJavaScriptFilesFromDirectory(directoryPath);
+
+            AddFilesToBundle("common", filesFromDirectory);
+
+            var extraFiles = new List<string>{
+                                                "/ScriptsDetecas/Detecas.BotD.js",
+                                                "/ScriptsDetecas/Detecas.Debug.js",
+                                                "/ScriptsDetecas/Detecas.Geolocation.js",
+                                                "/ScriptsDetecas/Detecas.Common.js",
+                                                "/ScriptsDetecas/Detecas.Cookie.js",
+                                                "/ScriptsDetecas/Detecas.GPU.js",
+                                                "/ScriptsDetecas/Detecas.WebGL.js",
+                                                "/ScriptsDetecas/Detecas.RTC.js",
+                                                "/ScriptsDetecas/Detecas.UserAgent.js",
+                                                "/ScriptsDetecas/Detecas.Fonts.js",
+                                                "/ScriptsDetecas/Detecas.Browser.js",
+                                                "/ScriptsDetecas/Detecas.Device.js",
+                                                "/ScriptsDetecas/Detecas.DeviceDetail.js",
+                                                "/ScriptsDetecas/Detecas.Storages.js",
+                                                "/ScriptsDetecas/Detecas.Core.js"
+                                            };
+
+            AddFilesToBundle("common", extraFiles);
+        }
+
+        private List<string> GetJavaScriptFilesFromDirectory(string directoryPath)
+        {
+            var directoryContents = _fileProvider.GetDirectoryContents(directoryPath);
+
+            if (!directoryContents.Exists)
+            {
+                throw new DirectoryNotFoundException($"Directory '{directoryPath}' not found.");
+            }
+
+            return directoryContents
+                .Where(file => !file.IsDirectory && file.Name.EndsWith(".js"))
+                .Select(file => $"{directoryPath}/{file.Name}")
+                .ToList();
+        }
+
+        private void AddFilesToBundle(string bundleName, List<string> files)
+        {
+            if (_bundleDefinitions != null && _bundleDefinitions.TryGetValue(bundleName, out List<string>? value))
+            {
+                foreach (var file in files)
+                {
+                    if (!value.Contains(file))
+                    {
+                        value.Add(file);
+                    }
+                }
+            }
         }
     }
 }

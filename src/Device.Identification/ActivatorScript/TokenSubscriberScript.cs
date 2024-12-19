@@ -1,4 +1,6 @@
-﻿namespace Device.Identification.ActivatorScript
+﻿using System.Text;
+
+namespace Device.Identification.ActivatorScript
 {
     public class TokenSubscriberScript : ISubscriberScript
     {

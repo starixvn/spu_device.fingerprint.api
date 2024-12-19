@@ -4,7 +4,6 @@
     using Device.Identification.Factory;
     using Device.Identification.Model;
     using Device.Identification.Services;
-    using Microsoft.Ajax.Utilities;
     using Microsoft.AspNetCore.Mvc;
     using System;
     using System.Collections.Generic;
@@ -58,6 +57,23 @@
                 var subscriberScript = _scriptFactory.CreateSubscriberTokenScript();
 
                 await subscriberScript.WriteScript(Response);
+            }
+            catch (Exception ex)
+            {
+                var err = ex.Message;
+            }
+        }
+
+        [HttpGet("comm.ashx")]
+        public async Task CommAshx()
+        {
+            try
+            {
+                var subscriberScript = _scriptFactory.CreateSubscriberCommonScript();
+
+                await subscriberScript.WriteScript(Response);
+
+                _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
             }
             catch (Exception ex)
             {
