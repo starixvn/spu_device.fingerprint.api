@@ -80,7 +80,7 @@
         private IEnumerable<RawTransactionModel> TransformRawTransactionModel(Batch<MessageQueue> messages)
         {
             var transformedDataBag = new ConcurrentBag<RawTransactionModel>();
-            var errorDataBag = new List<MessageQueue>();
+            var errorList = new List<MessageQueue>();
 
             Parallel.ForEach(messages, new ParallelOptions { MaxDegreeOfParallelism = 10 }, message =>
             {
@@ -118,13 +118,13 @@
                 }
                 else
                 {
-                    errorDataBag.Add(message.Message);
+                    errorList.Add(message.Message);
                 }
             });
 
-            if (errorDataBag.Any())
+            if (errorList.Any())
             {
-                LogService.Error($"LoginName.Length > 100:\n {JsonConvert.SerializeObject(errorDataBag)}");
+                LogService.Error($"Account ErrorList:\n {JsonConvert.SerializeObject(errorList)}");
             }
 
             return transformedDataBag.ToList();
