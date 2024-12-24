@@ -1,30 +1,39 @@
-﻿using Device.Identification.Model;
-using System.Globalization;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
+﻿
 namespace Device.Identification.JsonConverter
 {
-    public class MonitorConverter(IAppSettings appSettings) : JsonConverter<long>
+    using Newtonsoft.Json;
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+
+    /// <summary>
+    ///     Monitor convertor.
+    /// </summary>
+    public class MonitorConverter() : JsonConverter
     {
         private const int NumberOfItemsInMonitor = 3;
-        private readonly string _separator = appSettings.Separator;
+        private readonly string _separator = "@";
 
-        public override long Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override bool CanConvert(Type objectType)
         {
-            var monitorItems = GetMonitorItems(ref reader);
-            return MonitorIsValid(monitorItems.Length)
-                ? GetRepresentationNumberFromMonitorItems(monitorItems)
-                : 0;
+            return objectType == typeof(byte[]);
         }
 
-        public override void Write(Utf8JsonWriter writer, long value, JsonSerializerOptions options)
+        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
         {
-            var width = GetWidthFromRepresentationNumber(value);
-            var height = GetHeightFromRepresentationNumber(value);
-            var pixelDepth = GetPixelDepthFromRepresentationNumber(value);
+            var monitorItems = GetMonitorItems(reader);
+            return MonitorIsValid(monitorItems.Length) ? GetRepresentationNumberFromMonitorItems(monitorItems) : 0;
+        }
 
-            writer.WriteStringValue($"{width}{_separator}{height}{_separator}{pixelDepth}");
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        {
+            var representationNumber = (long)value;
+            writer.WriteValue(
+                GetWidthFromRepresentationNumber(representationNumber)
+                + _separator
+                + GetHeightFromRepresentationNumber(representationNumber)
+                + _separator
+                + GetPixelDepthFromRepresentationNumber(representationNumber));
         }
 
         private static bool MonitorIsValid(int length)
@@ -32,7 +41,7 @@ namespace Device.Identification.JsonConverter
             return length == NumberOfItemsInMonitor;
         }
 
-        private static long GetRepresentationNumberFromMonitorItems(string[] monitorItems)
+        private static long GetRepresentationNumberFromMonitorItems(IList<string> monitorItems)
         {
             var width = long.Parse(monitorItems[0], CultureInfo.InvariantCulture);
             var height = long.Parse(monitorItems[1], CultureInfo.InvariantCulture);
@@ -55,10 +64,9 @@ namespace Device.Identification.JsonConverter
             return (representationNumber >> 45) >> 38;
         }
 
-        private string[] GetMonitorItems(ref Utf8JsonReader reader)
+        private string[] GetMonitorItems(JsonReader reader)
         {
-            var stringValue = reader.GetString();
-            return stringValue.Split(new[] { _separator }, StringSplitOptions.None);
+            return reader.Value.ToString().Split(new[] { _separator }, StringSplitOptions.None);
         }
     }
 }

@@ -4,6 +4,8 @@ namespace Device.Identification
 {
     public interface IAppSettings
     {
+        string SPName { get; }
+
         string CookieStorage { get; }
 
         string CookieVersion { get; }
@@ -48,6 +50,8 @@ namespace Device.Identification
     {
         private readonly IConfiguration configuration;
 
+        private readonly string spName;
+
         private readonly string cookieStorage;
 
         private readonly string cookieVersion;
@@ -90,6 +94,8 @@ namespace Device.Identification
         {
             this.configuration = configuration;
 
+            spName = GetValue<string>("AppConfig:SPName") ?? string.Empty;
+
             cookieStorage = GetValue<string>("AppConfig:CookieStorage") ?? string.Empty;
 
             cookieVersion = GetValue<string>("AppConfig:CookieVersion") ?? string.Empty;
@@ -128,6 +134,8 @@ namespace Device.Identification
 
             jwtSecretKey = GetValue<string>("AppConfig:JwtSecretKey") ?? string.Empty;
         }
+
+        public string SPName => spName;
 
         public string CookieStorage => cookieStorage;
 

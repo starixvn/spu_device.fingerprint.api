@@ -1,12 +1,23 @@
 using Device.Identification;
 using Device.Identification.ActivatorScript;
+using Device.Identification.JsonConverter;
 using Device.Identification.Optimization;
 using Device.Identification.Services;
+using Fanex.Data;
+using Fanex.Data.SqlServer;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(opt =>
+{
+    opt.AddDefaultPolicy(builder => builder
+        .AllowAnyOrigin()
+        .AllowAnyMethod()
+        .AllowAnyHeader());
+});
 
 //builder.WebHost.UseKestrel()
 //    .ConfigureAppConfiguration((hostingContext, config) =>
@@ -35,6 +46,7 @@ builder.Services.AddSingleton<EverCookieCachingWrapper>();
 builder.Services.AddScoped<IEcService, EcService>();
 
 builder.Services.AddTransient<NumberGenerator>();
+//builder.Services.AddTransient<MonitorConverter>();
 builder.Services.AddTransient<ScriptLoader>();
 builder.Services.AddTransient<ActivatorScriptFactory>();
 builder.Services.AddTransient<IRecoverDeviceService, RecoverDeviceService>();
@@ -45,10 +57,13 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddMemoryCache();
+builder.Services.AddHealthChecks();
+builder.Services.AddResponseCaching();
+
+FanexDataConfig(builder.Configuration, appSettings);
 
 var app = builder.Build();
 app.UseStaticFiles();
-//app.UseAshxMiddleware();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -72,3 +87,23 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+static void FanexDataConfig(ConfigurationManager configuration, AppSettings appSettings)
+{
+    var connections = configuration
+                    .GetSection("AppConfig:Connections")
+                    .GetChildren()
+                    .AsEnumerable()
+                    .ToDictionary(
+                            x => x.GetValue<string>("Name"),
+                            y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+                    );
+
+    DbSettingProviderManager
+      .StartNewSession()
+      .Use(connections)
+      .WithSqlServer()
+      .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
+      .Run();
+}
