@@ -2,31 +2,25 @@
 {
     using Device.Identification.ActivatorScript;
     using Device.Identification.Factory;
-    using Device.Identification.Model;
     using Device.Identification.Services;
-    using Microsoft.Ajax.Utilities;
     using Microsoft.AspNetCore.Mvc;
+    using Microsoft.Net.Http.Headers;
     using NUglify;
     using System;
     using System.Collections.Generic;
 
     [ApiController]
-    public class ActivatorController(IWebHostEnvironment env
-                                , IAppSettings appSettings
+    public class ActivatorController(IAppSettings appSettings
                                 , IEcService ecService
-                                //, IHttpContextAccessor contextAccessor
                                 , IRecoverDeviceService recoverDeviceService
-                                , ScriptLoader scriptLoader
                                 , ActivatorScriptFactory scriptFactory
                                 , HttpCachingWrapper httpCachingWrapper
                                 , EverCookieCachingWrapper cacheWrapper
     ) : ControllerBase
     {
-        private readonly IWebHostEnvironment _env = env;
         private readonly IAppSettings _appSettings = appSettings;
         private readonly IEcService _ecService = ecService;
         private readonly IRecoverDeviceService _recoverDeviceService = recoverDeviceService;
-        private readonly ScriptLoader _scriptLoader = scriptLoader;
         private readonly ActivatorScriptFactory _scriptFactory = scriptFactory;
         private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper;
         private readonly EverCookieCachingWrapper _cacheWrapper = cacheWrapper;
@@ -54,7 +48,7 @@
                 SetEtagIfDeviceIdIsValid(defaultDeviceId);
 
                 var fdiKey = GetCookieValue(_fdiCookieKey);
-                _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
+                _httpCachingWrapper.UpdateCachingWithExpiredSeconds(0);
                 await WriteActivatorContent(cachedDeviceId, defaultDeviceId, fdiKey);
             }
             catch (Exception ex)
@@ -84,10 +78,9 @@
             try
             {
                 var subscriberScript = _scriptFactory.CreateSubscriberCommonScript();
+                _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
 
                 await subscriberScript.WriteScript(Response);
-
-                _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
             }
             catch (Exception ex)
             {
@@ -109,7 +102,7 @@
                 var deviceDetection = _ecService.ParseDeviceInfo(requestIp);
                 var candidateDeviceIds = _ecService.GetCandidatePlainDeviceIdsFromStorages(deviceDetection);
                 var currentDeviceCode = _ecService.GetDeviceCode(deviceDetection);
-                
+
                 if (_cacheWrapper.IsCacheValid(deviceDetection?.Device?.Code))
                 {
                     _cacheWrapper.UpdateCachingWithExpiredDays(30);
@@ -117,22 +110,18 @@
                     return;
                 }
 
+                deviceDetection.RemoteIPs = Request.Headers["X-Forwarded-For"];
+                var recoveredDevice = _recoverDeviceService.GetRecoveredDevice(candidateDeviceIds, currentDeviceCode);
 
-                //if (everCookieCachingWraper.IsCacheValid())
-                //{
-                //    everCookieCachingWraper.UpdateCachingWithExpiredDays(30);
-                //    everCookieCachingWraper.ReuseCache();
-                //    return;
-                //}
-                ////_cacheWrapper = new EverCookieCachingWrapper(contextAccessor, appSettings, deviceCode);
-                //deviceDetection.RemoteIPs = Request.Headers["X-Forwarded-For"];
-                //var recoveredDevice = _recoverDeviceService.GetRecoveredDevice(candidateDeviceIds, currentDeviceCode);
-                //ResponseInfoToClient(recoveredDevice?.DeviceId);
+                _ecService.TryInsertNewDevice(recoveredDevice, deviceDetection);
+                if (!Response.HasStarted)
+                {
+                    _ecService.SynchronizeServerStorages(recoveredDevice, _cacheWrapper);
+                    _ecService.UpdateCachingWithExpiredDaysAndModifiedTime(30);
+                }
 
-                //TryInsertNewDevice();
-                //SynchronizeServerStorages();
+                await ResponseInfoToClient(recoveredDevice?.DeviceId);
 
-                //_everCookieCachingWraper.UpdateCachingWithExpiredDaysAndModifiedTime(30);
             }
             catch (Exception ex)
             {
@@ -140,7 +129,7 @@
             }
         }
 
-        private void ResponseInfoToClient(string deviceId)
+        private async Task ResponseInfoToClient(string deviceId)
         {
             var content =
                 "try{" +
@@ -149,7 +138,7 @@
                     deviceId) +
                 "}catch(e){}";
 
-            WriteContent(content);
+            await WriteContent(content);
         }
 
         private string GetCachedCandidateDeviceId()
@@ -230,6 +219,11 @@
             if (!string.IsNullOrEmpty(cachedDeviceId))
             {
                 _httpCachingWrapper.ETag = cachedDeviceId;
+
+                if (!Response.HasStarted)
+                {
+                    Response.Headers[HeaderNames.ETag] = cachedDeviceId;
+                }
             }
         }
 

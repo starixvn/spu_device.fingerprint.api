@@ -163,9 +163,9 @@ Detecas.Core = (function (window, document, common, cookie, rc4, hex, base64, js
                 }
 
 
-                if (deviceDetail.isNewDeviceDetail(deviceInformation.deviceDetail)) {
-                    deviceDetail.insertDeviceDetail(deviceInformation.deviceDetail);
-                }
+                //if (deviceDetail.isNewDeviceDetail(deviceInformation.deviceDetail)) {
+                //    deviceDetail.insertDeviceDetail(deviceInformation.deviceDetail);
+                //}
 
                 synchronizeStorages(deviceId);
             }
