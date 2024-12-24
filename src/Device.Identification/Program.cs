@@ -28,11 +28,17 @@ builder.Services.AddHttpContextAccessor();
 var currentDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
 builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(currentDirectory));
 
-builder.Services.AddTransient<HttpCachingWrapper>();
-builder.Services.AddSingleton<NumberGenerator>();
-builder.Services.AddTransient<ScriptLoader>();
 builder.Services.AddSingleton<BundleConfig>();
+builder.Services.AddSingleton<HttpCachingWrapper>();
+builder.Services.AddSingleton<EverCookieCachingWrapper>();
+
+builder.Services.AddScoped<IEcService, EcService>();
+
+builder.Services.AddTransient<NumberGenerator>();
+builder.Services.AddTransient<ScriptLoader>();
 builder.Services.AddTransient<ActivatorScriptFactory>();
+builder.Services.AddTransient<IRecoverDeviceService, RecoverDeviceService>();
+
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
