@@ -1,67 +1,90 @@
-﻿using Device.Identification.Criterias;
+﻿using Device.Identification.ActivatorScript;
+using Device.Identification.Criterias;
 using Device.Identification.Encoders;
 using Device.Identification.Factory;
 using Device.Identification.Model;
-using Fanex.Data;
 using Fanex.Data.Repository;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
+using NUglify;
 using System.Globalization;
 
 namespace Device.Identification.Services
 {
     public interface IEcService
     {
-        string GetRequestIpFromClientToParseDeviceInfo();
-
-        DeviceDetection? ParseDeviceInfo(string requestIp);
-
-        List<string>? GetCandidatePlainDeviceIdsFromStorages(DeviceDetection? deviceDetection);
-
-        string RecoverDeviceIdFromCookie();
-
-        string? GetDeviceCode(DeviceDetection? deviceDetection);
-
-        void TryInsertNewDevice(RecoveredDevice? recoveredDevice, DeviceDetection? deviceDetection);
-
-        void SynchronizeServerStorages(RecoveredDevice recoveredDevice, EverCookieCachingWrapper cacheWrapper);
-
-        void UpdateCachingWithExpiredDaysAndModifiedTime(int days);
+        Task Execute();
     }
 
-    public class EcService(IAppSettings appSettings) : IEcService
+    public class EcService(IAppSettings appSettings
+                          , IHttpContextAccessor contextAccessor
+                          , EverCookieCachingWrapper cacheWrapper
+                          , IRecoverDeviceService recoverDeviceService) : IEcService
     {
-        private static readonly IHttpContextAccessor _httpContextAccessor = new HttpContextAccessor();
         private readonly IAppSettings _appSettings = appSettings;
+        private readonly EverCookieCachingWrapper _cacheWrapper = cacheWrapper;
+        private readonly IRecoverDeviceService _recoverDeviceService = recoverDeviceService;
         private readonly IDynamicRepository _repository = new DynamicRepository();
 
-        public string GetRequestIpFromClientToParseDeviceInfo()
-        {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            if (request == null) return string.Empty;
+        private HttpRequest Request => contextAccessor.HttpContext?.Request;
+        private HttpResponse Response => contextAccessor.HttpContext?.Response;
 
-            string requestIp = request.Query["ip"].ToString();
+        public async Task Execute()
+        {
+            if (string.IsNullOrEmpty(Request.Query["deviceInfo"]))
+            {
+                await ResponseEmptyContent();
+            }
+
+            var requestIp = GetRequestIpFromClientToParseDeviceInfo();
+            var deviceDetection = ParseDeviceInfo(requestIp);
+            var candidateDeviceIds = GetCandidatePlainDeviceIdsFromStorages(deviceDetection);
+            var currentDeviceCode = deviceDetection?.Device?.Code;
+
+            if (_cacheWrapper.IsCacheValid(deviceDetection?.Device?.Code))
+            {
+                _cacheWrapper.UpdateCachingWithExpiredDays(30);
+                _cacheWrapper.ReuseCache();
+                return;
+            }
+
+            deviceDetection.RemoteIPs = Request.Headers["X-Forwarded-For"];
+            var recoveredDevice = _recoverDeviceService.GetRecoveredDevice(candidateDeviceIds, currentDeviceCode);
+
+            TryInsertNewDevice(recoveredDevice, deviceDetection);
+            if (!Response.HasStarted)
+            {
+                SynchronizeServerStorages(recoveredDevice, _cacheWrapper);
+                UpdateCachingWithExpiredDaysAndModifiedTime(30);
+            }
+
+            await ResponseInfoToClient(recoveredDevice?.DeviceId);
+        }
+
+        private async Task ResponseEmptyContent()
+        {
+            var content = string.Empty;
+            await WriteContent(content);
+        }
+
+        private string GetRequestIpFromClientToParseDeviceInfo()
+        {
+            string requestIp = Request.Query["ip"].ToString();
             return string.IsNullOrEmpty(requestIp)
                 ? Utilities.GetUserHostAddress()
                 : ClientEncoder.Decrypt(Uri.UnescapeDataString(requestIp));
         }
 
-        public DeviceDetection? ParseDeviceInfo(string requestIp)
+        private DeviceDetection? ParseDeviceInfo(string requestIp)
         {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            if (request == null) return null;
-
-            var deviceInfo = request.Query["deviceInfo"];
+            var deviceInfo = Request.Query["deviceInfo"];
             var decryptedDeviceInfo = Rc4.Decrypt(requestIp, Base64.Decode(Uri.UnescapeDataString(deviceInfo.ToString())));
             var deviceDetection = JsonConvert.DeserializeObject<DeviceDetection>(decryptedDeviceInfo);
 
             return deviceDetection;
         }
-        public List<string>? GetCandidatePlainDeviceIdsFromStorages(DeviceDetection? deviceDetection)
+        private List<string>? GetCandidatePlainDeviceIdsFromStorages(DeviceDetection? deviceDetection)
         {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            if (request == null) return null;
-
             var clientDeviceIds = deviceDetection?.Device?.ClientDeviceIds;
             var cookieDeviceId = RecoverDeviceIdFromCookie();
 
@@ -78,12 +101,9 @@ namespace Device.Identification.Services
             return candidateDeviceIds;
         }
 
-        public string RecoverDeviceIdFromCookie()
+        private string RecoverDeviceIdFromCookie()
         {
-            var request = _httpContextAccessor.HttpContext?.Request;
-            if (request == null) return string.Empty;
-
-            var tokenCookie = request.Cookies[_appSettings.CookieStorage];
+            var tokenCookie = Request.Cookies[_appSettings.CookieStorage];
 
             if (tokenCookie != null)
             {
@@ -97,12 +117,7 @@ namespace Device.Identification.Services
             return string.Empty;
         }
 
-        public string? GetDeviceCode(DeviceDetection? deviceDetection)
-        {
-            return deviceDetection?.Device?.Code;
-        }
-
-        public void TryInsertNewDevice(RecoveredDevice? recoveredDevice, DeviceDetection? deviceDetection)
+        private void TryInsertNewDevice(RecoveredDevice? recoveredDevice, DeviceDetection? deviceDetection)
         {
             if (recoveredDevice != null && deviceDetection != null
                     && recoveredDevice.IsNewDeviceId
@@ -112,13 +127,6 @@ namespace Device.Identification.Services
                 deviceDetection.Device.Id = DeviceEncoder.Decrypt(recoveredDevice.DeviceId);
                 InsertNewDeviceAsync(deviceDetection);
             }
-            //else
-            //{
-            //    if (!string.IsNullOrEmpty(deviceDetection.LocalIPs))
-            //    {
-            //        TryUpdateLocalIps();
-            //    }
-            //}
         }
 
         private void InsertNewDeviceAsync(DeviceDetection deviceDetection)
@@ -165,55 +173,14 @@ namespace Device.Identification.Services
             return !string.IsNullOrEmpty(domainName) && domainName.Equals(urlRefererAuthority);
         }
 
-        private void TryUpdateLocalIps(RecoveredDevice recoveredDevice, DeviceDetection deviceDetection)
-        {
-            var emptyLocalIps = "[]";
-            if (deviceDetection.LocalIPs != emptyLocalIps)
-            {
-                var criteria = new FingerprintLocalIpUpdateCriteria
-                {
-                    DeviceId = DeviceEncoder.Decrypt(recoveredDevice.DeviceId),
-                    Ip = deviceDetection.Ip,
-                    LocalIps = deviceDetection.LocalIPs
-                };
-
-                //UpdateLocalIps();
-                //if (!string.IsNullOrEmpty(criteria.Message))
-                //{
-                //    LogService.WriteError("TryUpdateLocalIps function returns " +
-                //        criteria.Message +
-                //        "\r\nParameters: " +
-                //        JsonConvert.SerializeObject(criteria));
-                //}
-            }
-        }
-
-        public void UpdateLocalIps()
-        {
-            var criteria = new FingerprintLocalIpUpdateCriteria();
-
-            using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
-            {
-                var result = db.ExecuteNonQuery(criteria);
-                var errorModel = new ErrorModel
-                {
-                    Error = criteria.Error,
-                    Message = criteria.Message
-                };
-            }
-        }
-
-        public void SynchronizeServerStorages(RecoveredDevice recoveredDevice, EverCookieCachingWrapper cacheWrapper)
+        private void SynchronizeServerStorages(RecoveredDevice recoveredDevice, EverCookieCachingWrapper cacheWrapper)
         {
             cacheWrapper.ETag = recoveredDevice.DeviceId;
             WriteCookie(_appSettings.CookieStorage, recoveredDevice.DeviceId);
         }
 
-        private static void WriteCookie(string key, string deviceId)
+        private void WriteCookie(string key, string deviceId)
         {
-            var response = _httpContextAccessor.HttpContext?.Response;
-            if (response == null) return;
-
             var cookieOptions = new CookieOptions
             {
                 Expires = DateTime.UtcNow.AddYears(10),
@@ -222,20 +189,90 @@ namespace Device.Identification.Services
                 Path = "/"
             };
 
-            response.Cookies.Append(key, deviceId, cookieOptions);
+            Response.Cookies.Append(key, deviceId, cookieOptions);
         }
 
-        public void UpdateCachingWithExpiredDaysAndModifiedTime(int days)
+        private void UpdateCachingWithExpiredDaysAndModifiedTime(int days)
         {
-            var response = _httpContextAccessor.HttpContext?.Response;
-            if (response == null) return;
-
             int maxAgeInSeconds = days * 86400;
 
-            response.Headers[HeaderNames.CacheControl] = $"public, max-age={maxAgeInSeconds}";
-            response.Headers[HeaderNames.Expires] = DateTime.UtcNow.AddDays(days)
+            Response.Headers[HeaderNames.CacheControl] = $"public, max-age={maxAgeInSeconds}";
+            Response.Headers[HeaderNames.Expires] = DateTime.UtcNow.AddDays(days)
                                                                     .ToString("R", CultureInfo.InvariantCulture);
         }
 
+        private async Task ResponseInfoToClient(string deviceId)
+        {
+            var content =
+                "try{" +
+                string.Format(
+                    "Detecas.Core.callback('{0}')",
+                    deviceId) +
+                "}catch(e){}";
+
+            await WriteContent(content);
+        }
+
+        private async Task WriteContent(string content)
+        {
+            Response.ContentType = "text/javascript";
+            if (BundleConfig.EnableOptimization)
+            {
+                content = MinifyJavaScript(content);
+            }
+
+            await Response.WriteAsync(content + "\n");
+        }
+
+        private static string MinifyJavaScript(string content)
+        {
+            var result = Uglify.Js(content);
+
+            if (result.HasErrors)
+            {
+                throw new InvalidOperationException("Minification failed.");
+            }
+
+            return result.Code;
+        }
+
+
+        //private void TryUpdateLocalIps(RecoveredDevice recoveredDevice, DeviceDetection deviceDetection)
+        //{
+        //    var emptyLocalIps = "[]";
+        //    if (deviceDetection.LocalIPs != emptyLocalIps)
+        //    {
+        //        var criteria = new FingerprintLocalIpUpdateCriteria
+        //        {
+        //            DeviceId = DeviceEncoder.Decrypt(recoveredDevice.DeviceId),
+        //            Ip = deviceDetection.Ip,
+        //            LocalIps = deviceDetection.LocalIPs
+        //        };
+
+        //        //UpdateLocalIps();
+        //        //if (!string.IsNullOrEmpty(criteria.Message))
+        //        //{
+        //        //    LogService.WriteError("TryUpdateLocalIps function returns " +
+        //        //        criteria.Message +
+        //        //        "\r\nParameters: " +
+        //        //        JsonConvert.SerializeObject(criteria));
+        //        //}
+        //    }
+        //}
+
+        //public void UpdateLocalIps()
+        //{
+        //    var criteria = new FingerprintLocalIpUpdateCriteria();
+
+        //    using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
+        //    {
+        //        var result = db.ExecuteNonQuery(criteria);
+        //        var errorModel = new ErrorModel
+        //        {
+        //            Error = criteria.Error,
+        //            Message = criteria.Message
+        //        };
+        //    }
+        //}
     }
 }

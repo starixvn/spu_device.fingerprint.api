@@ -4,7 +4,8 @@
     using Microsoft.AspNetCore.Http;
     using System.Globalization;
 
-    public class EverCookieCachingWrapper(IHttpContextAccessor contextAccessor, IAppSettings appSettings) : HttpCachingWrapper(contextAccessor, appSettings)
+    public class EverCookieCachingWrapper(IHttpContextAccessor contextAccessor
+                                    , IAppSettings appSettings) : HttpCachingWrapper(contextAccessor, appSettings)
     {
         private readonly IAppSettings _appSettings = appSettings;
         private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
