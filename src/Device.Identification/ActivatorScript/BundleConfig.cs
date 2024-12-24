@@ -1,5 +1,6 @@
 ﻿namespace Device.Identification.ActivatorScript
 {
+    using Device.Identification.Optimization;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.FileProviders;
@@ -26,28 +27,16 @@
             {
                 { "config", new List<string> { "/ScriptsDetecas/fp.js", "/ScriptsDetecas/Detecas.Config.js" } },
                 { "api", new List<string> { "/ScriptsDetecas/Detecas.Api.js" } },
-                { "common", new List<string> {
-                                                "/ScriptsDetecas/Detecas.BotD.js",
-                                                "/ScriptsDetecas/Detecas.Debug.js",
-                                                "/ScriptsDetecas/Detecas.Geolocation.js",
-                                                "/ScriptsDetecas/Detecas.Common.js",
-                                                "/ScriptsDetecas/Detecas.Cookie.js",
-                                                "/ScriptsDetecas/Detecas.GPU.js",
-                                                "/ScriptsDetecas/Detecas.WebGL.js",
-                                                "/ScriptsDetecas/Detecas.RTC.js",
-                                                "/ScriptsDetecas/Detecas.UserAgent.js",
-                                                "/ScriptsDetecas/Detecas.Fonts.js",
-                                                "/ScriptsDetecas/Detecas.Browser.js",
-                                                "/ScriptsDetecas/Detecas.Device.js",
-                                                "/ScriptsDetecas/Detecas.DeviceDetail.js",
-                                                "/ScriptsDetecas/Detecas.Storages.js",
-                                                "/ScriptsDetecas/Detecas.Core.js"
-                                            }
-                },
+                { "common", new List<string> {}},
                 { "token", new List<string> { "/ScriptsDetecas/Detecas.ConfigToken.js" } }
             };
 
             LoadCommonScriptsFromDirectory();
+        }
+
+        public static bool EnableOptimization
+        {
+            get { return BundleTable.EnableOptimization; }
         }
 
         public string GetBundle(string bundleName)
@@ -57,7 +46,24 @@
                 throw new InvalidOperationException($"Bundle '{bundleName}' is not defined.");
             }
 
-            return _cache.GetOrCreate($"Bundle_{bundleName}", entry =>
+
+            var stringBuilder = new StringBuilder();
+
+            foreach (var file in files)
+            {
+                var fileInfo = _fileProvider.GetFileInfo(file);
+                if (!fileInfo.Exists)
+                {
+                    throw new FileNotFoundException($"File '{file}' in bundle '{bundleName}' does not exist.");
+                }
+
+                using var stream = fileInfo.CreateReadStream();
+                using var reader = new StreamReader(stream);
+                stringBuilder.AppendLine(reader.ReadToEnd());
+            }
+
+
+            var result = _cache.GetOrCreate($"Bundle_{bundleName}", entry =>
             {
                 entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
                 var stringBuilder = new StringBuilder();
@@ -77,6 +83,8 @@
 
                 return stringBuilder.ToString();
             });
+
+                return result;
         }
 
         public void RegisterBundles()

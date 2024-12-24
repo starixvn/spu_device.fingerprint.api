@@ -3,55 +3,40 @@
     using Microsoft.AspNetCore.Http;
     using Microsoft.Net.Http.Headers;
     using System;
+    using System.Globalization;
 
-    public class HttpCachingWrapper
+    public class HttpCachingWrapper(IHttpContextAccessor contextAccessor, IAppSettings appSettings)
     {
-        private readonly HttpRequest _request;
-        private readonly HttpResponse _response;
-        private readonly IAppSettings _appSettings;
+        private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
+        private readonly IAppSettings _appSettings = appSettings;
         private string _etag;
-        private DateTime? _modifiedTime;
 
-        public HttpCachingWrapper(IHttpContextAccessor contextAccessor, IAppSettings appSettings)
-        {
-            if (contextAccessor.HttpContext == null)
-            {
-                throw new ArgumentNullException(nameof(contextAccessor.HttpContext), "HttpContext is not available.");
-            }
+        private HttpRequest Request => _contextAccessor.HttpContext?.Request;
+        private HttpResponse Response => _contextAccessor.HttpContext?.Response;
 
-            _request = contextAccessor.HttpContext.Request;
-            _response = contextAccessor.HttpContext.Response;
-            _appSettings = appSettings;
-        }
-
-        private DateTime ModifiedTime
+        public DateTime ModifiedTime
         {
             get
             {
-                if (_modifiedTime.HasValue)
-                {
-                    return _modifiedTime.Value;
-                }
-
-                var modifiedTime = _request.Headers[HeaderNames.IfModifiedSince];
-                return !string.IsNullOrEmpty(modifiedTime) ? Convert.ToDateTime(modifiedTime) : DateTime.MinValue;
+                var modifiedTime = Request.Headers[HeaderNames.IfModifiedSince];
+                return !string.IsNullOrEmpty(modifiedTime)
+                    ? DateTime.Parse(modifiedTime, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal)
+                    : DateTime.MinValue;
             }
-
             set
             {
-                if (_modifiedTime == value || value == default)
+                if (value == default)
                 {
                     return;
                 }
 
-                _modifiedTime = value;
-                _response.Headers[HeaderNames.LastModified] = _modifiedTime.Value.ToString("R"); // RFC1123 format
+                Response.Headers[HeaderNames.LastModified] = value.ToString("R", CultureInfo.InvariantCulture); // RFC1123 format
             }
         }
 
         private void SetPrivateCache()
         {
-            var headers = _response.GetTypedHeaders();
+            var headers = Response.GetTypedHeaders();
             headers.CacheControl = new CacheControlHeaderValue
             {
                 Private = true
@@ -60,7 +45,7 @@
 
         private void SetExpiredDays(int value)
         {
-            var headers = _response.GetTypedHeaders();
+            var headers = Response.GetTypedHeaders();
             headers.CacheControl = new CacheControlHeaderValue
             {
                 Private = true,
@@ -70,7 +55,7 @@
 
         private void SetExpiredSeconds(int value)
         {
-            var headers = _response.GetTypedHeaders();
+            var headers = Response.GetTypedHeaders();
             headers.CacheControl = new CacheControlHeaderValue
             {
                 Private = true,
@@ -80,7 +65,7 @@
 
         public string ETag
         {
-            get => _etag ?? _request.Headers[HeaderNames.IfNoneMatch];
+            get => _etag ?? Request.Headers[HeaderNames.IfNoneMatch];
 
             set
             {
@@ -90,13 +75,13 @@
                 }
 
                 _etag = value;
-                _response.Headers[HeaderNames.ETag] = _etag;
+                Response.Headers[HeaderNames.ETag] = _etag;
             }
         }
 
         public void ReuseCache()
         {
-            _response.StatusCode = StatusCodes.Status304NotModified;
+            Response.StatusCode = StatusCodes.Status304NotModified;
         }
 
         public virtual bool IsCacheValid()
@@ -119,7 +104,7 @@
 
         public virtual void UpdateCachingWithExpiredSeconds(int expiredSeconds)
         {
-            if (!_response.HasStarted)
+            if (!Response.HasStarted)
             {
                 SetPrivateCache();
                 SetExpiredSeconds(expiredSeconds);

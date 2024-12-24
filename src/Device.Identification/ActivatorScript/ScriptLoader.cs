@@ -5,21 +5,19 @@
     using System.IdentityModel.Tokens.Jwt;
     using System.Web;
 
-    public class ScriptLoader(IWebHostEnvironment env, IAppSettings appSettings, JwtToken jwtToken, NumberGenerator numberGenerator, BundleConfig bundleConfig)
+    public class ScriptLoader(IAppSettings appSettings, JwtToken jwtToken, NumberGenerator numberGenerator, BundleConfig bundleConfig)
     {
-        private readonly IWebHostEnvironment _env = env;
         private readonly IAppSettings _appSettings = appSettings;
         private readonly JwtToken _jwtToken = jwtToken;
         private readonly NumberGenerator _numberGenerator = numberGenerator;
         private readonly BundleConfig _bundleConfig = bundleConfig;
-        private static readonly IHttpContextAccessor _httpContextAccessor = new HttpContextAccessor();
 
         private readonly string _base64Key = "wFKfVDGZqRbyYCBi6IveMaQAh1ntWcP8ujT/U7r2xXs+J0L=4d3zEHSo5glN9kOpm";
 
         public string LoadConfigScript(string cachedDeviceId, string defaultDeviceId, string accept, string headers, string domainName, string fdiKey)
         {
             var configScript = _bundleConfig.GetBundle("config");
-            var userHostAddress = GetUserHostAddress();
+            var userHostAddress = Utilities.GetUserHostAddress();
             var ip2Long = IP2Long(userHostAddress);
 
             configScript = configScript
@@ -120,25 +118,7 @@
 
             return string.Empty;
         }
-        public static string GetUserHostAddress()
-        {
-            var currentRequest = _httpContextAccessor.HttpContext?.Request;
-            if (currentRequest == null) return string.Empty;
-
-            var ip = currentRequest.Headers["X-Forwarded-For"].FirstOrDefault();
-
-            if (string.IsNullOrEmpty(ip))
-            {
-                ip = _httpContextAccessor.HttpContext.Connection.RemoteIpAddress?.ToString();
-            }
-
-            if (ip == "::1")
-            {
-                return "127.0.0.1";
-            }
-
-            return ip?.Split(',')[0].Trim() ?? string.Empty;
-        }
+        
 
         public static long IP2Long(string ip)
         {

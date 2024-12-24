@@ -4,18 +4,32 @@
     using Device.Identification.Factory;
     using Device.Identification.Model;
     using Device.Identification.Services;
+    using Microsoft.Ajax.Utilities;
     using Microsoft.AspNetCore.Mvc;
+    using NUglify;
     using System;
     using System.Collections.Generic;
 
     [ApiController]
-    public class ActivatorController(IWebHostEnvironment env, IAppSettings appSettings, ScriptLoader scriptLoader, HttpCachingWrapper httpCachingWrapper, ActivatorScriptFactory scriptFactory) : ControllerBase
+    public class ActivatorController(IWebHostEnvironment env
+                                , IAppSettings appSettings
+                                , IEcService ecService
+                                //, IHttpContextAccessor contextAccessor
+                                , IRecoverDeviceService recoverDeviceService
+                                , ScriptLoader scriptLoader
+                                , ActivatorScriptFactory scriptFactory
+                                , HttpCachingWrapper httpCachingWrapper
+                                , EverCookieCachingWrapper cacheWrapper
+    ) : ControllerBase
     {
         private readonly IWebHostEnvironment _env = env;
         private readonly IAppSettings _appSettings = appSettings;
+        private readonly IEcService _ecService = ecService;
+        private readonly IRecoverDeviceService _recoverDeviceService = recoverDeviceService;
         private readonly ScriptLoader _scriptLoader = scriptLoader;
-        private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper ?? throw new ArgumentNullException(nameof(httpCachingWrapper));
         private readonly ActivatorScriptFactory _scriptFactory = scriptFactory;
+        private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper;
+        private readonly EverCookieCachingWrapper _cacheWrapper = cacheWrapper;
 
         private readonly string _fdiCookieKey = "gfp";
 
@@ -41,7 +55,7 @@
 
                 var fdiKey = GetCookieValue(_fdiCookieKey);
                 _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
-                await WriteContent(cachedDeviceId, defaultDeviceId, fdiKey);
+                await WriteActivatorContent(cachedDeviceId, defaultDeviceId, fdiKey);
             }
             catch (Exception ex)
             {
@@ -79,6 +93,63 @@
             {
                 var err = ex.Message;
             }
+        }
+
+        [HttpGet("ec.ashx")]
+        public async Task EcAshx()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(Request.Query["deviceInfo"]))
+                {
+                    await ResponseEmptyContent();
+                }
+
+                var requestIp = _ecService.GetRequestIpFromClientToParseDeviceInfo();
+                var deviceDetection = _ecService.ParseDeviceInfo(requestIp);
+                var candidateDeviceIds = _ecService.GetCandidatePlainDeviceIdsFromStorages(deviceDetection);
+                var currentDeviceCode = _ecService.GetDeviceCode(deviceDetection);
+                
+                if (_cacheWrapper.IsCacheValid(deviceDetection?.Device?.Code))
+                {
+                    _cacheWrapper.UpdateCachingWithExpiredDays(30);
+                    _cacheWrapper.ReuseCache();
+                    return;
+                }
+
+
+                //if (everCookieCachingWraper.IsCacheValid())
+                //{
+                //    everCookieCachingWraper.UpdateCachingWithExpiredDays(30);
+                //    everCookieCachingWraper.ReuseCache();
+                //    return;
+                //}
+                ////_cacheWrapper = new EverCookieCachingWrapper(contextAccessor, appSettings, deviceCode);
+                //deviceDetection.RemoteIPs = Request.Headers["X-Forwarded-For"];
+                //var recoveredDevice = _recoverDeviceService.GetRecoveredDevice(candidateDeviceIds, currentDeviceCode);
+                //ResponseInfoToClient(recoveredDevice?.DeviceId);
+
+                //TryInsertNewDevice();
+                //SynchronizeServerStorages();
+
+                //_everCookieCachingWraper.UpdateCachingWithExpiredDaysAndModifiedTime(30);
+            }
+            catch (Exception ex)
+            {
+                await ResponseEmptyContent();
+            }
+        }
+
+        private void ResponseInfoToClient(string deviceId)
+        {
+            var content =
+                "try{" +
+                string.Format(
+                    "Detecas.Core.callback('{0}')",
+                    deviceId) +
+                "}catch(e){}";
+
+            WriteContent(content);
         }
 
         private string GetCachedCandidateDeviceId()
@@ -162,7 +233,7 @@
             }
         }
 
-        private async Task WriteContent(string cachedDeviceId, string defaultDeviceId, string fdiKey)
+        private async Task WriteActivatorContent(string cachedDeviceId, string defaultDeviceId, string fdiKey)
         {
             var apiAction = Request.Query["api"].ToString() ?? string.Empty;
             var accept = Request.Headers["Accept"].ToString();
@@ -188,6 +259,35 @@
         {
             return [.. Request.Headers.AcceptEncoding.ToString()
                 .Split(',', StringSplitOptions.RemoveEmptyEntries)];
+        }
+
+        private async Task ResponseEmptyContent()
+        {
+            var content = string.Empty;
+            await WriteContent(content);
+        }
+
+        private async Task WriteContent(string content)
+        {
+            Response.ContentType = "text/javascript";
+            if (BundleConfig.EnableOptimization)
+            {
+                content = MinifyJavaScript(content);
+            }
+
+            await Response.WriteAsync(content + "\n");
+        }
+
+        private static string MinifyJavaScript(string content)
+        {
+            var result = Uglify.Js(content);
+
+            if (result.HasErrors)
+            {
+                throw new InvalidOperationException("Minification failed.");
+            }
+
+            return result.Code;
         }
     }
 }

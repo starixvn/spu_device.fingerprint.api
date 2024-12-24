@@ -6,6 +6,8 @@ namespace Device.Identification
     {
         string CookieStorage { get; }
 
+        string CookieVersion { get; }
+
         string Storages { get; }
 
         string ScriptHost { get; }
@@ -48,6 +50,8 @@ namespace Device.Identification
 
         private readonly string cookieStorage;
 
+        private readonly string cookieVersion;
+
         private readonly string storages;
 
         private readonly string scriptHost;
@@ -88,6 +92,8 @@ namespace Device.Identification
 
             cookieStorage = GetValue<string>("AppConfig:CookieStorage") ?? string.Empty;
 
+            cookieVersion = GetValue<string>("AppConfig:CookieVersion") ?? string.Empty;
+
             storages = GetValue<string>("AppConfig:Storages") ?? string.Empty;
 
             scriptHost = GetValue<string>("AppConfig:ScriptHost") ?? string.Empty;
@@ -124,6 +130,8 @@ namespace Device.Identification
         }
 
         public string CookieStorage => cookieStorage;
+
+        public string CookieVersion => cookieVersion;
 
         public string Storages => storages;
 
