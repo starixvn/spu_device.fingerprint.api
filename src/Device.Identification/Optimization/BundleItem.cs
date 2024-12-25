@@ -1,13 +1,8 @@
 ﻿namespace Device.Identification.Optimization
 {
-    public class BundleItem
+    public class BundleItem(string virtualPath)
     {
-        public BundleItem(string virtualPath)
-        {
-            VirtualPath = virtualPath;
-        }
-
-        public string VirtualPath { get; private set; }
+        public string VirtualPath { get; private set; } = virtualPath;
 
         public virtual string GetContent(BundleContext context)
         {

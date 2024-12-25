@@ -2,6 +2,7 @@
 {
     using Device.Identification.ActivatorScript;
     using Device.Identification.Services;
+    using Fanex.Logging;
     using Microsoft.AspNetCore.Mvc;
     using System;
 
@@ -28,7 +29,7 @@
             }
             catch (Exception ex)
             {
-                var err = ex.Message;
+                LogService.Error(Utilities.GetLogMessage(ex));
             }
         }
 
@@ -43,7 +44,7 @@
             }
             catch (Exception ex)
             {
-                var err = ex.Message;
+                LogService.Error(Utilities.GetLogMessage(ex));
             }
         }
 
@@ -59,7 +60,7 @@
             }
             catch (Exception ex)
             {
-                var err = ex.Message;
+                LogService.Error(Utilities.GetLogMessage(ex));
             }
         }
 
@@ -72,6 +73,7 @@
             }
             catch (Exception ex)
             {
+                LogService.Error(Utilities.GetLogMessage(ex));
                 await ResponseEmptyContent();
             }
         }

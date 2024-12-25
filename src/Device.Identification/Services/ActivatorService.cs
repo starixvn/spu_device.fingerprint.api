@@ -18,12 +18,12 @@ namespace Device.Identification.Services
         private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper;
         private readonly ActivatorScriptFactory _scriptFactory = scriptFactory;
 
-        private HttpRequest Request => contextAccessor.HttpContext?.Request;
-        private HttpResponse Response => contextAccessor.HttpContext?.Response;
+        private HttpRequest? Request => contextAccessor.HttpContext?.Request;
+        private HttpResponse? Response => contextAccessor.HttpContext?.Response;
 
         public async Task Execute()
         {
-            if (_appSettings.IsDisabledDI)
+            if (_appSettings.IsDisabledDI || Request == null || Response == null)
             {
                 return;
             }
@@ -39,7 +39,7 @@ namespace Device.Identification.Services
             SetEtagIfDeviceIdIsValid(defaultDeviceId);
 
             var fdiKey = GetCookieValue(fdiCookieKey);
-            _httpCachingWrapper.UpdateCachingWithExpiredSeconds(0);
+            _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
             await WriteActivatorContent(cachedDeviceId, defaultDeviceId, fdiKey);
         }
 

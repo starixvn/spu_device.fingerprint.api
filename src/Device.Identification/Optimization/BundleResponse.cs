@@ -1,12 +1,7 @@
 ﻿namespace Device.Identification.Optimization
 {
-    public class BundleResponse
+    public class BundleResponse(string content)
     {
-        public BundleResponse(string content)
-        {
-            Content = content;
-        }
-
-        public string Content { get; private set; }
+        public string Content { get; private set; } = content;
     }
 }

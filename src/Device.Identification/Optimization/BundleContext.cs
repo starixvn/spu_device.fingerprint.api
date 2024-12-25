@@ -6,33 +6,19 @@
 
     public class BundleContext
     {
-        protected BundleContext()
-        {
-            EnableOptimization = BundleTable.EnableOptimization;
-        }
-
         public BundleContext(HttpContext context, BundleCollection collection, string bundleVirtualPath)
-            : this()
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
-            if (collection == null)
-            {
-                throw new ArgumentNullException(nameof(collection));
-            }
+            ArgumentNullException.ThrowIfNull(collection);
 
-            if (bundleVirtualPath == null)
-            {
-                throw new ArgumentNullException(nameof(bundleVirtualPath));
-            }
+            ArgumentNullException.ThrowIfNull(bundleVirtualPath);
 
             HttpContext = context;
             BundleCollection = collection;
             BundleVirtualPath = bundleVirtualPath;
             FileProvider = BundleTable.FileProvider;
+            EnableOptimization = BundleTable.EnableOptimization;
         }
 
         public bool EnableOptimization { get; set; }

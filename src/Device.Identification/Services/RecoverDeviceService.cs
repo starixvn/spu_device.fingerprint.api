@@ -3,7 +3,6 @@ using Device.Identification.Encoders;
 using Device.Identification.Factory;
 using Device.Identification.Model;
 using Fanex.Data;
-using Fanex.Data.Repository;
 
 namespace Device.Identification.Services
 {
@@ -14,13 +13,6 @@ namespace Device.Identification.Services
 
     public class RecoverDeviceService : IRecoverDeviceService
     {
-        private readonly IDynamicRepository _repository;
-
-        public RecoverDeviceService()
-        {
-            _repository = new DynamicRepository();
-        }
-
         public RecoveredDevice GetRecoveredDevice(IList<string> candidateIds, string deviceCode)
         {
             var searchingMultiDeviceResult = SearchingMultiDevice(candidateIds, deviceCode);

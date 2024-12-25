@@ -1,13 +1,11 @@
 ﻿namespace Device.Identification.ActivatorScript
 {
     using Device.Identification.Optimization;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.FileProviders;
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
     using System.Text;
 
     public class BundleConfig
@@ -17,18 +15,17 @@
 
         private readonly Dictionary<string, List<string>> _bundleDefinitions;
 
-        public BundleConfig(IMemoryCache cache, IWebHostEnvironment env)
+        public BundleConfig(IFileProvider fileProvider, IMemoryCache cache)
         {
             _cache = cache;
-            _fileProvider = env.WebRootFileProvider ?? throw new ArgumentNullException(nameof(env.WebRootFileProvider));
+            _fileProvider = fileProvider;
 
-            // Định nghĩa các bundle
             _bundleDefinitions = new Dictionary<string, List<string>>
             {
-                { "config", new List<string> { "/ScriptsDetecas/fp.js", "/ScriptsDetecas/Detecas.Config.js" } },
-                { "api", new List<string> { "/ScriptsDetecas/Detecas.Api.js" } },
+                { "config", new List<string> { "/fp.js", "/Detecas.Config.js" } },
+                { "api", new List<string> { "/Detecas.Api.js" } },
                 { "common", new List<string> {}},
-                { "token", new List<string> { "/ScriptsDetecas/Detecas.ConfigToken.js" } }
+                { "token", new List<string> { "/Detecas.ConfigToken.js" } }
             };
 
             LoadCommonScriptsFromDirectory();
@@ -37,6 +34,22 @@
         public static bool EnableOptimization
         {
             get { return BundleTable.EnableOptimization; }
+        }
+
+        public void RegisterBundles()
+        {
+            foreach (var bundleName in _bundleDefinitions.Keys)
+            {
+                try
+                {
+                    GetBundle(bundleName);
+                    Console.WriteLine($"Bundle '{bundleName}' registered successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error registering bundle '{bundleName}': {ex.Message}");
+                }
+            }
         }
 
         public string GetBundle(string bundleName)
@@ -84,71 +97,43 @@
                 return stringBuilder.ToString();
             });
 
-                return result;
-        }
-
-        public void RegisterBundles()
-        {
-            foreach (var bundleName in _bundleDefinitions.Keys)
-            {
-                try
-                {
-                    GetBundle(bundleName); // Chỉ cần gọi GetBundle để tạo cache
-                    Console.WriteLine($"Bundle '{bundleName}' registered successfully.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error registering bundle '{bundleName}': {ex.Message}");
-                }
-            }
-        }
-
-        public bool BundleExists(string bundleName)
-        {
-            return _bundleDefinitions.ContainsKey(bundleName);
+            return result ?? string.Empty;
         }
 
         public void LoadCommonScriptsFromDirectory()
         {
-            const string directoryPath = "/ScriptsUtility";
-            var filesFromDirectory = GetJavaScriptFilesFromDirectory(directoryPath);
-
-            AddFilesToBundle("common", filesFromDirectory);
-
-            var extraFiles = new List<string>{
-                                                "/ScriptsDetecas/Detecas.BotD.js",
-                                                "/ScriptsDetecas/Detecas.Debug.js",
-                                                "/ScriptsDetecas/Detecas.Geolocation.js",
-                                                "/ScriptsDetecas/Detecas.Common.js",
-                                                "/ScriptsDetecas/Detecas.Cookie.js",
-                                                "/ScriptsDetecas/Detecas.GPU.js",
-                                                "/ScriptsDetecas/Detecas.WebGL.js",
-                                                "/ScriptsDetecas/Detecas.RTC.js",
-                                                "/ScriptsDetecas/Detecas.UserAgent.js",
-                                                "/ScriptsDetecas/Detecas.Fonts.js",
-                                                "/ScriptsDetecas/Detecas.Browser.js",
-                                                "/ScriptsDetecas/Detecas.Device.js",
-                                                "/ScriptsDetecas/Detecas.DeviceDetail.js",
-                                                "/ScriptsDetecas/Detecas.Storages.js",
-                                                "/ScriptsDetecas/Detecas.Core.js"
+            var utilityFiles = new List<string>{
+                                                "/Detecas.Base64.js",
+                                                "/Detecas.Extensions.js",
+                                                "/Detecas.Hex.js",
+                                                "/Detecas.JSON.js",
+                                                "/Detecas.Md5.js",
+                                                "/Detecas.Rc4.js",
+                                                "/Detecas.Sha1.js",
+                                                "/Detecas.ua-parser-js.js",
                                             };
 
-            AddFilesToBundle("common", extraFiles);
-        }
+            AddFilesToBundle("common", utilityFiles);
 
-        private List<string> GetJavaScriptFilesFromDirectory(string directoryPath)
-        {
-            var directoryContents = _fileProvider.GetDirectoryContents(directoryPath);
+            var commonExtraFiles = new List<string>{
+                                                "/Detecas.BotD.js",
+                                                "/Detecas.Debug.js",
+                                                "/Detecas.Geolocation.js",
+                                                "/Detecas.Common.js",
+                                                "/Detecas.Cookie.js",
+                                                "/Detecas.GPU.js",
+                                                "/Detecas.WebGL.js",
+                                                "/Detecas.RTC.js",
+                                                "/Detecas.UserAgent.js",
+                                                "/Detecas.Fonts.js",
+                                                "/Detecas.Browser.js",
+                                                "/Detecas.Device.js",
+                                                "/Detecas.DeviceDetail.js",
+                                                "/Detecas.Storages.js",
+                                                "/Detecas.Core.js"
+                                            };
 
-            if (!directoryContents.Exists)
-            {
-                throw new DirectoryNotFoundException($"Directory '{directoryPath}' not found.");
-            }
-
-            return directoryContents
-                .Where(file => !file.IsDirectory && file.Name.EndsWith(".js"))
-                .Select(file => $"{directoryPath}/{file.Name}")
-                .ToList();
+            AddFilesToBundle("common", commonExtraFiles);
         }
 
         private void AddFilesToBundle(string bundleName, List<string> files)

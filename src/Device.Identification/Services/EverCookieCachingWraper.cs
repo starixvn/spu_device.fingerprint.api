@@ -2,37 +2,12 @@
 {
     using Device.Identification.Factory;
     using Microsoft.AspNetCore.Http;
-    using System.Globalization;
 
-    public class EverCookieCachingWrapper(IHttpContextAccessor contextAccessor
-                                    , IAppSettings appSettings) : HttpCachingWrapper(contextAccessor, appSettings)
+    public class EverCookieCachingWrapper(IHttpContextAccessor contextAccessor) : HttpCachingWrapper(contextAccessor)
     {
-        private readonly IAppSettings _appSettings = appSettings;
-        private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
-
-        public bool IsCacheValid(string deviceCode)
+        public bool DoesRecoverDeviceIdFromETag()
         {
-            return DoesRecoverDeviceIdFromETag()
-                && WasDeviceCodeNotChanged(deviceCode);
-        }
-
-        private bool DoesRecoverDeviceIdFromETag()
-        {
-            var deviceId = ETag;
-            return DeviceFactory.IsValidDeviceId(deviceId);
-        }
-
-        private bool WasDeviceCodeNotChanged(string deviceCode)
-        {
-            var cookies = _contextAccessor.HttpContext?.Request.Cookies;
-
-            if (cookies == null || !cookies.TryGetValue(_appSettings.CookieVersion, out var currentCookie))
-            {
-                return false;
-            }
-
-            return string.Compare(currentCookie, deviceCode, true, CultureInfo.InvariantCulture) == 0;
+            return DeviceFactory.IsValidDeviceId(ETag);
         }
     }
-
 }
