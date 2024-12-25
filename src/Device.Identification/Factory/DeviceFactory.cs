@@ -1,10 +1,10 @@
 ﻿namespace Device.Identification.Factory
 {
-    using System;
-    using Newtonsoft.Json;
     using Device.Identification.Encoders;
     using Device.Identification.Model;
-    using Microsoft.Extensions.Logging;
+    using Fanex.Logging;
+    using Newtonsoft.Json;
+    using System;
 
     public static class DeviceFactory
     {
@@ -29,11 +29,11 @@
 
                 return Guid.TryParse(deviceId, out _);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
                 if (!deviceId.Contains("TURBO"))
                 {
-                    //_logger.LogError(exception, "DeviceId {DeviceId} is invalid", deviceId);
+                    LogService.Error(Utilities.GetLogMessage(ex));
                 }
             }
 
@@ -52,10 +52,9 @@
                 var decryptedText = Base64.Decode(deviceInfo);
                 return JsonConvert.DeserializeObject<DeviceInfo>(decryptedText, Identification.Configuration.JsonSerializerSettingsFactory.Instance);
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                //_logger.LogError(exception, "DeviceInfo {DeviceInfo} is invalid", deviceInfo);
-
+                LogService.Error(Utilities.GetLogMessage(ex));
                 return GenerateEmptyDeviceInfo();
             }
         }

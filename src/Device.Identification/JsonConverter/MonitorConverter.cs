@@ -66,7 +66,8 @@ namespace Device.Identification.JsonConverter
 
         private string[] GetMonitorItems(JsonReader reader)
         {
-            return reader.Value.ToString().Split(new[] { _separator }, StringSplitOptions.None);
+            string value = reader.Value as string ?? string.Empty;
+            return value.Split(new[] { _separator }, StringSplitOptions.None);
         }
     }
 }

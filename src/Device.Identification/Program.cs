@@ -4,8 +4,14 @@ using Device.Identification.Optimization;
 using Device.Identification.Services;
 using Fanex.Data;
 using Fanex.Data.SqlServer;
+using Fanex.Logging;
+using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.AspNetCore;
+using Fanex.Logging.Extensions.Database;
+using Fanex.Logging.Sentry;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
+using Sentry;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,20 +37,24 @@ builder.Services.AddCors(opt =>
 var appSettings = new AppSettings(builder.Configuration);
 builder.Services.AddSingleton<IAppSettings>(appSettings);
 builder.Services.AddTransient<JwtToken>();
-
-// Add services to the container.
 builder.Services.AddHttpContextAccessor();
 
-var currentDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
-builder.Services.AddSingleton<IFileProvider>(new PhysicalFileProvider(currentDirectory));
+var detecasDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
+var utilityDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsUtility");
+var detecasProvider = new PhysicalFileProvider(detecasDirectory);
+var utilityProvider = new PhysicalFileProvider(utilityDirectory);
+var compositeProvider = new CompositeFileProvider(detecasProvider, utilityProvider);
+builder.Services.AddSingleton<IFileProvider>(compositeProvider);
+
 builder.Services.AddSingleton<BundleConfig>();
+builder.Services.AddSingleton<Fanex.Logging.ILogger, Logger>();
+builder.Services.AddSingleton<NumberGenerator>();
 
 builder.Services.AddScoped<IEcService, EcService>();
 builder.Services.AddScoped<IActivatorService, ActivatorService>();
 builder.Services.AddScoped<HttpCachingWrapper>();
 builder.Services.AddScoped<EverCookieCachingWrapper>();
 
-builder.Services.AddTransient<NumberGenerator>();
 builder.Services.AddTransient<ScriptLoader>();
 builder.Services.AddTransient<ActivatorScriptFactory>();
 builder.Services.AddTransient<IRecoverDeviceService, RecoverDeviceService>();
@@ -60,17 +70,29 @@ builder.Services.AddResponseCaching();
 
 FanexDataConfig(builder.Configuration, appSettings);
 
+LogManager.SetDefaultLogCategory("Device.Identification")
+        .Use([
+            new SentryLogging(new SentryEngineOptions
+            {
+                Dsn = appSettings.SentryDsn
+            })
+        ]);
+
+ExceptionHandler
+    .UseConfig(new LoggingConfiguration())
+    .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+
+LogService.Info("Device.Identification Start!");
+
 var app = builder.Build();
 app.UseStaticFiles();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// RegisterBundles
 var bundleConfig = app.Services.GetRequiredService<BundleConfig>();
 bundleConfig.RegisterBundles();
 
@@ -94,8 +116,12 @@ static void FanexDataConfig(ConfigurationManager configuration, AppSettings appS
                     .GetChildren()
                     .AsEnumerable()
                     .ToDictionary(
-                            x => x.GetValue<string>("Name"),
-                            y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+                        x => x.GetValue<string>("Name") ?? string.Empty,
+                        y => new ConnectionConfiguration(
+                            y.GetValue<string>("Name") ?? string.Empty,
+                            y.GetValue<string>("ConnectionString") ?? string.Empty,
+                            y.GetValue<string>("ProviderName") ?? string.Empty
+                        )
                     );
 
     DbSettingProviderManager

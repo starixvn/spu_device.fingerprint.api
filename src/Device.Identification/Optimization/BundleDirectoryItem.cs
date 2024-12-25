@@ -3,15 +3,9 @@
     using System.Linq;
     using System.Text;
 
-    public class BundleDirectoryItem : BundleItem
+    public class BundleDirectoryItem(string virtualPath, string searchPattern) : BundleItem(virtualPath)
     {
-        public BundleDirectoryItem(string virtualPath, string searchPattern)
-            : base(virtualPath)
-        {
-            SearchPattern = searchPattern;
-        }
-
-        public string SearchPattern { get; private set; }
+        public string SearchPattern { get; private set; } = searchPattern;
 
         public override string GetContent(BundleContext context)
         {

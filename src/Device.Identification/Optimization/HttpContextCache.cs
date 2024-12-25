@@ -4,31 +4,18 @@
     using System.Collections.Generic;
     using Microsoft.Extensions.Caching.Memory;
 
-    public class HttpContextCache : IBundleCache
+    public class HttpContextCache(IMemoryCache memoryCache) : IBundleCache
     {
-        private readonly IMemoryCache _memoryCache;
-
-        public HttpContextCache(IMemoryCache memoryCache)
-        {
-            _memoryCache = memoryCache;
-        }
+        private readonly IMemoryCache _memoryCache = memoryCache;
 
         public bool IsEnabled(BundleContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            return _memoryCache != null;
+            return context == null ? throw new ArgumentNullException(nameof(context)) : _memoryCache != null;
         }
 
         public BundleResponse Get(BundleContext context, Bundle bundle)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             var cacheKey = bundle.GetCacheKey(context);
             _memoryCache.TryGetValue(cacheKey, out BundleResponse response);
@@ -37,20 +24,11 @@
 
         public void Put(BundleContext context, Bundle bundle, BundleResponse response)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
-            if (bundle == null)
-            {
-                throw new ArgumentNullException(nameof(bundle));
-            }
+            ArgumentNullException.ThrowIfNull(bundle);
 
-            if (response == null)
-            {
-                throw new ArgumentNullException(nameof(response));
-            }
+            ArgumentNullException.ThrowIfNull(response);
 
             var cacheKey = bundle.GetCacheKey(context);
 

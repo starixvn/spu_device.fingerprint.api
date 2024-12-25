@@ -1,25 +1,14 @@
 ﻿namespace Device.Identification.Optimization
 {
-    public class Bundle
+    public class Bundle(string virtualPath)
     {
-        private IBundleBuilder _builder;
+        private IBundleBuilder? _builder;
 
-        protected Bundle()
-        {
-            Items = new List<BundleItem>();
-            ConcatenationToken = Environment.NewLine;
-        }
+        public string VirtualPath { get; private set; } = virtualPath;
 
-        public Bundle(string virtualPath): this()
-        {
-            VirtualPath = virtualPath;
-        }
+        public string ConcatenationToken { get; private set; } = Environment.NewLine;
 
-        public string VirtualPath { get; private set; }
-
-        public string ConcatenationToken { get; private set; }
-
-        public IList<BundleItem> Items { get; private set; }
+        public IList<BundleItem> Items { get; private set; } = [];
 
         public virtual IBundleBuilder Builder
         {
@@ -69,10 +58,7 @@
 
         public BundleResponse CacheLookup(BundleContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             IBundleCache cache = context.BundleCollection.Cache;
             BundleResponse bundleResponse = cache.Get(context, this);
@@ -81,15 +67,9 @@
 
         public void UpdateCache(BundleContext context, BundleResponse response)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
-            if (response == null)
-            {
-                throw new ArgumentNullException("response");
-            }
+            ArgumentNullException.ThrowIfNull(response);
 
             IBundleCache cache = context.BundleCollection.Cache;
             if (cache.IsEnabled(context))
@@ -100,20 +80,14 @@
 
         public string GetCacheKey(BundleContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
-
-            return string.Concat("Fanex.DI.Web.Optimization.Bundle:", context.BundleVirtualPath);
+            return context == null
+                ? throw new ArgumentNullException(nameof(context))
+                : string.Concat("Fanex.DI.Web.Optimization.Bundle:", context.BundleVirtualPath);
         }
 
         public BundleResponse GenerateBundleResponse(BundleContext context)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException("context");
-            }
+            ArgumentNullException.ThrowIfNull(context);
 
             var bundleContent = Builder.BuildBundleContent(this, context);
             return new BundleResponse(bundleContent);

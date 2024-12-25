@@ -1,16 +1,10 @@
 ﻿namespace Device.Identification.ActivatorScript
 {
-    public class ActivatorScriptFactory
+    public class ActivatorScriptFactory(ScriptLoader scriptLoader, BundleConfig bundleConfig)
     {
         private string? _configScript;
-        private readonly ScriptLoader _scriptLoader;
-        private readonly BundleConfig _bundleConfig;
-
-        public ActivatorScriptFactory(ScriptLoader scriptLoader, BundleConfig bundleConfig)
-        {
-            _scriptLoader = scriptLoader ?? throw new ArgumentNullException(nameof(scriptLoader));
-            _bundleConfig = bundleConfig ?? throw new ArgumentNullException(nameof(bundleConfig));
-        }
+        private readonly ScriptLoader _scriptLoader = scriptLoader;
+        private readonly BundleConfig _bundleConfig = bundleConfig;
 
         public ActivatorScriptFactory CreateConfigScript(
             string cachedDeviceId,
@@ -23,12 +17,6 @@
             _configScript = _scriptLoader.LoadConfigScript(cachedDeviceId, defaultDeviceId, accept, headers, domainName, fdiKey);
 
             return this;
-        }
-
-        // Secondary constructor for scenarios where config script is not immediately needed
-        public ActivatorScriptFactory(ScriptLoader scriptLoader)
-        {
-            _scriptLoader = scriptLoader ?? throw new ArgumentNullException(nameof(scriptLoader));
         }
 
         public string GetConfigScript()

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Linq;
-    using Microsoft.Extensions.Configuration;
 
     public class NumberGenerator
     {

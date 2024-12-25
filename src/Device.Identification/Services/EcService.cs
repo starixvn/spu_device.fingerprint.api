@@ -7,7 +7,6 @@ using Fanex.Data.Repository;
 using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using NUglify;
-using System.Globalization;
 
 namespace Device.Identification.Services
 {
@@ -18,22 +17,23 @@ namespace Device.Identification.Services
 
     public class EcService(IAppSettings appSettings
                           , IHttpContextAccessor contextAccessor
-                          , EverCookieCachingWrapper cacheWrapper
+                          , HttpCachingWrapper cacheWrapper
                           , IRecoverDeviceService recoverDeviceService) : IEcService
     {
         private readonly IAppSettings _appSettings = appSettings;
-        private readonly EverCookieCachingWrapper _cacheWrapper = cacheWrapper;
+        private readonly HttpCachingWrapper _cacheWrapper = cacheWrapper;
         private readonly IRecoverDeviceService _recoverDeviceService = recoverDeviceService;
         private readonly IDynamicRepository _repository = new DynamicRepository();
 
-        private HttpRequest Request => contextAccessor.HttpContext?.Request;
-        private HttpResponse Response => contextAccessor.HttpContext?.Response;
+        private HttpRequest? Request => contextAccessor.HttpContext?.Request;
+        private HttpResponse? Response => contextAccessor.HttpContext?.Response;
 
         public async Task Execute()
         {
-            if (string.IsNullOrEmpty(Request.Query["deviceInfo"]))
+            if (string.IsNullOrEmpty(Request?.Query["deviceInfo"]) || Response == null)
             {
                 await ResponseEmptyContent();
+                return;
             }
 
             var requestIp = GetRequestIpFromClientToParseDeviceInfo();
@@ -41,24 +41,24 @@ namespace Device.Identification.Services
             var candidateDeviceIds = GetCandidatePlainDeviceIdsFromStorages(deviceDetection);
             var currentDeviceCode = deviceDetection?.Device?.Code;
 
-            if (_cacheWrapper.IsCacheValid(deviceDetection?.Device?.Code))
+            if (_cacheWrapper.DoesRecoverDeviceIdFromETag())
             {
-                _cacheWrapper.UpdateCachingWithExpiredDays(30);
-                _cacheWrapper.ReuseCache();
+                _cacheWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
+                Response.StatusCode = StatusCodes.Status304NotModified;
+
                 return;
             }
 
-            deviceDetection.RemoteIPs = Request.Headers["X-Forwarded-For"];
             var recoveredDevice = _recoverDeviceService.GetRecoveredDevice(candidateDeviceIds, currentDeviceCode);
 
-            TryInsertNewDevice(recoveredDevice, deviceDetection);
-            if (!Response.HasStarted)
+            if (recoveredDevice != null)
             {
-                SynchronizeServerStorages(recoveredDevice, _cacheWrapper);
-                UpdateCachingWithExpiredDaysAndModifiedTime(30);
-            }
+                TryInsertNewDevice(recoveredDevice, deviceDetection);
+                SynchronizeServerStorages(recoveredDevice.DeviceId);
+                _cacheWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
 
-            await ResponseInfoToClient(recoveredDevice?.DeviceId);
+                await ResponseInfoToClient(recoveredDevice.DeviceId);
+            }
         }
 
         private async Task ResponseEmptyContent()
@@ -83,6 +83,7 @@ namespace Device.Identification.Services
 
             return deviceDetection;
         }
+
         private List<string>? GetCandidatePlainDeviceIdsFromStorages(DeviceDetection? deviceDetection)
         {
             var clientDeviceIds = deviceDetection?.Device?.ClientDeviceIds;
@@ -154,11 +155,9 @@ namespace Device.Identification.Services
                 DeviceType = deviceDetection.Device.DeviceType,
                 Accept = deviceDetection.Device.Accept,
                 Headers = deviceDetection.Device.Headers,
-                //CreatedDate = DateTime.Now,
 
                 Ip = deviceDetection.Ip,
                 LocalIPs = deviceDetection.LocalIPs,
-                RemoteIPs = deviceDetection.RemoteIPs,
                 ScriptRequestedIp = deviceDetection.ScriptRequestedIp,
                 SubscriberRecordedIp = deviceDetection.SubscriberRecordedIp,
                 DomainName = deviceDetection.DomainName,
@@ -173,13 +172,13 @@ namespace Device.Identification.Services
             return !string.IsNullOrEmpty(domainName) && domainName.Equals(urlRefererAuthority);
         }
 
-        private void SynchronizeServerStorages(RecoveredDevice recoveredDevice, EverCookieCachingWrapper cacheWrapper)
+        private void SynchronizeServerStorages(string deviceId)
         {
-            cacheWrapper.ETag = recoveredDevice.DeviceId;
-            WriteCookie(_appSettings.CookieStorage, recoveredDevice.DeviceId);
+            _cacheWrapper.ETag = deviceId;
+            AddCookie(_appSettings.CookieStorage, deviceId);
         }
 
-        private void WriteCookie(string key, string deviceId)
+        private void AddCookie(string key, string deviceId)
         {
             var cookieOptions = new CookieOptions
             {
@@ -192,13 +191,9 @@ namespace Device.Identification.Services
             Response.Cookies.Append(key, deviceId, cookieOptions);
         }
 
-        private void UpdateCachingWithExpiredDaysAndModifiedTime(int days)
+        private void UpdateCachingMaxAge(int seconds)
         {
-            int maxAgeInSeconds = days * 86400;
-
-            Response.Headers[HeaderNames.CacheControl] = $"public, max-age={maxAgeInSeconds}";
-            Response.Headers[HeaderNames.Expires] = DateTime.UtcNow.AddDays(days)
-                                                                    .ToString("R", CultureInfo.InvariantCulture);
+            Response.Headers[HeaderNames.CacheControl] = $"private, max-age={seconds}";
         }
 
         private async Task ResponseInfoToClient(string deviceId)
@@ -235,44 +230,5 @@ namespace Device.Identification.Services
 
             return result.Code;
         }
-
-
-        //private void TryUpdateLocalIps(RecoveredDevice recoveredDevice, DeviceDetection deviceDetection)
-        //{
-        //    var emptyLocalIps = "[]";
-        //    if (deviceDetection.LocalIPs != emptyLocalIps)
-        //    {
-        //        var criteria = new FingerprintLocalIpUpdateCriteria
-        //        {
-        //            DeviceId = DeviceEncoder.Decrypt(recoveredDevice.DeviceId),
-        //            Ip = deviceDetection.Ip,
-        //            LocalIps = deviceDetection.LocalIPs
-        //        };
-
-        //        //UpdateLocalIps();
-        //        //if (!string.IsNullOrEmpty(criteria.Message))
-        //        //{
-        //        //    LogService.WriteError("TryUpdateLocalIps function returns " +
-        //        //        criteria.Message +
-        //        //        "\r\nParameters: " +
-        //        //        JsonConvert.SerializeObject(criteria));
-        //        //}
-        //    }
-        //}
-
-        //public void UpdateLocalIps()
-        //{
-        //    var criteria = new FingerprintLocalIpUpdateCriteria();
-
-        //    using (var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey()))
-        //    {
-        //        var result = db.ExecuteNonQuery(criteria);
-        //        var errorModel = new ErrorModel
-        //        {
-        //            Error = criteria.Error,
-        //            Message = criteria.Message
-        //        };
-        //    }
-        //}
     }
 }

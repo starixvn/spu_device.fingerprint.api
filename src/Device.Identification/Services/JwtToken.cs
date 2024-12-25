@@ -2,18 +2,12 @@
 {
     using Microsoft.IdentityModel.Tokens;
     using System;
-    using System.IdentityModel.Tokens.Jwt;
     using System.Security.Claims;
     using System.Text;
 
-    public class JwtToken
+    public class JwtToken(IAppSettings appSettings)
     {
-        private readonly IAppSettings _appSettings;
-
-        public JwtToken(IAppSettings appSettings)
-        {
-            _appSettings = appSettings ?? throw new ArgumentNullException(nameof(appSettings));
-        }
+        private readonly IAppSettings _appSettings = appSettings;
 
         public SecurityTokenDescriptor GetSecurityTokenDescriptor()
         {

@@ -6,9 +6,9 @@ namespace Device.Identification
     {
         string SPName { get; }
 
-        string CookieStorage { get; }
+        string SentryDsn { get; }
 
-        string CookieVersion { get; }
+        string CookieStorage { get; }
 
         string Storages { get; }
 
@@ -52,9 +52,9 @@ namespace Device.Identification
 
         private readonly string spName;
 
-        private readonly string cookieStorage;
+        private readonly string sentryDsn;
 
-        private readonly string cookieVersion;
+        private readonly string cookieStorage;
 
         private readonly string storages;
 
@@ -96,9 +96,9 @@ namespace Device.Identification
 
             spName = GetValue<string>("AppConfig:SPName") ?? string.Empty;
 
-            cookieStorage = GetValue<string>("AppConfig:CookieStorage") ?? string.Empty;
+            sentryDsn = GetValue<string>("Sentry:Dsn") ?? string.Empty;
 
-            cookieVersion = GetValue<string>("AppConfig:CookieVersion") ?? string.Empty;
+            cookieStorage = GetValue<string>("AppConfig:CookieStorage") ?? string.Empty;
 
             storages = GetValue<string>("AppConfig:Storages") ?? string.Empty;
 
@@ -137,9 +137,9 @@ namespace Device.Identification
 
         public string SPName => spName;
 
-        public string CookieStorage => cookieStorage;
+        public string SentryDsn => sentryDsn;
 
-        public string CookieVersion => cookieVersion;
+        public string CookieStorage => cookieStorage;
 
         public string Storages => storages;
 

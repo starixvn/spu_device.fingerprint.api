@@ -1,30 +1,29 @@
 ﻿namespace Device.Identification.Services
 {
+    using Device.Identification.Factory;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Net.Http.Headers;
     using System;
 
     public interface IHttpCachingWrapper
     {
-        void ReuseCache();
-
         void UpdateCachingWithExpiredDays(int expiredDays);
 
         void UpdateCachingWithExpiredSeconds(int expiredSeconds);
+
+        bool DoesRecoverDeviceIdFromETag();
     }
 
-    public class HttpCachingWrapper(IHttpContextAccessor contextAccessor
-                                , IAppSettings appSettings) : IHttpCachingWrapper
+    public class HttpCachingWrapper(IHttpContextAccessor contextAccessor) : IHttpCachingWrapper
     {
-        private readonly IHttpContextAccessor _contextAccessor = contextAccessor;
-        private string _etag;
+        private string _etag = string.Empty;
 
-        private HttpRequest Request => _contextAccessor.HttpContext?.Request;
-        private HttpResponse Response => _contextAccessor.HttpContext?.Response;
+        private HttpRequest? Request => contextAccessor.HttpContext?.Request;
+        private HttpResponse? Response => contextAccessor.HttpContext?.Response;
 
         public string ETag
         {
-            get => _etag ?? Request.Headers[HeaderNames.IfNoneMatch];
+            get => _etag ?? Request?.Headers[HeaderNames.IfNoneMatch].ToString() ?? string.Empty;
 
             set
             {
@@ -34,18 +33,16 @@
                 }
 
                 _etag = value;
-                Response.Headers[HeaderNames.ETag] = _etag;
+                if (Response != null)
+                {
+                    Response.Headers[HeaderNames.ETag] = value;
+                }
             }
-        }
-
-        public void ReuseCache()
-        {
-            Response.StatusCode = StatusCodes.Status304NotModified;
         }
 
         public void UpdateCachingWithExpiredDays(int expiredDays)
         {
-            if (!Response.HasStarted)
+            if (Response != null && !Response.HasStarted)
             {
                 SetExpiredDays(expiredDays);
             }
@@ -53,30 +50,41 @@
 
         public void UpdateCachingWithExpiredSeconds(int expiredSeconds)
         {
-            if (!Response.HasStarted)
+            if (Response != null && !Response.HasStarted)
             {
                 SetExpiredSeconds(expiredSeconds);
             }
         }
 
+        public bool DoesRecoverDeviceIdFromETag()
+        {
+            return DeviceFactory.IsValidDeviceId(ETag);
+        }
+
         private void SetExpiredDays(int value)
         {
-            var headers = Response.GetTypedHeaders();
-            headers.CacheControl = new CacheControlHeaderValue
+            if (Response != null && !Response.HasStarted)
             {
-                Private = true,
-                MaxAge = TimeSpan.FromDays(value)
-            };
+                var headers = Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    Private = true,
+                    MaxAge = TimeSpan.FromDays(value)
+                };
+            }
         }
 
         private void SetExpiredSeconds(int value)
         {
-            var headers = Response.GetTypedHeaders();
-            headers.CacheControl = new CacheControlHeaderValue
+            if (Response != null && !Response.HasStarted)
             {
-                Private = true,
-                MaxAge = TimeSpan.FromSeconds(value)
-            };
+                var headers = Response.GetTypedHeaders();
+                headers.CacheControl = new CacheControlHeaderValue
+                {
+                    Private = true,
+                    MaxAge = TimeSpan.FromSeconds(value)
+                };
+            }
         }
     }
 

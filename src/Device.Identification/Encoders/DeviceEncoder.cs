@@ -33,7 +33,6 @@
                 throw new ArgumentException("Encrypted text cannot be null or empty", nameof(encryptedText));
             }
 
-            // Decode từ Hex
             var decodedText = Hex.Decode(encryptedText);
             if (string.IsNullOrEmpty(decodedText))
             {
