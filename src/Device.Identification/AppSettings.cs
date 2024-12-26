@@ -118,9 +118,9 @@ namespace Device.Identification
 
             isDisabledDI = Convert.ToBoolean(GetValue<string>("AppConfig:DisableDIScript") ?? "false");
 
-            fpAPIUrl = GetValue<string>("AppConfig:FP-API-Url") ?? string.Empty;
+            fpAPIUrl = GetValue<string>("AppConfig:FPAPIUrl") ?? string.Empty;
 
-            fpPortalAPIUrl = GetValue<string>("AppConfig:FP-Portal-API-Url") ?? string.Empty;
+            fpPortalAPIUrl = GetValue<string>("AppConfig:FPPortalAPIUrl") ?? string.Empty;
 
             redisDbIndex = GetValue<string>("AppConfig:RedisDbIndex") ?? string.Empty;
 

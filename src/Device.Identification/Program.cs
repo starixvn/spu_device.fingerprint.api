@@ -9,6 +9,7 @@ using Fanex.Logging.Extensions;
 using Fanex.Logging.Extensions.AspNetCore;
 using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
 using Sentry;
@@ -93,6 +94,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseHealthChecks("/healthz", new HealthCheckOptions
+{
+    Predicate = _ => true
+});
+
 var bundleConfig = app.Services.GetRequiredService<BundleConfig>();
 bundleConfig.RegisterBundles();
 
@@ -101,6 +107,12 @@ var fileProvider = app.Services.GetRequiredService<IFileProvider>();
 BundleTable.Initialize(memoryCache, fileProvider);
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors();
+
+app.UseResponseCaching();
 
 app.UseAuthorization();
 
