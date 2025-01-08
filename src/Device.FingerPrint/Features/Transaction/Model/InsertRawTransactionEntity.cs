@@ -70,11 +70,11 @@ namespace Device.FingerPrint.Features.Transaction.Model
 
         public bool? IsIncognitoMode { get; set; }
 
-        public string MBAndroidCode { get; set; }
+        public string MBDeviceCodeMediaDRM { get; set; }
 
-        public string MBCustomCode { get; set; }
+        public string MBDeviceCodeMachine { get; set; }
 
-        public string MBMediaDRMCode { get; set; }
+        public string MBDeviceCodeTagging { get; set; }
 
         public bool MBIsMobileApp { get; set; }
 
