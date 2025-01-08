@@ -62,14 +62,23 @@
 
                         rawTransactionService.InsertRawTransactionDetail(rawTransModels, appSettings.IsExtraSub);
 
-                        transactionService.InsertRawTransaction(rawTransModels, appSettings.IsExtraSub);
+                        try
+                        {
+                            transactionService.InsertRawTransaction(rawTransModels, appSettings.IsExtraSub);
+                        }
+                        catch (MySql.Data.MySqlClient.MySqlException)
+                        {
+                            rawTransactionService.LogTransactions(rawTransModels);
+
+                            throw;
+                        }
 
                         _ = AdditionalProcessingNotAwait(rawTransModels);
                     }
                 }
 
                 return Task.CompletedTask;
-            }
+            }           
             catch (Exception ex)
             {
                 _ = QueueConsumer.Utilities.LogErrorAsync(ex);

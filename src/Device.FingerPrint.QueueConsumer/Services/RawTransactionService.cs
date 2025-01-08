@@ -5,13 +5,16 @@
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
+    using MySql.Data.MySqlClient;
     using Newtonsoft.Json;
     using StackExchange.Redis;
     using System;
     using System.Collections;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using System.Transactions;
 
     public interface IRawTransactionService
     {
@@ -20,6 +23,8 @@
         void InsertOrUpdateEverTagging(string hashKey, IEnumerable<string> everTaggings, long expireSecond);
 
         void InsertRawTransactionDetail(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra);
+
+        void LogTransactions(IEnumerable<RawTransactionModel> transactions);
 
     }
 
@@ -170,11 +175,18 @@
                     transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
                 }
             }
+            catch(MySqlException ex)
+            {
+                LogTransactions(transactions);
+
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
+            }
             catch (Exception ex)
             {
                 _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
         }
+        
 
         private void InsertFPFingerPrint(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
@@ -186,6 +198,12 @@
                     var fingerPrintJson = JsonConvert.SerializeObject(fingerprintAttribute);
                     transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
                 }
+            }
+            catch (MySqlException ex)
+            {
+                LogTransactions(transactions);
+
+                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
             }
             catch (Exception ex)
             {
@@ -200,6 +218,20 @@
                 .Where(result => result != null)
                 .Distinct();
         }
+       
+        public void LogTransactions(IEnumerable<RawTransactionModel> transactions)
+        {
+            var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", $"transactions_{DateTime.Now:yyyyMMdd_HH}.log");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+
+            using (var writer = new StreamWriter(logFilePath, true))
+            {
+                var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Transaction: {JsonConvert.SerializeObject(transactions)}";
+
+                writer.WriteLine(logMessage);
+            }
+        }     
 
     }
 }
