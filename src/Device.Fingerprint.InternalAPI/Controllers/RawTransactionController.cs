@@ -3,6 +3,7 @@ using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
+using Device.FingerPrint.Model.DTO;
 using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -15,7 +16,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
     [ApiController]
     public class RawTransactionController(IAppSettings appSettings, ITransactionService transactionService, ILogstashService logstashService) : ControllerBase
     {
-        [HttpPost("insert")]
+        [HttpPost("insertRawTrans")]
         [EnableRateLimiting("fixed")]
         public ActionResult<TransactionInfoModel> InsertRawTransaction([FromBody] string rawTransJson)
         {
@@ -31,6 +32,61 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 
                     _ = AdditionalProcessingNotAwait(rawTransModels);
                 }
+
+                return Ok(new TransactionInfoResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    ErrorMessage = string.Empty
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new TransactionInfoResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("insertFP")]
+        [EnableRateLimiting("fixed")]
+        public ActionResult<TransactionInfoModel> InsertFingerprint([FromBody] IEnumerable<InsertFPFingerprintEntity> inputEntity)
+        {
+            try
+            {
+                //inputString = inputString.Replace(":NULL", ":\"NULL\"");
+
+                //var model = JsonConvert.DeserializeObject<IEnumerable<InsertFPFingerprintEntity>>(inputString);
+                var fingerPrintJson = JsonConvert.SerializeObject(inputEntity);
+
+                transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra: false);
+
+                return Ok(new TransactionInfoResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    ErrorMessage = string.Empty
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new TransactionInfoResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("insertUA")]
+        [EnableRateLimiting("fixed")]
+        public ActionResult<TransactionInfoModel> InsertUserAgent([FromBody] IEnumerable<UserAgentInfoModel> inputEntity)
+        {
+            try
+            {
+                var userAgentJson = JsonConvert.SerializeObject(inputEntity);
+
+                transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra: false);
 
                 return Ok(new TransactionInfoResponse
                 {
