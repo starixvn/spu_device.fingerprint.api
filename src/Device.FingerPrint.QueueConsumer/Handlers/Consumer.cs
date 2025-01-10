@@ -124,7 +124,7 @@
 
             if (errorList.Any())
             {
-                LogService.Error($"Account ErrorList:\n {JsonConvert.SerializeObject(errorList)}");
+                // LogService.Error($"Account ErrorList:\n {JsonConvert.SerializeObject(errorList)}");
             }
 
             return transformedDataBag.ToList();
