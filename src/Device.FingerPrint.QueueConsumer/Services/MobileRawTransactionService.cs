@@ -5,6 +5,8 @@ using Device.FingerPrint.Core;
 using Fanex.Logging;
 using EasyNetQ;
 using Newtonsoft.Json;
+using System.Transactions;
+using System.Collections.Generic;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -18,6 +20,8 @@ namespace Device.FingerPrint.QueueConsumer.Services
         private readonly IUserAgentService userAgentService;
         private readonly IAppSettings appSettings;
 
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "twpgmlynnlu" };
+
         public MobileRawTransactionService(
             IUserAgentService userAgentService,
             IAppSettings appSettings)
@@ -28,7 +32,20 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public RawTransactionModel TransformRawTransaction(MessageQueue message)
         {
-            if((!string.IsNullOrEmpty(message.Mobile.MediaDRMCode) && message.Mobile.MediaDRMCode.Length > 32)
+            if (DebugAccounts.Contains(message.Account.ToLower()))
+            {
+                _ = LogService.InfoAsync($"Mobile App Debug for Account:{message.Account}\n {JsonConvert.SerializeObject(message)}");
+            }
+
+            if (string.IsNullOrEmpty(message.Mobile.AndroidCode)
+                && string.IsNullOrEmpty(message.Mobile.CustomCode)
+                && string.IsNullOrEmpty(message.Mobile.MediaDRMCode))
+            {
+                _ = LogService.ErrorAsync($"{appSettings.Environment} - Mobile App code null:\n {JsonConvert.SerializeObject(message)}");
+            }
+
+
+            if ((!string.IsNullOrEmpty(message.Mobile.MediaDRMCode) && message.Mobile.MediaDRMCode.Length > 32)
                 || (!string.IsNullOrEmpty(message.Mobile.AndroidCode) && message.Mobile.AndroidCode.Length > 32)
                 || (!string.IsNullOrEmpty(message.Mobile.CustomCode) && message.Mobile.CustomCode.Length > 32)
             )
