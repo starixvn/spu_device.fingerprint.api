@@ -4,6 +4,7 @@ using System.Collections;
 using Device.FingerPrint.Core;
 using Fanex.Logging;
 using EasyNetQ;
+using Newtonsoft.Json;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -27,6 +28,14 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         public RawTransactionModel TransformRawTransaction(MessageQueue message)
         {
+            if((!string.IsNullOrEmpty(message.Mobile.MediaDRMCode) && message.Mobile.MediaDRMCode.Length > 32)
+                || (!string.IsNullOrEmpty(message.Mobile.AndroidCode) && message.Mobile.AndroidCode.Length > 32)
+                || (!string.IsNullOrEmpty(message.Mobile.CustomCode) && message.Mobile.CustomCode.Length > 32)
+            )
+            {
+                _ = LogService.ErrorAsync($"{appSettings.Environment} - Mobile App exceeded code length:\n {JsonConvert.SerializeObject(message)}");
+            }
+
             try
             {
                 var rawTransModel = new RawTransactionModel
