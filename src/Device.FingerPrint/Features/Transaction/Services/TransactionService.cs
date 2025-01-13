@@ -64,6 +64,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public void InsertRawTransaction(IEnumerable<RawTransactionModel> transactions, bool isTransOfDBExtra)
         {
             var transJson = JsonConvert.SerializeObject(TransformInsertRawTransaction(transactions));
+
             transactionDataAccess.InsertRawTransaction(transJson, isTransOfDBExtra);
 
         }
