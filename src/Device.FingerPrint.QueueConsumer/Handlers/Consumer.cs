@@ -79,10 +79,14 @@
 
         private IEnumerable<RawTransactionModel> TransformRawTransactionModel(Batch<MessageQueue> messages)
         {
+            if (messages.Length <= 0) return new List<RawTransactionModel>();
+
             var transformedDataBag = new ConcurrentBag<RawTransactionModel>();
             var errorList = new List<MessageQueue>();
 
-            Parallel.ForEach(messages, new ParallelOptions { MaxDegreeOfParallelism = 10 }, message =>
+            var validedMessages = ValidDuplicateTrans(messages);
+
+            Parallel.ForEach(validedMessages, new ParallelOptions { MaxDegreeOfParallelism = 10 }, message =>
             {
                 if (message?.Message != null
                     && !string.IsNullOrEmpty(message.Message.Account)
@@ -144,8 +148,6 @@
                 }
 
                 await InsertLogstash(transactionModels);
-
-                ValidDuplicateTrans(transactionModels);
             }
             catch (Exception ex)
             {
@@ -168,16 +170,23 @@
             }
         }
 
-        private static void ValidDuplicateTrans(IEnumerable<RawTransactionModel> listTrans)
+        private static IEnumerable<ConsumeContext<MessageQueue>> ValidDuplicateTrans(Batch<MessageQueue> listMessage)
         {
-            var dupTrans = listTrans.GroupBy(x => new { x.LoginName, x.TransTime })
-                                    .Where(g => g.Count() > 1)
-                                    .SelectMany(g => g)
-                                    .ToList();
-            if (dupTrans.Count > 0)
+            var groupedMessages = listMessage.GroupBy(x => new { x.Message.Account, x.Message.TransDate });
+
+            var dupMessages = groupedMessages
+                .Where(g => g.Count() > 1)
+                .SelectMany(g => g.Skip(1))
+                .ToList();
+
+            if (dupMessages.Count > 0)
             {
-                LogService.Error($"DuplicateTrans:\n {JsonConvert.SerializeObject(dupTrans)}");
+                var duplicateMessagesContent = dupMessages.Select(x => x.Message);
+                LogService.Error($"DuplicateMessages:\n {JsonConvert.SerializeObject(duplicateMessagesContent)}");
             }
+
+            var validedMessages = listMessage.Except(dupMessages);
+            return validedMessages;
         }
     }
 }
