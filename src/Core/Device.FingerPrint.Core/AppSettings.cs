@@ -43,7 +43,7 @@ namespace Device.FingerPrint.Core
 
         List<string> UnhandledFingerprintAttributeValues { get; }
 
-        List<string> LogstashAllowSubscribers { get; }
+        List<string> LogstashIgnoreSubscribers { get; }
 
         bool IsExtraSub { get; }
 
@@ -100,7 +100,7 @@ namespace Device.FingerPrint.Core
 
         private readonly List<string> unhandledFingerprintAttributeValues;
 
-        private readonly List<string> logstashAllowSubscribers;
+        private readonly List<string> logstashIgnoreSubscribers;
 
         private readonly bool isExtraSub;
         
@@ -156,7 +156,7 @@ namespace Device.FingerPrint.Core
 
             unhandledFingerprintAttributeValues = GetSection<List<string>>("Fingerprint:UnhandledAttributeValues") ?? new List<string>();
 
-            logstashAllowSubscribers = GetSection<List<string>>("Logstash:AllowSubscribers") ?? new List<string>();
+            logstashIgnoreSubscribers = GetSection<List<string>>("Logstash:IgnoreSubscribers") ?? new List<string>();
 
             isExtraSub = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsExtraSub")) && Convert.ToBoolean(GetValue<string>("Consumer:IsExtraSub"));
 
@@ -205,7 +205,7 @@ namespace Device.FingerPrint.Core
 
         public List<string> UnhandledFingerprintAttributeValues => unhandledFingerprintAttributeValues;
 
-        public List<string> LogstashAllowSubscribers => logstashAllowSubscribers;
+        public List<string> LogstashIgnoreSubscribers => logstashIgnoreSubscribers;
 
         public bool IsExtraSub => isExtraSub;
 

@@ -221,16 +221,16 @@
        
         public void LogTransactions(IEnumerable<RawTransactionModel> transactions)
         {
-            var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", $"transactions_{DateTime.Now:yyyyMMdd_HH}.log");
+            //var logFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs", $"transactions_{DateTime.Now:yyyyMMdd_HH}.log");
 
-            Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
+            //Directory.CreateDirectory(Path.GetDirectoryName(logFilePath));
 
-            using (var writer = new StreamWriter(logFilePath, true))
-            {
-                var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Transaction: {JsonConvert.SerializeObject(transactions)}";
+            //using (var writer = new StreamWriter(logFilePath, true))
+            //{
+            //    var logMessage = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - Transaction: {JsonConvert.SerializeObject(transactions)}";
 
-                writer.WriteLine(logMessage);
-            }
+            //    writer.WriteLine(logMessage);
+            //}
         }     
 
     }

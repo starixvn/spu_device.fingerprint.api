@@ -39,7 +39,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             foreach (var transaction in transactions)
             {
-                if (!appSettings.LogstashAllowSubscribers.Contains(transaction.SubscriberName.ToLower()))
+                if (appSettings.LogstashIgnoreSubscribers.Count != 0 && appSettings.LogstashIgnoreSubscribers.Contains(transaction.SubscriberName.ToLower()))
                     continue;
 
                 var logMessage = TransformLogMessage(transaction);
