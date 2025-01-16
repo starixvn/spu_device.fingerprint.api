@@ -3,7 +3,6 @@ using Device.FingerPrint.Queue;
 using Device.FingerPrint.TransactionAPI.Model;
 using Device.FingerPrint.TransactionAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Fanex.Logging;
 
 namespace Device.FingerPrint.TransactionAPI.Controllers
 {
