@@ -13,6 +13,11 @@ using System.Threading.Tasks;
 using Fanex.Logging;
 using System.Linq;
 using System.Transactions;
+using EasyNetQ;
+using System.Collections.Concurrent;
+using Fanex.Logging.Extensions.AspNetCore.UserAgent;
+using FileHelpers.Converters;
+using System.Security.Policy;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
@@ -55,17 +60,73 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             var fingerprintLogstashModel = GetFingerprintAttributes(transaction.FingerprintAttribute?.FPFingerPrintAttribute);
 
-            transaction.SubscriberName = transaction.SubscriberName.ToLower();
+            var transactionLogsTash = TransformRawTransactionLogstash(transaction);
+
+            transactionLogsTash.SubscriberName = transactionLogsTash.SubscriberName.ToLower();
 
             var logMessage = new TransactionLogstashModel
             {
-                Message = transaction,
+                Message = transactionLogsTash,
                 Tags = "LoginTransaction",
                 FingerprintAttributes = fingerprintLogstashModel?.FingerprintAttributes,
                 UnhandledAttributes = fingerprintLogstashModel?.UnhandledAttributes,
             };
 
             return logMessage;
+        }
+
+        public RawTransactionLogstashModel TransformRawTransactionLogstash(RawTransactionModel transaction)
+        {
+            try
+            {
+                var rawTransModel = new RawTransactionLogstashModel();
+
+                foreach (var property in typeof(RawTransactionModel).GetProperties())
+                {
+                    var targetProperty = typeof(RawTransactionLogstashModel).GetProperty(property.Name);
+                    if (targetProperty != null)
+                    {
+                        targetProperty.SetValue(rawTransModel, property.GetValue(transaction));
+                    }
+                }
+
+                if (transaction.FingerprintAttribute != null)
+                {
+                    rawTransModel.FPFingerPrintExtraAttribute = transaction.FingerprintAttribute.FPFingerPrintExtraAttribute;
+                    rawTransModel.FPFingerPrintAttribute = transaction.FingerprintAttribute.FPFingerPrintAttribute;
+                }
+
+                if (transaction.UserAgentInfo != null)
+                {
+                    rawTransModel.ClientName = transaction.UserAgentInfo.ClientName;
+                    rawTransModel.ClientVersion = transaction.UserAgentInfo.ClientVersion;
+                    rawTransModel.OSName = transaction.UserAgentInfo.OSName;
+                    rawTransModel.OSShortName = transaction.UserAgentInfo.OSShortName;
+                    rawTransModel.OSVersion = transaction.UserAgentInfo.OSVersion;
+                    rawTransModel.OSPlatform = transaction.UserAgentInfo.OSPlatform;
+                    rawTransModel.Device = transaction.UserAgentInfo.Device;
+                }
+
+                if (transaction.RawJsChallengeInfo != null)
+                {
+                    rawTransModel.ChallengeIds = transaction.RawJsChallengeInfo.ChallengeIds;
+                    rawTransModel.Parameters = transaction.RawJsChallengeInfo.Parameters;
+                    rawTransModel.Expect = transaction.RawJsChallengeInfo.Expect;
+                    rawTransModel.Expected = transaction.RawJsChallengeInfo.Expected;
+                    rawTransModel.Actual = transaction.RawJsChallengeInfo.Actual;
+                    rawTransModel.ExeServerTimeInSecond = transaction.RawJsChallengeInfo.ExeServerTimeInSecond;
+                    rawTransModel.ExeClientTimeInSecond = transaction.RawJsChallengeInfo.ExeClientTimeInSecond;
+                    rawTransModel.Result = transaction.RawJsChallengeInfo.Result;
+                    rawTransModel.ErrMsg = transaction.RawJsChallengeInfo.ErrMsg;
+                }
+
+                return rawTransModel;
+            }
+            catch (Exception ex)
+            {
+                _ = LogService.ErrorAsync($"{appSettings.Environment} - TransformRawTransactionLogstash has error:\n {ex.Message}");
+                return null;
+            }
         }
 
         private FingerprintLogstashModel GetFingerprintAttributes<T>(T fingerprintAttribute)

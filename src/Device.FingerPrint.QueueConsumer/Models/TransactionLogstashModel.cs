@@ -5,7 +5,7 @@ namespace Device.FingerPrint.QueueConsumer.Models
 {
     public class TransactionLogstashModel
     {
-        public RawTransactionModel Message { get; set; }
+        public RawTransactionLogstashModel Message { get; set; }
 
         public string Tags { get; set; }
 
