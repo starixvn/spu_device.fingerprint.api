@@ -2,7 +2,7 @@
 {
     public class MobileModel
     {
-        public string AndroidCode { get; set; }
+        public string MachineCode { get; set; }
 
         public string CustomCode { get; set; }
 

@@ -62,7 +62,7 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 SubscriberDate = DateTime.Now,
                 Mobile = new MobileModel
                 {
-                    AndroidCode = transactionRequest.AndroidCode,
+                    MachineCode = !string.IsNullOrEmpty(transactionRequest.AndroidCode) ? transactionRequest.AndroidCode : transactionRequest.MachineCode,
                     Brand = transactionRequest.Brand,
                     Country = transactionRequest.Country,
                     CustomCode = transactionRequest.CustomCode,

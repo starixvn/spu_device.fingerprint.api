@@ -38,7 +38,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     Action = message.Action,
                     ActionResult = message.ActionResult,
                     MBDeviceCodeMediaDRM = message.Mobile.MediaDRMCode,
-                    MBDeviceCodeMachine = message.Mobile.AndroidCode,
+                    MBDeviceCodeMachine = message.Mobile.MachineCode,
                     MBDeviceCodeTagging = message.Mobile.CustomCode,
                     MBIsMobileApp = message.Mobile.IsMobileAppTrans,
                     MBIsEmulator = message.Mobile.IsEmulator,
@@ -69,7 +69,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
         private string GetFlaggedCode(MessageQueue message)
         {
-            if (string.IsNullOrEmpty(message.Mobile.AndroidCode)
+            if (string.IsNullOrEmpty(message.Mobile.MachineCode)
                 && string.IsNullOrEmpty(message.Mobile.CustomCode)
                 && string.IsNullOrEmpty(message.Mobile.MediaDRMCode))
             {
