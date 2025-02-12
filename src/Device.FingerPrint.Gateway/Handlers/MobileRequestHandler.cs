@@ -63,7 +63,7 @@ namespace Device.FingerPrint.Gateway.Handlers
             }
             catch (Exception ex)
             {
-                LogService.Error(ex.Message, ex);
+                LogService.Error($"{ex.Message} \n {request.Content}", ex);
             }
 
             return new HttpResponseMessage
