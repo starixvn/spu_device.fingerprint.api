@@ -78,9 +78,13 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 }
             };
 
+            logger.Info($"Before Pushing to queue: {message.Account} - {message.Action} - {message.Subscriber} - {message.TransDate}");
+
             var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.MobileQueueName;
 
             await massTransitProducer.SendAsync(message, queueAddress);
+
+            logger.Info($"After Pushing to queue: {message.Account} - {message.Action} - {message.Subscriber} - {message.TransDate}");
         }
     }
 }
