@@ -39,5 +39,7 @@
         public string Country { get; set; }
 
         public string IP { get; set; }
+
+        public DateTime TransDate { get; set; }
     }
 }

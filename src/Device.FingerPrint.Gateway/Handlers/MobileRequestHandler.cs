@@ -3,6 +3,7 @@ using Device.FingerPrint.Gateway.Model;
 using Device.FingerPrint.Gateway.Services;
 using Fanex.Logging;
 using Newtonsoft.Json;
+using System.Text;
 
 namespace Device.FingerPrint.Gateway.Handlers
 {
@@ -35,7 +36,7 @@ namespace Device.FingerPrint.Gateway.Handlers
 
                             string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
 
-                            var transaction = JsonConvert.DeserializeObject<TransactionRequest>(decodedString);
+                            var transaction = JsonConvert.DeserializeObject<MobileTransactionModel>(decodedString);
 
                             if (transactionRequest != null && !string.IsNullOrWhiteSpace(transaction?.Subscriber) && !string.IsNullOrWhiteSpace(transaction.Account))
                             {
@@ -46,7 +47,11 @@ namespace Device.FingerPrint.Gateway.Handlers
 
                                 if (await this.subscriberService.ValidateAsync(transaction.Subscriber))
                                 {
+                                    transaction.TransDate = DateTime.Now;
+                                    request.Content = new StringContent(JsonConvert.SerializeObject(transaction), Encoding.UTF8, "application/json");
+
                                     return await base.SendAsync(request, cancellationToken);
+                                    
                                 }
                             }
                             else

@@ -28,28 +28,34 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
         }
 
         [HttpPost("FPS/InsertMobileTransaction")]
-        public IActionResult InsertTransactionAsync(MobileTransactionRequest request)
+        public IActionResult InsertTransactionAsync(MobileTransactionModel transaction)
         {
-            var transaction = TransformTransactionRequest(request);
+            if (transaction == null)
+            {
+                return BadRequest("Invalid transaction data.");
+            }
 
-            _ = PushToQueueAsync(transaction);
+            transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
+
+            PushToQueueAsync(transaction);
 
             return Ok();
         }
 
-        private MobileTransactionModel TransformTransactionRequest(MobileTransactionRequest request)
+        private MobileTransactionModel TransformTransactionRequest(MobileTransactionModel transaction)
         {
-            byte[] base64DecodedBytes = Convert.FromBase64String(request.Transaction);
+            //byte[] base64DecodedBytes = Convert.FromBase64String(request);
 
-            string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
+            //string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
 
-            var transaction = Newtonsoft.Json.JsonConvert.DeserializeObject<MobileTransactionModel>(decodedString);
+            //var transaction = Newtonsoft.Json.JsonConvert.DeserializeObject<MobileTransactionModel>(decodedString);
 
-            transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
+            //transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
+
             return transaction;
         }
 
-        private async Task PushToQueueAsync(MobileTransactionModel transactionRequest)
+        private void PushToQueueAsync(MobileTransactionModel transactionRequest)
         {
             var message = new MessageQueue
             {
@@ -58,7 +64,7 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 ActionResult = transactionRequest.ActionResult,
                 Subscriber = transactionRequest.Subscriber,
                 IP = transactionRequest.IP,
-                TransDate = DateTime.Now,
+                TransDate = transactionRequest.TransDate,
                 SubscriberDate = DateTime.Now,
                 Mobile = new MobileModel
                 {
@@ -76,15 +82,11 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                     SystemLanguage = transactionRequest.SystemLanguage,
                     Timezone = transactionRequest.Timezone
                 }
-            };
-
-            logger.Info($"Before Pushing to queue: {message.Account} - {message.Action} - {message.Subscriber} - {message.TransDate}");
+            };                        
 
             var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.MobileQueueName;
 
-            await massTransitProducer.SendAsync(message, queueAddress);
-
-            logger.Info($"After Pushing to queue: {message.Account} - {message.Action} - {message.Subscriber} - {message.TransDate}");
+            massTransitProducer.Send(message, queueAddress);            
         }
     }
 }
