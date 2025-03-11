@@ -4,6 +4,8 @@ using Device.FingerPrint.TransactionAPI.Model;
 using Device.FingerPrint.TransactionAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Fanex.Logging;
+using ONEbook.UM.Services;
+using System.Net;
 
 namespace Device.FingerPrint.TransactionAPI.Controllers
 {
@@ -35,24 +37,20 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 return BadRequest("Invalid transaction data.");
             }
 
-            transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
+            try
+            {
+                transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
 
-            PushToQueueAsync(transaction);
+                PushToQueueAsync(transaction);
 
-            return Ok();
-        }
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex.Message, ex);
 
-        private MobileTransactionModel TransformTransactionRequest(MobileTransactionModel transaction)
-        {
-            //byte[] base64DecodedBytes = Convert.FromBase64String(request);
-
-            //string decodedString = System.Text.Encoding.UTF8.GetString(base64DecodedBytes);
-
-            //var transaction = Newtonsoft.Json.JsonConvert.DeserializeObject<MobileTransactionModel>(decodedString);
-
-            //transaction.IP = HttpContext.Request.Headers["Fps-Forwarded-For"].ToString();
-
-            return transaction;
+                return StatusCode(StatusCodes.Status500InternalServerError);
+            }
         }
 
         private void PushToQueueAsync(MobileTransactionModel transactionRequest)
