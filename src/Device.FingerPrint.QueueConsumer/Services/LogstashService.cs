@@ -1,18 +1,15 @@
 ﻿using Device.FingerPrint.Core;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.QueueConsumer.Models;
-using Fanex.Logging.Extensions.Database;
+using Fanex.Logging;
 using Fanex.Logging.Extensions;
+using Fanex.Logging.Extensions.Database;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
-using Fanex.Logging;
-using System.Linq;
-using System.Transactions;
 
 namespace Device.FingerPrint.QueueConsumer.Services
 {
