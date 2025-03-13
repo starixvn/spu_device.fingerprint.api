@@ -11,7 +11,7 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
 
-        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19" };
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19", "2hcibc0926a" };
 
         public MobileRequestHandler(ISubscriberService subscriberService)
         {
