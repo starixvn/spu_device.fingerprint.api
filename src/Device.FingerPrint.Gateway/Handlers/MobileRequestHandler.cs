@@ -4,6 +4,7 @@ using Device.FingerPrint.Gateway.Services;
 using Fanex.Logging;
 using Newtonsoft.Json;
 using System.Text;
+using System.Transactions;
 
 namespace Device.FingerPrint.Gateway.Handlers
 {
@@ -22,9 +23,13 @@ namespace Device.FingerPrint.Gateway.Handlers
         {
             try
             {
+                
+
                 if (request != null && request.Content != null)
                 {
                     var content = await request.Content.ReadAsStringAsync();
+
+                    _ = LogService.InfoAsync($"Gateway Debug Mobile Transaction:\n {content}");
 
                     if (!string.IsNullOrWhiteSpace(content))
                     {
@@ -41,11 +46,6 @@ namespace Device.FingerPrint.Gateway.Handlers
                             if (transactionRequest != null && !string.IsNullOrWhiteSpace(transaction?.Subscriber) && !string.IsNullOrWhiteSpace(transaction.Account))
                             {
                                 if (DebugAccounts.Contains(transaction.Account.ToLower().Trim()))
-                                {
-                                    _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
-                                }
-
-                                if(transaction.Subscriber.ToLower().Trim() == "ibet")
                                 {
                                     _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
                                 }
