@@ -45,6 +45,11 @@ namespace Device.FingerPrint.Gateway.Handlers
                                     _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
                                 }
 
+                                if(transaction.Subscriber.ToLower().Trim() == "ibet")
+                                {
+                                    _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
+                                }
+
                                 if (await this.subscriberService.ValidateAsync(transaction.Subscriber))
                                 {
                                     transaction.TransDate = DateTime.Now;
