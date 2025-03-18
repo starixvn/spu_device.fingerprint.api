@@ -11,7 +11,7 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
 
-        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19", "2hcibc0926a" };
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19", "2hcibc0926a", "ibc0926a" };
 
         public MobileRequestHandler(ISubscriberService subscriberService)
         {
@@ -40,7 +40,7 @@ namespace Device.FingerPrint.Gateway.Handlers
 
                             if (transactionRequest != null && !string.IsNullOrWhiteSpace(transaction?.Subscriber) && !string.IsNullOrWhiteSpace(transaction.Account))
                             {
-                                if (DebugAccounts.Contains(transaction.Account.ToLower()))
+                                if (DebugAccounts.Contains(transaction.Account.ToLower().Trim()))
                                 {
                                     _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
                                 }
