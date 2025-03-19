@@ -285,10 +285,12 @@ namespace Device.FingerPrint.Core
 
         public static string SubStringUrl(string url)
         {
-            if(string.IsNullOrEmpty(url))
+            if (string.IsNullOrEmpty(url))
                 return null;
 
-            return url.IndexOf('?') != -1 ? url.Substring(0, url.IndexOf('?')) : url;
+            int cutIndex = url.IndexOfAny(new char[] { '?', '#' });
+
+            return cutIndex != -1 ? url.Substring(0, cutIndex) : url;
         }
 
         public static string StripUnicodeCharactersFromString(string inputValue)
