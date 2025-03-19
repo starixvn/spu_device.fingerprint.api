@@ -12,7 +12,7 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
 
-        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19", "2hcibc0926a", "ibc0926a" };
+        private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19", "2hcibc0926a" };
 
         public MobileRequestHandler(ISubscriberService subscriberService)
         {
@@ -28,8 +28,6 @@ namespace Device.FingerPrint.Gateway.Handlers
                 if (request != null && request.Content != null)
                 {
                     var content = await request.Content.ReadAsStringAsync();
-
-                    _ = LogService.InfoAsync($"Gateway Debug Mobile Transaction:\n {content}");
 
                     if (!string.IsNullOrWhiteSpace(content))
                     {
@@ -48,6 +46,11 @@ namespace Device.FingerPrint.Gateway.Handlers
                                 if (DebugAccounts.Contains(transaction.Account.ToLower().Trim()))
                                 {
                                     _ = LogService.InfoAsync($"Gateway Debug for Account:{transaction.Account}\n {JsonConvert.SerializeObject(transaction)}");
+                                }
+
+                                if (!string.IsNullOrEmpty(transaction.Exceptions))
+                                {
+                                    LogService.Error($"Mobile App Request Occurs Exception: {transaction.Exceptions}\n {JsonConvert.SerializeObject(transaction)}");
                                 }
 
                                 if (await this.subscriberService.ValidateAsync(transaction.Subscriber))
