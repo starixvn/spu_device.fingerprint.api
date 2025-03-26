@@ -36,8 +36,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
         }
         
-        [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]
-        [ServiceFilter(typeof(RequestCounterFilter))]
+        [HttpGet("GetTransactionBySubscriber/{subscriberName}/{trackingNumber}")]        
         public ActionResult<TransactionHistoryList> GetTransactionHistory(string subscriberName, long trackingNumber)
         {
 
@@ -99,8 +98,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
         
-        [HttpGet("GetAssociationByAccount/{subscriberName}/{account}")]
-        [ServiceFilter(typeof(RequestCounterFilter))]
+        [HttpGet("GetAssociationByAccount/{subscriberName}/{account}")]        
         public ActionResult<AssociationList> GetAssociationByAccount(string subscriberName, string account)
         {
             try
@@ -141,8 +139,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             }
         }
 
-        [HttpGet("GetAssociationByDevice/{subscriberName}/{device}/{fromDate}/{toDate}")]
-        [ServiceFilter(typeof(RequestCounterFilter))]
+        [HttpGet("GetAssociationByDevice/{subscriberName}/{device}/{fromDate}/{toDate}")]        
         public ActionResult<AssociationAccountUsageList> GetAssociationByDevice(string subscriberName, string device, DateTime fromDate, DateTime toDate)
         {
             try

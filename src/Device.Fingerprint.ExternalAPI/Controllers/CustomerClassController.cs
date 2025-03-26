@@ -24,8 +24,7 @@ namespace Device.Fingerprint.ExternalAPI.Controllers
         }
 
 
-        [HttpGet("GetRiskLevelBySubscriber/{subscriberName}/{lastId}")]
-        [ServiceFilter(typeof(RequestCounterFilter))]
+        [HttpGet("GetRiskLevelBySubscriber/{subscriberName}/{lastId}")]        
         public ActionResult<CustomerClassRiskLevelModel> GetRiskLevelBySubscriber(string subscriberName, long lastId)
         {
             try
