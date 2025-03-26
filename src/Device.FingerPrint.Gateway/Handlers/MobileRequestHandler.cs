@@ -50,7 +50,7 @@ namespace Device.FingerPrint.Gateway.Handlers
 
                                 if (!string.IsNullOrEmpty(transaction.Exceptions))
                                 {
-                                    LogService.Error($"Mobile App Request Occurs Exception: {transaction.Exceptions}\n {JsonConvert.SerializeObject(transaction)}");
+                                    _ = LogService.InfoAsync($"Mobile App Request Occurs Exception: {transaction.Exceptions}\n {JsonConvert.SerializeObject(transaction)}");
                                 }
 
                                 if (await this.subscriberService.ValidateAsync(transaction.Subscriber))
