@@ -1,4 +1,4 @@
-﻿using Microsoft.Ajax.Utilities;
+﻿using NUglify;
 using System.Text;
 
 namespace Device.Identification.Optimization
@@ -10,8 +10,6 @@ namespace Device.Identification.Optimization
 
     public class BundleBuilder : IBundleBuilder
     {
-        private static readonly Minifier _minifier = new();
-
         static BundleBuilder()
         {
             Instance = new BundleBuilder();
@@ -34,7 +32,12 @@ namespace Device.Identification.Optimization
                 // Minify content if optimization is enabled
                 if (context.EnableOptimization)
                 {
-                    bundleItemContent = _minifier.MinifyJavaScript(bundleItemContent);
+                    var minifiedResult = Uglify.Js(bundleItemContent);
+                    if (minifiedResult.HasErrors)
+                    {
+                        throw new InvalidOperationException("Error minifying JavaScript: " + string.Join(", ", minifiedResult.Errors));
+                    }
+                    bundleItemContent = minifiedResult.Code;
                 }
 
                 stringBuilder.Append(bundleItemContent);
