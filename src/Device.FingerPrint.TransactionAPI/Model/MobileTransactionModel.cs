@@ -14,6 +14,8 @@
 
         public string AndroidCode { get; set; }
 
+        public string MachineCode { get; set; }
+
         public string CustomCode { get; set; }
 
         public string MediaDRMCode { get; set; }
@@ -37,5 +39,7 @@
         public string Country { get; set; }
 
         public string IP { get; set; }
+
+        public DateTime TransDate { get; set; }
     }
 }

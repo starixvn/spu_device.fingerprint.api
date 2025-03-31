@@ -136,7 +136,7 @@
                 SubscriberId = transactionRequest.SubscriberId,
                 IP = transactionRequest.Ip,
                 FakeIP = transactionRequest.FakeIp,
-                TransDate = DateTime.Now,
+                TransDate = transactionRequest.TransDate,
                 SubscriberDate = DateTime.Now,
                 Token = transactionRequest.Token,
                 Recaptcha = "",
