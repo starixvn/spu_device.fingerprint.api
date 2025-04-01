@@ -1,6 +1,5 @@
 using Device.Identification;
 using Device.Identification.ActivatorScript;
-using Device.Identification.Optimization;
 using Device.Identification.Services;
 using Fanex.Data;
 using Fanex.Data.SqlServer;
@@ -12,7 +11,6 @@ using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
-using Sentry;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,16 +22,6 @@ builder.Services.AddCors(opt =>
         .AllowAnyMethod()
         .AllowAnyHeader());
 });
-
-//builder.WebHost.UseKestrel()
-//    .ConfigureAppConfiguration((hostingContext, config) =>
-//    {
-//        var env = hostingContext.HostingEnvironment;
-
-//        config.SetBasePath(env.ContentRootPath)
-//              .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-//              .AddEnvironmentVariables();
-//    });
 
 var appSettings = new AppSettings(builder.Configuration);
 builder.Services.AddSingleton<IAppSettings>(appSettings);
@@ -100,11 +88,12 @@ app.UseHealthChecks("/healthz", new HealthCheckOptions
 });
 
 var bundleConfig = app.Services.GetRequiredService<BundleConfig>();
-bundleConfig.RegisterBundles();
+bundleConfig.EnableOptimization = !app.Environment.IsDevelopment();
 
-var memoryCache = app.Services.GetRequiredService<IMemoryCache>();
-var fileProvider = app.Services.GetRequiredService<IFileProvider>();
-BundleTable.Initialize(memoryCache, fileProvider);
+//bundleConfig.RegisterBundles();
+
+app.Services.GetRequiredService<IMemoryCache>();
+app.Services.GetRequiredService<IFileProvider>();
 
 app.UseHttpsRedirection();
 

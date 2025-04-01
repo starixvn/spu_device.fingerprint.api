@@ -21,6 +21,7 @@
         private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper;
 
         [HttpGet("activator.ashx")]
+        [HttpGet("act")]
         public async Task ActivatorAshx()
         {
             try
@@ -34,6 +35,7 @@
         }
 
         [HttpGet("tkexp.ashx")]
+        [HttpGet("tk")]
         public async Task TKexpAshx()
         {
             try
@@ -49,7 +51,8 @@
         }
 
         [HttpGet("comm.ashx")]
-        public async Task CommAshx()
+        [HttpGet("comm")]
+        public async Task CommonScript()
         {
             try
             {
@@ -65,7 +68,8 @@
         }
 
         [HttpGet("ec.ashx")]
-        public async Task EcAshx()
+        [HttpGet("ec")]
+        public async Task EverCookie()
         {
             try
             {

@@ -211,10 +211,8 @@ namespace Device.Identification.Services
         private async Task WriteContent(string content)
         {
             Response.ContentType = "text/javascript";
-            if (BundleConfig.EnableOptimization)
-            {
-                content = MinifyJavaScript(content);
-            }
+
+            content = MinifyJavaScript(content);
 
             await Response.WriteAsync(content + "\n");
         }
