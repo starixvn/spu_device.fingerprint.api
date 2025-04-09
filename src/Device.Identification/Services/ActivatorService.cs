@@ -1,4 +1,5 @@
-﻿using Device.Identification.ActivatorScript;
+﻿using Azure.Core;
+using Device.Identification.ActivatorScript;
 using Device.Identification.Factory;
 using Microsoft.Net.Http.Headers;
 
@@ -84,7 +85,7 @@ namespace Device.Identification.Services
             var apiAction = Request.Query["api"].ToString() ?? string.Empty;
             var accept = Request.Headers.Accept.ToString();
             var headers = string.Join(",", GetHeaders());
-            var domainName = $"{Request.Scheme}://{Request.Host}";
+            var domainName = Request.Host.Host;
 
             var scriptFactory = _scriptFactory.CreateConfigScript(
                 cachedDeviceId,
