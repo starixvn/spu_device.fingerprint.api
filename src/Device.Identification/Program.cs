@@ -71,7 +71,7 @@ ExceptionHandler
     .UseConfig(new LoggingConfiguration())
     .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-LogService.Info("Device.Identification Start!");
+LogService.Info($"Device.Identification Start! {DateTime.Now}");
 
 var app = builder.Build();
 app.UseStaticFiles();

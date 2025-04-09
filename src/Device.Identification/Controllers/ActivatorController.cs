@@ -82,6 +82,22 @@
             }
         }
 
+        [HttpGet("logtest")]
+        public IActionResult LogTest()
+        {
+            try
+            {
+                LogService.Error("test message");
+
+                return Ok(true);
+            }
+            catch (Exception ex)
+            {
+                return Ok(false);
+            }
+            
+        }
+
         private async Task ResponseEmptyContent()
         {
             var content = string.Empty;
