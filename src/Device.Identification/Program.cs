@@ -88,7 +88,7 @@ app.UseHealthChecks("/healthz", new HealthCheckOptions
 });
 
 var bundleConfig = app.Services.GetRequiredService<BundleConfig>();
-bundleConfig.EnableOptimization = !app.Environment.IsDevelopment();
+bundleConfig.EnableOptimization = true;
 
 //bundleConfig.RegisterBundles();
 

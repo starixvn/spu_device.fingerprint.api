@@ -2,6 +2,7 @@
 using Device.Identification.ActivatorScript;
 using Device.Identification.Factory;
 using Microsoft.Net.Http.Headers;
+using System.Security.AccessControl;
 
 namespace Device.Identification.Services
 {
@@ -85,14 +86,14 @@ namespace Device.Identification.Services
             var apiAction = Request.Query["api"].ToString() ?? string.Empty;
             var accept = Request.Headers.Accept.ToString();
             var headers = string.Join(",", GetHeaders());
-            var domainName = Request.Host.Host;
+            var domainName = Request.Host.Host == "localhost" ? Request.Host.Host + ":" + Request.Host.Port : Request.Host.Host;
 
             var scriptFactory = _scriptFactory.CreateConfigScript(
-                cachedDeviceId,
-                defaultDeviceId,
-                accept,
-                headers,
-                domainName,
+            cachedDeviceId,
+            defaultDeviceId,
+            accept,
+            headers,
+            domainName,
                 fdiKey);
             var subscriberScript = scriptFactory.CreateSubscriberScript(apiAction);
 

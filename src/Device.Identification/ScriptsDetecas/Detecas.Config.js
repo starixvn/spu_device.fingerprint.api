@@ -102,11 +102,11 @@ Detecas.Config = {
                 console.log(exception);
             }
 
-            loadCommonScript(Detecas.Config.cdn + "/comm.ashx");
+            loadCommonScript(Detecas.Config.cdn + "/comm");
         };
 
         document.getElementsByTagName("head")[0].appendChild(scriptTkexp);
     }    
 
-    loadTkScript(Detecas.Config.cdn + "/tkexp.ashx");
+    loadTkScript(Detecas.Config.cdn + "/tk");
 })(window, document, Detecas.Config);

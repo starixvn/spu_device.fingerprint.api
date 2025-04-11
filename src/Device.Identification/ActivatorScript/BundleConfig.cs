@@ -2,11 +2,14 @@
 {
     using Microsoft.Extensions.Caching.Memory;
     using Microsoft.Extensions.FileProviders;
+    using Newtonsoft.Json;
     using NUglify;
+    using NUglify.JavaScript;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using System.Transactions;
 
     public class BundleConfig
     {
@@ -32,7 +35,7 @@
                                         "/Detecas.Md5.js",
                                         "/Detecas.Rc4.js",
                                         "/Detecas.Sha1.js",
-                                        "/Detecas.ua-parser-js.js",
+                                        //"/Detecas.ua-parser-js.js",
                                         "/Detecas.BotD.js",
                                         "/Detecas.Debug.js",
                                         "/Detecas.Geolocation.js",
@@ -67,7 +70,7 @@
 
             return _cache.GetOrCreate($"Bundle_{bundleName}", entry =>
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1);
                 var stringBuilder = new StringBuilder();
 
                 foreach (var file in files)
@@ -82,17 +85,30 @@
                     using var reader = new StreamReader(stream);
                     var content = reader.ReadToEnd();
 
-                    if (_enableOptimization)
-                    {
-                        var minifyResult = Uglify.Js(content);
-
-                        if (!minifyResult.HasErrors)
-                        {
-                            content = minifyResult.Code;
-                        }                       
-                    }
-
                     stringBuilder.AppendLine(content);
+                }
+
+                if (_enableOptimization)
+                {
+                    var codeSettings = new CodeSettings()
+                    {
+                        StrictMode = false,
+                        PreserveImportantComments = false,
+                        TermSemicolons = true
+                    };
+
+                    var originalCode = stringBuilder.ToString();
+
+                    var minifyResult = Uglify.Js(originalCode, codeSettings);
+
+                    if (!minifyResult.HasErrors)
+                    {
+                        return minifyResult.Code;
+                    }
+                    else
+                    {
+                        throw new Exception(JsonConvert.SerializeObject(minifyResult.Errors[0].ToString()));
+                    }
                 }
 
                 return stringBuilder.ToString();

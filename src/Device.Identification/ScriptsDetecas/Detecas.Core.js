@@ -39,7 +39,7 @@ Detecas.Core = (function (window, document, common, cookie, rc4, hex, base64, js
         let script = document.createElement("SCRIPT");
         script.type = "text/javascript";
         script.id = "evercookie" + config.ip; // Mark version for removal
-        script.src = config.host + "/ec.ashx?v=" + version + "&" + params;
+        script.src = config.host + "/ec?v=" + version + "&" + params;
         script.async = true;
        // script.setAttribute("crossorigin", "anonymous");
         document.getElementsByTagName("head")[0].appendChild(script);
