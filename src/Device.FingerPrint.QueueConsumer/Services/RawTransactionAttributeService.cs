@@ -390,6 +390,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (HasData(fingerprintExtra))
             {
+                if (!string.IsNullOrEmpty(fingerprintExtra.UserAgent))
+                {
+                    fingerprintExtra.UserAgent = CleanUserAgentFuzzy(fingerprintExtra.UserAgent);
+                }
                 var fingerprintExtraModel = new FPFingerprintExtraModel(fingerprintExtra, crypto);
                 result.FPFingerPrintExtraCode = fingerprintExtraModel.Code;
                 result.FPFingerPrintExtraAttribute = fingerprintExtraModel.AttributeModel;
@@ -530,10 +534,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
 
             var trackingPatterns = new List<Regex>
             {
-                new Regex(@"\s+UUID\/[a-zA-Z0-9-]+", RegexOptions.Compiled),
-                new Regex(@"\s+HTTP_BB_FORWARDED\/[^\s]+", RegexOptions.Compiled),
-                new Regex(@"\s+FalconTag\/[^\s]+", RegexOptions.Compiled),
-                new Regex(@"\s+SessionId\/[a-zA-Z0-9]+", RegexOptions.Compiled)
+                new (@"\s+UUID\/[a-zA-Z0-9-]+", RegexOptions.Compiled),
+                new (@"\s+HTTP_BB_FORWARDED\/[^\s]+", RegexOptions.Compiled),
+                new (@"\s+FalconTag\/[^\s]+", RegexOptions.Compiled),
+                new (@"\s+SessionId\/[a-zA-Z0-9]+", RegexOptions.Compiled)
             };
 
             var cleanedUA = userAgent;
