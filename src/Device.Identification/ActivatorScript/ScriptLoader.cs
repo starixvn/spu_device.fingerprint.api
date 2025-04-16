@@ -16,7 +16,7 @@
 
         public string LoadConfigScript(string cachedDeviceId, string defaultDeviceId, string accept, string headers, string domainName, string fdiKey)
         {
-            var configScript = _bundleConfig.GetBundle("config");
+            var configScript = _bundleConfig.GetBundle("creditConfig");
             var userHostAddress = Utilities.GetUserHostAddress();
             var ip2Long = IP2Long(userHostAddress);
 

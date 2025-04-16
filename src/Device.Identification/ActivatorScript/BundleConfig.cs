@@ -26,6 +26,7 @@
 
             _bundleDefinitions = new Dictionary<string, List<string>>
                 {
+                    { "creditConfig", new List<string> {"/CreditScript/Gfp.Config.js", "/CreditScript/Gfp.Index.js" } },
                     { "config", new List<string> { "/fp.js", "/Detecas.Config.js" } },
                     { "api", new List<string> { "/Detecas.Api.js" } },
                     { "common", new List<string> { "/Detecas.Base64.js",
