@@ -152,7 +152,7 @@ builder.Services.AddSwaggerGen(swagger =>
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() || app.Environment.IsEnvironment("LOCAL") || app.Environment.IsEnvironment("UAT"))
+if (app.Environment.IsDevelopment() || appSettings.Environment == "LOCAL" || appSettings.Environment == "UAT")
 {
     app.UseSwagger();
     app.UseSwaggerUI();
