@@ -10,7 +10,11 @@ namespace Device.Fingerprint.InternalAPI.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (!context.Request.Path.Value.Contains("generatetoken/audience") && !context.Request.Path.Value.Contains("whoami"))
+            var pathValue = context.Request.Path.Value;
+
+            if (!string.IsNullOrEmpty(pathValue) &&
+                !pathValue.Contains("generatetoken/audience") &&
+                !pathValue.Contains("whoami"))
             {
                 var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ').Last();
 
@@ -33,16 +37,18 @@ namespace Device.Fingerprint.InternalAPI.Middleware
                 var jwtSetting = appSettings.Configuration.GetSection("AppConfig:JWT:APIConfig").Get<IEnumerable<APIConfigModel>>();
                 var path = context.Request.Path.Value;
 
-                var matchedApi = jwtSetting.FirstOrDefault(item => path.StartsWith(item.API));
-
-                if (matchedApi != null && matchedApi.Token == token)
+                if (!string.IsNullOrEmpty(path))
                 {
-                    return true;
+                    var matchedApi = jwtSetting.FirstOrDefault(item => path.StartsWith(item.API));
+
+                    if (matchedApi != null && matchedApi.Token == token)
+                    {
+                        return true;
+                    }
                 }
             }
 
             return false;
-
         }
     }
 }
