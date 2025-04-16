@@ -15,6 +15,7 @@ using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Device.FingerPrint.QueueConsumer.Services
@@ -376,6 +377,10 @@ namespace Device.FingerPrint.QueueConsumer.Services
         {
             if (HasData(oldFingerPrintAttribute))
             {
+                if (!string.IsNullOrEmpty(oldFingerPrintAttribute.UserAgent))
+                {
+                    oldFingerPrintAttribute.UserAgent = CleanUserAgentFuzzy(oldFingerPrintAttribute.UserAgent);
+                }
                 var oldFingerprintModel = new FPOldFingerprintModel(oldFingerPrintAttribute, crypto);
                 result.FPFingerPrintOldCode = oldFingerprintModel.Code;
             }
@@ -514,6 +519,33 @@ namespace Device.FingerPrint.QueueConsumer.Services
             }
 
             return Guid.TryParse(decryptedText, out _);
+        }
+
+        private static string CleanUserAgentFuzzy(string userAgent)
+        {
+            if (string.IsNullOrEmpty(userAgent))
+            {
+                return userAgent;
+            }
+
+            var trackingPatterns = new List<Regex>
+            {
+                new Regex(@"\s+UUID\/[a-zA-Z0-9-]+", RegexOptions.Compiled),
+                new Regex(@"\s+HTTP_BB_FORWARDED\/[^\s]+", RegexOptions.Compiled),
+                new Regex(@"\s+FalconTag\/[^\s]+", RegexOptions.Compiled),
+                new Regex(@"\s+SessionId\/[a-zA-Z0-9]+", RegexOptions.Compiled)
+            };
+
+            var cleanedUA = userAgent;
+
+            foreach (var pattern in trackingPatterns)
+            {
+                cleanedUA = pattern.Replace(cleanedUA, string.Empty);
+            }
+
+            cleanedUA = Regex.Replace(cleanedUA, @"\s*\[[^\]]*(?:\]|$)", string.Empty);
+
+            return Regex.Replace(cleanedUA, @"\s{2,}", " ").Trim();
         }
 
         #region Log Info
