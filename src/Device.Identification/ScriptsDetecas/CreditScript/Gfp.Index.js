@@ -150,7 +150,8 @@
     //}
 
     function getEverTagging() {
-        if (gfpCandy && typeof gfpCandy.getStorages === 'function') {
+        console.log('Credit script!');
+        if (typeof gfpCandy !== 'undefined' && typeof gfpCandy.getStorages === 'function') {
             gfpCandy
                 .getStorages()
                 .then(function (storageValues) {
@@ -190,6 +191,27 @@
         }
     }
 
+    function sendXHRWithCallback(method, url, data, callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && callback && typeof callback === 'function') {
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    callback(null, xhr.responseText);
+                } else {
+                    callback(new Error(xhr.statusText));
+                }
+            }
+        };
+
+        if (method === "POST" && data) {
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.send(data);
+        } else {
+            xhr.send();
+        }
+    }
+
     function init() {
 
         inject(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
@@ -207,15 +229,14 @@
             .then(function () {
                 loadScript(pickleConfig.cdn + "/comm")
                     .then(function () {
-                        Detecas.Core.start();
-
+                        GfpPickle.Core.start();
                     })
-                    .catch(function () {
-                        console.error('Failed to load credit script');
+                    .catch(function (ex) {
+                        console.error('Failed to load credit script:', ex.message);
                     });
             })
-            .catch(function () {
-                console.error('Failed to load token script');
+            .catch(function (ex) {
+                console.error('Failed to load token script', ex.message);
             });
 
         loadScript(spotConfig.apiUrl + '/s/c/r/t')
@@ -239,18 +260,18 @@
 
                         var data = {
                             "dt": encodeData,
-                            "sk": getValueByHiddenField(fdiElementKey),
-                            "sv": version
+                            "sk": getValueByHiddenField(spotConfig.fdiElementKey),
+                            "sv": spotConfig.version
                         };
 
-                        fp.post(spotConfig.portalAPIUrl + '/f/p', data);
+                        sendXHRWithCallback("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), null);
                     })
-                    .catch(function () {
-                        console.error('Failed to load credit script');
+                    .catch (function (ex) {
+                        console.error('Failed to load credit script:', ex.message);
                     });
             })
-            .catch(function () {
-                console.error('Failed to load token script');
+            .catch(function (ex) {
+                console.error('Failed to load token script:', ex.message);
             });
     }
 
