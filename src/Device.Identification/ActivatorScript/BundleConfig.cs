@@ -9,20 +9,22 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using System.Transactions;
 
     public class BundleConfig
     {
         private readonly IMemoryCache _cache;
         private readonly IFileProvider _fileProvider;
+        private readonly IAppSettings _appSettings;
+
         private bool _enableOptimization;
 
         private readonly Dictionary<string, List<string>> _bundleDefinitions;
 
-        public BundleConfig(IFileProvider fileProvider, IMemoryCache cache)
+        public BundleConfig(IFileProvider fileProvider, IMemoryCache cache, IAppSettings appSettings)
         {
             _cache = cache;
             _fileProvider = fileProvider;
+            _appSettings = appSettings;
 
             _bundleDefinitions = new Dictionary<string, List<string>>
                 {
@@ -38,7 +40,7 @@
         {
             get { return _enableOptimization; }
             set { _enableOptimization = value; }
-        }       
+        }
 
         public string GetBundle(string bundleName)
         {
@@ -49,7 +51,7 @@
 
             return _cache.GetOrCreate($"Bundle_{bundleName}", entry =>
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(_appSettings.MemoryCacheTimeoutInSeconds);
                 var stringBuilder = new StringBuilder();
 
                 foreach (var file in files)

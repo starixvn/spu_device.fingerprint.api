@@ -26,6 +26,8 @@ namespace Device.Identification
 
         int CachingExpiredSeconds { get; }
 
+        int MemoryCacheTimeoutInSeconds { get; }
+
         bool IsDisabledDI { get; }
 
         string FPAPIUrl { get; }
@@ -72,6 +74,8 @@ namespace Device.Identification
 
         private readonly int cachingExpiredSeconds;
 
+        private readonly int memoryCacheTimeoutInSeconds;
+
         private readonly bool isDisabledDI;
 
         private readonly string fpAPIUrl;
@@ -116,6 +120,8 @@ namespace Device.Identification
 
             cachingExpiredSeconds = Convert.ToInt32(GetValue<string>("AppConfig:CachingExpiredSeconds") ?? "0");
 
+            memoryCacheTimeoutInSeconds = Convert.ToInt32(GetValue<string>("AppConfig:MemoryCacheTimeoutInSeconds") ?? "1");
+
             isDisabledDI = Convert.ToBoolean(GetValue<string>("AppConfig:DisableDIScript") ?? "false");
 
             fpAPIUrl = GetValue<string>("AppConfig:FPAPIUrl") ?? string.Empty;
@@ -156,6 +162,8 @@ namespace Device.Identification
         public string Separator => separator;
 
         public int CachingExpiredSeconds => cachingExpiredSeconds;
+
+        public int MemoryCacheTimeoutInSeconds => memoryCacheTimeoutInSeconds;
 
         public bool IsDisabledDI => isDisabledDI;
 
