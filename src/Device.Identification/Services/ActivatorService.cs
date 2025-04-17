@@ -94,7 +94,8 @@ namespace Device.Identification.Services
                 headers,
                 domainName,
                 fdiKey);
-            var subscriberScript = scriptFactory.CreateDirectSubscriberScript();
+
+            var subscriberScript = scriptFactory.CreateConfigScript();
 
             await subscriberScript.WriteScript(Response);
         }

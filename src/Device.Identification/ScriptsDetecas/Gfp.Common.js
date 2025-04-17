@@ -2072,11 +2072,10 @@ GfpPickle.Geolocation = (function (window, document, debug) {
 // ---- /Detecas.Common.js ----
 /* global GfpPickle */
 
-GfpPickle.Common = (function (window, document, navigator, rc4, hex, base64, json, config, battery, geolocation, debug) {
+GfpPickle.Common = (function (window, document, navigator, rc4, hex, base64, json, config, geolocation, debug) {
     "use strict";
 
     geolocation.start();
-    //battery.start();
 
     function isValidObject(obj) {
         return typeof (obj) !== "undefined" && !!obj;
@@ -2108,8 +2107,6 @@ GfpPickle.Common = (function (window, document, navigator, rc4, hex, base64, jso
             capturedDate: config.capturedDate,
             geolocation: geolocation.getGeolocation(),
             version: config.version
-            //botD: botD
-            //battery: battery.getBatteryInfo(),            
         };
         var jsonString = json.stringify(collectedDeviceInfo);
         var base64String = base64.encode(jsonString);
@@ -2181,7 +2178,7 @@ GfpPickle.Common = (function (window, document, navigator, rc4, hex, base64, jso
         isValidDeviceId: isValidDeviceId,
         collectDeviceInfoToInjectToClient: collectDeviceInfoToInjectToClient
     };
-})(window, document, navigator, GfpPickle.Rc4, GfpPickle.Hex, GfpPickle.Base64, GfpPickle.JSON, GfpPickle.Config, GfpPickle.Battery, GfpPickle.Geolocation, GfpPickle.Debug);
+})(window, document, navigator, GfpPickle.Rc4, GfpPickle.Hex, GfpPickle.Base64, GfpPickle.JSON, GfpPickle.Config, GfpPickle.Geolocation, GfpPickle.Debug);
 
 // ---- /Detecas.Cookie.js ----
 /* global GfpPickle */
@@ -6859,14 +6856,7 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
         try {
             currentDeviceId = deviceId;
             if (common.isValidDeviceId(deviceId)) {
-                if (typeof window.API_CALLBACK === "function") { // api subscriber
-                    var collectedDeviceInfo = common.collectDeviceInfoToInjectToClient(deviceId, deviceInformation.fingerprint);
-                    window.API_CALLBACK.call(window, collectedDeviceInfo);
-                } else {
-                    injectDeviceInfoToClient();
-                    //injectBotDToClient();
-                }
-
+                injectDeviceInfoToClient();
 
                 if (deviceDetail.isNewDeviceDetail(deviceInformation.deviceDetail)) {
                     deviceDetail.insertDeviceDetail(deviceInformation.deviceDetail);
@@ -6946,6 +6936,7 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
             debug.addException(exception, "injectDevice");
         }
     }
+
 
     return {
         start: start,

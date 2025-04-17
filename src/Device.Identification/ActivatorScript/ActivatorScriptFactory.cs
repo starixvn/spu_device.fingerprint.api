@@ -28,38 +28,20 @@
             return _configScript;
         }
 
-        public ISubscriberScript CreateDirectSubscriberScript()
+        public SubscriberScript CreateConfigScript()
         {
-            return new DirectSubscriberScript
+            return new SubscriberScript
             {
                 ConfigScript = _configScript
             };
         }
 
-        /// <summary>
-        /// Creates a common subscriber script with predefined scripts.
-        /// </summary>
-        /// <returns>An instance of ISubscriberScript containing common scripts.</returns>
-        public ISubscriberScript CreateSubscriberCommonScript()
+        public SubscriberScript CreateCommonScript()
         {
             var commonScripts = _bundleConfig.GetBundle("common");
-            return new ApiSubscriberScript
+            return new SubscriberScript
             {
                 CommonScript = commonScripts
-            };
-        }
-
-        /// <summary>
-        /// Creates a token-based subscriber script.
-        /// </summary>
-        /// <returns>An instance of TokenSubscriberScript with token scripts.</returns>
-        public ISubscriberScript CreateSubscriberTokenScript()
-        {
-            var tokenScript = _scriptLoader.LoadTokenScript();
-
-            return new TokenSubscriberScript
-            {
-                TokenScript = tokenScript
             };
         }
     }

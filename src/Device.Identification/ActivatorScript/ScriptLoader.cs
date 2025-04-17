@@ -79,28 +79,6 @@
             return _numberGenerator.GetNextNumber();
         }
 
-        public string LoadTokenScript()
-        {
-            var tokenScript = _bundleConfig.GetBundle("token");
-            tokenScript = tokenScript.Replace("__jwtToken__", GenerateJwtToken());
-
-            return tokenScript;
-        }
-
-        public string GenerateJwtToken()
-        {
-            if (!_appSettings.DisableJsChallenge)
-            {
-                var tokenHandler = new JwtSecurityTokenHandler();
-                var tokenDescriptor = _jwtToken.GetSecurityTokenDescriptor();
-
-                var token = tokenHandler.CreateToken(tokenDescriptor);
-                return tokenHandler.WriteToken(token);
-            }
-
-            return string.Empty;
-        }
-
         public string GetJsChallengeAPIUrl()
         {
             if (!_appSettings.DisableJsChallenge)

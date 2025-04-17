@@ -34,29 +34,13 @@
             }
         }
 
-        [HttpGet("tkexp.ashx")]
-        [HttpGet("tk")]
-        public async Task TKexpAshx()
-        {
-            try
-            {
-                var subscriberScript = _scriptFactory.CreateSubscriberTokenScript();
-
-                await subscriberScript.WriteScript(Response);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(Utilities.GetLogMessage(ex));
-            }
-        }
-
         [HttpGet("comm.ashx")]
         [HttpGet("comm")]
         public async Task CommonScript()
         {
             try
             {
-                var subscriberScript = _scriptFactory.CreateSubscriberCommonScript();
+                var subscriberScript = _scriptFactory.CreateCommonScript();
                 _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
 
                 await subscriberScript.WriteScript(Response);

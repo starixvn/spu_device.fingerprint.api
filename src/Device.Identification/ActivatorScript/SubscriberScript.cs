@@ -2,7 +2,7 @@
 
 namespace Device.Identification.ActivatorScript
 {
-    public class DirectSubscriberScript : ISubscriberScript
+    public class SubscriberScript
     {
         public string? ConfigScript { get; set; }
 
