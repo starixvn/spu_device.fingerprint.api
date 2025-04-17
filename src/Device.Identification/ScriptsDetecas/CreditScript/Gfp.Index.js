@@ -111,44 +111,6 @@
         }
         return platform;
     }
-
-    //function getCookie(key) {
-    //    var cookies = document.cookie.split('; ');
-
-    //    for (var i = 0; i < cookies.length; i++) {
-    //        var cookieParts = cookies[i].split('=');
-    //        var cookieName = cookieParts[0];
-    //        var cookieValue = cookieParts[1];
-
-    //        cookieName = cookieName.trim();
-    //        if (cookieName === key) {
-    //            return decodeURIComponent(cookieValue);
-    //        }
-    //    }
-
-    //    return "";
-    //}
-    //function sendXHRWith(method, url, data, callback) {
-    //    var xhr = new XMLHttpRequest();
-    //    xhr.open(method, url, true);
-    //    xhr.onreadystatechange = function () {
-    //        if (xhr.readyState === 4 && callback && typeof callback === 'function') {
-    //            if (xhr.status >= 200 && xhr.status < 300) {
-    //                callback(null, xhr.responseText);
-    //            } else {
-    //                callback(new Error(xhr.statusText));
-    //            }
-    //        }
-    //    };
-
-    //    if (method === "POST" && data) {
-    //        xhr.setRequestHeader("Content-Type", "application/json");
-    //        xhr.send(data);
-    //    } else {
-    //        xhr.send();
-    //    }
-    //}
-
     function getEverTagging() {
         console.log('Credit script!');
         if (typeof gfpCandy !== 'undefined' && typeof gfpCandy.getStorages === 'function') {
@@ -211,6 +173,41 @@
             xhr.send();
         }
     }
+    function fdiStart() {
+        loadScript(spotConfig.apiUrl + '/s/f/p')
+            .then(function () {
+                if (typeof gfpCode !== 'undefined' && typeof gfpCode.getResult == 'function'
+                    && typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.hashMD5 == 'function') {
+                    return gfpCode.getResult(GfpPickle.Mask.hashMD5);
+                }
+            })
+            .then(function (fpResult) {
+                var rawData = {
+                    "Platform": getPlatform()
+                };
+                if (fpResult) {
+                    rawData.Attributes = fpResult["Properties"];
+                }
+
+                if (typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.encode == 'function') {
+                    var encodeData = GfpPickle.Mask.encode(JSON.stringify(rawData), spotConfig.encodeKey);
+                    var data = {
+                        "dt": encodeData,
+                        "sk": getValueByHiddenField(spotConfig.fdiElementKey),
+                        "sv": spotConfig.version
+                    };
+
+                    sendXHRWithCallback("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), null);
+                }
+                else {
+                    console.error('GfpPickle.Mask is not defined or does not have encode function.');
+                }
+            })
+            .catch(function (ex) {
+                console.error('Failed to load credit script:', ex.message);
+            });
+    }
+
 
     function init() {
         inject(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
@@ -220,44 +217,10 @@
         loadScript(pickleConfig.cdn + "/comm")
             .then(function () {
                 GfpPickle.Core.start();
+                fdiStart();
             })
             .catch(function (ex) {
                 console.error('Failed to load credit script:', ex.message);
-            });
-
-        loadScript(spotConfig.apiUrl + '/s/c/r/t')
-            .then(function () {
-                loadScript(spotConfig.apiUrl + '/s/f/p')
-                    .then(function () {
-                        if (gfpCode && typeof gfpCode.getResult == 'function'
-                            && gfpMask && typeof gfpMask.hashMD5 == 'function') {
-                            return gfpCode.getResult(gfpMask.hashMD5);
-                        }
-                    })
-                    .then(function (fpResult) {
-                        var rawData = {
-                            "Platform": getPlatform()
-                        };
-                        if (fpResult) {
-                            rawData.Attributes = fpResult["Properties"];
-                        }
-
-                        var encodeData = gfpMask.encode(JSON.stringify(rawData), spotConfig.encodeKey);
-
-                        var data = {
-                            "dt": encodeData,
-                            "sk": getValueByHiddenField(spotConfig.fdiElementKey),
-                            "sv": spotConfig.version
-                        };
-
-                        sendXHRWithCallback("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), null);
-                    })
-                    .catch (function (ex) {
-                        console.error('Failed to load credit script:', ex.message);
-                    });
-            })
-            .catch(function (ex) {
-                console.error('Failed to load token script:', ex.message);
             });
     }
 

@@ -1,4 +1,4 @@
-var gfpCandy = (function (exports) {
+GfpPickle.Candy = (function (exports) {
     'use strict';
 
     var cookieKey = 'gfp';
