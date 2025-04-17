@@ -79,14 +79,6 @@
             return _numberGenerator.GetNextNumber();
         }
 
-        public string LoadApiScript(string apiAction)
-        {
-            var apiScript = _bundleConfig.GetBundle("api");
-            apiScript = apiScript.Replace("__action__", HttpUtility.JavaScriptStringEncode(apiAction));
-
-            return apiScript;
-        }
-
         public string LoadTokenScript()
         {
             var tokenScript = _bundleConfig.GetBundle("token");

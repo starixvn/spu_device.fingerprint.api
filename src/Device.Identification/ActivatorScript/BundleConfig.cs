@@ -9,30 +9,26 @@
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
+    using System.Transactions;
 
     public class BundleConfig
     {
         private readonly IMemoryCache _cache;
         private readonly IFileProvider _fileProvider;
-        private readonly IAppSettings _appSettings;
-
         private bool _enableOptimization;
 
         private readonly Dictionary<string, List<string>> _bundleDefinitions;
 
-        public BundleConfig(IFileProvider fileProvider, IMemoryCache cache, IAppSettings appSettings)
+        public BundleConfig(IFileProvider fileProvider, IMemoryCache cache)
         {
             _cache = cache;
             _fileProvider = fileProvider;
-            _appSettings = appSettings;
 
             _bundleDefinitions = new Dictionary<string, List<string>>
                 {
-                    { "creditConfig", new List<string> {"/CreditScript/Gfp.Config.js", "/CreditScript/Gfp.Index.js" } },
-                    { "config", new List<string> { "/fp.js", "/Detecas.Config.js" } },
-                    { "api", new List<string> { "/Detecas.Api.js" } },
-                    { "common", new List<string> { "/CreditScript/Gfp.Common.js" } },
-                    { "token", new List<string> { "/Detecas.ConfigToken.js" } }
+                    { "creditConfig", new List<string> {"/Gfp.Config.js", "/CreditScript/Gfp.Index.js" } },
+                    { "common", new List<string> { "/Gfp.Common.js" } },
+                    { "token", new List<string> { "/Gfp.ConfigToken.js" } }
                };
         }
 
@@ -40,7 +36,7 @@
         {
             get { return _enableOptimization; }
             set { _enableOptimization = value; }
-        }
+        }       
 
         public string GetBundle(string bundleName)
         {
@@ -51,7 +47,7 @@
 
             return _cache.GetOrCreate($"Bundle_{bundleName}", entry =>
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(_appSettings.MemoryCacheTimeoutInSeconds);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(1);
                 var stringBuilder = new StringBuilder();
 
                 foreach (var file in files)

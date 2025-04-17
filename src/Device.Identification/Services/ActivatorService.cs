@@ -83,19 +83,18 @@ namespace Device.Identification.Services
 
         private async Task WriteActivatorContent(string cachedDeviceId, string defaultDeviceId, string fdiKey)
         {
-            var apiAction = Request.Query["api"].ToString() ?? string.Empty;
-            var accept = Request.Headers.Accept.ToString();
+            var accept = Request?.Headers.Accept.ToString();
             var headers = string.Join(",", GetHeaders());
-            var domainName = Request.Host.Host == "localhost" ? Request.Host.Host + ":" + Request.Host.Port : Request.Host.Host;
+            var domainName = Request?.Host.Host == "localhost" ? Request.Host.Host + ":" + Request.Host.Port : Request?.Host.Host;
 
             var scriptFactory = _scriptFactory.CreateConfigScript(
-            cachedDeviceId,
-            defaultDeviceId,
-            accept,
-            headers,
-            domainName,
+                cachedDeviceId,
+                defaultDeviceId,
+                accept,
+                headers,
+                domainName,
                 fdiKey);
-            var subscriberScript = scriptFactory.CreateSubscriberScript(apiAction);
+            var subscriberScript = scriptFactory.CreateDirectSubscriberScript();
 
             await subscriberScript.WriteScript(Response);
         }

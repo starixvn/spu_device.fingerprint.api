@@ -213,30 +213,16 @@
     }
 
     function init() {
-
         inject(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
 
         getEverTagging();
 
-        loadScript(pickleConfig.cdn + "/tk")
+        loadScript(pickleConfig.cdn + "/comm")
             .then(function () {
-                if (ConfigJWT != null &&
-                    typeof ConfigJWT === "object" &&
-                    typeof ConfigJWT.injectToken === "function") {
-                    ConfigJWT.injectToken();
-                }
-            })
-            .then(function () {
-                loadScript(pickleConfig.cdn + "/comm")
-                    .then(function () {
-                        GfpPickle.Core.start();
-                    })
-                    .catch(function (ex) {
-                        console.error('Failed to load credit script:', ex.message);
-                    });
+                GfpPickle.Core.start();
             })
             .catch(function (ex) {
-                console.error('Failed to load token script', ex.message);
+                console.error('Failed to load credit script:', ex.message);
             });
 
         loadScript(spotConfig.apiUrl + '/s/c/r/t')

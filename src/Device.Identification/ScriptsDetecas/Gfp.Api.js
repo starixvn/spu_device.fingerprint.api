@@ -5,7 +5,7 @@ Description : Integrate with API licensee
 */
 /* global Detecas */
 
-Detecas.Api = (function (window, document, common, device, debug) {
+GfpPickle.Api = (function (window, document, common, device, debug) {
     "use strict";
 
     function init() {
@@ -84,11 +84,11 @@ Detecas.Api = (function (window, document, common, device, debug) {
         init: init,
         start: start
     };
-} (window, document, Detecas.Common, Detecas.Device, Detecas.Debug));
+}(window, document, GfpPickle.Common, GfpPickle.Device, GfpPickle.Debug));
 
 (function () {
     "use strict";
 
-    Detecas.Api.init();
-    Detecas.Api.start();
+    GfpPickle.Api.init();
+    GfpPickle.Api.start();
 })();

@@ -28,19 +28,12 @@
             return _configScript;
         }
 
-        /// <summary>
-        /// Creates a subscriber script based on the API action provided.
-        /// </summary>
-        /// <param name="apiAction">API action string to determine the subscriber script type.</param>
-        /// <returns>An instance of ISubscriberScript.</returns>
-        public ISubscriberScript CreateSubscriberScript(string apiAction)
+        public ISubscriberScript CreateDirectSubscriberScript()
         {
-            if (IsApiSubscriber(apiAction))
+            return new DirectSubscriberScript
             {
-                return CreateApiSubscriberScript(apiAction);
-            }
-
-            return CreateDirectSubscriberScript();
+                ConfigScript = _configScript
+            };
         }
 
         /// <summary>
@@ -67,43 +60,6 @@
             return new TokenSubscriberScript
             {
                 TokenScript = tokenScript
-            };
-        }
-
-        /// <summary>
-        /// Determines if the provided API action corresponds to an API subscriber.
-        /// </summary>
-        /// <param name="apiAction">API action string.</param>
-        /// <returns>True if it is an API subscriber; otherwise, false.</returns>
-        private static bool IsApiSubscriber(string apiAction)
-        {
-            return !string.IsNullOrEmpty(apiAction);
-        }
-
-        /// <summary>
-        /// Creates an API-specific subscriber script.
-        /// </summary>
-        /// <param name="apiAction">API action string to load the API script.</param>
-        /// <returns>An instance of ApiSubscriberScript.</returns>
-        private ISubscriberScript CreateApiSubscriberScript(string apiAction)
-        {
-            var apiScript = _scriptLoader.LoadApiScript(apiAction);
-            return new ApiSubscriberScript
-            {
-                ConfigScript = _configScript,
-                ApiScript = apiScript
-            };
-        }
-
-        /// <summary>
-        /// Creates a direct subscriber script with configuration scripts.
-        /// </summary>
-        /// <returns>An instance of DirectSubscriberScript.</returns>
-        private ISubscriberScript CreateDirectSubscriberScript()
-        {
-            return new DirectSubscriberScript
-            {
-                ConfigScript = _configScript
             };
         }
     }

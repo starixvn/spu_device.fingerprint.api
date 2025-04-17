@@ -29,10 +29,8 @@ builder.Services.AddTransient<JwtToken>();
 builder.Services.AddHttpContextAccessor();
 
 var detecasDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsDetecas");
-var utilityDirectory = Path.Combine(Directory.GetCurrentDirectory(), "ScriptsUtility");
 var detecasProvider = new PhysicalFileProvider(detecasDirectory);
-var utilityProvider = new PhysicalFileProvider(utilityDirectory);
-var compositeProvider = new CompositeFileProvider(detecasProvider, utilityProvider);
+var compositeProvider = new CompositeFileProvider(detecasProvider);
 builder.Services.AddSingleton<IFileProvider>(compositeProvider);
 
 builder.Services.AddSingleton<BundleConfig>();
