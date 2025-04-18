@@ -6897,29 +6897,22 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
     }
 
     function injectValueIntoHiddenField(fieldName, value) {
-        try {
+        let elements = document.getElementsByName(fieldName);
+        if (elements != null && elements.length != 0) {
+            for (let i = 0; i < elements.length; i++) {
+                elements[i].value = value;
+            }
+        }
+        else {
+            let forms = document.forms;
 
-            let elements = document.getElementsByName(fieldName);
-            if (elements != null && elements.length != 0) {
-                for (let i = 0; i < elements.length; i++) {
-                    elements[i].value = value;
+            if (forms != null && forms.length != 0) {
+                for (let i = 0; i < forms.length; i++) {
+                    createHiddenElement(document.forms[i], value, (i == 0 ? fieldName : fieldName + i), fieldName);
                 }
             }
             else {
-                let forms = document.forms;
-
-                if (forms != null && forms.length != 0) {
-                    for (let i = 0; i < forms.length; i++) {
-                        createHiddenElement(document.forms[i], value, (i == 0 ? fieldName : fieldName + i), fieldName);
-                    }
-                }
-                else {
-                    createHiddenElement(document.body, value, fieldName, fieldName);
-                }
-            }
-        } catch (ex) {
-            if (typeof onDeviceInfoError === "function") {
-                onDeviceInfoError(ex.message);
+                createHiddenElement(document.body, value, fieldName, fieldName);
             }
         }
     }
@@ -6935,9 +6928,11 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
                     let biValue = base64.encode(json.stringify(result));
                     injectValueIntoHiddenField("__bi", biValue);
                 }).catch(function (err) {
+                    // debug.addException(exception, "injectBotDToClient");
                 });
             }
         } catch (exception) {
+            // debug.addException(exception, "injectBotDToClient");
         }
     }
 

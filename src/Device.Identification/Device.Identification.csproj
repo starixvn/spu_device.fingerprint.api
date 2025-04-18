@@ -29,13 +29,24 @@
 		<None Update="App_Data\UAT\SPNames.xml">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="ScriptsDetecas\CreditScript\Gfp.Index.js">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="ScriptsDetecas\Gfp.Common.js">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="ScriptsDetecas\Gfp.Config.js">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="ScriptsDetecas\Gfp.ConfigToken.js">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Include="wwwroot\Index.html" />
+	  <None Include="wwwroot\Index.html">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

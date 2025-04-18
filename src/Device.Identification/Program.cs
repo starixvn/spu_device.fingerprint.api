@@ -72,6 +72,8 @@ ExceptionHandler
 LogService.Info($"Device.Identification Start! {DateTime.Now}");
 
 var app = builder.Build();
+
+app.UseDefaultFiles();
 app.UseStaticFiles();
 
 if (app.Environment.IsDevelopment())
