@@ -6713,6 +6713,8 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
     let isScriptDeviceIdFromCache = false;
     let isGetDeviceIdFromStorage = false;
     let currentDeviceId = config.defaultDeviceId;
+    let onDeviceInfoError = undefined;
+
     if (config.cachedDeviceId) {
         currentDeviceId = config.cachedDeviceId;
         isScriptDeviceIdFromCache = true;
@@ -6827,7 +6829,8 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
         return uuid();
     }
 
-    function start() {
+    function start(fncallback) {
+        onDeviceInfoError = fncallback;
         try {
             debug.setVersion(config.version);
 
@@ -6848,7 +6851,14 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
             } else {
                 storages.get(getDeviceIdsFromStorages, getDeviceIdFromStorage);
             }
-        } catch (exception) {
+
+            if (typeof fncallback === "function") {
+                fncallback();
+            }
+        } catch (ex) {
+            if (typeof onDeviceInfoError === "function") {
+                onDeviceInfoError(ex.message);
+            }
         }
     }
 
@@ -6868,7 +6878,10 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
             setTimeout(function () {
                 cleanup();
             }, 1000);
-        } catch (exception) {
+        } catch (ex) {
+            if (typeof onDeviceInfoError === "function") {
+                onDeviceInfoError(ex.message);
+            }
         }
     }
 
@@ -6904,8 +6917,10 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
                     createHiddenElement(document.body, value, fieldName, fieldName);
                 }
             }
-        } catch (exception) {
-            // debug.addException(exception, "injectValueIntoHiddenField");
+        } catch (ex) {
+            if (typeof onDeviceInfoError === "function") {
+                onDeviceInfoError(ex.message);
+            }
         }
     }
 
@@ -6920,11 +6935,9 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
                     let biValue = base64.encode(json.stringify(result));
                     injectValueIntoHiddenField("__bi", biValue);
                 }).catch(function (err) {
-                    // debug.addException(exception, "injectBotDToClient");
                 });
             }
         } catch (exception) {
-            // debug.addException(exception, "injectBotDToClient");
         }
     }
 
@@ -6932,8 +6945,10 @@ GfpPickle.Core = (function (window, document, common, cookie, rc4, hex, base64, 
         try {
             let diValue = common.collectDeviceInfoToInjectToClient(currentDeviceId, deviceInformation.fingerprint);
             injectValueIntoHiddenField("__di", diValue);
-        } catch (exception) {
-            debug.addException(exception, "injectDevice");
+        } catch (ex) {
+            if (typeof onDeviceInfoError === "function") {
+                onDeviceInfoError(ex.message);
+            }
         }
     }
 

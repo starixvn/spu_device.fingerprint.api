@@ -111,14 +111,12 @@
         }
         return platform;
     }
+
     function getEverTagging() {
-        console.log('Credit script!');
         if (typeof gfpCandy !== 'undefined' && typeof gfpCandy.getStorages === 'function') {
             gfpCandy
                 .getStorages()
                 .then(function (storageValues) {
-
-                    // find the unique value from storageValues when split by comma
                     var uniqueValues = [];
                     var storageValuesArray = storageValues.split(',');
                     for (var i = 0; i < storageValuesArray.length; i++) {
@@ -128,7 +126,6 @@
                         }
                     }
 
-                    // join the unique values with comma and make a json object that I will send to the server via header
                     var jsonHeader = {
                         "Res-Ec-X": uniqueValues.join(','),
                         "Res-Ec-Y": spotConfig.sessionKey
@@ -146,7 +143,6 @@
                             }
                         })
                         .catch(function (err) {
-                            console.log(err);
                         });
 
                 });
@@ -159,9 +155,9 @@
         xhr.onreadystatechange = function () {
             if (xhr.readyState === 4 && callback && typeof callback === 'function') {
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    callback(null, xhr.responseText);
+                    callback();
                 } else {
-                    callback(new Error(xhr.statusText));
+                    callback(xhr.statusText);
                 }
             }
         };
@@ -173,7 +169,8 @@
             xhr.send();
         }
     }
-    function fdiStart() {
+    function fdiStart(callback) {
+        console.time("fdiStart");
         loadScript(spotConfig.apiUrl + '/s/f/p')
             .then(function () {
                 if (typeof gfpCode !== 'undefined' && typeof gfpCode.getResult == 'function'
@@ -197,34 +194,76 @@
                         "sv": spotConfig.version
                     };
 
-                    sendXHRWithCallback("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), null);
+                    sendXHRWithCallback("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), callback);
                 }
                 else {
-                    console.error('GfpPickle.Mask is not defined or does not have encode function.');
+                    var message = 'GfpPickle.Mask is not defined!';
+                    callback(message);
                 }
+                console.timeEnd("fdiStart");
             })
             .catch(function (ex) {
-                console.error('Failed to load credit script:', ex.message);
+                var message = 'Failed to load credit script:' + ex.message;
+                callback(message);
             });
     }
 
+    let isOldDone = false;
+    let isNewDone = false;
 
-    function init() {
+    function executeCallback(callback, errorMessage) {
+        if (errorMessage) {
+            callback(errorMessage);
+            return;
+        }
+
+        if (isOldDone && isNewDone) {
+            callback();
+        }
+    }
+
+    function init(callback) {
+        console.time("executeScript");
         inject(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
 
         getEverTagging();
 
         loadScript(pickleConfig.cdn + "/comm")
             .then(function () {
-                GfpPickle.Core.start();
-                fdiStart();
+                fdiStart((errorMessage) => {
+                    if (errorMessage) {
+                        executeCallback(callback, errorMessage);
+                        return;
+                    }
+
+                    isNewDone = true;
+                    executeCallback(callback);
+                });
+
+                GfpPickle.Core.start((errorMessage) => {
+                    if (errorMessage) {
+                        executeCallback(callback, errorMessage);
+                        return;
+                    }
+
+                    isOldDone = true;
+                    executeCallback(callback);
+                });
             })
             .catch(function (ex) {
                 console.error('Failed to load credit script:', ex.message);
+                callback(ex.message);
             });
     }
 
-    init();
+    const fallbackCallback = function () {};
+
+    const safeCallback =
+        (window.gfpCallback && typeof window.gfpCallback.callback === 'function')
+            ? window.gfpCallback.callback
+            : fallbackCallback;
+
+    init(safeCallback);
 
 })(document, GfpPickle.Config, GfpSpot.Config);
 
