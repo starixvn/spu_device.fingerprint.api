@@ -115,7 +115,7 @@ app.Run();
 static void FanexDataConfig(ConfigurationManager configuration, AppSettings appSettings)
 {
     var connections = configuration
-                    .GetSection("AppConfig:Connections")
+                    .GetSection("AppConfig:ConnectionStrings")
                     .GetChildren()
                     .AsEnumerable()
                     .ToDictionary(

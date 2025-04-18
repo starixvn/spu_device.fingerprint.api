@@ -15,53 +15,49 @@ namespace Device.Identification.Services
     {
         public RecoveredDevice GetRecoveredDevice(IList<string> candidateIds, string deviceCode)
         {
-            var searchingMultiDeviceResult = SearchingMultiDevice(candidateIds, deviceCode);
-            var recoveredDevice = TryRecoverDeviceId(candidateIds, searchingMultiDeviceResult);
-            recoveredDevice.IsNewDeviceId = searchingMultiDeviceResult == null;
+            var searchResult = SearchMultiDevice(candidateIds, deviceCode);
+            var recoveredDevice = RecoverDeviceId(candidateIds, searchResult);
+            recoveredDevice.IsNewDeviceId = searchResult is null;
 
             return recoveredDevice;
         }
 
-        private static SearchingMultiDeviceResult SearchingMultiDevice(IList<string> candidateIds, string deviceCode)
+        private static SearchingMultiDeviceResult? SearchMultiDevice(IList<string> candidateIds, string deviceCode)
         {
             var criteria = new SearchingMultiDeviceCriteria
             {
                 DeviceIds = string.Join(",", candidateIds),
-                DeviceCode = !string.IsNullOrEmpty(deviceCode) ? deviceCode : string.Empty
+                DeviceCode = deviceCode ?? string.Empty
             };
 
             using var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey());
             return db.QueryEntity<SearchingMultiDeviceResult>(criteria);
         }
 
-        private static RecoveredDevice TryRecoverDeviceId(IList<string> candidateIds, SearchingMultiDeviceResult searchingMultiDeviceResult)
+        private static RecoveredDevice RecoverDeviceId(IList<string> candidateIds, SearchingMultiDeviceResult? result)
         {
-            var recoveredDevice = new RecoveredDevice();
-
-            if (searchingMultiDeviceResult != null)
+            if (result is not null)
             {
-                recoveredDevice.DeviceId = DeviceEncoder.Encrypt(searchingMultiDeviceResult.RecoverId);
-            }
-            else
-            {
-                if (candidateIds.Count > 0)
+                return new RecoveredDevice
                 {
-                    try
-                    {
-                        recoveredDevice.DeviceId = DeviceEncoder.Encrypt(candidateIds[0]);
-                    }
-                    catch
-                    {
-                        recoveredDevice.DeviceId = DeviceFactory.GenerateDeviceId();
-                    }
-                }
-                else
-                {
-                    recoveredDevice.DeviceId = DeviceFactory.GenerateDeviceId();
-                }
+                    DeviceId = DeviceEncoder.Encrypt(result.RecoverId)
+                };
             }
 
-            return recoveredDevice;
+            var fallbackId = candidateIds.FirstOrDefault();
+
+            try
+            {
+                var encryptedId = !string.IsNullOrEmpty(fallbackId)
+                    ? DeviceEncoder.Encrypt(fallbackId)
+                    : DeviceFactory.GenerateDeviceId();
+
+                return new RecoveredDevice { DeviceId = encryptedId };
+            }
+            catch
+            {
+                return new RecoveredDevice { DeviceId = DeviceFactory.GenerateDeviceId() };
+            }
         }
     }
 }

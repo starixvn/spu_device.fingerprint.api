@@ -215,6 +215,6 @@ namespace Device.Identification.Services
             return result.Code;
         }
 
-        #endregion
+    #endregion
     }
 }
