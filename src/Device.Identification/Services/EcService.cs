@@ -1,5 +1,4 @@
-﻿using Device.Identification.ActivatorScript;
-using Device.Identification.Criterias;
+﻿using Device.Identification.Criterias;
 using Device.Identification.Encoders;
 using Device.Identification.Factory;
 using Device.Identification.Model;
@@ -15,10 +14,11 @@ namespace Device.Identification.Services
         Task Execute();
     }
 
-    public class EcService(IAppSettings appSettings
-                          , IHttpContextAccessor contextAccessor
-                          , HttpCachingWrapper cacheWrapper
-                          , IRecoverDeviceService recoverDeviceService) : IEcService
+    public class EcService(
+        IAppSettings appSettings,
+        IHttpContextAccessor contextAccessor,
+        HttpCachingWrapper cacheWrapper,
+        IRecoverDeviceService recoverDeviceService) : IEcService
     {
         private readonly IAppSettings _appSettings = appSettings;
         private readonly HttpCachingWrapper _cacheWrapper = cacheWrapper;
@@ -32,13 +32,13 @@ namespace Device.Identification.Services
         {
             if (string.IsNullOrEmpty(Request?.Query["deviceInfo"]) || Response == null)
             {
-                await ResponseEmptyContent();
+                await WriteEmptyContentAsync();
                 return;
             }
 
-            var requestIp = GetRequestIpFromClientToParseDeviceInfo();
+            var requestIp = GetClientIp();
             var deviceDetection = ParseDeviceInfo(requestIp);
-            var candidateDeviceIds = GetCandidatePlainDeviceIdsFromStorages(deviceDetection);
+            var candidateDeviceIds = GetCandidateDeviceIds(deviceDetection);
             var currentDeviceCode = deviceDetection?.Device?.Code;
 
             if (_cacheWrapper.DoesRecoverDeviceIdFromETag())
@@ -54,133 +54,122 @@ namespace Device.Identification.Services
             if (recoveredDevice != null)
             {
                 TryInsertNewDevice(recoveredDevice, deviceDetection);
-                SynchronizeServerStorages(recoveredDevice.DeviceId);
+                SyncServerStorage(recoveredDevice.DeviceId);
                 _cacheWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
 
-                await ResponseInfoToClient(recoveredDevice.DeviceId);
+                await WriteDeviceIdResponseAsync(recoveredDevice.DeviceId);
             }
         }
 
-        private async Task ResponseEmptyContent()
-        {
-            var content = string.Empty;
-            await WriteContent(content);
-        }
+        #region Device Info Helpers
 
-        private string GetRequestIpFromClientToParseDeviceInfo()
+        private string GetClientIp()
         {
-            string requestIp = Request.Query["ip"].ToString();
-            return string.IsNullOrEmpty(requestIp)
+            var ipParam = Request?.Query["ip"].ToString();
+            return string.IsNullOrEmpty(ipParam)
                 ? Utilities.GetUserHostAddress()
-                : ClientEncoder.Decrypt(Uri.UnescapeDataString(requestIp));
+                : ClientEncoder.Decrypt(Uri.UnescapeDataString(ipParam));
         }
 
-        private DeviceDetection? ParseDeviceInfo(string requestIp)
+        private DeviceDetection? ParseDeviceInfo(string ip)
         {
-            var deviceInfo = Request.Query["deviceInfo"];
-            var decryptedDeviceInfo = Rc4.Decrypt(requestIp, Base64.Decode(Uri.UnescapeDataString(deviceInfo.ToString())));
-            var deviceDetection = JsonConvert.DeserializeObject<DeviceDetection>(decryptedDeviceInfo);
+            var encrypted = Base64.Decode(Uri.UnescapeDataString(Request?.Query["deviceInfo"] ?? string.Empty));
+            var decrypted = Rc4.Decrypt(ip, encrypted);
 
-            return deviceDetection;
+            return JsonConvert.DeserializeObject<DeviceDetection>(decrypted);
         }
 
-        private List<string>? GetCandidatePlainDeviceIdsFromStorages(DeviceDetection? deviceDetection)
+        private List<string>? GetCandidateDeviceIds(DeviceDetection? detection)
         {
-            var clientDeviceIds = deviceDetection?.Device?.ClientDeviceIds;
-            var cookieDeviceId = RecoverDeviceIdFromCookie();
+            var clientIds = detection?.Device?.ClientDeviceIds;
+            var cookieId = GetDeviceIdFromCookie();
 
-            var candidateDeviceIds = clientDeviceIds?.Split(',')
-                 .Where(DeviceFactory.IsValidDeviceId)
-                 .Distinct()
-                 .Select(DeviceEncoder.Decrypt)
-                 .ToList();
-            if (!string.IsNullOrEmpty(cookieDeviceId) && candidateDeviceIds != null && !candidateDeviceIds.Contains(cookieDeviceId))
+            var candidates = clientIds?
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Where(DeviceFactory.IsValidDeviceId)
+                .Select(DeviceEncoder.Decrypt)
+                .Distinct()
+                .ToList() ?? [];
+
+            if (!string.IsNullOrEmpty(cookieId) && !candidates.Contains(cookieId))
             {
-                candidateDeviceIds.Add(cookieDeviceId);
+                candidates.Add(cookieId);
             }
 
-            return candidateDeviceIds;
+            return candidates;
         }
 
-        private string RecoverDeviceIdFromCookie()
+        private string GetDeviceIdFromCookie()
         {
-            var tokenCookie = Request.Cookies[_appSettings.CookieStorage];
+            var token = Request?.Cookies[_appSettings.CookieStorage];
 
-            if (tokenCookie != null)
-            {
-                var cookieDeviceId = tokenCookie.ToString();
-                if (DeviceFactory.IsValidDeviceId(cookieDeviceId))
-                {
-                    return DeviceEncoder.Decrypt(cookieDeviceId);
-                }
-            }
-
-            return string.Empty;
+            return DeviceFactory.IsValidDeviceId(token)
+                ? DeviceEncoder.Decrypt(token)
+                : string.Empty;
         }
+        #endregion
 
-        private void TryInsertNewDevice(RecoveredDevice? recoveredDevice, DeviceDetection? deviceDetection)
+        #region Insert / Sync Device
+
+        private void TryInsertNewDevice(RecoveredDevice? recovered, DeviceDetection? detection)
         {
-            if (recoveredDevice != null && deviceDetection != null
-                    && recoveredDevice.IsNewDeviceId
-                    && !string.IsNullOrEmpty(deviceDetection.Device?.Code)
-            )
+            if (recovered?.IsNewDeviceId == true &&
+                detection?.Device?.Code is not null)
             {
-                deviceDetection.Device.Id = DeviceEncoder.Decrypt(recoveredDevice.DeviceId);
-                InsertNewDeviceAsync(deviceDetection);
+                detection.Device.Id = DeviceEncoder.Decrypt(recovered.DeviceId);
+                InsertNewDevice(detection);
             }
         }
 
-        private void InsertNewDeviceAsync(DeviceDetection deviceDetection)
+        private void InsertNewDevice(DeviceDetection detection)
         {
             var criteria = new InsertDeviceCriteria
             {
-                DeviceId = deviceDetection.Device.Id,
-                DeviceCode = deviceDetection.Device.Code,
-                Navigator = deviceDetection.Device.Navigator,
-                Plugins = deviceDetection.Device.Plugins,
-                MimeTypes = deviceDetection.Device.MimeTypes,
-                UserAgent = deviceDetection.Device.UserAgent,
-                Screen = deviceDetection.Device.Screen,
-                Monitor = deviceDetection.Device.Monitor,
-                Language = deviceDetection.Device.Language,
-                CookieEnabled = deviceDetection.Device.CookieEnabled,
-                DoNotTrack = deviceDetection.Device.DoNotTrack,
-                SuperCookies = deviceDetection.Device.SuperCookies,
-                GpuCode = deviceDetection.Device.GPUCode,
-                WebGL = deviceDetection.Device.WebGL,
-                Fonts = deviceDetection.Device.Fonts,
-                TimeZone = deviceDetection.Device.TimeZone,
-                SystemTimeOffset = deviceDetection.Device.SystemTimeOffset,
-                Browser = deviceDetection.Device.Browser,
-                DeviceType = deviceDetection.Device.DeviceType,
-                Accept = deviceDetection.Device.Accept,
-                Headers = deviceDetection.Device.Headers,
+                DeviceId = detection.Device.Id,
+                DeviceCode = detection.Device.Code,
+                Navigator = detection.Device.Navigator,
+                Plugins = detection.Device.Plugins,
+                MimeTypes = detection.Device.MimeTypes,
+                UserAgent = detection.Device.UserAgent,
+                Screen = detection.Device.Screen,
+                Monitor = detection.Device.Monitor,
+                Language = detection.Device.Language,
+                CookieEnabled = detection.Device.CookieEnabled,
+                DoNotTrack = detection.Device.DoNotTrack,
+                SuperCookies = detection.Device.SuperCookies,
+                GpuCode = detection.Device.GPUCode,
+                WebGL = detection.Device.WebGL,
+                Fonts = detection.Device.Fonts,
+                TimeZone = detection.Device.TimeZone,
+                SystemTimeOffset = detection.Device.SystemTimeOffset,
+                Browser = detection.Device.Browser,
+                DeviceType = detection.Device.DeviceType,
+                Accept = detection.Device.Accept,
+                Headers = detection.Device.Headers,
 
-                Ip = deviceDetection.Ip,
-                LocalIPs = deviceDetection.LocalIPs,
-                ScriptRequestedIp = deviceDetection.ScriptRequestedIp,
-                SubscriberRecordedIp = deviceDetection.SubscriberRecordedIp,
-                DomainName = deviceDetection.DomainName,
-                DomainSameReferrer = IsDomainSameWithReferrer(deviceDetection.DomainName, deviceDetection.UrlRefererAuthority)
+                Ip = detection.Ip,
+                LocalIPs = detection.LocalIPs,
+                ScriptRequestedIp = detection.ScriptRequestedIp,
+                SubscriberRecordedIp = detection.SubscriberRecordedIp,
+                DomainName = detection.DomainName,
+                DomainSameReferrer = IsSameDomain(detection.DomainName, detection.UrlRefererAuthority)
             };
 
             _repository.Execute(criteria);
         }
 
-        private static bool IsDomainSameWithReferrer(string domainName, string urlRefererAuthority)
-        {
-            return !string.IsNullOrEmpty(domainName) && domainName.Equals(urlRefererAuthority);
-        }
+        private static bool IsSameDomain(string domain, string referer) =>
+            !string.IsNullOrEmpty(domain) && domain.Equals(referer, StringComparison.OrdinalIgnoreCase);
 
-        private void SynchronizeServerStorages(string deviceId)
+        private void SyncServerStorage(string deviceId)
         {
             _cacheWrapper.ETag = deviceId;
-            AddCookie(_appSettings.CookieStorage, deviceId);
+            SetCookie(_appSettings.CookieStorage, deviceId);
         }
 
-        private void AddCookie(string key, string deviceId)
+        private void SetCookie(string key, string value)
         {
-            var cookieOptions = new CookieOptions
+            var options = new CookieOptions
             {
                 Expires = DateTime.UtcNow.AddYears(10),
                 SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None,
@@ -188,45 +177,44 @@ namespace Device.Identification.Services
                 Path = "/"
             };
 
-            Response.Cookies.Append(key, deviceId, cookieOptions);
+            Response?.Cookies.Append(key, value, options);
         }
 
-        private void UpdateCachingMaxAge(int seconds)
+        #endregion
+
+        #region Response Output
+
+        private async Task WriteEmptyContentAsync()
         {
-            Response.Headers[HeaderNames.CacheControl] = $"private, max-age={seconds}";
+            await WriteJavascriptContentAsync(string.Empty);
         }
 
-        private async Task ResponseInfoToClient(string deviceId)
+        private async Task WriteDeviceIdResponseAsync(string deviceId)
         {
-            var content =
-                "try{" +
-                string.Format(
-                    "Detecas.Core.callback('{0}')",
-                    deviceId) +
-                "}catch(e){}";
-
-            await WriteContent(content);
+            var jsContent = $"try{{Detecas.Core.callback('{deviceId}')}}catch(e){{}}";
+            await WriteJavascriptContentAsync(jsContent);
         }
 
-        private async Task WriteContent(string content)
+        private async Task WriteJavascriptContentAsync(string content)
         {
-            Response.ContentType = "text/javascript";
+            Response!.ContentType = "text/javascript";
 
-            content = MinifyJavaScript(content);
-
-            await Response.WriteAsync(content + "\n");
+            string minified = MinifyJavaScript(content);
+            await Response.WriteAsync(minified + "\n");
         }
 
-        private static string MinifyJavaScript(string content)
+        private static string MinifyJavaScript(string js)
         {
-            var result = Uglify.Js(content);
+            var result = Uglify.Js(js);
 
             if (result.HasErrors)
             {
-                throw new InvalidOperationException("Minification failed.");
+                throw new InvalidOperationException("JavaScript minification failed.");
             }
 
             return result.Code;
         }
+
+        #endregion
     }
 }

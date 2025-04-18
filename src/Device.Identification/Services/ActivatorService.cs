@@ -1,8 +1,6 @@
-﻿using Azure.Core;
-using Device.Identification.ActivatorScript;
+﻿using Device.Identification.ActivatorScript;
 using Device.Identification.Factory;
 using Microsoft.Net.Http.Headers;
-using System.Security.AccessControl;
 
 namespace Device.Identification.Services
 {
@@ -11,14 +9,15 @@ namespace Device.Identification.Services
         Task Execute();
     }
 
-    public class ActivatorService(IAppSettings appSettings
-                                , IHttpContextAccessor contextAccessor
-                                , ActivatorScriptFactory scriptFactory
-                                , HttpCachingWrapper httpCachingWrapper) : IActivatorService
+    public class ActivatorService(
+        IAppSettings appSettings,
+        IHttpContextAccessor contextAccessor,
+        ActivatorScriptFactory scriptFactory,
+        HttpCachingWrapper httpCachingWrapper) : IActivatorService
     {
         private readonly IAppSettings _appSettings = appSettings;
-        private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper;
         private readonly ActivatorScriptFactory _scriptFactory = scriptFactory;
+        private readonly HttpCachingWrapper _httpCachingWrapper = httpCachingWrapper;
 
         private HttpRequest? Request => contextAccessor.HttpContext?.Request;
         private HttpResponse? Response => contextAccessor.HttpContext?.Response;
@@ -31,129 +30,97 @@ namespace Device.Identification.Services
             }
 
             var fdiCookieKey = "gfp";
-            var cachedDeviceId = GetCachedCandidateDeviceId();
-            var defaultDeviceId = cachedDeviceId;
-            if (string.IsNullOrEmpty(defaultDeviceId))
-            {
-                defaultDeviceId = DeviceFactory.GenerateDeviceId();
-            }
+            var cachedDeviceId = GetCachedDeviceId();
 
-            SetEtagIfDeviceIdIsValid(defaultDeviceId);
+            var defaultDeviceId = string.IsNullOrEmpty(cachedDeviceId)
+                                    ? DeviceFactory.GenerateDeviceId()
+                                    : cachedDeviceId;
+
+            SetETagIfValid(defaultDeviceId);
 
             var fdiKey = GetCookieValue(fdiCookieKey);
             _httpCachingWrapper.UpdateCachingWithExpiredSeconds(_appSettings.CachingExpiredSeconds);
-            await WriteActivatorContent(cachedDeviceId, defaultDeviceId, fdiKey);
+
+            await WriteActivatorContentAsync(cachedDeviceId, defaultDeviceId, fdiKey);
         }
 
-        private string GetCachedCandidateDeviceId()
+        private string GetCachedDeviceId()
         {
-            var cachedDeviceId = GetCookieValue(_appSettings.CookieStorage, headerKey: "(global.c3)");
-            if (string.IsNullOrEmpty(cachedDeviceId))
-            {
-                cachedDeviceId = GetDeviceIdFromETag();
-            }
-
-            return cachedDeviceId;
+            var id = GetCookieValue(_appSettings.CookieStorage, "(global.c3)");
+            return string.IsNullOrEmpty(id) ? GetDeviceIdFromETag() : id;
         }
 
         private string GetCookieValue(string key, string headerKey = "")
         {
-            string cookieValue = GetCookieFromRequestCookies(key) ?? GetCookieFromHeaders(headerKey);
-
-            if (!string.IsNullOrEmpty(cookieValue) && DeviceFactory.IsValidDeviceId(cookieValue))
-            {
-                return cookieValue;
-            }
-
-            return string.Empty;
+            var value = GetCookieFromRequest(key) ?? GetCookieFromHeaders(headerKey);
+            return DeviceFactory.IsValidDeviceId(value) ? value : string.Empty;
         }
 
-        private void SetEtagIfDeviceIdIsValid(string cachedDeviceId)
+        private void SetETagIfValid(string deviceId)
         {
-            if (!string.IsNullOrEmpty(cachedDeviceId))
-            {
-                _httpCachingWrapper.ETag = cachedDeviceId;
+            if (string.IsNullOrEmpty(deviceId)) return;
 
-                if (!Response.HasStarted)
-                {
-                    Response.Headers[HeaderNames.ETag] = cachedDeviceId;
-                }
+            _httpCachingWrapper.ETag = deviceId;
+
+            if (!Response!.HasStarted)
+            {
+                Response.Headers[HeaderNames.ETag] = deviceId;
             }
         }
 
-        private async Task WriteActivatorContent(string cachedDeviceId, string defaultDeviceId, string fdiKey)
+        private async Task WriteActivatorContentAsync(string cachedDeviceId, string defaultDeviceId, string fdiKey)
         {
-            var accept = Request?.Headers.Accept.ToString();
-            var headers = string.Join(",", GetHeaders());
-            var domainName = Request?.Host.Host == "localhost" ? Request.Host.Host + ":" + Request.Host.Port : Request?.Host.Host;
+            var acceptHeader = Request?.Headers.Accept.ToString();
+            var headers = string.Join(",", GetAcceptEncodingHeaders());
 
-            var scriptFactory = _scriptFactory.CreateConfigScript(
+            var host = Request?.Host.Host;
+            var port = Request?.Host.Port?.ToString();
+            var domain = host == "localhost" ? $"{host}:{port}" : host ?? "unknown";
+
+            var scriptBuilder = _scriptFactory.CreateConfigScript(
                 cachedDeviceId,
                 defaultDeviceId,
-                accept,
+                acceptHeader,
                 headers,
-                domainName,
+                domain,
                 fdiKey);
 
-            var subscriberScript = scriptFactory.CreateConfigScript();
-
-            await subscriberScript.WriteScript(Response);
+            var subscriberScript = scriptBuilder.CreateConfigScript();
+            await subscriberScript.WriteScript(Response!);
         }
 
-        private List<string> GetHeaders()
+        private List<string> GetAcceptEncodingHeaders()
         {
-            return [.. Request.Headers.AcceptEncoding.ToString()
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)];
+            return Request?.Headers.AcceptEncoding
+                .ToString()
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(e => e.Trim())
+                .ToList() ?? [];
         }
 
         private string GetDeviceIdFromETag()
         {
             var deviceId = _httpCachingWrapper.ETag;
-
-            if (!string.IsNullOrEmpty(deviceId) && DeviceFactory.IsValidDeviceId(deviceId))
-            {
-                return deviceId;
-            }
-
-            return string.Empty;
+            return DeviceFactory.IsValidDeviceId(deviceId) ? deviceId : string.Empty;
         }
 
-        private string? GetCookieFromRequestCookies(string key)
+        private string? GetCookieFromRequest(string key)
         {
-            if (Request.Cookies.TryGetValue(key, out var value))
-            {
-                return value;
-            }
-
-            return null;
+            return Request?.Cookies.TryGetValue(key, out var value) == true ? value : null;
         }
 
         private string GetCookieFromHeaders(string key)
         {
-            if (string.IsNullOrEmpty(key))
-            {
+            if (string.IsNullOrWhiteSpace(key) || Request?.Headers.Cookie.ToString() is not string rawCookies || string.IsNullOrEmpty(rawCookies))
                 return string.Empty;
-            }
-
-            var rawCookies = Request.Headers.Cookie.ToString();
-            if (string.IsNullOrEmpty(rawCookies))
-            {
-                return string.Empty;
-            }
 
             var cookies = rawCookies.Split(';')
-                .Select(cookie => cookie.Split(['='], 2))
+                .Select(c => c.Split('=', 2))
                 .ToDictionary(
                     parts => parts[0].Trim(),
-                    parts => parts.Length > 1 ? parts[1].Trim() : string.Empty
-                );
+                    parts => parts.Length > 1 ? parts[1].Trim() : string.Empty);
 
-            if (cookies.TryGetValue(key, out var headerValue))
-            {
-                return headerValue;
-            }
-
-            return string.Empty;
+            return cookies.TryGetValue(key, out var value) ? value : string.Empty;
         }
     }
 }

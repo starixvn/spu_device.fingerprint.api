@@ -23,17 +23,18 @@
 
         public string ETag
         {
-            get => _etag ?? Request?.Headers[HeaderNames.IfNoneMatch].ToString() ?? string.Empty;
+            get => _etag
+                ?? Request?.Headers[HeaderNames.IfNoneMatch].ToString()
+                ?? string.Empty;
 
             set
             {
                 if (_etag == value)
-                {
                     return;
-                }
 
                 _etag = value;
-                if (Response != null)
+
+                if (Response is { HasStarted: false })
                 {
                     Response.Headers[HeaderNames.ETag] = value;
                 }
@@ -42,47 +43,32 @@
 
         public void UpdateCachingWithExpiredDays(int expiredDays)
         {
-            if (Response != null && !Response.HasStarted)
+            if (Response is { HasStarted: false })
             {
-                SetExpiredDays(expiredDays);
+                SetCacheExpiration(TimeSpan.FromDays(expiredDays));
             }
         }
 
         public void UpdateCachingWithExpiredSeconds(int expiredSeconds)
         {
-            if (Response != null && !Response.HasStarted)
+            if (Response is { HasStarted: false })
             {
-                SetExpiredSeconds(expiredSeconds);
+                SetCacheExpiration(TimeSpan.FromSeconds(expiredSeconds));
             }
         }
 
-        public bool DoesRecoverDeviceIdFromETag()
-        {
-            return DeviceFactory.IsValidDeviceId(ETag);
-        }
+        public bool DoesRecoverDeviceIdFromETag() =>
+            DeviceFactory.IsValidDeviceId(ETag);
 
-        private void SetExpiredDays(int value)
+        private void SetCacheExpiration(TimeSpan maxAge)
         {
-            if (Response != null && !Response.HasStarted)
+            var headers = Response?.GetTypedHeaders();
+            if (headers != null)
             {
-                var headers = Response.GetTypedHeaders();
                 headers.CacheControl = new CacheControlHeaderValue
                 {
                     Private = true,
-                    MaxAge = TimeSpan.FromDays(value)
-                };
-            }
-        }
-
-        private void SetExpiredSeconds(int value)
-        {
-            if (Response != null && !Response.HasStarted)
-            {
-                var headers = Response.GetTypedHeaders();
-                headers.CacheControl = new CacheControlHeaderValue
-                {
-                    Private = true,
-                    MaxAge = TimeSpan.FromSeconds(value)
+                    MaxAge = maxAge
                 };
             }
         }
