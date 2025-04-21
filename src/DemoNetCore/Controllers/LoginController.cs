@@ -22,7 +22,7 @@ namespace DemoNetCore.Controllers
             subscriberName = configuration.GetSection("SubscriberName").Value ?? string.Empty;
             getAPIUrl = configuration.GetSection("GetAPIUrl").Value ?? string.Empty;
             postAPIUrl = configuration.GetSection("PostAPIUrl").Value ?? string.Empty;
-            getActivatorUrl = configuration.GetSection("DIUrl").Value + "/activator.ashx" ?? "//new-fps-di.nexdev.net/activator.ashx";
+            getActivatorUrl = configuration.GetSection("DIUrl").Value + "/act" ?? "//new-fps-di.nexdev.net/act";
         }
         // GET: Login
         public ActionResult Index()

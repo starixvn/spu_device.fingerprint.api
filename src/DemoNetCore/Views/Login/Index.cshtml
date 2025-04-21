@@ -40,4 +40,35 @@
     </section>
   </div>
 </div>
+<script>
+    let isCallbackCalled = false;
+
+    const fallbackTimer = setTimeout(() => {
+        if (!isCallbackCalled) {
+            isCallbackCalled = true;
+            onDeviceReady('Run script timeout!');
+        }
+    }, 5000);
+
+    window.gfpCallback = window.gfpCallback || {};
+
+    gfpCallback.callback = function (errorMessage) {
+        if (isCallbackCalled) return;
+
+        isCallbackCalled = true;
+        clearTimeout(fallbackTimer);
+        onDeviceReady(errorMessage);
+    };
+
+    function onDeviceReady(errorMessage) {
+        if (errorMessage) {
+            console.log("ErrorMessage: ", errorMessage);
+            return;
+        }
+
+        console.log("Run script completed!");
+        console.timeEnd("executeScript");
+    }
+</script>
+
 <script src="@ViewBag.GetActivatorUrl" type="text/javascript" async defer></script>
