@@ -66,7 +66,7 @@
         container.appendChild(diInput);
     }
 
-    function getValueByHiddenField(fieldName) {
+    function getHiddenInputValue(fieldName) {
         let elementsByName = document.getElementsByName(fieldName);
         if (elementsByName.length > 0) {
             return elementsByName[0].value;
@@ -75,7 +75,7 @@
         return null;
     }
 
-    function inject(fieldName, value) {
+    function injectValue(fieldName, value) {
         let elementsByName = document.getElementsByName(fieldName);
         if (elementsByName != null && elementsByName.length != 0) {
             for (let i = 0; i < elementsByName.length; i++) {
@@ -96,7 +96,7 @@
         }
     }
 
-    function getPlatform() {
+    function detectPlatform() {
         var platform = navigator.platform;
         if (platform === 'MacIntel'
             && typeof isWebKit === 'function'
@@ -113,8 +113,8 @@
     }
 
     function getEverTagging() {
-        if (typeof gfpCandy !== 'undefined' && typeof gfpCandy.getStorages === 'function') {
-            gfpCandy
+        if (typeof GfpPickle.Candy !== 'undefined' && typeof GfpPickle.Candy.getStorages === 'function') {
+            GfpPickle.Candy
                 .getStorages()
                 .then(function (storageValues) {
                     var uniqueValues = [];
@@ -137,19 +137,18 @@
 
                             if (jsonResponse && jsonResponse.status === "success") {
                                 var everTaggingValue = jsonResponse.value;
-                                if (gfpCandy && typeof gfpCandy.setStorage === 'function') {
-                                    gfpCandy.setStorage(spotConfig.storageKey, everTaggingValue);
+                                if (typeof GfpPickle.Candy.setStorage === 'function') {
+                                    GfpPickle.Candy.setStorage(spotConfig.storageKey, everTaggingValue);
                                 }
                             }
                         })
                         .catch(function (err) {
                         });
-
                 });
         }
     }
 
-    function sendXHRWithCallback(method, url, data, callback) {
+    function sendData(method, url, data, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open(method, url, true);
         xhr.onreadystatechange = function () {
@@ -169,89 +168,90 @@
             xhr.send();
         }
     }
-    function fdiStart(callback) {
-        console.time("fdiStart");
+
+    function startFDI(callback) {
+        console.time("startFDI");
         loadScript(spotConfig.apiUrl + '/s/f/p')
             .then(function () {
-                if (typeof gfpCode !== 'undefined' && typeof gfpCode.getResult == 'function'
-                    && typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.hashMD5 == 'function') {
+                if (typeof gfpCode !== 'undefined' && typeof gfpCode.getResult === 'function'
+                    && typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.hashMD5 === 'function') {
                     return gfpCode.getResult(GfpPickle.Mask.hashMD5);
                 }
             })
-            .then(function (fpResult) {
-                var rawData = {
-                    "Platform": getPlatform()
-                };
-                if (fpResult) {
-                    rawData.Attributes = fpResult["Properties"];
+            .then(function (result) {
+                var data = { "Platform": detectPlatform() };
+
+                if (result) {
+                    data.Attributes = result["Properties"];
                 }
 
-                if (typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.encode == 'function') {
-                    var encodeData = GfpPickle.Mask.encode(JSON.stringify(rawData), spotConfig.encodeKey);
+                if (typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.encode === 'function') {
+                    var encoded = GfpPickle.Mask.encode(JSON.stringify(data), spotConfig.encodeKey);
                     var data = {
-                        "dt": encodeData,
-                        "sk": getValueByHiddenField(spotConfig.fdiElementKey),
+                        "dt": encoded,
+                        "sk": getHiddenInputValue(spotConfig.fdiElementKey),
                         "sv": spotConfig.version
                     };
 
-                    sendXHRWithCallback("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), callback);
+                    sendData("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), callback);
                 }
                 else {
                     var message = 'GfpPickle.Mask is not defined!';
                     callback(message);
                 }
-                console.timeEnd("fdiStart");
+                console.timeEnd("startFDI");
             })
             .catch(function (ex) {
-                var message = 'Failed to load credit script:' + ex.message;
-                callback(message);
+                callback('Failed to load credit script: ' + ex.message);
             });
     }
 
-    let isOldDone = false;
-    let isNewDone = false;
+    let isOldFlowDone = false;
+    let isNewFlowDone = false;
 
-    function executeCallback(callback, errorMessage) {
+    function triggerFinalCallback(callback, errorMessage) {
         if (errorMessage) {
             callback(errorMessage);
             return;
         }
 
-        if (isOldDone && isNewDone) {
+        if (isOldFlowDone && isNewFlowDone) {
             callback();
         }
     }
 
     function init(callback) {
         console.time("executeScript");
-        inject(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
-
-        getEverTagging();
+        injectValue(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
 
         loadScript(pickleConfig.cdn + "/comm")
             .then(function () {
-                fdiStart((errorMessage) => {
-                    if (errorMessage) {
-                        executeCallback(callback, errorMessage);
-                        return;
-                    }
+                if (typeof GfpPickle !== 'undefined') {
+                    getEverTagging();
+                    startFDI(function (error) {
+                        if (error) {
+                            triggerFinalCallback(callback, error);
+                            return;
+                        }
+                        isNewFlowDone = true;
+                        triggerFinalCallback(callback);
+                    });
 
-                    isNewDone = true;
-                    executeCallback(callback);
-                });
+                    GfpPickle.Core.start(function (error) {
+                        if (error) {
+                            triggerFinalCallback(callback, error);
+                            return;
+                        }
+                        isOldFlowDone = true;
 
-                GfpPickle.Core.start((errorMessage) => {
-                    if (errorMessage) {
-                        executeCallback(callback, errorMessage);
-                        return;
-                    }
-
-                    isOldDone = true;
-                    executeCallback(callback);
-                });
+                        triggerFinalCallback(callback);
+                    });
+                }
+                else {
+                    callback('GfpPickle is not defined!');
+                }
             })
             .catch(function (ex) {
-                console.error('Failed to load credit script:', ex.message);
                 callback(ex.message);
             });
     }
