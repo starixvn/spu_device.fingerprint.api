@@ -7,8 +7,6 @@
 
     public interface IHttpCachingWrapper
     {
-        void UpdateCachingWithExpiredDays(int expiredDays);
-
         void UpdateCachingWithExpiredSeconds(int expiredSeconds);
 
         bool DoesRecoverDeviceIdFromETag();
@@ -34,28 +32,22 @@
 
                 _etag = value;
 
-                if (Response is { HasStarted: false })
+                if (Response != null && !Response.HasStarted)
                 {
                     Response.Headers[HeaderNames.ETag] = value;
                 }
             }
         }
 
-        public void UpdateCachingWithExpiredDays(int expiredDays)
-        {
-            if (Response is { HasStarted: false })
-            {
-                SetCacheExpiration(TimeSpan.FromDays(expiredDays));
-            }
-        }
-
         public void UpdateCachingWithExpiredSeconds(int expiredSeconds)
         {
-            if (Response is { HasStarted: false })
+            if (Response != null && !Response.HasStarted && expiredSeconds > 0)
             {
                 SetCacheExpiration(TimeSpan.FromSeconds(expiredSeconds));
             }
         }
+
+
 
         public bool DoesRecoverDeviceIdFromETag() =>
             DeviceFactory.IsValidDeviceId(ETag);

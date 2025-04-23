@@ -3,6 +3,25 @@
 
     console.log('v1: ' + pickleConfig.version + ' v2: ' + spotConfig.version);
 
+    var gfpLogs = [];
+
+    function logStepError(stage, message, scriptUrl) {
+        var payload = buildErrorPayload(stage, message, scriptUrl);
+        gfpLogs.push(JSON.parse(payload));
+    }
+
+    function buildErrorPayload(stage, message, scriptUrl) {
+        return JSON.stringify({
+            stage: stage,
+            message: message,
+            version: pickleConfig.version,
+            script: scriptUrl,
+            time: new Date().toISOString(),
+            platform: navigator.platform,
+            userAgent: navigator.userAgent,
+            sessionKey: spotConfig.sessionKey
+        });
+    }
 
     function loadScript(url) {
         return new Promise(function (resolve, reject) {
@@ -44,7 +63,9 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     resolve(xhr.responseText);
                 } else {
-                    reject(new Error(xhr.statusText));
+                    reject(new Error(
+                        `[XHR Error] ${xhr.status} ${xhr.statusText} - URL: ${xhr.responseURL || 'unknown'}`
+                    ));
                 }
             };
 
@@ -57,7 +78,7 @@
     }
 
     function createHiddenElement(container, value, id, name) {
-        let diInput = document.createElement("INPUT");
+        var diInput = document.createElement("INPUT");
         diInput.id = id;
         diInput.name = name;
         diInput.setAttribute("type", "hidden");
@@ -67,7 +88,7 @@
     }
 
     function getHiddenInputValue(fieldName) {
-        let elementsByName = document.getElementsByName(fieldName);
+        var elementsByName = document.getElementsByName(fieldName);
         if (elementsByName.length > 0) {
             return elementsByName[0].value;
         }
@@ -76,17 +97,17 @@
     }
 
     function injectValue(fieldName, value) {
-        let elementsByName = document.getElementsByName(fieldName);
+        var elementsByName = document.getElementsByName(fieldName);
         if (elementsByName != null && elementsByName.length != 0) {
-            for (let i = 0; i < elementsByName.length; i++) {
+            for (var i = 0; i < elementsByName.length; i++) {
                 elementsByName[i].value = value;
             }
         }
         else {
-            let forms = document.forms;
+            var forms = document.forms;
 
             if (forms != null && forms.length != 0) {
-                for (let i = 0; i < forms.length; i++) {
+                for (var i = 0; i < forms.length; i++) {
                     createHiddenElement(document.forms[i], value, (i == 0 ? fieldName : fieldName + i), fieldName);
                 }
             }
@@ -98,16 +119,19 @@
 
     function detectPlatform() {
         var platform = navigator.platform;
-        if (platform === 'MacIntel'
-            && typeof isWebKit === 'function'
-            && typeof isDesktopWebKit === 'function'
-            && typeof isIPad === 'function') {
-            if (isWebKit() && !isDesktopWebKit()) {
-                return isIPad() ? 'iPad' : 'iPhone';
+
+        if (platform) {
+            if (platform === 'MacIntel'
+                && typeof isWebKit === 'function'
+                && typeof isDesktopWebKit === 'function'
+                && typeof isIPad === 'function') {
+                if (isWebKit() && !isDesktopWebKit()) {
+                    return isIPad() ? 'iPad' : 'iPhone';
+                }
             }
-        }
-        if (platform.length > 45) {
-            return 'Android';
+            if (platform.length > 45) {
+                return 'Android';
+            }
         }
         return platform;
     }
@@ -124,25 +148,24 @@
                         if (uniqueValues.indexOf(value) === -1) {
                             uniqueValues.push(value);
                         }
-                    }
+                    };
+
+                    const headerSafeRegex = /^[a-zA-Z0-9\-_.]+$/;
+                    const safeValues = uniqueValues.filter(val => headerSafeRegex.test(val));
 
                     var jsonHeader = {
-                        "Res-Ec-X": uniqueValues.join(','),
+                        "Res-Ec-X": safeValues.join(','),
                         "Res-Ec-Y": spotConfig.sessionKey
                     };
 
                     getByXHR(spotConfig.portalAPIUrl + "/e/t", jsonHeader)
                         .then(function (response) {
-                            var jsonResponse = JSON.parse(response);
-
-                            if (jsonResponse && jsonResponse.status === "success") {
-                                var everTaggingValue = jsonResponse.value;
-                                if (typeof GfpPickle.Candy.setStorage === 'function') {
-                                    GfpPickle.Candy.setStorage(spotConfig.storageKey, everTaggingValue);
-                                }
+                            if (response && typeof GfpPickle.Candy.setStorage === 'function') {
+                                GfpPickle.Candy.setStorage(spotConfig.storageKey, response);
                             }
                         })
                         .catch(function (err) {
+                            logStepError("getEverTagging::XHR", err.message, spotConfig.portalAPIUrl + "/e/t");
                         });
                 });
         }
@@ -156,7 +179,8 @@
                 if (xhr.status >= 200 && xhr.status < 300) {
                     callback();
                 } else {
-                    callback(xhr.statusText);
+                    logStepError("sendData::HTTP", xhr.statusText, url);
+                    callback();
                 }
             }
         };
@@ -171,11 +195,13 @@
 
     function startFDI(callback) {
         console.time("startFDI");
+        var gfpMask = (typeof GfpPickle !== 'undefined' && GfpPickle.Mask) ? GfpPickle.Mask : undefined;
+
         loadScript(spotConfig.apiUrl + '/s/f/p')
             .then(function () {
                 if (typeof gfpCode !== 'undefined' && typeof gfpCode.getResult === 'function'
-                    && typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.hashMD5 === 'function') {
-                    return gfpCode.getResult(GfpPickle.Mask.hashMD5);
+                    && typeof gfpMask !== 'undefined' && typeof gfpMask.hashMD5 === 'function') {
+                    return gfpCode.getResult(gfpMask.hashMD5);
                 }
             })
             .then(function (result) {
@@ -185,8 +211,8 @@
                     data.Attributes = result["Properties"];
                 }
 
-                if (typeof GfpPickle.Mask !== 'undefined' && typeof GfpPickle.Mask.encode === 'function') {
-                    var encoded = GfpPickle.Mask.encode(JSON.stringify(data), spotConfig.encodeKey);
+                if (typeof gfpMask !== 'undefined' && typeof gfpMask.encode === 'function') {
+                    var encoded = gfpMask.encode(JSON.stringify(data), spotConfig.encodeKey);
                     var data = {
                         "dt": encoded,
                         "sk": getHiddenInputValue(spotConfig.fdiElementKey),
@@ -196,26 +222,34 @@
                     sendData("POST", spotConfig.portalAPIUrl + '/f/p', JSON.stringify(data), callback);
                 }
                 else {
-                    var message = 'GfpPickle.Mask is not defined!';
-                    callback(message);
+                    callback('startFDI::gfpMask is not defined!');
                 }
                 console.timeEnd("startFDI");
             })
             .catch(function (ex) {
-                callback('Failed to load credit script: ' + ex.message);
+                callback(buildErrorPayload("startFDI::loadScript", ex.message, spotConfig.apiUrl + '/s/f/p'));
             });
     }
 
-    let isOldFlowDone = false;
-    let isNewFlowDone = false;
+    var isOldFlowDone = false;
+    var isNewFlowDone = false;
 
     function triggerFinalCallback(callback, errorMessage) {
+        const hasLogs = gfpLogs.length > 0;
+        var result = null;
+        var isDone = isOldFlowDone && isNewFlowDone;
+
         if (errorMessage) {
-            callback(errorMessage);
-            return;
+            result = hasLogs
+                ? { errorMessage, logs: gfpLogs }
+                : errorMessage;
+        } else if (isDone && hasLogs) {
+            result = { logs: gfpLogs };
         }
 
-        if (isOldFlowDone && isNewFlowDone) {
+        if (result) {
+            callback(typeof result === 'string' ? result : JSON.stringify(result));
+        } else if (isDone) {
             callback();
         }
     }
@@ -224,7 +258,7 @@
         console.time("executeScript");
         injectValue(spotConfig.fdiElementKey, spotConfig.sessionKey + ":" + spotConfig.dbIndex);
 
-        loadScript(pickleConfig.cdn + "/comm")
+        loadScript(pickleConfig.cdn + "/comm?v=" + pickleConfig.version)
             .then(function () {
                 if (typeof GfpPickle !== 'undefined') {
                     getEverTagging();
@@ -248,17 +282,17 @@
                     });
                 }
                 else {
-                    callback('GfpPickle is not defined!');
+                    callback(buildErrorPayload("init::GfpPickleMissing", "GfpPickle is not defined", pickleConfig.cdn + "/comm?v=" + pickleConfig.version));
                 }
             })
             .catch(function (ex) {
-                callback(ex.message);
+                callback(buildErrorPayload("init::loadScriptComm", ex.message, pickleConfig.cdn + "/comm?v=" + pickleConfig.version));
             });
     }
 
-    const fallbackCallback = function () {};
+    var fallbackCallback = function () {};
 
-    const safeCallback =
+    var safeCallback =
         (window.gfpCallback && typeof window.gfpCallback.callback === 'function')
             ? window.gfpCallback.callback
             : fallbackCallback;

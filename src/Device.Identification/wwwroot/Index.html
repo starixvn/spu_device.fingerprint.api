@@ -4,36 +4,35 @@
     <meta charset="utf-8" />
     <title></title>
 
-    <script>
-		let isCallbackCalled = false;
+	<script>
+		var isCallbackCalled = false;
+		var timeOutMessage = 'Run script timeout!';
 
-		const fallbackTimer = setTimeout(() => {
-			if (!isCallbackCalled) {
-				isCallbackCalled = true;
-				onDeviceReady('Run script timeout!');
-			}
-		}, 5000);
-
-		window.gfpCallback = window.gfpCallback || {};
-
-		gfpCallback.callback = function (errorMessage) {
+		var handleCallback = (errorMessage) => {
 			if (isCallbackCalled) return;
 
 			isCallbackCalled = true;
 			clearTimeout(fallbackTimer);
-			onDeviceReady(errorMessage);
+
+			handle_x12Result(errorMessage);
 		};
 
-		function onDeviceReady(errorMessage) {
+		var fallbackTimer = setTimeout(() => handleCallback(timeOutMessage), 5000);
+
+		window.gfpCallback = window.gfpCallback || {};
+		gfpCallback.callback = handleCallback;
+
+		function handle_x12Result(errorMessage) {
 			if (errorMessage) {
-				console.log("ErrorMessage: ", errorMessage);
-				return;
+				// Log error message
+				console.error("ErrorMessage:", errorMessage);
 			}
 
+			// Do something after FPSReady
 			console.log("Run script completed!");
 			console.timeEnd("executeScript");
 		}
-    </script>
+	</script>
 
     <script src="//localhost:5011/act" async defer></script>
 </head>
