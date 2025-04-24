@@ -2919,10 +2919,10 @@ var gfpCode = (function (exports) {
         }
         return "".concat(result, "}");
     }
-    function getResult(callback) {
+    function getResult(hashFn) {
         var fpPromise = loadSources(sources, {}, [])();
         return fpPromise.then(function (components) {
-            components = applyHashToProperties(components, ["canvas", "webGlExtensions"], callback);
+            components = applyHashToProperties(components, ["canvas", "webGlExtensions"], hashFn);
             return getIncognitoMode().then(function (isIncognitoMode) {
                 var customComponents = __assign(__assign({}, components), { doNotTrack: getDoNotTrack(), navigator: getNavigator(), timezoneOffset: getTimezoneOffset(), isIncognitoMode: isIncognitoMode });
                 return {

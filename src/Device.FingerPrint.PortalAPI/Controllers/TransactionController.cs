@@ -77,16 +77,20 @@
             {
                 var ecValues = Request.Headers["Res-Ec-X"].ToString();
 
-                var everTaggingValues = ecValues.Split(',');
+                var everTaggingValues = ecValues
+                                        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                        .Select(x => x.Trim())
+                                        .Where(x => !string.IsNullOrEmpty(x))
+                                        .ToList();
 
-                if (everTaggingValues.Length > 1)
+                if (everTaggingValues.Count > 1)
                 {
                     foreach (var ec in everTaggingValues)
                     {
                         var sessionKey = Utilities.ParseSessionKey(ec, 0);
                         if (sessionKey != null)
                         {
-                            var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
+                            var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{sessionKey.SessionKey}");
 
                             if (ecKeyExisting)
                             {
@@ -101,13 +105,13 @@
                         }
                     }
                 }
-                else if (everTaggingValues.Length == 1)
+                else if (everTaggingValues.Count == 1)
                 {
                     result = everTaggingValues[0];
                 }
             }
 
-            if (result != sesionKey)
+            if (!string.IsNullOrEmpty(result) && result != sesionKey)
             {
                 everTaggingRedisDB.StringSetAsync($"RealTagging:{sesionKey}", result);
                 everTaggingRedisDB.KeyExpireAsync($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
