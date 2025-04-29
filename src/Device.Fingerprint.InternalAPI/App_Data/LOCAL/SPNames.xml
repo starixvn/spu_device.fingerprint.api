@@ -9,4 +9,7 @@
 	<Function Name="SAI">
 		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo" DbName="MySQL.DCS_DataCenter.Reporter"/>
 	</Function>
+	<Function Name="OpenSearch">
+		<Setting Key="DCS_Adhoc_FingerPrint_FPFingerPrint_Get" SpName="DCS_Adhoc_FingerPrint_FPFingerPrint_Get_xtest" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+	</Function>
 </Functions>
