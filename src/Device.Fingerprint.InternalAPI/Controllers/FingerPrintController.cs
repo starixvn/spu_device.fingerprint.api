@@ -1,4 +1,5 @@
 ﻿using Device.Fingerprint.InternalAPI.Model;
+using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Features.FingerPrint.Entities;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 {
     [Route("api")]
     [ApiController]
-    public class FingerPrintController(IFingerPrintServices fingerPrintServices) : ControllerBase
+    public class FingerPrintController(IFingerPrintServices fingerPrintServices, ILogstashFPFingerprintService logstashFPFingerprintService) : ControllerBase
     {
         private readonly IFingerPrintServices fingerPrintServices = fingerPrintServices;
 
@@ -31,6 +32,49 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     StatusCode = System.Net.HttpStatusCode.OK,
                     ErrorMessage = string.Empty,
                     FPFingerPrint = fpFingerPrint
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new FPFingerPrintResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("PushFingerprintToLogstash")]
+        [AllowAnonymous]
+        public ActionResult<FPFingerPrintEntity> PushFingerprintToLogstash([FromForm] DateTime fromDate, [FromForm] DateTime toDate, [FromForm] int batchSize, [FromForm] ulong lastFingerPrintID)
+        {
+            try
+            {
+                var validationResponse = ValidateRequestParameters(fromDate, toDate, batchSize, lastFingerPrintID);
+                if (validationResponse != null)
+                {
+                    return Ok(validationResponse);
+                }
+
+                var fpFingerPrint = fingerPrintServices.GetFPFingerPrint(fromDate, toDate, batchSize, lastFingerPrintID);
+
+                if (fpFingerPrint != null && fpFingerPrint.Any())
+                {
+                    var processedFingerprintID = logstashFPFingerprintService.PushLogAsync(fpFingerPrint);
+
+                    return Ok(new FPFingerPrintResponse
+                    {
+                        StatusCode = System.Net.HttpStatusCode.OK,
+                        ErrorMessage = string.Empty,
+                        MaxFingerprintID = processedFingerprintID.ToString()
+                    });
+
+                }
+
+                return Ok(new FPFingerPrintResponse
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK,
+                    ErrorMessage = string.Empty,
                 });
             }
             catch (Exception ex)
