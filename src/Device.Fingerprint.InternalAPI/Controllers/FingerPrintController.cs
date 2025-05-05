@@ -57,15 +57,6 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     return Ok(validationResponse);
                 }
 
-                if (!appSettings.IsEnableLogstash)
-                {
-                    return BadRequest(new FPFingerPrintResponse
-                    {
-                        StatusCode = System.Net.HttpStatusCode.BadRequest,
-                        ErrorMessage = "Logstash is not enabled!"
-                    });
-                }
-
                 var fingerprints = fingerPrintServices.GetFPFingerPrint(fromDate, toDate, batchSize, lastFingerPrintID);
 
                 if (fingerprints == null || !fingerprints.Any())
