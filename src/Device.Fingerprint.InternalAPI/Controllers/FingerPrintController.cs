@@ -1,5 +1,6 @@
 ﻿using Device.Fingerprint.InternalAPI.Model;
 using Device.Fingerprint.InternalAPI.Services;
+using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.FingerPrint.Entities;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,7 +10,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 {
     [Route("api")]
     [ApiController]
-    public class FingerPrintController(IFingerPrintServices fingerPrintServices, ILogstashFPFingerprintService logstashFPFingerprintService) : ControllerBase
+    public class FingerPrintController(IAppSettings appSettings, IFingerPrintServices fingerPrintServices, ILogstashFPFingerprintService logstashFPFingerprintService) : ControllerBase
     {
         private readonly IFingerPrintServices fingerPrintServices = fingerPrintServices;
 
@@ -56,26 +57,25 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     return Ok(validationResponse);
                 }
 
-                var fpFingerPrint = fingerPrintServices.GetFPFingerPrint(fromDate, toDate, batchSize, lastFingerPrintID);
-
-                if (fpFingerPrint != null && fpFingerPrint.Any())
+                if (!appSettings.IsEnableLogstash)
                 {
-                    var processedFingerprintID = logstashFPFingerprintService.PushLogAsync(fpFingerPrint);
-
-                    return Ok(new FPFingerPrintResponse
+                    return BadRequest(new FPFingerPrintResponse
                     {
-                        StatusCode = System.Net.HttpStatusCode.OK,
-                        ErrorMessage = string.Empty,
-                        MaxFingerprintID = processedFingerprintID.ToString()
+                        StatusCode = System.Net.HttpStatusCode.BadRequest,
+                        ErrorMessage = "Logstash is not enabled!"
                     });
-
                 }
 
-                return Ok(new FPFingerPrintResponse
+                var fingerprints = fingerPrintServices.GetFPFingerPrint(fromDate, toDate, batchSize, lastFingerPrintID);
+
+                if (fingerprints == null || !fingerprints.Any())
                 {
-                    StatusCode = System.Net.HttpStatusCode.OK,
-                    ErrorMessage = string.Empty,
-                });
+                    return Ok(CreateSuccessResponse());
+                }
+
+                var maxFingerprintId = logstashFPFingerprintService.PushLogAsync(fingerprints);
+
+                return Ok(CreateSuccessResponse(maxFingerprintId.ToString()));
             }
             catch (Exception ex)
             {
@@ -117,6 +117,16 @@ namespace Device.Fingerprint.InternalAPI.Controllers
             }
 
             return null;
+        }
+
+        private FPFingerPrintResponse CreateSuccessResponse(string? maxFingerprintId = null)
+        {
+            return new FPFingerPrintResponse
+            {
+                StatusCode = System.Net.HttpStatusCode.OK,
+                ErrorMessage = string.Empty,
+                MaxFingerprintID = maxFingerprintId
+            };
         }
     }
 }
