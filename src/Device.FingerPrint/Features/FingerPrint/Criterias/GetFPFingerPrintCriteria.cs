@@ -20,7 +20,7 @@ namespace Device.FingerPrint.Features.FingerPrint.Criterias
 
         public override string GetSettingKey()
         {
-            return "DCS_Adhoc_FingerPrint_FPFingerPrint_Get";
+            return "DCS_DC_OpenSearch_FPFingerPrint_Get";
         }
 
         public override bool IsValid()

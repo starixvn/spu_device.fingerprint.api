@@ -10,6 +10,6 @@
 		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo" DbName="MySQL.DCS_DataCenter.Reporter"/>
 	</Function>
 	<Function Name="OpenSearch">
-		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get_xtest" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
 	</Function>
 </Functions>

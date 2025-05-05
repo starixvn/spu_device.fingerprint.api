@@ -64,6 +64,7 @@ builder.Services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
 builder.Services.AddSingleton<IFingerPrintServices, FingerPrintServices>();
 
 builder.Services.AddSingleton<ILogstashService, LogstashService>();
+builder.Services.AddSingleton<ILogstashFPFingerprintService, LogstashFPFingerprintService>();
 
 var rateLimiterConfig = appSettings.GetSection<RateLimiterConfig>("AppConfig:RateLimiter");
 builder.Services.AddRateLimiter(options =>
