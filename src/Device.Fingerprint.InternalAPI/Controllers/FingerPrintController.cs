@@ -5,6 +5,7 @@ using Device.FingerPrint.Features.FingerPrint.Entities;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Device.Fingerprint.InternalAPI.Controllers
 {
@@ -15,7 +16,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
         private readonly IFingerPrintServices fingerPrintServices = fingerPrintServices;
 
         [HttpGet(template: "GetFingerPrint/{fromDate}/{toDate}/{batchSize}/{lastFingerPrintID}")]
-        [AllowAnonymous]
+        [EnableRateLimiting("fixed")]
         public ActionResult<FPFingerPrintEntity> GetFingerPrint(DateTime fromDate, DateTime toDate, int batchSize, ulong lastFingerPrintID)
         {
             try
@@ -46,7 +47,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
         }
 
         [HttpPost("PushFingerprintToLogstash")]
-        [AllowAnonymous]
+        [EnableRateLimiting("fixed")]
         public ActionResult<FPFingerPrintEntity> PushFingerprintToLogstash([FromForm] DateTime fromDate, [FromForm] DateTime toDate, [FromForm] int batchSize, [FromForm] ulong lastFingerPrintID)
         {
             try
@@ -110,7 +111,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
             return null;
         }
 
-        private FPFingerPrintResponse CreateSuccessResponse(ulong? maxFingerprintId = null)
+        private FPFingerPrintResponse CreateSuccessResponse(ulong? maxFingerprintId = 0)
         {
             return new FPFingerPrintResponse
             {
