@@ -11,6 +11,6 @@ namespace Device.Fingerprint.InternalAPI.Model
 
         public IEnumerable<FPFingerPrintEntity>? FPFingerPrint { get; set; }
 
-        public string? MaxFingerprintID { get; set; }
+        public ulong? MaxFingerprintID { get; set; }
     }
 }

@@ -66,7 +66,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 
                 var maxFingerprintId = logstashFPFingerprintService.PushLogAsync(fingerprints);
 
-                return Ok(CreateSuccessResponse(maxFingerprintId.ToString()));
+                return Ok(CreateSuccessResponse(maxFingerprintId));
             }
             catch (Exception ex)
             {
@@ -110,7 +110,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
             return null;
         }
 
-        private FPFingerPrintResponse CreateSuccessResponse(string? maxFingerprintId = null)
+        private FPFingerPrintResponse CreateSuccessResponse(ulong? maxFingerprintId = null)
         {
             return new FPFingerPrintResponse
             {
