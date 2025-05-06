@@ -12,4 +12,7 @@
 	<Function Name="OpenSearch">
 		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get_xtest" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
 	</Function>
+	<Function Name="AutomationTest">
+		<Setting Key="DCS_DC_Transform_Transaction07_ValidateSuccess" SpName="DCS_DC_Transform_Transaction07_ValidateSuccess" DbName="MySQL.DCS_DataCenter.ctsServiceAdmin"/>
+	</Function>
 </Functions>

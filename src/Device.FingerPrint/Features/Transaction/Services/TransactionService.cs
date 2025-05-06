@@ -50,6 +50,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
         IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate);
 
         IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize);
+
+        IEnumerable<TransactionValidateSuccessEntity> TransactionValidateSuccess(string loginName, DateTime transTime);
     }
 
     public class TransactionService : ITransactionService
@@ -218,6 +220,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize)
         {
             return transactionDataAccess.GetTransactionInfo(lastTransID, batchSize);
+        }
+
+        public IEnumerable<TransactionValidateSuccessEntity> TransactionValidateSuccess(string loginName, DateTime transTime)
+        {
+            return transactionDataAccess.TransactionValidateSuccess(loginName, transTime);
         }
     }
 }

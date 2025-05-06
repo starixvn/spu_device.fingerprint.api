@@ -1,5 +1,7 @@
 ﻿using Device.Fingerprint.InternalAPI.Model;
+using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Features.Transaction.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -100,6 +102,16 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     ErrorMessage = ex.Message
                 });
             }
+        }
+
+
+        [HttpGet(template: "TransactionValidateSuccess/{loginName}/{transTime}")]
+        [AllowAnonymous]
+        public ActionResult<TransactionValidateSuccessEntity> TransactionValidateSuccess(string loginName, DateTime transTime)
+        {
+            var transaction = transactionService.TransactionValidateSuccess(loginName, transTime);
+
+            return Ok(transaction);
         }
     }
 }
