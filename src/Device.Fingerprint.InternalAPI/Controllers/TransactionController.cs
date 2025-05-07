@@ -109,10 +109,9 @@ namespace Device.Fingerprint.InternalAPI.Controllers
         [AllowAnonymous]
         public ActionResult<Transaction07InfoEntity> TransactionValidateSuccess(string loginName, DateTime transTime)
         {
-            // get all attribute value from TransactionValidateSuccessEntity with comma
             var columns = string.Join(",", typeof(Transaction07InfoEntity).GetProperties().Select(x => x.Name));
 
-            var conditions = $"CreatedDate = '{transTime:yyyy-MM-dd}' AND LoginName = '{loginName}' AND TransTime >= '{transTime:yyyy-MM-dd HH:MM:ss}'";
+            var conditions = $"CreatedDate = '{transTime:yyyy-MM-dd}' AND LoginName = '{loginName}' AND TransTime >= '{transTime:yyyy-MM-dd HH:mm:ss}'";
 
             var transaction = transactionService.GetTransaction07Info(columns, conditions, 100, 1);
 

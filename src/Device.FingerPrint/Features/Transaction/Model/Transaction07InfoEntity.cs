@@ -1,8 +1,12 @@
-﻿namespace Device.FingerPrint.Features.Transaction.Model
+﻿using System;
+
+namespace Device.FingerPrint.Features.Transaction.Model
 {
     public class Transaction07InfoEntity
     {
         public ulong TransID { get; set; }
+        
+        public DateTime TransTime { get; set; }
 
         public int SubscriberID { get; set; }
 
