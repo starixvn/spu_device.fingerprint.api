@@ -51,7 +51,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize);
 
-        IEnumerable<TransactionValidateSuccessEntity> TransactionValidateSuccess(string loginName, DateTime transTime);
+        IEnumerable<Transaction07InfoEntity> GetTransaction07Info(string columns, string conditions, uint batchSize, uint pageNumber);
     }
 
     public class TransactionService : ITransactionService
@@ -222,9 +222,9 @@ namespace Device.FingerPrint.Features.Transaction.Services
             return transactionDataAccess.GetTransactionInfo(lastTransID, batchSize);
         }
 
-        public IEnumerable<TransactionValidateSuccessEntity> TransactionValidateSuccess(string loginName, DateTime transTime)
+        public IEnumerable<Transaction07InfoEntity> GetTransaction07Info(string columns, string conditions, uint batchSize, uint pageNumber)
         {
-            return transactionDataAccess.TransactionValidateSuccess(loginName, transTime);
+            return transactionDataAccess.GetTransaction07Info(columns, conditions, batchSize, pageNumber);
         }
     }
 }

@@ -1,10 +1,14 @@
 ﻿namespace Device.FingerPrint.Features.Transaction.Model
 {
-    public class TransactionValidateSuccessEntity
+    public class Transaction07InfoEntity
     {
         public ulong TransID { get; set; }
 
+        public int SubscriberID { get; set; }
+
         public ulong AccountID { get; set; }
+
+        public string LoginName { get; set; }
 
         public ulong DeviceCodeID { get; set; }
 
@@ -17,12 +21,6 @@
         public string UserAgentKey { get; set; }
 
         public ulong FP_DeviceMappingID { get; set; }
-
-        public ulong FP_TaggingID { get; set; }
-
-        public ulong FP_FingerPrintID { get; set; }
-
-        public ulong FP_DeviceFingerprintAccountOldID { get; set; }
 
         public ulong FP_DeviceID { get; set; }
 
