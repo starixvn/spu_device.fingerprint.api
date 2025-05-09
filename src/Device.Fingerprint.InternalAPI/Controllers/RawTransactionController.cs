@@ -14,7 +14,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 {
     [Route("api/raw-trans")]
     [ApiController]
-    public class RawTransactionController(IAppSettings appSettings, ITransactionService transactionService, ILogstashService logstashService) : ControllerBase
+    public class RawTransactionController(ITransactionService transactionService) : ControllerBase
     {
         [HttpPost("insertRawTrans")]
         [EnableRateLimiting("fixed")]
@@ -30,7 +30,6 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                 {
                     transactionService.InsertRawTransaction(rawTransModels, isExtraSub);
 
-                    _ = AdditionalProcessingNotAwait(rawTransModels);
                 }
 
                 return Ok(new TransactionInfoResponse
@@ -104,24 +103,5 @@ namespace Device.Fingerprint.InternalAPI.Controllers
             }
         }
 
-        private async Task AdditionalProcessingNotAwait(IEnumerable<RawTransactionModel> transactionModels)
-        {
-            try
-            {
-                await InsertLogstash(transactionModels);
-            }
-            catch (Exception ex)
-            {
-                LogService.Error(Utilities.GetLogMessage(ex));
-            }
-        }
-
-        private async Task InsertLogstash(IEnumerable<RawTransactionModel> transactions)
-        {
-            if (appSettings.IsEnableLogstash)
-            {
-                await logstashService.PushLogAsync(transactions);
-            }
-        }
     }
 }
