@@ -3,6 +3,7 @@ using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Model;
 using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Data;
@@ -58,7 +59,11 @@ builder.Services.AddSingleton<Fanex.Logging.ILogger, Logger>();
 builder.Services.AddSingleton<ICrypto, Crypto>();
 builder.Services.AddSingleton<ILogInfoDataAccess, LogInfoDataAccess>();
 builder.Services.AddSingleton<ILogInfoServices, LogInfoServices>();
-builder.Services.AddSingleton<ILogstashService, LogstashService>();
+
+builder.Services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
+builder.Services.AddSingleton<IFingerPrintServices, FingerPrintServices>();
+
+builder.Services.AddSingleton<ILogstashFPFingerprintService, LogstashFPFingerprintService>();
 
 var rateLimiterConfig = appSettings.GetSection<RateLimiterConfig>("AppConfig:RateLimiter");
 builder.Services.AddRateLimiter(options =>
@@ -151,8 +156,9 @@ builder.Services.AddSwaggerGen(swagger =>
 #endregion
 
 var app = builder.Build();
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment() && app.Environment.IsEnvironment("LOCAL") && app.Environment.IsEnvironment("UAT"))
+
+var environment = builder.Configuration["AppConfig:Environment"];
+if (environment == "DEV" || environment == "LOCAL" || environment == "UAT")
 {
     app.UseSwagger();
     app.UseSwaggerUI();

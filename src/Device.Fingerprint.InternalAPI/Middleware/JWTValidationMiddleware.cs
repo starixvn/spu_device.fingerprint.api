@@ -1,5 +1,6 @@
 ﻿using Device.Fingerprint.InternalAPI.Model;
 using Device.FingerPrint.Core;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Device.Fingerprint.InternalAPI.Middleware
 {
@@ -10,6 +11,14 @@ namespace Device.Fingerprint.InternalAPI.Middleware
 
         public async Task Invoke(HttpContext context)
         {
+            var endpoint = context.GetEndpoint();
+
+            if (endpoint?.Metadata?.GetMetadata<AllowAnonymousAttribute>() != null)
+            {
+                await next(context);
+                return;
+            }
+
             if (!context.Request.Path.Value.Contains("generatetoken/audience") && !context.Request.Path.Value.Contains("whoami"))
             {
                 var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(' ').Last();
