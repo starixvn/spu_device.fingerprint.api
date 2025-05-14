@@ -40,26 +40,13 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     });
                 }
 
-                var FPTransformedList = new ConcurrentBag<FPFingerPrintTransform>();
-
-                Parallel.ForEach(fpFingerPrints, fingerprint =>
-                {
-                    if (fingerprint != null)
-                    {
-                        var FPTransformed = TransformFPFingerprintAttributes(fingerprint);
-
-                        if (FPTransformed != null)
-                        {
-                            FPTransformedList.Add(FPTransformed);
-                        }
-                    }
-                });
+                var fPTransformedList = TransformFingerprintsParallel(fpFingerPrints);
 
                 return Ok(new FPFingerPrintResponse
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
                     ErrorMessage = string.Empty,
-                    FPFingerPrint = FPTransformedList
+                    FPFingerPrint = fPTransformedList
                 });
             }
             catch (Exception ex)
@@ -85,29 +72,16 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     return Ok(validationResponse);
                 }
 
-                var fingerprints = fingerPrintServices.GetFPFingerPrint(fromDate, toDate, batchSize, lastFingerPrintID);
+                var fpFingerPrints = fingerPrintServices.GetFPFingerPrint(fromDate, toDate, batchSize, lastFingerPrintID);
 
-                if (fingerprints == null || !fingerprints.Any())
+                if (fpFingerPrints == null || !fpFingerPrints.Any())
                 {
                     return Ok(CreateSuccessResponse());
                 }
 
-                var FPTransformedList = new ConcurrentBag<FPFingerPrintTransform>();
+                var fPTransformedList = TransformFingerprintsParallel(fpFingerPrints);
 
-                Parallel.ForEach(fingerprints, fingerprint =>
-                {
-                    if (fingerprint != null)
-                    {
-                        var FPTransformed = TransformFPFingerprintAttributes(fingerprint);
-
-                        if (FPTransformed != null)
-                        {
-                            FPTransformedList.Add(FPTransformed);
-                        }
-                    }
-                });
-
-                var maxFingerprintId = logstashFPFingerprintService.PushLogAsync(FPTransformedList);
+                var maxFingerprintId = logstashFPFingerprintService.PushLogAsync(fPTransformedList);
 
                 return Ok(CreateSuccessResponse(maxFingerprintId));
             }
@@ -203,5 +177,25 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                 MaxFingerprintID = maxFingerprintId
             };
         }
+
+        private static ConcurrentBag<FPFingerPrintTransform> TransformFingerprintsParallel(IEnumerable<FPFingerPrintEntity> fingerprints)
+        {
+            var transformedList = new ConcurrentBag<FPFingerPrintTransform>();
+
+            Parallel.ForEach(fingerprints, fingerprint =>
+            {
+                if (fingerprint != null)
+                {
+                    var transformed = TransformFPFingerprintAttributes(fingerprint);
+                    if (transformed != null)
+                    {
+                        transformedList.Add(transformed);
+                    }
+                }
+            });
+
+            return transformedList;
+        }
+
     }
 }
