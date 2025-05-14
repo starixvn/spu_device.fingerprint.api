@@ -9,7 +9,7 @@ namespace Device.Fingerprint.InternalAPI.Model
 
         public string? ErrorMessage { get; set; }
 
-        public IEnumerable<FPFingerPrintEntity>? FPFingerPrint { get; set; }
+        public IEnumerable<FPFingerPrintTransform>? FPFingerPrint { get; set; }
 
         public ulong? MaxFingerprintID { get; set; }
     }

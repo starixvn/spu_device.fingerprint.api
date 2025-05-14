@@ -9,7 +9,7 @@ namespace Device.Fingerprint.InternalAPI.Services
 {
     public interface ILogstashFPFingerprintService
     {
-        ulong PushLogAsync(IEnumerable<FPFingerPrintEntity> fingerprintEntities);
+        ulong PushLogAsync(IEnumerable<FPFingerPrintTransform> fingerprintTransforms);
     }
     public class LogstashFPFingerprintService : ILogstashFPFingerprintService
     {
@@ -20,13 +20,13 @@ namespace Device.Fingerprint.InternalAPI.Services
             this.appSettings = appSettings;
         }
 
-        public ulong PushLogAsync(IEnumerable<FPFingerPrintEntity> fingerprintEntities)
+        public ulong PushLogAsync(IEnumerable<FPFingerPrintTransform> fingerprintTransforms)
         {
             ulong processedFingerprintID = 0;
             using var client = new TcpClient(appSettings.LogstashTcpHostname, appSettings.LogstashTcpPort);
             using var stream = client.GetStream();
 
-            foreach (var fingerprint in fingerprintEntities)
+            foreach (var fingerprint in fingerprintTransforms)
             {
                 var logMessage = TransformLogMessage(fingerprint);
 
@@ -42,7 +42,7 @@ namespace Device.Fingerprint.InternalAPI.Services
             return processedFingerprintID;
         }
 
-        private FPFingerprintLogstashModel TransformLogMessage(FPFingerPrintEntity fingerprint)
+        private FPFingerprintLogstashModel TransformLogMessage(FPFingerPrintTransform fingerprint)
         {
             var logMessage = new FPFingerprintLogstashModel
             {
@@ -52,5 +52,6 @@ namespace Device.Fingerprint.InternalAPI.Services
 
             return logMessage;
         }
+
     }
 }
