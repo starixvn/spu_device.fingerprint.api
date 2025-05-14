@@ -3,11 +3,10 @@ using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Features.FingerPrint.Entities;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Model;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;
-using System.Threading.Tasks;
+using System.Collections.Concurrent;
 
 namespace Device.Fingerprint.InternalAPI.Controllers
 {
@@ -41,7 +40,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     });
                 }
 
-                var FPTransformedList = new List<FPFingerPrintTransform>();
+                var FPTransformedList = new ConcurrentBag<FPFingerPrintTransform>();
 
                 Parallel.ForEach(fpFingerPrints, fingerprint =>
                 {
@@ -93,7 +92,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     return Ok(CreateSuccessResponse());
                 }
 
-                var FPTransformedList = new List<FPFingerPrintTransform>();
+                var FPTransformedList = new ConcurrentBag<FPFingerPrintTransform>();
 
                 Parallel.ForEach(fingerprints, fingerprint =>
                 {
