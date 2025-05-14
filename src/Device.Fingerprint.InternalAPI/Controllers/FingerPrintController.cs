@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace Device.Fingerprint.InternalAPI.Controllers
 {
@@ -17,7 +18,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
         private readonly IFingerPrintServices fingerPrintServices = fingerPrintServices;
 
         [HttpGet(template: "GetFingerPrint/{fromDate}/{toDate}/{batchSize}/{lastFingerPrintID}")]
-        [AllowAnonymous]
+        [EnableRateLimiting("fixed")]
         public ActionResult<FPFingerPrintTransform> GetFingerPrint(DateTime fromDate, DateTime toDate, int batchSize, ulong lastFingerPrintID)
         {
             try
@@ -40,18 +41,17 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     });
                 }
 
-                var transformedList = new List<FPFingerPrintTransform>();
+                var FPTransformedList = new List<FPFingerPrintTransform>();
+
                 Parallel.ForEach(fpFingerPrints, fingerprint =>
                 {
                     if (fingerprint != null)
                     {
-                        var transformed = TransformFPFingerprintAttributes(fingerprint);
-                        if (transformed != null)
+                        var FPTransformed = TransformFPFingerprintAttributes(fingerprint);
+
+                        if (FPTransformed != null)
                         {
-                            lock (transformedList)
-                            {
-                                transformedList.Add(transformed);
-                            }
+                            FPTransformedList.Add(FPTransformed);
                         }
                     }
                 });
@@ -60,7 +60,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
                     ErrorMessage = string.Empty,
-                    FPFingerPrint = transformedList
+                    FPFingerPrint = FPTransformedList
                 });
             }
             catch (Exception ex)
@@ -80,6 +80,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
             try
             {
                 var validationResponse = ValidateRequestParameters(fromDate, toDate, batchSize, lastFingerPrintID);
+
                 if (validationResponse != null)
                 {
                     return Ok(validationResponse);
@@ -93,17 +94,16 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                 }
 
                 var FPTransformedList = new List<FPFingerPrintTransform>();
+
                 Parallel.ForEach(fingerprints, fingerprint =>
                 {
                     if (fingerprint != null)
                     {
                         var FPTransformed = TransformFPFingerprintAttributes(fingerprint);
+
                         if (FPTransformed != null)
                         {
-                            lock (FPTransformedList)
-                            {
-                                FPTransformedList.Add(FPTransformed);
-                            }
+                            FPTransformedList.Add(FPTransformed);
                         }
                     }
                 });
