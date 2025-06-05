@@ -2788,7 +2788,7 @@ var gfpCode = (function (exports) {
         window.incognitoMode = incognitoMode;
     }
 
-    function getNavigatorElementsAsJson(obj, currentDepth, maxDepth) {
+    function getNavigatorElementsAsJson(obj, isDuckDuckGo, currentDepth, maxDepth) {
         if (currentDepth === void 0) { currentDepth = 0; }
         if (maxDepth === void 0) { maxDepth = 3; }
         if (currentDepth >= maxDepth) {
@@ -2806,7 +2806,7 @@ var gfpCode = (function (exports) {
             'appVersion'
         ]);
         for (var key in obj) {
-            if (!key.match(/^[a-zA-Z0-9]+$/)) {
+            if (isDuckDuckGo && !key.match(/^[a-zA-Z0-9]+$/)) {
                 continue;
             }
             if (ignoredProperties.has(key)) {
@@ -2819,10 +2819,20 @@ var gfpCode = (function (exports) {
                     continue; // Skip functions
                 }
                 else if (typeof value === 'object' && value !== null && currentDepth + 1 < maxDepth) {
-                    result[key] = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                    if (isDuckDuckGo) {
+                        var element = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                        if (element !== null && element !== undefined && Object.keys(element).length > 0)
+                            result[key] = element;
+                    }
+                    else {
+                        result[key] = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                    }
                 }
                 else if (typeof value === "string") {
-                    result[key] = value.replace(/[^\u0000-\u007F]/g, ""); // Remove non-ascii characters
+                    if (isDuckDuckGo)
+                        result[key] = value.replace(/[^\u0000-\u007F]/g, ""); // Remove non-ascii characters
+                    else
+                        result[key] = value;
                 }
                 else {
                     if (value != null) {
@@ -2838,7 +2848,8 @@ var gfpCode = (function (exports) {
     }
     function getNavigator() {
         var start = Date.now();
-        var navigatorJson = getNavigatorElementsAsJson(navigator);
+        var isDuckDuckGo = isDuckDuckGo();
+        var navigatorJson = getNavigatorElementsAsJson(navigator, isDuckDuckGo);
         if (typeof navigatorJson.connection === "object") {
             navigatorJson.connection.downlink = null;
             navigatorJson.connection.downlinkMax = null;
