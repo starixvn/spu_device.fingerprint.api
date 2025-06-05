@@ -2846,9 +2846,18 @@ var gfpCode = (function (exports) {
         }
         return result;
     }
+    function checkDuckDuckGo() {
+        // Access 'duckduckgo' property using type assertion to avoid TypeScript error
+        var duckduckgo = navigator.duckduckgo;
+        // Check if the current browser is DuckDuckGo
+        if (duckduckgo != undefined) {
+            return true;
+        }
+        return false;
+    }
     function getNavigator() {
         var start = Date.now();
-        var isDuckDuckGo = isDuckDuckGo();
+        var isDuckDuckGo = checkDuckDuckGo();
         var navigatorJson = getNavigatorElementsAsJson(navigator, isDuckDuckGo);
         if (typeof navigatorJson.connection === "object") {
             navigatorJson.connection.downlink = null;
