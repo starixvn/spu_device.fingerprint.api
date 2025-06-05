@@ -2819,13 +2819,13 @@ var gfpCode = (function (exports) {
                     continue; // Skip functions
                 }
                 else if (typeof value === 'object' && value !== null && currentDepth + 1 < maxDepth) {
+                    var element = getNavigatorElementsAsJson(value, isDuckDuckGo, currentDepth + 1, maxDepth);
                     if (isDuckDuckGo) {
-                        var element = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
                         if (element !== null && element !== undefined && Object.keys(element).length > 0)
                             result[key] = element;
                     }
                     else {
-                        result[key] = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                        result[key] = element;
                     }
                 }
                 else if (typeof value === "string") {
