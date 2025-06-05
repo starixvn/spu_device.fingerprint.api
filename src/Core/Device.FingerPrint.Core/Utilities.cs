@@ -289,8 +289,35 @@ namespace Device.FingerPrint.Core
                 return null;
 
             int cutIndex = url.IndexOfAny(new char[] { '?', '#' });
+            var cleanUrl = cutIndex != -1 ? url.Substring(0, cutIndex) : url;
 
-            return cutIndex != -1 ? url.Substring(0, cutIndex) : url;
+            return CollapseCasinoPaths(cleanUrl);
+        }
+
+        private static string CollapseCasinoPaths(string rawUrl)
+        {
+            var uri = new Uri(rawUrl);
+            var segments = uri.AbsolutePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (segments.Length < 4)
+                return rawUrl;
+
+            var first = segments[0];
+            var last = segments[segments.Length - 1];  
+
+            for (var i = 1; i < segments.Length - 1; i++)
+            {
+                if (!segments[i].Equals("casino", StringComparison.OrdinalIgnoreCase))
+                    return rawUrl;
+            }
+
+            if (first == "casino" && last != "casino")
+            {
+                string shortPath = $"/casino/.../casino/{last}";
+                return $"{uri.Scheme}://{uri.Host}:{uri.Port}{shortPath}";
+            }
+
+            return rawUrl;
         }
 
         public static string StripUnicodeCharactersFromString(string inputValue)
