@@ -8,10 +8,8 @@ using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Data;
 using Fanex.Data.MySql;
+using Fanex.Data.Repository;
 using Fanex.Logging;
-using Fanex.Logging.Extensions;
-using Fanex.Logging.Extensions.AspNetCore;
-using Fanex.Logging.Extensions.Database;
 using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -106,8 +104,14 @@ builder.Services.AddAuthentication(option =>
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCaching();
 
+builder.Services.AddFanexSql(builder.Configuration);
 
-FanexDataConfig(builder.Configuration, appSettings);
+builder.Services.AddTransient<IDynamicRepository, DynamicRepository>();
+
+// FanexDataConfig(builder.Configuration, appSettings);
+
+//AddFanexSql(builder.Services, builder.Configuration, false, "ConnectionStrings");
+
 
 LogManager.SetDefaultLogCategory("Device.Fingerprint.InternalAPI")
         .Use([
@@ -117,9 +121,9 @@ LogManager.SetDefaultLogCategory("Device.Fingerprint.InternalAPI")
             })
         ]);
 
-ExceptionHandler
-    .UseConfig(new LoggingConfiguration())
-    .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
+//ExceptionHandler
+//    .UseConfig(new LoggingConfiguration())
+//    .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
 LogService.Info("InternalAPI Start!");
 
@@ -157,6 +161,12 @@ builder.Services.AddSwaggerGen(swagger =>
 
 var app = builder.Build();
 
+//DbSettingProviderManager
+//    .StartNewSession()
+//    .WithMySql(builder.Configuration)
+//    .UseDefaultDbSettingProvider("~/App_Data")
+//    .Run();
+
 var environment = builder.Configuration["AppConfig:Environment"];
 if (environment == "DEV" || environment == "LOCAL" || environment == "UAT")
 {
@@ -189,25 +199,36 @@ app.MapControllers();
 
 app.Run();
 
-static void FanexDataConfig(ConfigurationManager configuration, AppSettings appSettings)
-{
-    var connections = configuration
-                    .GetSection("AppConfig:Connections")
-                    .GetChildren()
-                    .AsEnumerable()
-                    .ToDictionary(
-                        x => x.GetValue<string>("Name") ?? string.Empty,
-                        y => new ConnectionConfiguration(
-                            y.GetValue<string>("Name") ?? string.Empty,
-                            y.GetValue<string>("ConnectionString") ?? string.Empty,
-                            y.GetValue<string>("ProviderName") ?? string.Empty
-                        )
-                    );
 
-    DbSettingProviderManager
-      .StartNewSession()
-      .Use(connections)
-      .WithMySql()
-      .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-      .Run();
+
+static IServiceCollection AddFanexSql(IServiceCollection services, IConfiguration configuration, bool ignoreRedundantParameters = false, string connectionStringSection = "ConnectionStrings")
+{
+    string value = configuration.GetSection("StoredProcedurePath").Value;
+    var abc = DbSettingProviderManager.StartNewSession().WithMySql(configuration, connectionStringSection).UseDefaultDbSettingProvider(value, ignoreRedundantParameters);
+
+    abc.Run();
+    return services;
 }
+
+//static void FanexDataConfig(ConfigurationManager configuration, AppSettings appSettings)
+//{
+//    var connections = configuration
+//                    .GetSection("AppConfig:Connections")
+//                    .GetChildren()
+//                    .AsEnumerable()
+//                    .ToDictionary(
+//                        x => x.GetValue<string>("Name") ?? string.Empty,
+//                        y => new ConnectionConfiguration(
+//                            y.GetValue<string>("Name") ?? string.Empty,
+//                            y.GetValue<string>("ConnectionString") ?? string.Empty,
+//                            y.GetValue<string>("ProviderName") ?? string.Empty
+//                        )
+//                    );
+
+//    DbSettingProviderManager
+//      .StartNewSession()
+//      .Use(connections)
+//      .WithMySql()
+//      .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
+//      .Run();
+//}
