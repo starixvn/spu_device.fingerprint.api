@@ -1,10 +1,7 @@
 ﻿using Device.Fingerprint.InternalAPI.Model;
-using Device.Fingerprint.InternalAPI.Services;
-using Device.FingerPrint.Core;
 using Device.FingerPrint.Features.Transaction.Services;
 using Device.FingerPrint.Model;
 using Device.FingerPrint.Model.DTO;
-using Fanex.Logging;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Newtonsoft.Json;

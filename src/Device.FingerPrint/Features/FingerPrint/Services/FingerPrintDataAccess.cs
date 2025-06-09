@@ -16,7 +16,6 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
     {
         public IEnumerable<FPFingerPrintEntity> GetFPFingerPrint(DateTime fromDate, DateTime toDate, int batchSize, ulong lastID)
         {
-            using var objectDb = ObjectDbFactory.CreateInstance("DCS_DC_OpenSearch_FPFingerPrint_Get");
             var criteria = new GetFPFingerPrintCriteria
             {
                 FromDate = fromDate,
@@ -25,9 +24,8 @@ namespace Device.FingerPrint.Features.FingerPrint.Services
                 LastID = lastID
             };
 
-            //using var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey());
-            return new List<FPFingerPrintEntity>();
-            //return db.Query<FPFingerPrintEntity>(criteria);
+            using var db = ObjectDbFactory.CreateInstance(criteria.GetSettingKey());
+            return db.Query<FPFingerPrintEntity>(criteria);
         }
     }
 }

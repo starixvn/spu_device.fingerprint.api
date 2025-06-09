@@ -108,11 +108,6 @@ builder.Services.AddFanexSql(builder.Configuration);
 
 builder.Services.AddTransient<IDynamicRepository, DynamicRepository>();
 
-// FanexDataConfig(builder.Configuration, appSettings);
-
-//AddFanexSql(builder.Services, builder.Configuration, false, "ConnectionStrings");
-
-
 LogManager.SetDefaultLogCategory("Device.Fingerprint.InternalAPI")
         .Use([
             new SentryLogging(new SentryEngineOptions
@@ -161,12 +156,6 @@ builder.Services.AddSwaggerGen(swagger =>
 
 var app = builder.Build();
 
-//DbSettingProviderManager
-//    .StartNewSession()
-//    .WithMySql(builder.Configuration)
-//    .UseDefaultDbSettingProvider("~/App_Data")
-//    .Run();
-
 var environment = builder.Configuration["AppConfig:Environment"];
 if (environment == "DEV" || environment == "LOCAL" || environment == "UAT")
 {
@@ -198,37 +187,3 @@ app.UseRateLimiter();
 app.MapControllers();
 
 app.Run();
-
-
-
-static IServiceCollection AddFanexSql(IServiceCollection services, IConfiguration configuration, bool ignoreRedundantParameters = false, string connectionStringSection = "ConnectionStrings")
-{
-    string value = configuration.GetSection("StoredProcedurePath").Value;
-    var abc = DbSettingProviderManager.StartNewSession().WithMySql(configuration, connectionStringSection).UseDefaultDbSettingProvider(value, ignoreRedundantParameters);
-
-    abc.Run();
-    return services;
-}
-
-//static void FanexDataConfig(ConfigurationManager configuration, AppSettings appSettings)
-//{
-//    var connections = configuration
-//                    .GetSection("AppConfig:Connections")
-//                    .GetChildren()
-//                    .AsEnumerable()
-//                    .ToDictionary(
-//                        x => x.GetValue<string>("Name") ?? string.Empty,
-//                        y => new ConnectionConfiguration(
-//                            y.GetValue<string>("Name") ?? string.Empty,
-//                            y.GetValue<string>("ConnectionString") ?? string.Empty,
-//                            y.GetValue<string>("ProviderName") ?? string.Empty
-//                        )
-//                    );
-
-//    DbSettingProviderManager
-//      .StartNewSession()
-//      .Use(connections)
-//      .WithMySql()
-//      .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-//      .Run();
-//}
