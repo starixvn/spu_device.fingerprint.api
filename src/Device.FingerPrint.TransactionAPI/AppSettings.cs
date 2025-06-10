@@ -6,6 +6,8 @@ namespace Device.FingerPrint.TransactionAPI
 
     public interface IAppSettings
     {
+        string Environment { get; }
+
         string QueueName { get; }
 
         string ExtraQueueName { get; }
@@ -33,6 +35,8 @@ namespace Device.FingerPrint.TransactionAPI
     {
         private readonly IConfiguration configuration;
 
+        private readonly string environment;
+
         private readonly string queueName;
 
         private readonly string extraQueueName;
@@ -59,6 +63,8 @@ namespace Device.FingerPrint.TransactionAPI
         {
             this.configuration = configuration;
 
+            environment = GetValue<string>("Environment");
+
             queueName = GetValue<string>("RabbitMQ:Queue");
 
             extraQueueName = GetValue<string>("RabbitMQ:ExtraQueue");
@@ -81,6 +87,8 @@ namespace Device.FingerPrint.TransactionAPI
 
             jwtEnable = GetValue<bool>("JWT:Enable");
         }
+
+        public string Environment => environment;
 
         public string QueueName => queueName;
 

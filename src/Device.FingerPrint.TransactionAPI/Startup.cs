@@ -94,6 +94,8 @@ namespace Device.FingerPrint.TransactionAPI
             });
 
             services.AddHealthChecks();
+
+            LogService.Info($"TransactionAPI {appSettings.Environment} Start!");
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

@@ -97,7 +97,7 @@ namespace Device.FingerPrint.PortalAPI
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-            LogService.Info("PortalAPI Start!");
+            LogService.Info($"PortalAPI {appSettings.Environment} Start!");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
