@@ -3,7 +3,6 @@ using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.Redis;
-using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
 using Fanex.Logging.Extensions;
@@ -20,10 +19,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using Sentry;
-using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -83,7 +80,8 @@ namespace Device.FingerPrint.PortalAPI
             RegisterRedis(services);
 
             services.RegisterService();
-            //FanexDataConfig(appSettings);
+
+            services.AddFanexSql(Configuration);
 
             LogManager
            .SetDefaultLogCategory("Device.FingerPrint.PortalAPI")
