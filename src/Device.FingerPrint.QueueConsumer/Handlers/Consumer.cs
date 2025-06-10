@@ -66,7 +66,7 @@
                         {
                             transactionService.InsertRawTransaction(rawTransModels, appSettings.IsExtraSub);
                         }
-                        catch (MySql.Data.MySqlClient.MySqlException)
+                        catch
                         {
                             rawTransactionService.LogTransactions(rawTransModels);
 

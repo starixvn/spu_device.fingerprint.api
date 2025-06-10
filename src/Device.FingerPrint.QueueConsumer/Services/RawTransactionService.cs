@@ -5,7 +5,6 @@
     using Device.FingerPrint.Model;
     using Device.FingerPrint.Redis;
     using Fanex.Logging;
-    using MySql.Data.MySqlClient;
     using Newtonsoft.Json;
     using StackExchange.Redis;
     using System;
@@ -175,12 +174,6 @@
                     transactionService.InsertFPUserAgent(userAgentJson, isTransOfDBExtra);
                 }
             }
-            catch(MySqlException ex)
-            {
-                LogTransactions(transactions);
-
-                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
-            }
             catch (Exception ex)
             {
                 _ = QueueConsumer.Utilities.LogErrorAsync(ex);
@@ -199,12 +192,12 @@
                     transactionService.InsertFPFingerPrint(fingerPrintJson, isTransOfDBExtra);
                 }
             }
-            catch (MySqlException ex)
-            {
-                LogTransactions(transactions);
+            //catch (MySqlException ex)
+            //{
+            //    LogTransactions(transactions);
 
-                _ = QueueConsumer.Utilities.LogErrorAsync(ex);
-            }
+            //    _ = QueueConsumer.Utilities.LogErrorAsync(ex);
+            //}
             catch (Exception ex)
             {
                 _ = QueueConsumer.Utilities.LogErrorAsync(ex);

@@ -146,7 +146,7 @@ namespace Device.Fingerprint.WebAPI
 
             RegisterRedis(services);
             services.RegisterService();
-            FanexDataConfig(appSettings);
+            //FanexDataConfig(appSettings);
             
 
             LogManager
@@ -239,7 +239,7 @@ namespace Device.Fingerprint.WebAPI
             DbSettingProviderManager
               .StartNewSession()
               .Use(connections)
-              .WithMySql()
+              //.WithMySql()
               .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
               .Run();
         }

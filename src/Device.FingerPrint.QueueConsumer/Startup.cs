@@ -5,9 +5,6 @@ namespace Device.FingerPrint.QueueConsumer
     using Device.FingerPrint.QueueConsumer.Handlers;
     using Device.FingerPrint.QueueConsumer.Services;
     using Device.FingerPrint.Redis;
-    using Fanex.Data;
-    using Fanex.Data.MySql;
-    using Fanex.Data.SqlServer;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.AspNetCore;
@@ -21,10 +18,8 @@ namespace Device.FingerPrint.QueueConsumer
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Sentry;
-    using StackExchange.Redis;
     using System;
     using System.Collections.Generic;
-    using System.Linq;
 
     public class Startup
     {
@@ -46,7 +41,6 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddHealthChecks();
 
             services.RegisterService();
-            FanexDataConfig(appSettings);
 
             LogManager
                .SetDefaultLogCategory("Device.FingerPrint.Consumer")
@@ -105,26 +99,6 @@ namespace Device.FingerPrint.QueueConsumer
                 options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
                 options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
             });
-        }
-
-        private void FanexDataConfig(IAppSettings appSettings)
-        {
-            var connections = Configuration
-                                  .GetSection("AppConfig:Connections")
-                                  .GetChildren()
-                                  .AsEnumerable()
-                                  .ToDictionary(
-                                           x => x.GetValue<string>("Name"),
-                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-                                   );
-
-            DbSettingProviderManager
-              .StartNewSession()
-              .Use(connections)
-              .WithMySql()
-              .WithSqlServer()
-              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-              .Run();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
