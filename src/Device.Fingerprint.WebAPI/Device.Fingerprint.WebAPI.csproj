@@ -51,7 +51,6 @@
 
   <ItemGroup>
     <PackageReference Include="DeviceDetector.NET" Version="6.1.4" />
-    <PackageReference Include="Fanex.Data" Version="4.3.4" />
     <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.1" />
     <PackageReference Include="Fanex.Logging.Extensions.Database" Version="1.0.8" />
     <PackageReference Include="Fanex.Logging.Sentry" Version="1.0.6" />
@@ -73,15 +72,6 @@
     <Content Update="appsettings.LOCAL.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="App_Data\LOCAL\SPNames.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="App_Data\PROD\SPNames.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 </Project>
