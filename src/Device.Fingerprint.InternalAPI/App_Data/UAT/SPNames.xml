@@ -2,14 +2,14 @@
 
 <Functions>
 	<Function Name="RawTrans">
-		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="DCSMain.DCS_DataCenter.ctsServiceAdmin"/>
-		<Setting Key="DCS_DC_Transform_FP_FingerPrintInsert" SpName="DCS_DC_Transform_FP_FingerPrintInsert" DbName="DCSMain.DCS_DataCenter.ctsServiceAdmin"/>
-		<Setting Key="DCS_DC_Transform_FP_UserAgentInsert" SpName="DCS_DC_Transform_FP_UserAgentInsert" DbName="DCSMain.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_Transform_FP_FingerPrintInsert" SpName="DCS_DC_Transform_FP_FingerPrintInsert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_Transform_FP_UserAgentInsert" SpName="DCS_DC_Transform_FP_UserAgentInsert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
 	</Function>
 	<Function Name="SAI">
-		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo_xtest" DbName="DCSMain.DCS_DataCenter.ctsWeb"/>
+		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo_xtest" DbName="CTSMain.DCS_DataCenter.ctsWeb"/>
 	</Function>
 	<Function Name="OpenSearch">
-		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get_xtest" DbName="DCSMain.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get_xtest" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
 	</Function>
 </Functions>
