@@ -57,6 +57,8 @@ namespace Device.FingerPrint.Core
 
         bool IsDisableJsChallenge { get; }
 
+        bool IsVaultEnable { get; }
+
         IConfiguration Configuration { get; }
 
         T GetValue<T>(string key);
@@ -114,6 +116,8 @@ namespace Device.FingerPrint.Core
 
         private readonly bool isDisableJsChallenge;
 
+        private readonly bool isVaultEnable;
+
         public AppSettings(IConfiguration configuration)
         {
             this.configuration = configuration;
@@ -169,6 +173,8 @@ namespace Device.FingerPrint.Core
             apiEverTaggingCacheMaxAge = Convert.ToInt64(string.IsNullOrEmpty(GetValue<string>("ApiEverTaggingCacheMaxAge")) ? "86400" : GetValue<string>("ApiEverTaggingCacheMaxAge"));
 
             isDisableJsChallenge = !string.IsNullOrEmpty(GetValue<string>("Consumer:IsDisableJsChallenge")) && Convert.ToBoolean(GetValue<string>("Consumer:IsDisableJsChallenge"));
+
+            isVaultEnable = !string.IsNullOrEmpty(GetValue<string>("VaultOptions:Enable")) && Convert.ToBoolean(GetValue<string>("VaultOptions:Enable"));
         }
 
         public string ApiUrl => apiUrl;
@@ -218,6 +224,8 @@ namespace Device.FingerPrint.Core
         public long ApiEverTaggingCacheMaxAge => apiEverTaggingCacheMaxAge;
 
         public bool IsDisableJsChallenge => isDisableJsChallenge;
+
+        public bool IsVaultEnable => isVaultEnable;
 
         public T GetValue<T>(string key)
         {

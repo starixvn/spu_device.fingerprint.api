@@ -6,7 +6,6 @@ using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Transaction.Services;
-using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Data.Repository;
 using Fanex.Logging;
@@ -120,7 +119,8 @@ LogManager.SetDefaultLogCategory("Device.Fingerprint.InternalAPI")
 //    .UseConfig(new LoggingConfiguration())
 //    .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-LogService.Info("InternalAPI Start!");
+var environment = builder.Configuration["AppConfig:Environment"];
+LogService.Info($"InternalAPI {environment} Start!");
 
 
 #region Swagger Configuration
@@ -155,8 +155,6 @@ builder.Services.AddSwaggerGen(swagger =>
 #endregion
 
 var app = builder.Build();
-
-var environment = builder.Configuration["AppConfig:Environment"];
 if (environment == "DEV" || environment == "LOCAL" || environment == "UAT")
 {
     app.UseSwagger();
