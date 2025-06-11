@@ -134,7 +134,7 @@ namespace Device.FingerPrint.Core
 
             cryptoSalt = GetValue<string>("AppConfig:Crypto:Salt") ?? string.Empty;
 
-            spName = GetValue<string>("AppConfig:SPName") ?? string.Empty;
+            spName = GetValue<string>("StoredProcedurePath") ?? "App_Data";
 
             sentryDsn = GetValue<string>("Sentry:Dsn") ?? string.Empty;
 

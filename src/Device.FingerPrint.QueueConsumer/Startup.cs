@@ -5,6 +5,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Device.FingerPrint.QueueConsumer.Handlers;
     using Device.FingerPrint.QueueConsumer.Services;
     using Device.FingerPrint.Redis;
+    using Fanex.Data.MySql;
     using Fanex.Logging;
     using Fanex.Logging.Extensions;
     using Fanex.Logging.Extensions.AspNetCore;
@@ -41,6 +42,8 @@ namespace Device.FingerPrint.QueueConsumer
             services.AddHealthChecks();
 
             services.RegisterService();
+
+            services.AddFanexSql(this.Configuration);
 
             LogManager
                .SetDefaultLogCategory("Device.FingerPrint.Consumer")
@@ -99,6 +102,8 @@ namespace Device.FingerPrint.QueueConsumer
                 options.Pass = appSettings.GetValue<string>("RabbitMQ:Password");
                 options.VHost = appSettings.GetValue<string>("RabbitMQ:VirtualHost");
             });
+
+            LogService.Info($"QueueConsumer {appSettings.Environment} Start with ValueEnable({appSettings.IsVaultEnable})");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

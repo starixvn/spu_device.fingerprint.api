@@ -29,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="DeviceDetector.NET" Version="6.1.4" />
+    <PackageReference Include="Fanex.Data" Version="4.3.4" />
     <PackageReference Include="Fanex.Data.MySql" Version="4.3.4" />
     <PackageReference Include="Fanex.Data.Repository" Version="4.3.4" />
     <PackageReference Include="Fanex.Logging.Extensions.AspNetCore" Version="1.0.1" />
