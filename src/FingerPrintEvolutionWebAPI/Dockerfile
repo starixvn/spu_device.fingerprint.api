@@ -1,4 +1,4 @@
-FROM tiangolo/uwsgi-nginx:python3.10 AS builder
+FROM hub.nexdev.net/base/python:3.10-alpine AS builder
 
 COPY ./src/FingerPrintEvolutionWebAPI /app
 
