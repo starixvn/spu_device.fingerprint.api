@@ -11,6 +11,7 @@ using Fanex.Logging.Sentry;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.FileProviders;
+using Sentry;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,12 +59,13 @@ builder.Services.AddResponseCaching();
 FanexDataConfig(builder.Configuration, appSettings);
 
 LogManager.SetDefaultLogCategory("Device.Identification")
-        .Use([
-            new SentryLogging(new SentryEngineOptions
-            {
-                Dsn = appSettings.SentryDsn
-            })
-        ]);
+    .Use(new List<ILogEngine>
+           {
+                     new SentryLogging(new SentryEngineOptions
+                     {
+                         Dsn = new Dsn(appSettings.SentryDsn)
+                     })
+           });
 
 ExceptionHandler
     .UseConfig(new LoggingConfiguration())
