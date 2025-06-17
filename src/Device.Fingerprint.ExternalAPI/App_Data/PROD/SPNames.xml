@@ -2,17 +2,17 @@
 
 <Functions>	
 	<Function Name="Subscriber">
-		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="CTSMain.CTS_Admin.ctsAPI"/>
+		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="KBT_FPSDC.CTS_Admin.ctsAPI"/>
 	</Function>
   <Function Name="Transaction">
-    <Setting Key="DCS_DC_Transaction_GetTransactionBySubscriber" SpName="DCS_DC_Transaction_GetTransactionBySubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb"/>
+    <Setting Key="DCS_DC_Transaction_GetTransactionBySubscriber" SpName="DCS_DC_Transaction_GetTransactionBySubscriber" DbName="KBT_FPSDC.DCS_DataCenter.ctsWeb"/>
   </Function>
   <Function Name="Association">
-    <Setting Key="DCS_DC_Association_GetAssociationByAccount" SpName="DCS_DC_Association_GetAssociationByAccount" DbName="CTSMain.DCS_DataCenter.ctsWeb"/>
-	<Setting Key="DCS_DC_Association_GetAssociationByDevice" SpName="DCS_DC_Association_GetAssociationByDevice" DbName="CTSMain.DCS_DataCenter.ctsWeb"/>
+    <Setting Key="DCS_DC_Association_GetAssociationByAccount" SpName="DCS_DC_Association_GetAssociationByAccount" DbName="KBT_FPSDC.DCS_DataCenter.ctsWeb"/>
+	<Setting Key="DCS_DC_Association_GetAssociationByDevice" SpName="DCS_DC_Association_GetAssociationByDevice" DbName="KBT_FPSDC.DCS_DataCenter.ctsWeb"/>
   </Function>
   <Function Name="RiskLevel">
-    <Setting Key="CTS_DC_CustClassification_GetLatestRiskLevel" SpName="CTS_DC_CustClassification_GetLatestRiskLevel" DbName="CTSMain.CTS_DataCenter.ctsAPI"/>
-	  <Setting Key="CTS_DC_CustClassification_GetRiskLevelByAccount" SpName="CTS_DC_CustClassification_GetRiskLevelByAccount" DbName="CTSMain.CTS_DataCenter.ctsAPI"/>
+    <Setting Key="CTS_DC_CustClassification_GetLatestRiskLevel" SpName="CTS_DC_CustClassification_GetLatestRiskLevel" DbName="KBT_FPSDC.CTS_DataCenter.ctsAPI"/>
+	  <Setting Key="CTS_DC_CustClassification_GetRiskLevelByAccount" SpName="CTS_DC_CustClassification_GetRiskLevelByAccount" DbName="KBT_FPSDC.CTS_DataCenter.ctsAPI"/>
   </Function>
 </Functions>
