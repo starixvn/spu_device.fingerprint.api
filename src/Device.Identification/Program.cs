@@ -1,7 +1,6 @@
 using Device.Identification;
 using Device.Identification.ActivatorScript;
 using Device.Identification.Services;
-using Fanex.Data;
 using Fanex.Data.SqlServer;
 using Fanex.Logging;
 using Fanex.Logging.Extensions;
@@ -56,7 +55,7 @@ builder.Services.AddMemoryCache();
 builder.Services.AddHealthChecks();
 builder.Services.AddResponseCaching();
 
-FanexDataConfig(builder.Configuration, appSettings);
+builder.Services.AddFanexSql(builder.Configuration);
 
 LogManager.SetDefaultLogCategory("Device.Identification")
     .Use(new List<ILogEngine>
@@ -112,27 +111,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-static void FanexDataConfig(ConfigurationManager configuration, AppSettings appSettings)
-{
-    var connections = configuration
-                    .GetSection("AppConfig:ConnectionStrings")
-                    .GetChildren()
-                    .AsEnumerable()
-                    .ToDictionary(
-                        x => x.GetValue<string>("Name") ?? string.Empty,
-                        y => new ConnectionConfiguration(
-                            y.GetValue<string>("Name") ?? string.Empty,
-                            y.GetValue<string>("ConnectionString") ?? string.Empty,
-                            y.GetValue<string>("ProviderName") ?? string.Empty
-                        )
-                    );
-
-    DbSettingProviderManager
-      .StartNewSession()
-      .Use(connections)
-      .WithSqlServer()
-      .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-      .Run();
-}
