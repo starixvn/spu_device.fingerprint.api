@@ -38,8 +38,8 @@ var gfpCode = (function (exports) {
     }
 
     function __generator(thisArg, body) {
-        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-        return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+        var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g = Object.create((typeof Iterator === "function" ? Iterator : Object).prototype);
+        return g.next = verb(0), g["throw"] = verb(1), g["return"] = verb(2), typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
         function verb(n) { return function (v) { return step([n, v]); }; }
         function step(op) {
             if (f) throw new TypeError("Generator is already executing.");
@@ -75,8 +75,13 @@ var gfpCode = (function (exports) {
         return to.concat(ar || Array.prototype.slice.call(from));
     }
 
+    typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+        var e = new Error(message);
+        return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+    };
+
     /**
-     * FingerprintJS v1.0.4 - Copyright (c) FingerprintJS, Inc, 2024 (https://fingerprint.com)
+     * FingerprintJS v1.0.4 - Copyright (c) FingerprintJS, Inc, 2025 (https://fingerprint.com)
      * 
      * Licensed under Business Source License 1.1 https://mariadb.com/bsl11/
      * Licensor: FingerprintJS, Inc.
@@ -2783,7 +2788,7 @@ var gfpCode = (function (exports) {
         window.incognitoMode = incognitoMode;
     }
 
-    function getNavigatorElementsAsJson(obj, currentDepth, maxDepth) {
+    function getNavigatorElementsAsJson(obj, isDuckDuckGo, currentDepth, maxDepth) {
         if (currentDepth === void 0) { currentDepth = 0; }
         if (maxDepth === void 0) { maxDepth = 3; }
         if (currentDepth >= maxDepth) {
@@ -2801,6 +2806,9 @@ var gfpCode = (function (exports) {
             'appVersion'
         ]);
         for (var key in obj) {
+            if (isDuckDuckGo && !key.match(/^[a-zA-Z0-9]+$/)) {
+                continue;
+            }
             if (ignoredProperties.has(key)) {
                 continue; // Skip the ignored properties
             }
@@ -2811,7 +2819,20 @@ var gfpCode = (function (exports) {
                     continue; // Skip functions
                 }
                 else if (typeof value === 'object' && value !== null && currentDepth + 1 < maxDepth) {
-                    result[key] = getNavigatorElementsAsJson(value, currentDepth + 1, maxDepth);
+                    var element = getNavigatorElementsAsJson(value, isDuckDuckGo, currentDepth + 1, maxDepth);
+                    if (isDuckDuckGo) {
+                        if (element !== null && element !== undefined && Object.keys(element).length > 0)
+                            result[key] = element;
+                    }
+                    else {
+                        result[key] = element;
+                    }
+                }
+                else if (typeof value === "string") {
+                    if (isDuckDuckGo)
+                        result[key] = value.replace(/[^\u0000-\u007F]/g, ""); // Remove non-ascii characters
+                    else
+                        result[key] = value;
                 }
                 else {
                     if (value != null) {
@@ -2825,9 +2846,19 @@ var gfpCode = (function (exports) {
         }
         return result;
     }
+    function checkDuckDuckGo() {
+        // Access 'duckduckgo' property using type assertion to avoid TypeScript error
+        var duckduckgo = navigator.duckduckgo;
+        // Check if the current browser is DuckDuckGo
+        if (duckduckgo != undefined) {
+            return true;
+        }
+        return false;
+    }
     function getNavigator() {
         var start = Date.now();
-        var navigatorJson = getNavigatorElementsAsJson(navigator);
+        var isDuckDuckGo = checkDuckDuckGo();
+        var navigatorJson = getNavigatorElementsAsJson(navigator, isDuckDuckGo);
         if (typeof navigatorJson.connection === "object") {
             navigatorJson.connection.downlink = null;
             navigatorJson.connection.downlinkMax = null;
@@ -2875,7 +2906,7 @@ var gfpCode = (function (exports) {
             var value = void 0;
             if ("error" in component) {
                 value = "\"error\"";
-                err += componentKey + ": \"" + component.error + "\",";
+                err += "".concat(componentKey, ": \"").concat(component.error, "\",");
             }
             else if (component.value === undefined) {
                 value = "\"undefined\"";
@@ -2883,10 +2914,10 @@ var gfpCode = (function (exports) {
             else {
                 value = JSON.stringify(component.value);
             }
-            var escapedComponentKey = "\"" + componentKey.replace(/([:|\\])/g, "\\$1") + "\"";
-            result += "" + (result ? "," : "{") + escapedComponentKey + ":" + value;
+            var escapedComponentKey = "\"".concat(componentKey.replace(/([:|\\])/g, "\\$1"), "\"");
+            result += "".concat(result ? "," : "{").concat(escapedComponentKey, ":").concat(value);
         }
-        return result + "}";
+        return "".concat(result, "}");
     }
     function getResult(callback) {
         var fpPromise = loadSources(sources, {}, [])();
