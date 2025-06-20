@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <Functions>
-	<Setting Key="FPS_DI_MultiDeviceCheck" SpName="FPS_DI_MultiDeviceCheck" DbName="DB18.FPS_DeviceFingerprint.ssv_fps"/>
-	<Setting Key="FPS_DI_DeviceIns_FOR_FP" SpName="FPS_DI_DeviceIns_FOR_FP" DbName="DB18.FPS_DeviceFingerprint.ssv_fps"/>
+	<Setting Key="FPS_DI_MultiDeviceCheck" SpName="FPS_DI_MultiDeviceCheck" DbName="FPSDI.FPS_DeviceFingerprint.ssv_fps"/>
+	<Setting Key="FPS_DI_DeviceIns_FOR_FP" SpName="FPS_DI_DeviceIns_FOR_FP" DbName="FPSDI.FPS_DeviceFingerprint.ssv_fps"/>
 </Functions>
