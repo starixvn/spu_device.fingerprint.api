@@ -130,7 +130,12 @@
                         var response = responseTask.Result;
                         var jsonString = response.Content.ReadAsStringAsync();
 
-                        return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result);
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        };
+
+                        return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result, options);
                     });
 
                 return result ?? new SubscriberModel();
