@@ -1,14 +1,13 @@
 ﻿namespace Device.FingerPrint.TransactionAPI.Services
 {
-    using System.Text.Json;
     using Device.FingerPrint.Redis;
     using Device.FingerPrint.TransactionAPI.Model;
+    using Fanex.Logging;
+    using System.Text.Json;
 
     public interface ISubscriberService
     {
         Task<string> ValidateAsync(TransactionRequest transactionRequest);
-
-        bool IsExtraSubscriber(string subscriberName);
     }
 
     public class SubscriberService : ISubscriberService
@@ -31,7 +30,7 @@
 
             if (!string.IsNullOrWhiteSpace(transactionRequest.Subscriber))
             {
-                var subscriber = await GetSubscriberInfoAsync(transactionRequest.Subscriber, appSettings.ExtraSubscribers);
+                var subscriber = await GetSubscriberInfoAsync(transactionRequest.Subscriber);
 
                 if (subscriber != null && subscriber.SubscriberId != 0)
                 {
@@ -44,17 +43,7 @@
             return TransactionResult.NotExistSubscriber;
         }
 
-        public bool IsExtraSubscriber(string subscriberName)
-        {
-            if (appSettings.ExtraSubscribers != null && appSettings.ExtraSubscribers.Any())
-            {
-                return appSettings.ExtraSubscribers.Exists(x => x.SubscriberName.ToLower() == subscriberName.ToLower());
-            }
-
-            return false;
-        }
-
-        private async Task<SubscriberModel> GetSubscriberInfoAsync(string subName, List<SubscriberModel> listExtraSubscribersModel)
+        private async Task<SubscriberModel> GetSubscriberInfoAsync(string subName)
         {
 
             if (!string.IsNullOrWhiteSpace(subName))
@@ -66,11 +55,6 @@
                 if (subInfo != null && subInfo.SubscriberId != 0)
                 {
                     return subInfo;
-                }
-
-                if (IsExtraSubscriber(subName))
-                {
-                    return GetExtraSubscriberInfo(subName, listExtraSubscribersModel);
                 }
 
                 return await GetDataSubscriberAndSetCacheAsync(subName, cacheKey);
@@ -92,25 +76,6 @@
             }
         }
 
-        private SubscriberModel GetExtraSubscriberInfo(string subName, List<SubscriberModel> listExtraSubscribersModel)
-        {
-            if (!string.IsNullOrWhiteSpace(subName))
-            {
-                var cacheKey = $"TransAPI:{subName}";
-
-                var subData = listExtraSubscribersModel.FirstOrDefault(x => x.SubscriberName.Equals(subName, StringComparison.OrdinalIgnoreCase));
-
-                if (subData != null && subData.SubscriberId != 0)
-                {
-                    _ = redisService.AddAsyncAndExpiryAsync(cacheKey, subData, DateTimeOffset.UtcNow.AddMinutes(120));
-
-                    return subData;
-                }
-            }
-
-            return new SubscriberModel();
-        }
-
         private async Task<SubscriberModel> GetDataSubscriberAndSetCacheAsync(string subName, string cacheKey)
         {
             var subData = await GetDataSubscriberAsync(subName);
@@ -125,20 +90,32 @@
 
         private async Task<SubscriberModel> GetDataSubscriberAsync(string subName)
         {
-            using (var httpClient = new HttpClient())
+            try
             {
-                httpClient.Timeout = TimeSpan.FromMinutes(10);
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromMinutes(1);
+                var url = $"{appSettings.GetSubscriberInfo}?subscriberName={subName}";
 
-                var result = await httpClient.GetAsync($"{appSettings.GetSubscriberInfo}?subscriberName={subName}")
+                var result = await httpClient.GetAsync(url)
                     .ContinueWith((responseTask) =>
                     {
                         var response = responseTask.Result;
                         var jsonString = response.Content.ReadAsStringAsync();
 
-                        return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result);
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        };
+
+                        return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result, options);
                     });
 
-                return result;
+                return result ?? new SubscriberModel();
+            }
+            catch
+            {
+                LogService.Error($"Cannot getSubscriber {subName} from {appSettings.GetSubscriberInfo}");
+                return new SubscriberModel();
             }
         }
     }

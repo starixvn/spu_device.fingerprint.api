@@ -144,9 +144,7 @@
                 BotD = transactionRequest.Bi, 
             };
 
-            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
-
-            await massTransitProducer.SendAsync(dataEvent, queueAddress);
+            await massTransitProducer.SendAsync(dataEvent, appSettings.QueueName);
         }
 
         private TransactionResponse GetTransactionResponse(string code)

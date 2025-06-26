@@ -96,9 +96,7 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 }
             };                        
 
-            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.MobileQueueName;
-
-            massTransitProducer.Send(message, queueAddress);            
+            massTransitProducer.Send(message, appSettings.MobileQueueName);            
         }
 
 

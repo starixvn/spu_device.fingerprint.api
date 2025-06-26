@@ -5,6 +5,7 @@ using Device.FingerPrint.Core.Model;
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.LogInfo.Services;
+using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Services;
 using Fanex.Data.MySql;
 using Fanex.Data.Repository;
@@ -59,6 +60,9 @@ builder.Services.AddSingleton<ILogInfoServices, LogInfoServices>();
 
 builder.Services.AddSingleton<IFingerPrintDataAccess, FingerPrintDataAccess>();
 builder.Services.AddSingleton<IFingerPrintServices, FingerPrintServices>();
+
+builder.Services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
+builder.Services.AddSingleton<ISubscriberServices, SubscriberServices>();
 
 builder.Services.AddSingleton<ILogstashFPFingerprintService, LogstashFPFingerprintService>();
 

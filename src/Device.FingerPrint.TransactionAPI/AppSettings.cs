@@ -2,7 +2,6 @@
 namespace Device.FingerPrint.TransactionAPI
 {
     using System.ComponentModel;
-    using Device.FingerPrint.TransactionAPI.Model;
 
     public interface IAppSettings
     {
@@ -10,11 +9,7 @@ namespace Device.FingerPrint.TransactionAPI
 
         string QueueName { get; }
 
-        string ExtraQueueName { get; }
-
         string MobileQueueName { get; }
-
-        List<SubscriberModel> ExtraSubscribers { get; }
 
         bool IsUM { get; }
 
@@ -39,11 +34,7 @@ namespace Device.FingerPrint.TransactionAPI
 
         private readonly string queueName;
 
-        private readonly string extraQueueName;
-
         private readonly string mobileQueueName;
-
-        private readonly List<SubscriberModel> extraSubscribers;
 
         private readonly bool isUM;
 
@@ -67,11 +58,7 @@ namespace Device.FingerPrint.TransactionAPI
 
             queueName = GetValue<string>("RabbitMQ:Queue");
 
-            extraQueueName = GetValue<string>("RabbitMQ:ExtraQueue");
-
             mobileQueueName = GetValue<string>("RabbitMQ:MobileQueue");
-
-            extraSubscribers = GetExtraSubscribers();
 
             isUM = GetValue<bool>("IsUM");
 
@@ -92,11 +79,7 @@ namespace Device.FingerPrint.TransactionAPI
 
         public string QueueName => queueName;
 
-        public string ExtraQueueName => extraQueueName;
-
         public string MobileQueueName => mobileQueueName;
-
-        public List<SubscriberModel> ExtraSubscribers => extraSubscribers;
 
         public bool IsUM => isUM;
 
@@ -127,27 +110,5 @@ namespace Device.FingerPrint.TransactionAPI
                 throw new InvalidCastException($"Key: {key}", ex);
             }
         }
-
-        public List<SubscriberModel> GetExtraSubscribers()
-        {
-            var listExtraSubscribersModel = new List<SubscriberModel>();
-            var extraSubscribers = GetValue<string>("DCSExtraSubscribers").Split(',');
-            if (extraSubscribers != null && extraSubscribers.Any())
-            {
-                foreach (var subscriber in extraSubscribers)
-                {
-                    var subs = subscriber.Split(':');
-
-                    listExtraSubscribersModel.Add(new SubscriberModel
-                    {
-                        SubscriberId = Convert.ToInt32(subs[0]),
-                        SubscriberName = subs[1]
-                    });
-                }
-            }
-
-            return listExtraSubscribersModel;
-        }
-
     }
 }

@@ -1,6 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 
 <Functions>
+	<Function Name="Subscriber">
+		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="CTSMain.CTS_Admin.ctsService"/>
+	</Function>
 	<Function Name="RawTrans">
 		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
 		<Setting Key="DCS_DC_Transform_FP_FingerPrintInsert" SpName="DCS_DC_Transform_FP_FingerPrintInsert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
