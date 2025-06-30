@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     internal class InsertRawTransactionCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_RawTransJson")]
+        [SpParam(SqlParamName = "ip_RawTransJson", AllowNull = true)]
         public string RawTransJson { get; set; }
 
         [SpParam(Ignored = true)]

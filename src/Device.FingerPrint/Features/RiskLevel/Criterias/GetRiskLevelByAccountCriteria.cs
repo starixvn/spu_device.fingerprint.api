@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.RiskLevel.Criterias
 {
     public class GetRiskLevelByAccountCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_AccountIDList")]
+        [SpParam(SqlParamName = "ip_AccountIDList", AllowNull = true)]
         public string AccountIDs { get; set; }
 
         public override string GetSettingKey()

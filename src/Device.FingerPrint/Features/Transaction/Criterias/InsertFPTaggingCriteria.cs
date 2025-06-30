@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     public class InsertFPTaggingCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_Taggings")]
+        [SpParam(SqlParamName = "ip_Taggings", AllowNull = true)]
         public string Taggings { get; set; }
 
         [SpParam(Ignored = true)]

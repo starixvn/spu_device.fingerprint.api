@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.Subscriber.Criterias
 {
     public class GetSubscriberInfoByNameCriteria : CriteriaBase
     {
-        [SpParam(SqlParamName = "ip_SubscriberName")]
+        [SpParam(SqlParamName = "ip_SubscriberName", AllowNull = true)]
         public string SubscriberName { get; set; }
 
         public override string GetSettingKey()

@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     public class InsertJSChallengeInfoCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_JSChallengeInfoJson")]
+        [SpParam(SqlParamName = "ip_JSChallengeInfoJson", AllowNull = true)]
         public string JSChallengeInfoJson { get; set; }
 
         [SpParam(Ignored = true)]

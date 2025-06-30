@@ -6,16 +6,16 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     class GetAssociationBySubscriberDeviceCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_SubscriberID")]
+        [SpParam(SqlParamName = "ip_SubscriberID", AllowNull = true)]
         public int SubscriberId { get; set; }
 
-        [SpParam(SqlParamName = "ip_FirstDeviceCode")]
+        [SpParam(SqlParamName = "ip_FirstDeviceCode", AllowNull = true)]
         public string DeviceCode { get; set; }
 
-        [SpParam(SqlParamName = "ip_FromDate")]
+        [SpParam(SqlParamName = "ip_FromDate", AllowNull = true)]
         public DateTime FromDate { get; set; }
 
-        [SpParam(SqlParamName = "ip_ToDate")]
+        [SpParam(SqlParamName = "ip_ToDate", AllowNull = true)]
         public DateTime ToDate { get; set; }
 
         public override string GetSettingKey()
