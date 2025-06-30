@@ -26,4 +26,10 @@
     <ProjectReference Include="..\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.SimpleKL.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

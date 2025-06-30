@@ -25,6 +25,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Update="appsettings.SimpleKL.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="App_Data\LOCAL\SPNames.xml">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
