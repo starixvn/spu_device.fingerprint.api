@@ -1,5 +1,4 @@
-﻿
-using Device.FingerPrint.Gateway.Model;
+﻿using Device.FingerPrint.Gateway.Model;
 using Device.FingerPrint.Gateway.Services;
 using Device.FingerPrint.Redis;
 using Fanex.Logging;
@@ -89,11 +88,11 @@ namespace Device.FingerPrint.Gateway.Handlers
             try
             {
                 var disableDIValue = await redisService.GetAsync<string>("disableDI");
-                return !string.IsNullOrEmpty(disableDIValue) && disableDIValue.ToLower() == "true";
+                return string.IsNullOrEmpty(disableDIValue) || !disableDIValue.Equals("false", StringComparison.CurrentCultureIgnoreCase);
             }
             catch { }
 
-            return false;
+            return true;
         }
     }
 }
