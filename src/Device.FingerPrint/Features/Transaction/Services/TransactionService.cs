@@ -1,9 +1,6 @@
 ﻿using Device.FingerPrint.Features.Transaction.Model;
 using Device.FingerPrint.Model;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
@@ -50,6 +47,12 @@ namespace Device.FingerPrint.Features.Transaction.Services
         IEnumerable<AssociationAccountUsageEntity> GetAssociationBySubscriberDevice(int subscriberId, string deviceCode, DateTime fromDate, DateTime toDate);
 
         IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize);
+
+        TransactionResultModel GetTransactionHistory(TransactionParamModel param);
+
+        LatestTransactionResultModel GetLastestTransactionBySubscriber(LatestTransactionParamModel param);
+
+        TransactionHistoryByDeviceResultModel GetTransactionHistoryByDevice(TransactionHistoryByDeviceParamModel param);
     }
 
     public class TransactionService : ITransactionService
@@ -218,6 +221,26 @@ namespace Device.FingerPrint.Features.Transaction.Services
         public IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize)
         {
             return transactionDataAccess.GetTransactionInfo(lastTransID, batchSize);
+        }
+
+        public TransactionResultModel GetTransactionHistory(TransactionParamModel param)
+        {
+            if (param.CTSCustID != null && param.CTSCustID > 0)
+            {
+                return transactionDataAccess.GetTransactionByCustSubscriber(param);
+            }
+
+            return transactionDataAccess.GetTransactionBySubscriber(param);
+        }
+
+        public LatestTransactionResultModel GetLastestTransactionBySubscriber(LatestTransactionParamModel param)
+        {
+            return transactionDataAccess.GetLastestTransactionBySubscriber(param);
+        }
+
+        public TransactionHistoryByDeviceResultModel GetTransactionHistoryByDevice(TransactionHistoryByDeviceParamModel param)
+        {
+            return transactionDataAccess.GetTransactionHistoryByDevice(param);
         }
     }
 }
