@@ -1,4 +1,5 @@
 ﻿using Device.FingerPrint.Redis;
+using Device.Fingerprint.InternalAPI.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -47,56 +48,56 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 
         [HttpPost("add-update-redis-string")]
         [AllowAnonymous]
-        public async Task<ActionResult<string>> AddUpdateRedisString([FromBody] int dbIndex, [FromBody] string key, [FromBody] string value, [FromBody] long? expireSeconds = null)
+        public async Task<ActionResult<string>> AddUpdateRedisString([FromBody] RedisStringRequest request)
         {
-            var redisDB = redisMultiplexService.GetDatabase(dbIndex);
+            var redisDB = redisMultiplexService.GetDatabase(request.DbIndex);
             bool result;
 
-            if (expireSeconds.HasValue && expireSeconds.Value > 0)
+            if (request.ExpireSeconds.HasValue && request.ExpireSeconds.Value > 0)
             {
                 // Set string with expiration
-                var expiry = TimeSpan.FromSeconds(expireSeconds.Value);
-                result = await redisDB.StringSetAsync(key, value, expiry);
+                var expiry = TimeSpan.FromSeconds(request.ExpireSeconds.Value);
+                result = await redisDB.StringSetAsync(request.Key, request.Value, expiry);
                 
                 if (result)
                 {
-                    return Ok($"Key '{key}' added with value '{value}' in database {dbIndex} with expiration of {expireSeconds.Value} seconds.");
+                    return Ok($"Key '{request.Key}' added with value '{request.Value}' in database {request.DbIndex} with expiration of {request.ExpireSeconds.Value} seconds.");
                 }
                 else
                 {
-                    return BadRequest($"Failed to add key '{key}' with expiration in database {dbIndex}.");
+                    return BadRequest($"Failed to add key '{request.Key}' with expiration in database {request.DbIndex}.");
                 }
             }
             else
             {
                 // Set string without expiration (persistent)
-                result = redisDB.StringSet(key, value);
+                result = redisDB.StringSet(request.Key, request.Value);
                 
                 if (result)
                 {
-                    return Ok($"Key '{key}' added with value '{value}' in database {dbIndex} (no expiration).");
+                    return Ok($"Key '{request.Key}' added with value '{request.Value}' in database {request.DbIndex} (no expiration).");
                 }
                 else
                 {
-                    return BadRequest($"Failed to add key '{key}' in database {dbIndex}.");
+                    return BadRequest($"Failed to add key '{request.Key}' in database {request.DbIndex}.");
                 }
             }
         }
 
         [HttpPost("delete-redis-string")]
         [AllowAnonymous]
-        public ActionResult<string> DeleteRedisString([FromBody] int dbIndex, [FromBody] string key)
+        public ActionResult<string> DeleteRedisString([FromBody] RedisDeleteRequest request)
         {
-            var redisDB = redisMultiplexService.GetDatabase(dbIndex);
-            var result = redisDB.KeyDelete(key);
+            var redisDB = redisMultiplexService.GetDatabase(request.DbIndex);
+            var result = redisDB.KeyDelete(request.Key);
 
             if (result)
             {
-                return Ok($"Key '{key}' deleted successfully from database {dbIndex}.");
+                return Ok($"Key '{request.Key}' deleted successfully from database {request.DbIndex}.");
             }
             else
             {
-                return BadRequest($"Failed to delete key '{key}' from database {dbIndex}. Key may not exist.");
+                return BadRequest($"Failed to delete key '{request.Key}' from database {request.DbIndex}. Key may not exist.");
             }
         }
     }
