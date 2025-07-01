@@ -1,0 +1,19 @@
+﻿namespace Device.FingerPrint.Features.Account.Model
+{
+    public class GetAssMatrixAccountByCustSubscriberItemModel
+    {
+        public int ID { get; set; }
+
+        public ulong CTSCustID { get; set; }
+
+        public string UserName { get; set; }
+
+        public string RegisterName { get; set; } = string.Empty;
+
+        public int DeviceID { get; set; }
+
+        public string FirstDeviceCode { get; set; }
+
+        public DateTime CreatedTime { get; set; }
+    }
+}

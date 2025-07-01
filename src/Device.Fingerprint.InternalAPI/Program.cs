@@ -3,6 +3,7 @@ using Device.Fingerprint.InternalAPI.Services;
 using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Model;
 using Device.FingerPrint.Core.Services;
+using Device.FingerPrint.Features.Account.Services;
 using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
@@ -64,6 +65,9 @@ builder.Services.AddSingleton<IFingerPrintServices, FingerPrintServices>();
 
 builder.Services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
 builder.Services.AddSingleton<ISubscriberServices, SubscriberServices>();
+
+builder.Services.AddSingleton<IAccountDataAccess, AccountDataAccess>();
+builder.Services.AddSingleton<IAccountServices, AccountServices>();
 
 builder.Services.AddSingleton<IRedisMultiplexDbService, RedisMultiplexDbService>();
 builder.Services.AddSingleton<ILogstashFPFingerprintService, LogstashFPFingerprintService>();
