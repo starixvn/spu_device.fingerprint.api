@@ -7,6 +7,7 @@ using Device.FingerPrint.Features.FingerPrint.Services;
 using Device.FingerPrint.Features.LogInfo.Services;
 using Device.FingerPrint.Features.Subscriber.Services;
 using Device.FingerPrint.Features.Transaction.Services;
+using Device.FingerPrint.Redis;
 using Fanex.Data.MySql;
 using Fanex.Data.Repository;
 using Fanex.Logging;
@@ -64,6 +65,7 @@ builder.Services.AddSingleton<IFingerPrintServices, FingerPrintServices>();
 builder.Services.AddSingleton<ISubscriberDataAccess, SubscriberDataAccess>();
 builder.Services.AddSingleton<ISubscriberServices, SubscriberServices>();
 
+builder.Services.AddSingleton<IRedisMultiplexDbService, RedisMultiplexDbService>();
 builder.Services.AddSingleton<ILogstashFPFingerprintService, LogstashFPFingerprintService>();
 
 var rateLimiterConfig = appSettings.GetSection<RateLimiterConfig>("AppConfig:RateLimiter");
