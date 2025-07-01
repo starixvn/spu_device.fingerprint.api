@@ -1,6 +1,7 @@
 ﻿
 using Device.FingerPrint.Gateway.Model;
 using Device.FingerPrint.Gateway.Services;
+using Device.FingerPrint.Redis;
 using Fanex.Logging;
 using Newtonsoft.Json;
 using System.Text;
@@ -11,19 +12,23 @@ namespace Device.FingerPrint.Gateway.Handlers
     public class ValidateHandler : DelegatingHandler
     {
         private readonly ISubscriberService subscriberService;
+        private readonly IRedisService redisService;
 
         private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "qctest5oct202019", "qatest05" };
 
-        public ValidateHandler(ISubscriberService subscriberService)
+        public ValidateHandler(ISubscriberService subscriberService, IRedisService redisService)
         {
             this.subscriberService = subscriberService;
+            this.redisService = redisService;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             try
             {
-                if (request != null && request.Content != null)
+                var isDisableDI = await IsDisableDI();
+
+                if (request != null && request.Content != null && !isDisableDI)
                 {
                     var content = await request.Content.ReadAsStringAsync();
 
@@ -70,6 +75,18 @@ namespace Device.FingerPrint.Gateway.Handlers
             {
                 StatusCode = System.Net.HttpStatusCode.BadRequest
             };
+        }
+
+        private async Task<bool> IsDisableDI()
+        {
+            try
+            {
+                var disableDIValue = await redisService.GetAsync<string>("disableDI");
+                return !string.IsNullOrEmpty(disableDIValue) && disableDIValue.ToLower() == "true";
+            }
+            catch { }
+
+            return false;
         }
     }
 }
