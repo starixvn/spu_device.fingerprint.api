@@ -47,7 +47,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 
         [HttpPost("add-update-redis-string")]
         [AllowAnonymous]
-        public async Task<ActionResult<string>> AddUpdateRedisString(int dbIndex, string key, string value, long? expireSeconds = null)
+        public async Task<ActionResult<string>> AddUpdateRedisString([FromBody] int dbIndex, [FromBody] string key, [FromBody] string value, [FromBody] long? expireSeconds = null)
         {
             var redisDB = redisMultiplexService.GetDatabase(dbIndex);
             bool result;
@@ -85,7 +85,7 @@ namespace Device.Fingerprint.InternalAPI.Controllers
 
         [HttpPost("delete-redis-string")]
         [AllowAnonymous]
-        public ActionResult<string> DeleteRedisString(int dbIndex, string key)
+        public ActionResult<string> DeleteRedisString([FromBody] int dbIndex, [FromBody] string key)
         {
             var redisDB = redisMultiplexService.GetDatabase(dbIndex);
             var result = redisDB.KeyDelete(key);

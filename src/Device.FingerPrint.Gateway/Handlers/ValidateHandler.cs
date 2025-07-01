@@ -27,6 +27,13 @@ namespace Device.FingerPrint.Gateway.Handlers
             try
             {
                 var isDisableDI = await IsDisableDI();
+                if (isDisableDI)
+                {
+                    return new HttpResponseMessage
+                    {
+                        StatusCode = System.Net.HttpStatusCode.OK
+                    };
+                }
 
                 if (request != null && request.Content != null && !isDisableDI)
                 {
