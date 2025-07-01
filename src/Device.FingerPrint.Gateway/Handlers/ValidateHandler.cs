@@ -1,10 +1,10 @@
-﻿using Device.FingerPrint.Gateway.Model;
+using Device.FingerPrint.Gateway.Model;
 using Device.FingerPrint.Gateway.Services;
 using Device.FingerPrint.Redis;
 using Fanex.Logging;
+using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json;
 using System.Text;
-using System.Transactions;
 
 namespace Device.FingerPrint.Gateway.Handlers
 {
@@ -12,13 +12,16 @@ namespace Device.FingerPrint.Gateway.Handlers
     {
         private readonly ISubscriberService subscriberService;
         private readonly IRedisService redisService;
+        private readonly IMemoryCache memoryCache;
 
         private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "qctest5oct202019", "qatest05" };
+        private const string DisableDICacheKey = "disableDI_cache";
 
-        public ValidateHandler(ISubscriberService subscriberService, IRedisService redisService)
+        public ValidateHandler(ISubscriberService subscriberService, IRedisService redisService, IMemoryCache memoryCache)
         {
             this.subscriberService = subscriberService;
             this.redisService = redisService;
+            this.memoryCache = memoryCache;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -85,12 +88,35 @@ namespace Device.FingerPrint.Gateway.Handlers
 
         private async Task<bool> IsDisableDI()
         {
+            // Try to get from memory cache first
+            if (memoryCache.TryGetValue(DisableDICacheKey, out bool cachedValue))
+            {
+                return cachedValue;
+            }
+
             try
             {
                 var disableDIValue = await redisService.GetAsync<string>("disableDI");
-                return string.IsNullOrEmpty(disableDIValue) || !disableDIValue.Equals("false", StringComparison.CurrentCultureIgnoreCase);
+                var result = string.IsNullOrEmpty(disableDIValue) || !disableDIValue.Equals("false", StringComparison.CurrentCultureIgnoreCase);
+                
+                // Cache the result for 10 seconds
+                var cacheOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10)
+                };
+                memoryCache.Set(DisableDICacheKey, result, cacheOptions);
+                
+                return result;
             }
-            catch { }
+            catch 
+            { 
+                // Cache the default value (true) for 10 seconds in case of error
+                var cacheOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10)
+                };
+                memoryCache.Set(DisableDICacheKey, true, cacheOptions);
+            }
 
             return true;
         }

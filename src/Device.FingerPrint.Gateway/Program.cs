@@ -24,6 +24,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 
+// Add memory cache
+builder.Services.AddMemoryCache();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
