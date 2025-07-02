@@ -96,7 +96,7 @@ namespace Device.FingerPrint.Gateway.Handlers
 
             try
             {
-                var disableDIValue = await redisService.GetAsync<string>("disableDI");
+                var disableDIValue = await redisService.GetAsync<string>("disableGateway");
                 var result = string.IsNullOrEmpty(disableDIValue) || !disableDIValue.Equals("false", StringComparison.CurrentCultureIgnoreCase);
                 
                 // Cache the result for 10 seconds
