@@ -37,9 +37,9 @@
             }
         }
 
-        [HttpPost("GetAssDeviceInfoByIdSubscriberDCSCenter")]
+        [HttpPost("GetAssDeviceInfoByIdSubscriber")]
         [AllowAnonymous]
-        public ActionResult<GetAssDeviceInfoByIDSubscriberModel> GetAssDeviceInfoByIdSubscriberDCSCenter([FromBody] GetAssDeviceInfoByIDSubscriberParamModel param)
+        public ActionResult<GetAssDeviceInfoByIDSubscriberModel> GetAssDeviceInfoByIdSubscriber([FromBody] GetAssDeviceInfoByIDSubscriberParamModel param)
         {
             try
             {

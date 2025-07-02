@@ -4,9 +4,9 @@
     {
         public DateTime TransTime { get; set; }
 
-        public long TransID { get; set; }
+        public ulong TransID { get; set; }
 
-        public long CTSCustID { get; set; }
+        public ulong CTSCustID { get; set; }
 
         public int SubscriberID { get; set; }
 

@@ -8,7 +8,7 @@
 
         public string RegisterName { get; set; } = string.Empty;
 
-        public int DeviceID { get; set; }
+        public ulong DeviceID { get; set; }
 
         public string FirstDeviceCode { get; set; }
 
