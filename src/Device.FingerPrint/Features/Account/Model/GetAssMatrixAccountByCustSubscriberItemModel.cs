@@ -2,8 +2,6 @@
 {
     public class GetAssMatrixAccountByCustSubscriberItemModel
     {
-        public int ID { get; set; }
-
         public ulong CTSCustID { get; set; }
 
         public string UserName { get; set; }

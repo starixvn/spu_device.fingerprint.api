@@ -58,6 +58,7 @@
             };
 
             data.Items = repository.Fetch<SearchAccountItemModel>(criteria);
+            data.TotalItem = data.Items.Count();
 
             return data;
         }

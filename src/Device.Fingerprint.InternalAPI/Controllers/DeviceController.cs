@@ -73,17 +73,17 @@
 
         [HttpPost("GetAssDevByDeviceSubscriber")]
         [AllowAnonymous]
-        public ActionResult<List<GetAssDevByDevSubscriberItemModel>> GetAssDevByDeviceSubscriber([FromBody] GetAssAccByDevSubscriberParamModel param)
+        public ActionResult<List<GetAssDevByDevSubscriberItemModel>> GetAssDevByDeviceSubscriber([FromBody] GetAssDevByDevSubscriberParamModel param)
         {
             try
             {
-                var data = deviceServices.GetAssAccByDevSubscriber(param);
+                var data = deviceServices.GetAssDevByDevSubscriber(param);
 
                 return Ok(data.ToList());
             }
             catch (Exception ex)
             {
-                logger.Error("FPS Get Ass Account by Device subscriber exception: " + ex.Message);
+                logger.Error("FPS Get Ass Device by Device subscriber exception: " + ex.Message);
                 return Ok(new List<GetAssDevByDevSubscriberItemModel>());
             }
         }
