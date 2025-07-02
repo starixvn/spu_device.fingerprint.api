@@ -1,31 +1,38 @@
-﻿
-using Device.FingerPrint.Gateway.Model;
+﻿using Device.FingerPrint.Gateway.Model;
 using Device.FingerPrint.Gateway.Services;
 using Fanex.Logging;
 using Newtonsoft.Json;
 using System.Text;
-using System.Transactions;
 
 namespace Device.FingerPrint.Gateway.Handlers
 {
     public class MobileRequestHandler : DelegatingHandler
     {
         private readonly ISubscriberService subscriberService;
+        private readonly IGatewayService gatewayService;
 
         private static readonly HashSet<string> DebugAccounts = new HashSet<string> { "member19", "2hcibc0926a" };
 
-        public MobileRequestHandler(ISubscriberService subscriberService)
+        public MobileRequestHandler(ISubscriberService subscriberService, IGatewayService gatewayService)
         {
             this.subscriberService = subscriberService;
+            this.gatewayService = gatewayService;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             try
             {
-                
+                var isDisableDI = await gatewayService.IsDisableDIAsync();
+                if (isDisableDI)
+                {
+                    return new HttpResponseMessage
+                    {
+                        StatusCode = System.Net.HttpStatusCode.OK
+                    };
+                }
 
-                if (request != null && request.Content != null)
+                if (request != null && request.Content != null && !isDisableDI)
                 {
                     var content = await request.Content.ReadAsStringAsync();
 

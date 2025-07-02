@@ -62,6 +62,7 @@ builder.Services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
 builder.Services.AddSingleton<IRedisService, RedisService>();
 
 builder.Services.AddSingleton<ISubscriberService, SubscriberService>();
+builder.Services.AddSingleton<IGatewayService, GatewayService>();
 
 LogManager
           .SetDefaultLogCategory("FPS-Gateway-API")
