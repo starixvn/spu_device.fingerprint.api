@@ -1,15 +1,11 @@
-FROM python:3.11-slim
+FROM hub.nexdev.net/base/python:3.10-alpine AS builder
 
 WORKDIR /app
 
 COPY ./src/FingerPrintEvolutionWebAPI /app
 
 # Install build tools and dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gcc build-essential libffi-dev && \
-    pip install --no-cache-dir -r requirements.txt && \
-    apt-get purge -y --auto-remove gcc build-essential && \
-    rm -rf /var/lib/apt/lists/*
+RUN pip3 install -r requirements.txt
 
 ENV TZ="America/La_Paz"
 
