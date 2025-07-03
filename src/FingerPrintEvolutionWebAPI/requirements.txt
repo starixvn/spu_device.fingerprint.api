@@ -1,5 +1,5 @@
 # Pin versions and remove unused packages for better performance and reproducibility
-flask==2.3.3
-gunicorn==21.2.0
-flasgger==0.9.7.1
+flask
+gunicorn
+flasgger
 # ...add other required packages with pinned versions...

@@ -86,4 +86,5 @@ def healthCheck():
 
 # Only used when running the file directly, not when imported by a WSGI server
 if __name__ == '__main__':
-    app.run(host="localhost", port=8000, debug=True)
+    # For local development only; use gunicorn in production
+    app.run(host="0.0.0.0", port=5000, debug=True)
