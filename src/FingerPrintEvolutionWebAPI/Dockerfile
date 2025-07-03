@@ -9,4 +9,4 @@ RUN pip3 install -r requirements.txt
 
 ENV TZ="America/La_Paz"
 
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "wsgi:application"]
+CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "wsgi:application"]
