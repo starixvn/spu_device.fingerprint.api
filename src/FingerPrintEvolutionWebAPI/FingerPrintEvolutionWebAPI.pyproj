@@ -30,6 +30,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="app.py" />
+    <Compile Include="wsgi.py" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dockerfile" />

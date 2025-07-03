@@ -1,11 +1,16 @@
-FROM hub.nexdev.net/base/python:3.10-alpine AS builder
-
-COPY ./src/FingerPrintEvolutionWebAPI /app
+FROM python:3.11-slim
 
 WORKDIR /app
 
-RUN pip3 install -r requirements.txt
+COPY ./src/FingerPrintEvolutionWebAPI /app
+
+# Install build tools and dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc build-essential libffi-dev && \
+    pip install --no-cache-dir -r requirements.txt && \
+    apt-get purge -y --auto-remove gcc build-essential && \
+    rm -rf /var/lib/apt/lists/*
 
 ENV TZ="America/La_Paz"
 
-CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0", "--port=5000"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "wsgi:application"]
