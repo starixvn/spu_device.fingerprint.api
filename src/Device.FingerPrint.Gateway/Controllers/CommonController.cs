@@ -5,8 +5,10 @@ using Device.FingerPrint.Gateway.Model;
 namespace Device.FingerPrint.Gateway.Controllers
 {    
     [ApiController]
-    public class CommonController : ControllerBase
+    public class CommonController(IAppSettings appSettings) : ControllerBase
     {
+        private readonly IAppSettings appSettings = appSettings;
+
         [HttpGet("whoami")]
         public WhoamiModel Index()
         {
@@ -15,6 +17,7 @@ namespace Device.FingerPrint.Gateway.Controllers
 
             return new WhoamiModel
             {
+                Environment = appSettings.Environment,
                 ServerName = Environment.MachineName,
                 ServerTime = DateTime.Now,
                 LocalIP = localIpAddress.ToString(),

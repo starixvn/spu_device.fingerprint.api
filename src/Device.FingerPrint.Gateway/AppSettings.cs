@@ -13,6 +13,8 @@ namespace Device.FingerPrint.Gateway
         string GetSubscriberInfo { get; }
 
         string LogstashUrl { get; }
+
+        string Environment { get; }
     }
 
     public class AppSettings : IAppSettings
@@ -27,6 +29,8 @@ namespace Device.FingerPrint.Gateway
 
         private readonly string logstashUrl;
 
+        private readonly string environment;
+
         public AppSettings(IConfiguration configuration)
         {
             this.configuration = configuration;
@@ -38,6 +42,8 @@ namespace Device.FingerPrint.Gateway
             getSubscriberInfo = GetValue<string>("GetSubscriberUrl");
 
             logstashUrl = GetValue<string>("Logstash:Url");
+
+            environment = GetValue<string>("Environment");
         }
 
         public bool IsUM => isUM;
@@ -47,6 +53,8 @@ namespace Device.FingerPrint.Gateway
         public string GetSubscriberInfo => getSubscriberInfo;
 
         public string LogstashUrl => logstashUrl;
+
+        public string Environment => environment;
 
         public T GetValue<T>(string key)
         {
