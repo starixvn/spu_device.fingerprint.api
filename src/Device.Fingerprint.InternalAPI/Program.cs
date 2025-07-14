@@ -169,11 +169,10 @@ builder.Services.AddSwaggerGen(swagger =>
 #endregion
 
 var app = builder.Build();
-if (environment == "DEV" || environment == "LOCAL" || environment == "UAT")
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
