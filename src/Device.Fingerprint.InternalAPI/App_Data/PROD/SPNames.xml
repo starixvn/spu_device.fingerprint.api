@@ -2,7 +2,7 @@
 
 <Functions>
 	<Function Name="Subscriber">
-		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="CTSMain.CTS_Admin.ctsAPIAdmin"/>
+		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="DCSMain_WEB_LAYER.CTS_Admin.ctsAPIAdmin"/>
 	</Function>
 	<Function Name="Account">
 		<Setting Key="CTS_DC_CustInfo_GetByNameSubscriber" SpName="CTS_DC_CustInfo_GetByNameSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
