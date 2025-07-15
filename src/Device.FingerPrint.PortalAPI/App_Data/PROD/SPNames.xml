@@ -2,6 +2,6 @@
 
 <Functions>
 	<Function Name="Logs">
-		<Setting Key="DCS_DT_Log_FPSJavascriptException_Insert" SpName="DCS_DT_Log_FPSJavascriptException_Insert" DbName="CTSMain.DCS_DataTrace.ctsServiceAdmin"/>
+		<Setting Key="DCS_DT_Log_FPSJavascriptException_Insert" SpName="DCS_DT_Log_FPSJavascriptException_Insert" DbName="DCSMain_WEB_LAYER.DCS_DataTrace.ctsServiceAdmin"/>
 	</Function>
 </Functions>
