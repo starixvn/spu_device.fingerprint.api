@@ -5,37 +5,37 @@
 		<Setting Key="CTS_AD_Subscriber_GetInfoBySubscriberName" SpName="CTS_AD_Subscriber_GetInfoBySubscriberName" DbName="DCSMain_WEB_LAYER.CTS_Admin.ctsAPIAdmin"/>
 	</Function>
 	<Function Name="Account">
-		<Setting Key="CTS_DC_CustInfo_GetByNameSubscriber" SpName="CTS_DC_CustInfo_GetByNameSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
-		<Setting Key="CTS_DC_CustInfo_GetPartialByUserNameSubscriber" SpName="CTS_DC_CustInfo_GetPartialByUserNameSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
-		<Setting Key="CTS_DC_Association_GetAccountInfoByCustSubscriber" SpName="CTS_DC_Association_GetAccountInfoByCustSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
-		<Setting Key="CTS_DC_Association_GetAssociationListByCustSubscriber" SpName="CTS_DC_Association_GetAssociationListByCustSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
-		<Setting Key="CTS_DC_Association_GetAssociationDeviceByCustSubscriber" SpName="CTS_DC_Association_GetAssociationDeviceByCustSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
-		<Setting Key="CTS_DC_Association_GetAssociationMatrixByCustSubscriber" SpName="CTS_DC_Association_GetAssociationMatrixByCustSubscriber" DbName="CTSMain.CTS_DataCenter.ctsAPI" />
-		<Setting Key="DCS_DC_Association_GetAccountsPerDevice" SpName="DCS_DC_Association_GetAccountsPerDevice" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
+		<Setting Key="CTS_DC_CustInfo_GetByNameSubscriber" SpName="CTS_DC_CustInfo_GetByNameSubscriber" DbName="DCSMain_WEB_LAYER.CTS_DataCenter.ctsAPI" />
+		<Setting Key="CTS_DC_CustInfo_GetPartialByUserNameSubscriber" SpName="CTS_DC_CustInfo_GetPartialByUserNameSubscriber" DbName="DCSMain_WEB_LAYER.CTS_DataCenter.ctsAPI" />
+		<Setting Key="CTS_DC_Association_GetAccountInfoByCustSubscriber" SpName="CTS_DC_Association_GetAccountInfoByCustSubscriber" DbName="DCSMain_WEB_LAYER.CTS_DataCenter.ctsAPI" />
+		<Setting Key="CTS_DC_Association_GetAssociationListByCustSubscriber" SpName="CTS_DC_Association_GetAssociationListByCustSubscriber" DbName="DCSMain_WEB_LAYER.CTS_DataCenter.ctsAPI" />
+		<Setting Key="CTS_DC_Association_GetAssociationDeviceByCustSubscriber" SpName="CTS_DC_Association_GetAssociationDeviceByCustSubscriber" DbName="DCSMain_WEB_LAYER.CTS_DataCenter.ctsAPI" />
+		<Setting Key="CTS_DC_Association_GetAssociationMatrixByCustSubscriber" SpName="CTS_DC_Association_GetAssociationMatrixByCustSubscriber" DbName="DCSMain_WEB_LAYER.CTS_DataCenter.ctsAPI" />
+		<Setting Key="DCS_DC_Association_GetAccountsPerDevice" SpName="DCS_DC_Association_GetAccountsPerDevice" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
 	</Function>
 	<Function Name="Device">
-		<Setting Key="DCS_DC_Association_GetDevicesPerAccount" SpName="DCS_DC_Association_GetDevicesPerAccount" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Device_GetByDeviceCodeSubscriber" SpName="DCS_DC_Device_GetByDeviceCodeSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Association_GetDeviceInfoByDeviceSubscriber" SpName="DCS_DC_Association_GetDeviceInfoByDeviceSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Association_GetAssociationAccountByDeviceSubscriber" SpName="DCS_DC_Association_GetAssociationAccountByDeviceSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Association_GetAssociationDeviceByDeviceSubscriber" SpName="DCS_DC_Association_GetAssociationDeviceByDeviceSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Association_GetAssociationMatrixByDeviceSubscriber" SpName="DCS_DC_Association_GetAssociationMatrixByDeviceSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Association_GetDevicesPerAccount" SpName="DCS_DC_Association_GetDevicesPerAccount" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Device_GetByDeviceCodeSubscriber" SpName="DCS_DC_Device_GetByDeviceCodeSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Association_GetDeviceInfoByDeviceSubscriber" SpName="DCS_DC_Association_GetDeviceInfoByDeviceSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Association_GetAssociationAccountByDeviceSubscriber" SpName="DCS_DC_Association_GetAssociationAccountByDeviceSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Association_GetAssociationDeviceByDeviceSubscriber" SpName="DCS_DC_Association_GetAssociationDeviceByDeviceSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Association_GetAssociationMatrixByDeviceSubscriber" SpName="DCS_DC_Association_GetAssociationMatrixByDeviceSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
 	</Function>
 	<Function Name="Transaction">
-		<Setting Key="DCS_DC_Transaction_GetHistoryBySubscriber" SpName="DCS_DC_Transaction_GetHistoryBySubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Transaction_GetHistoryByCustSubscriber" SpName="DCS_DC_Transaction_GetHistoryByCustSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Transaction_GetLatestBySubscriber" SpName="DCS_DC_Transaction_GetLatestBySubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
-		<Setting Key="DCS_DC_Transaction_GetHistoryByDeviceSubscriber" SpName="DCS_DC_Transaction_GetHistoryByDeviceSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Transaction_GetHistoryBySubscriber" SpName="DCS_DC_Transaction_GetHistoryBySubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Transaction_GetHistoryByCustSubscriber" SpName="DCS_DC_Transaction_GetHistoryByCustSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Transaction_GetLatestBySubscriber" SpName="DCS_DC_Transaction_GetLatestBySubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_Transaction_GetHistoryByDeviceSubscriber" SpName="DCS_DC_Transaction_GetHistoryByDeviceSubscriber" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb" />
 	</Function>
 	<Function Name="RawTrans">
-		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
-		<Setting Key="DCS_DC_Transform_FP_FingerPrintInsert" SpName="DCS_DC_Transform_FP_FingerPrintInsert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
-		<Setting Key="DCS_DC_Transform_FP_UserAgentInsert" SpName="DCS_DC_Transform_FP_UserAgentInsert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_Transform_FP_FingerPrintInsert" SpName="DCS_DC_Transform_FP_FingerPrintInsert" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_Transform_FP_UserAgentInsert" SpName="DCS_DC_Transform_FP_UserAgentInsert" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsServiceAdmin"/>
 	</Function>
 	<Function Name="SAI">
-		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo" DbName="CTSMain.DCS_DataCenter.ctsWeb"/>
+		<Setting Key="DCS_DC_SAI_GetTransactionInfo" SpName="DCS_DC_SAI_GetTransactionInfo" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsWeb"/>
 	</Function>
 	<Function Name="OpenSearch">
-		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>
+		<Setting Key="DCS_DC_OpenSearch_FPFingerPrint_Get" SpName="DCS_DC_OpenSearch_FPFingerPrint_Get" DbName="DCSMain_WEB_LAYER.DCS_DataCenter.ctsServiceAdmin"/>
 	</Function>
 </Functions>
