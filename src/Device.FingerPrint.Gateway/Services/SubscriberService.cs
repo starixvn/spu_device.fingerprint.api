@@ -2,6 +2,7 @@
 {
     using Device.FingerPrint.Gateway.Model;
     using Device.FingerPrint.Redis;
+    using Fanex.Logging;
     using System.Text.Json;
 
     public interface ISubscriberService
@@ -22,7 +23,6 @@
 
         public async Task<bool> ValidateAsync(string subscriber)
         {
-
             if (!string.IsNullOrWhiteSpace(subscriber))
             {
                 var subscriberInfo = await GetSubscriberInfoAsync(subscriber);
@@ -41,36 +41,7 @@
 
             if (!string.IsNullOrWhiteSpace(subName))
             {
-                if (IsExtraSubscriber(subName))
-                {
-                    return GetExtraSubscriberInfo(subName);
-                }
-                else
-                {
-                    return await GetSubscriberInfo(subName);
-                }  
-            }
-
-            return new SubscriberModel();
-        }
-
-        private async Task<SubscriberModel> GetSubscriberInfoByCache(string cacheKey, string subName)
-        {
-            try
-            {
-                return await redisService.GetAsync<SubscriberModel>(cacheKey);
-            }
-            catch (Exception)
-            {
-                return await GetDataSubscriberAndSetCacheAsync(subName, cacheKey);
-            }
-        }
-
-        private SubscriberModel GetExtraSubscriberInfo(string subName)
-        {
-            if (!string.IsNullOrWhiteSpace(subName))
-            {
-                return appSettings.ExtraSubscribers.FirstOrDefault(x => x.SubscriberName.Equals(subName, StringComparison.OrdinalIgnoreCase));
+                return await GetSubscriberInfo(subName);
             }
 
             return new SubscriberModel();
@@ -104,6 +75,18 @@
             return new SubscriberModel();
         }
 
+        private async Task<SubscriberModel> GetSubscriberInfoByCache(string cacheKey, string subName)
+        {
+            try
+            {
+                return await redisService.GetAsync<SubscriberModel>(cacheKey);
+            }
+            catch (Exception)
+            {
+                return await GetDataSubscriberAndSetCacheAsync(subName, cacheKey);
+            }
+        }
+
         private async Task<SubscriberModel> GetDataSubscriberAndSetCacheAsync(string subName, string cacheKey)
         {
             var subData = await GetDataSubscriberAsync(subName);
@@ -120,31 +103,33 @@
 
         private async Task<SubscriberModel> GetDataSubscriberAsync(string subName)
         {
-            using (var httpClient = new HttpClient())
+            try
             {
-                httpClient.Timeout = TimeSpan.FromMinutes(10);
+                using var httpClient = new HttpClient();
+                httpClient.Timeout = TimeSpan.FromMinutes(1);
+                var url = $"{appSettings.GetSubscriberInfo}?subscriberName={subName}";
 
-                var result = await httpClient.GetAsync($"{appSettings.GetSubscriberInfo}?subscriberName={subName}")
+                var result = await httpClient.GetAsync(url)
                     .ContinueWith((responseTask) =>
                     {
                         var response = responseTask.Result;
                         var jsonString = response.Content.ReadAsStringAsync();
 
-                        return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result);
+                        var options = new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        };
+
+                        return JsonSerializer.Deserialize<SubscriberModel>(jsonString.Result, options);
                     });
 
                 return result ?? new SubscriberModel();
             }
-        }
-
-        private bool IsExtraSubscriber(string subscriberName)
-        {
-            if (appSettings.ExtraSubscribers != null && appSettings.ExtraSubscribers.Any())
+            catch
             {
-                return appSettings.ExtraSubscribers.Exists(x => x.SubscriberName.ToLower() == subscriberName.ToLower());
+                LogService.Error($"Cannot getSubscriber {subName} from {appSettings.GetSubscriberInfo}");
+                return new SubscriberModel();
             }
-
-            return false;
         }
     }
 }

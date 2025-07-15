@@ -33,7 +33,7 @@
 
             services.AddHealthChecks();
 
-            FanexDataConfig(appSettings);
+            //FanexDataConfig(appSettings);
 
             LogManager
               .SetDefaultLogCategory("Device.FingerPrint.LogTrailConsumer")
@@ -121,24 +121,24 @@
              });
         }
 
-        private void FanexDataConfig(IAppSettings appSettings)
-        {
-            var connections = Configuration
-                                  .GetSection("AppConfig:Connections")
-                                  .GetChildren()
-                                  .AsEnumerable()
-                                  .ToDictionary(
-                                           x => x.GetValue<string>("Name"),
-                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-                                   );
+        //private void FanexDataConfig(IAppSettings appSettings)
+        //{
+        //    var connections = Configuration
+        //                          .GetSection("AppConfig:Connections")
+        //                          .GetChildren()
+        //                          .AsEnumerable()
+        //                          .ToDictionary(
+        //                                   x => x.GetValue<string>("Name"),
+        //                                   y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
+        //                           );
 
-            DbSettingProviderManager
-              .StartNewSession()
-              .Use(connections)
-              .WithMySql()
-              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-              .Run();
-        }
+        //    DbSettingProviderManager
+        //      .StartNewSession()
+        //      .Use(connections)
+        //      .WithMySql()
+        //      .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
+        //      .Run();
+        //}
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {

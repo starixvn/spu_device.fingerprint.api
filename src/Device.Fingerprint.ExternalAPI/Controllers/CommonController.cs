@@ -2,12 +2,15 @@
 using Device.Fingerprint.ExternalAPI.Models;
 using System;
 using Microsoft.AspNetCore.Http.Features;
+using Device.FingerPrint.Core;
 
 namespace Device.Fingerprint.ExternalAPI.Controllers
 {
     [ApiController]
-    public class CommonController : ControllerBase
+    public class CommonController(IAppSettings appSettings) : ControllerBase
     {
+        private readonly IAppSettings appSettings = appSettings;
+
         [HttpGet("whoami")]
         public WhoamiModel Index()
         {
@@ -16,6 +19,7 @@ namespace Device.Fingerprint.ExternalAPI.Controllers
 
             return new WhoamiModel
             {
+                Environment = appSettings.Environment,
                 ServerName = Environment.MachineName,
                 ServerTime = DateTime.Now,
                 LocalIP = localIpAddress.ToString(),

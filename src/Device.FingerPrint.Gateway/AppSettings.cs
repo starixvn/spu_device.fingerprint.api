@@ -1,61 +1,60 @@
 ﻿
 namespace Device.FingerPrint.Gateway
 {
-    using Device.FingerPrint.Gateway.Model;
     using System.ComponentModel;
 
     public interface IAppSettings
-    {     
+    {
 
         bool IsUM { get; }
 
-        string SentryDsn { get; }      
+        string SentryDsn { get; }
 
         string GetSubscriberInfo { get; }
 
-        List<SubscriberModel> ExtraSubscribers { get; }
-
         string LogstashUrl { get; }
+
+        string Environment { get; }
     }
 
     public class AppSettings : IAppSettings
     {
-        private readonly IConfiguration configuration;      
-
-        private readonly List<SubscriberModel> extraSubscribers;
+        private readonly IConfiguration configuration;
 
         private readonly bool isUM;
 
-        private readonly string sentryDsn;       
+        private readonly string sentryDsn;
 
-        private readonly string getSubscriberInfo;    
-        
+        private readonly string getSubscriberInfo;
+
         private readonly string logstashUrl;
+
+        private readonly string environment;
 
         public AppSettings(IConfiguration configuration)
         {
-            this.configuration = configuration;          
-
-            extraSubscribers = GetExtraSubscribers();
+            this.configuration = configuration;
 
             isUM = GetValue<bool>("IsUM");
 
-            sentryDsn = GetValue<string>("Sentry:Dsn");        
+            sentryDsn = GetValue<string>("Sentry:Dsn");
 
             getSubscriberInfo = GetValue<string>("GetSubscriberUrl");
 
             logstashUrl = GetValue<string>("Logstash:Url");
-        }
 
-        public List<SubscriberModel> ExtraSubscribers => extraSubscribers;
+            environment = GetValue<string>("Environment");
+        }
 
         public bool IsUM => isUM;
 
-        public string SentryDsn => sentryDsn;       
+        public string SentryDsn => sentryDsn;
 
         public string GetSubscriberInfo => getSubscriberInfo;
 
         public string LogstashUrl => logstashUrl;
+
+        public string Environment => environment;
 
         public T GetValue<T>(string key)
         {
@@ -72,27 +71,5 @@ namespace Device.FingerPrint.Gateway
                 throw new InvalidCastException($"Key: {key}", ex);
             }
         }
-
-        public List<SubscriberModel> GetExtraSubscribers()
-        {
-            var listExtraSubscribersModel = new List<SubscriberModel>();
-            var extraSubscribers = GetValue<string>("DCSExtraSubscribers").Split(',');
-            if (extraSubscribers != null && extraSubscribers.Any())
-            {
-                foreach (var subscriber in extraSubscribers)
-                {
-                    var subs = subscriber.Split(':');
-
-                    listExtraSubscribersModel.Add(new SubscriberModel
-                    {
-                        SubscriberId = Convert.ToInt32(subs[0]),
-                        SubscriberName = subs[1]
-                    });
-                }
-            }
-
-            return listExtraSubscribersModel;
-        }
-
     }
 }

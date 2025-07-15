@@ -2,10 +2,12 @@
 using Device.FingerPrint.Queue;
 using Device.FingerPrint.TransactionAPI.Model;
 using Device.FingerPrint.TransactionAPI.Services;
-using Microsoft.AspNetCore.Mvc;
 using Fanex.Logging;
+using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using ONEbook.UM.Services;
 using System.Net;
+using System.Text;
 
 namespace Device.FingerPrint.TransactionAPI.Controllers
 {
@@ -53,6 +55,18 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
             }
         }
 
+
+        [HttpPost("FPS/MobileTransaction/Base64")]
+        public string MobileTransactionToBase64(MobileTransactionModel transaction)
+        {
+            if (transaction == null)
+            {
+                return "Invalid transaction data.";
+            }
+
+            return ObjectToBase64(transaction);
+        }
+
         private void PushToQueueAsync(MobileTransactionModel transactionRequest)
         {
             var message = new MessageQueue
@@ -82,9 +96,17 @@ namespace Device.FingerPrint.TransactionAPI.Controllers
                 }
             };                        
 
-            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.MobileQueueName;
+            massTransitProducer.Send(message, appSettings.MobileQueueName);            
+        }
 
-            massTransitProducer.Send(message, queueAddress);            
+
+        private static string ObjectToBase64(MobileTransactionModel transaction)
+        {
+            string jsonString = JsonConvert.SerializeObject(transaction);
+            byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonString);
+            string base64EncodedString = Convert.ToBase64String(jsonBytes);
+
+            return base64EncodedString;
         }
     }
 }

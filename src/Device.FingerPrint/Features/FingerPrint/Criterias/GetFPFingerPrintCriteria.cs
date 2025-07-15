@@ -6,16 +6,16 @@ namespace Device.FingerPrint.Features.FingerPrint.Criterias
 {
     public class GetFPFingerPrintCriteria : CriteriaBase
     {
-        [SpParam(SqlParamName = "ip_FromDate")]
+        [SpParam(SqlParamName = "ip_FromDate", AllowNull = true)]
         public DateTime FromDate { get; set; }
 
-        [SpParam(SqlParamName = "ip_ToDate")]
+        [SpParam(SqlParamName = "ip_ToDate", AllowNull = true)]
         public DateTime ToDate { get; set; }
 
-        [SpParam(SqlParamName = "ip_BatchSize")]
+        [SpParam(SqlParamName = "ip_BatchSize", AllowNull = true)]
         public int BatchSize { get; set; }
 
-        [SpParam(SqlParamName = "ip_LastID")]
+        [SpParam(SqlParamName = "ip_LastID", AllowNull = true)]
         public ulong LastID { get; set; }
 
         public override string GetSettingKey()

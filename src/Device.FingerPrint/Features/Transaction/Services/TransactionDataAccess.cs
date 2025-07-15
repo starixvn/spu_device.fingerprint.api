@@ -1,8 +1,6 @@
 ﻿using Device.FingerPrint.Features.Transaction.Criterias;
 using Device.FingerPrint.Features.Transaction.Model;
 using Fanex.Data.Repository;
-using System;
-using System.Collections.Generic;
 
 namespace Device.FingerPrint.Features.Transaction.Services
 {
@@ -50,6 +48,13 @@ namespace Device.FingerPrint.Features.Transaction.Services
 
         IEnumerable<TransactionInfoEntity> GetTransactionInfo(ulong lastTransID, int batchSize);
 
+        TransactionResultModel GetTransactionByCustSubscriber(TransactionParamModel param);
+
+        TransactionResultModel GetTransactionBySubscriber(TransactionParamModel param);
+
+        LatestTransactionResultModel GetLastestTransactionBySubscriber(LatestTransactionParamModel param);
+
+        TransactionHistoryByDeviceResultModel GetTransactionHistoryByDevice(TransactionHistoryByDeviceParamModel param);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -287,6 +292,100 @@ namespace Device.FingerPrint.Features.Transaction.Services
             };
 
             return repository.Fetch<TransactionInfoEntity>(criteria);
+        }
+
+        public TransactionResultModel GetTransactionByCustSubscriber(TransactionParamModel param)
+        {
+            var data = new TransactionResultModel();
+
+            var criteria = new GetTransactionHistoryByCustSubscriberCriteria
+            {
+                FromDate = param.FromDate,
+                ToDate = param.ToDate,
+                SubscriberID = param.SubscriberID,
+                CTSCustID = param.CTSCustID,
+                Skip = param.Skip,
+                Take = param.Take
+            };
+
+            data.Items = repository.Fetch<TransactionItemModel>(criteria);
+            data.TotalItem = criteria.TotalItem;
+
+            return data;
+        }
+
+        public TransactionResultModel GetTransactionBySubscriber(TransactionParamModel param)
+        {
+            var data = new TransactionResultModel();
+
+            var criteria = new GetTransactionHistoryBySubscriberCriteria
+            {
+                FromDate = param.FromDate,
+                ToDate = param.ToDate,
+                SubscriberID = param.SubscriberID,
+                UserName = param.UserName,
+                IsPartial = param.IsPartial,
+                Skip = param.Skip,
+                Take = param.Take
+            };
+
+            data.Items = repository.Fetch<TransactionItemModel>(criteria);
+            data.TotalItem = criteria.TotalItem;
+
+            return data;
+        }
+
+        public LatestTransactionResultModel GetLastestTransactionBySubscriber(LatestTransactionParamModel param)
+        {
+            var data = new LatestTransactionResultModel();
+
+            var criteria = new GetLastestTransactionCriteria
+            {
+                SubscriberID = param.SubscriberID,
+                Length = param.Length,
+                Skip = param.Skip,
+                Take = param.Take
+            };
+
+            data.Items = repository.Fetch<LatestTransactionItemModel>(criteria).Select(x => new LatestTransactionItemModel
+            {
+                Action = x.Action,
+                ActionResult = x.ActionResult,
+                Browser = x.Browser,
+                CTSCustID = x.CTSCustID,
+                FirstDeviceCode = x.FirstDeviceCode,
+                IP = x.IP,
+                OS = x.OS,
+                RobotTracking = x.RobotTracking,
+                SubscriberID = x.SubscriberID,
+                TransID = x.TransID,
+                TransTime = x.TransTime,
+                URLDetails = x.URLDetails,
+                UserName = x.UserName,
+                RegisterName = x.RegisterName,
+            });
+            data.TotalItem = criteria.TotalItem;
+
+            return data;
+        }
+
+        public TransactionHistoryByDeviceResultModel GetTransactionHistoryByDevice(TransactionHistoryByDeviceParamModel param)
+        {
+            var criteria = new GetTransHistoryByDevSubCriteria
+            {
+                DeviceID = param.DeviceID,
+                FromDate = param.FromDate,
+                ToDate = param.ToDate,
+                SubscriberID = param.SubscriberID,
+                Skip = param.Skip,
+                Take = param.Take,
+            };
+
+            return new TransactionHistoryByDeviceResultModel
+            {
+                Items = repository.Fetch<TransactionHistoryByDeviceItemModel>(criteria),
+                TotalItem = criteria.TotalItem
+            };
         }
     }
 }

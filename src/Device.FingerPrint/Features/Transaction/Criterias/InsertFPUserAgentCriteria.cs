@@ -5,7 +5,7 @@ namespace Device.FingerPrint.Features.Transaction.Criterias
 {
     public class InsertFPUserAgentCriteria : NonQueryCommand
     {
-        [SpParam(SqlParamName = "ip_UserAgentJson")]
+        [SpParam(SqlParamName = "ip_UserAgentJson", AllowNull = true)]
         public string UserAgentJson { get; set; }
 
         [SpParam(Ignored = true)]

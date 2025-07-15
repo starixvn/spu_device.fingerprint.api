@@ -3,7 +3,6 @@ using Device.FingerPrint.Core;
 using Device.FingerPrint.Core.Services;
 using Device.FingerPrint.PortalAPI.Services;
 using Device.FingerPrint.Redis;
-using Fanex.Data;
 using Fanex.Data.MySql;
 using Fanex.Logging;
 using Fanex.Logging.Extensions;
@@ -20,10 +19,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Prometheus;
 using Sentry;
-using StackExchange.Redis;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Device.FingerPrint.PortalAPI
 {
@@ -83,7 +80,8 @@ namespace Device.FingerPrint.PortalAPI
             RegisterRedis(services);
 
             services.RegisterService();
-            FanexDataConfig(appSettings);
+
+            services.AddFanexSql(Configuration);
 
             LogManager
            .SetDefaultLogCategory("Device.FingerPrint.PortalAPI")
@@ -99,7 +97,7 @@ namespace Device.FingerPrint.PortalAPI
                 .UseConfig(new LoggingConfiguration())
                 .UseGetDbExceptionInfo(DatabaseInfoGetters.GetDbExceptionInfo);
 
-            LogService.Info("PortalAPI Start!");
+            LogService.Info($"PortalAPI {appSettings.Environment} Start!");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -162,25 +160,6 @@ namespace Device.FingerPrint.PortalAPI
             {
                 endpoints.MapControllers();
             });
-        }
-
-        private void FanexDataConfig(IAppSettings appSettings)
-        {
-            var connections = Configuration
-                                  .GetSection("AppConfig:Connections")
-                                  .GetChildren()
-                                  .AsEnumerable()
-                                  .ToDictionary(
-                                           x => x.GetValue<string>("Name"),
-                                           y => new ConnectionConfiguration(y.GetValue<string>("Name"), y.GetValue<string>("ConnectionString"), y.GetValue<string>("ProviderName"))
-                                   );
-
-            DbSettingProviderManager
-              .StartNewSession()
-              .Use(connections)
-              .WithMySql()
-              .UseDefaultDbSettingProvider(resourcePath: appSettings.SPName)
-              .Run();
         }
 
         private void RegisterRedis(IServiceCollection services)

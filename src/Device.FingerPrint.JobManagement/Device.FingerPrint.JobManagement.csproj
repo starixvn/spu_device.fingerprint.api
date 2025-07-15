@@ -20,4 +20,10 @@
     <PackageReference Include="SilkierQuartz.Plugins.RecentHistory" Version="5.0.309" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Update="appsettings.SimpleKL.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
 </Project>

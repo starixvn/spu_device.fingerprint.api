@@ -24,6 +24,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHealthChecks();
 
+// Add memory cache
+builder.Services.AddMemoryCache();
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -59,6 +62,7 @@ builder.Services.AddSingleton<ISerializer, MsgPackObjectSerializer>();
 builder.Services.AddSingleton<IRedisService, RedisService>();
 
 builder.Services.AddSingleton<ISubscriberService, SubscriberService>();
+builder.Services.AddSingleton<IGatewayService, GatewayService>();
 
 LogManager
           .SetDefaultLogCategory("FPS-Gateway-API")

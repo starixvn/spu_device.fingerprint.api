@@ -20,7 +20,6 @@
         private readonly IRawTransactionAttributeService rawTransactionAttributeService;
         private readonly IMobileRawTransactionService mobileRawTransactionService;
         private readonly ITransactionService transactionService;
-        private readonly IIPDBService ipdbService;
         private readonly IAppSettings appSettings;
         private readonly ILogstashService logstashService;
 
@@ -31,7 +30,6 @@
                 IRawTransactionAttributeService rawTransactionAttributeService,
                 IMobileRawTransactionService mobileRawTransactionService,
                 ITransactionService transactionService,
-                IIPDBService ipdbService,
                 IAppSettings appSettings,
                 ILogstashService logstashService
         )
@@ -40,7 +38,6 @@
             this.rawTransactionAttributeService = rawTransactionAttributeService;
             this.mobileRawTransactionService = mobileRawTransactionService;
             this.transactionService = transactionService;
-            this.ipdbService = ipdbService;
             this.appSettings = appSettings;
             this.logstashService = logstashService;
         }
@@ -55,18 +52,13 @@
 
                     if (rawTransModels != null && rawTransModels.Any())
                     {
-                        if (appSettings.IsExtraSub)
-                        {
-                            rawTransModels = ipdbService.TransformTransactionByIps(rawTransModels);
-                        }
-
                         rawTransactionService.InsertRawTransactionDetail(rawTransModels, appSettings.IsExtraSub);
 
                         try
                         {
                             transactionService.InsertRawTransaction(rawTransModels, appSettings.IsExtraSub);
                         }
-                        catch (MySql.Data.MySqlClient.MySqlException)
+                        catch
                         {
                             rawTransactionService.LogTransactions(rawTransModels);
 

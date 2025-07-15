@@ -98,7 +98,7 @@
 
         public Task<long> HashIncrementAsync(string hashKey, string key, long value)
         {
-            return redisDatabase.HashIncerementByAsync(hashKey, key, value);
+            return redisDatabase.HashIncrementByAsync(hashKey, key, value);
         }
     }
 }

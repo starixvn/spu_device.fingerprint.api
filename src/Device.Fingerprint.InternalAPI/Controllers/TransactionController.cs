@@ -1,15 +1,19 @@
-﻿using Device.Fingerprint.InternalAPI.Model;
-using Device.FingerPrint.Features.Transaction.Services;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
-
-namespace Device.Fingerprint.InternalAPI.Controllers
+﻿namespace Device.Fingerprint.InternalAPI.Controllers
 {
+    using Device.Fingerprint.InternalAPI.Model;
+    using Device.FingerPrint.Features.Transaction.Model;
+    using Device.FingerPrint.Features.Transaction.Services;
+    using Fanex.Logging;
+    using Microsoft.AspNetCore.Authorization;
+    using Microsoft.AspNetCore.Mvc;
+    using Microsoft.AspNetCore.RateLimiting;
+
     [Route("api")]
     [ApiController]
-    public class TransactionController(ITransactionService transactionService) : ControllerBase
+    public class TransactionController(ITransactionService transactionService, ILogger logger) : ControllerBase
     {
         private readonly ITransactionService transactionService = transactionService;
+        private readonly ILogger logger = logger;
 
         [HttpGet("GetTransactionInfo/{lastTransID}/{batchSize}")]
         [EnableRateLimiting("fixed")]
@@ -99,6 +103,69 @@ namespace Device.Fingerprint.InternalAPI.Controllers
                     StatusCode = System.Net.HttpStatusCode.BadRequest,
                     ErrorMessage = ex.Message
                 });
+            }
+        }
+
+        [HttpPost("GetTransactionHistory")]
+        [AllowAnonymous]
+        public ActionResult<TransactionResultModel> GetTransactionHistory([FromBody] TransactionParamModel param)
+        {
+            try
+            {
+                var data = transactionService.GetTransactionHistory(param);
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("FPS Get Transaction History exception: " + ex.Message);
+
+                if (!string.IsNullOrEmpty(ex.Message) && ex.Message.ToLower().Contains("timeout expired"))
+                {
+                    return Ok(new TransactionResultModel() { IsTimeout = true });
+                }
+
+                return Ok(new TransactionResultModel());
+            }
+        }
+
+        [HttpPost("GetLastestTransactionBySubscriber")]
+        [AllowAnonymous]
+        public ActionResult<LatestTransactionResultModel> GetLastestTransactionBySubscriber([FromBody] LatestTransactionParamModel param)
+        {
+            try
+            {
+                var data = transactionService.GetLastestTransactionBySubscriber(param);
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("FPS Get Lastest Transaction By Subscriber exception: " + ex.Message);
+                return Ok(new LatestTransactionResultModel());
+            }
+        }
+
+        [HttpPost("GetTransactionHistoryByDevice")]
+        [AllowAnonymous]
+        public ActionResult<TransactionHistoryByDeviceResultModel> GetTransactionHistoryByDevice([FromBody] TransactionHistoryByDeviceParamModel param)
+        {
+            try
+            {
+                var data = transactionService.GetTransactionHistoryByDevice(param);
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                logger.Error("FPS Get Transaction History By Device exception: " + ex.Message);
+
+                if (!string.IsNullOrEmpty(ex.Message) && ex.Message.ToLower().Contains("timeout expired"))
+                {
+                    return Ok(new TransactionHistoryByDeviceResultModel() { IsTimeout = true });
+                }
+
+                return Ok(new TransactionHistoryByDeviceResultModel());
             }
         }
     }

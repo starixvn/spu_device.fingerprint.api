@@ -4,6 +4,8 @@ namespace Device.Fingerprint.ExternalAPI.Models
 {
     public class WhoamiModel
     {
+        public string Environment { get; set; }
+
         public string ServerName { get; set; }
 
         public string LocalIP { get; set; }

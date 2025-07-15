@@ -99,19 +99,6 @@
             };
         }
 
-        [HttpGet("whoami")]
-        public IActionResult WhoAmI()
-        {
-            var httpConnectionFeature = HttpContext.Features.Get<IHttpConnectionFeature>();
-            var localIpAddress = httpConnectionFeature?.LocalIpAddress;
-            return Ok(new WhoAmIModel
-            {
-                LocalIP = localIpAddress.ToString(),
-                ServerName = Environment.MachineName,
-                ServerTime = DateTime.Now
-            });
-        }
-
         private bool IsIgnoredSite(string site)
         {
             var ignoredSites = appSettings.IgnoredSites.Split(',');
@@ -144,9 +131,7 @@
                 BotD = transactionRequest.Bi, 
             };
 
-            var queueAddress = subscriberService.IsExtraSubscriber(transactionRequest.Subscriber) ? appSettings.ExtraQueueName : appSettings.QueueName;
-
-            await massTransitProducer.SendAsync(dataEvent, queueAddress);
+            await massTransitProducer.SendAsync(dataEvent, appSettings.QueueName);
         }
 
         private TransactionResponse GetTransactionResponse(string code)

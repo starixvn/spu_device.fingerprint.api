@@ -6,7 +6,7 @@ namespace Device.FingerPrint.Gateway.Model
 
         public string Subscriber { get; set; }
 
-        public DateTime LoginTime { get; set; }
+        public DateTime? LoginTime { get; set; } 
 
         public string Action { get; set; }
 
