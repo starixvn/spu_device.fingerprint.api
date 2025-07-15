@@ -16,7 +16,7 @@ namespace Device.FingerPrint.Features.Account.Model
 
         public int DeviceInCommon { get; set; }
 
-        public int OtherDevices { get; set; }
+        public int OtherDeives { get; set; }
 
         public int AssociatedAccount { get; set; }
     }
