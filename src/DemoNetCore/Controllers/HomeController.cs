@@ -21,6 +21,6 @@ namespace DemoNetCore.Controllers
                        
 
             return View();
-        }        
+        }
     }
 }

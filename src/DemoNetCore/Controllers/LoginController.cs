@@ -1,4 +1,6 @@
 ﻿using DemoNetCore.Models;
+using FPS.Browserless.Detection.Client.NetStandard;
+using FPS.Browserless.Detection.Client.NetStandard.Entity;
 using FPS.Client.NetStandard;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -45,7 +47,6 @@ namespace DemoNetCore.Controllers
             {
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
-
                 FpsIntegrationVer115(loginModel.Username, "Login", "Demo Page Login", subscriberName, DateTime.Now);
                 return RedirectToAction("index", "home");
             }
@@ -62,11 +63,34 @@ namespace DemoNetCore.Controllers
         }
 
 
+
         private void FpsIntegrationVer115(string account, string action, string actionResult, string subscriber, DateTime loginTime)
         {
+
             var fpsAPI = configuration.GetSection("FPS_API").Value;
             var fpsService = new Service();
             fpsService.InitialRequest(fpsAPI, HttpContext.Request).CheckTransaction(account, subscriber, action, loginTime);
+        }
+
+        private void TestBrowserless()
+        {
+            var isBot = BotDetection.IsBot(HttpContext.Request);
+
+            var request = HttpContext.Request;
+            if (request.HasFormContentType && request.Form != null)
+            {
+                var form = request.Form;
+
+                var model = new BotDetectionInfo
+                {
+                    Token = form["__tk"].ToString() ?? string.Empty,
+                    Analysis = form["detecas-analysis"].ToString() ?? string.Empty,
+                    Di = form["__di"].ToString() ?? string.Empty,
+                    BlackDevices = ""
+                };
+
+                var isBot1 = BotDetection.IsBot(model);
+            }
         }
 
         private string GetHeaderIP(string param)

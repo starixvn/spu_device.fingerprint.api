@@ -9,6 +9,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FPS.Browserless.Detection.Client.NetStandard" Version="1.0.6.8" />
     <PackageReference Include="FPS.Client.NetStandard" Version="1.0.16" />
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" Version="2.2.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="7.0.0" />
