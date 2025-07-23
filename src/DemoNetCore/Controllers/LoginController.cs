@@ -41,14 +41,14 @@ namespace DemoNetCore.Controllers
         [HttpPost]
         public ActionResult OnPost(LoginModel loginModel)
         {
-            if ((loginModel.Username == "test" || loginModel.Username == "test1" || loginModel.Username == "test2") && loginModel.Password == "1234aa")
-            {
+            //if ((loginModel.Username == "test" || loginModel.Username == "test1" || loginModel.Username == "test2") && loginModel.Password == "1234aa")
+            //{
 
                 HttpContext.Session.SetString("Username", loginModel.Username);
 
                 FpsIntegrationVer115(loginModel.Username, "Login", "Demo Page Login", subscriberName, DateTime.Now);
                 return RedirectToAction("index", "home");
-            }
+            //}
 
             return View("Index");
         }
