@@ -55,6 +55,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
         LatestTransactionResultModel GetLastestTransactionBySubscriber(LatestTransactionParamModel param);
 
         TransactionHistoryByDeviceResultModel GetTransactionHistoryByDevice(TransactionHistoryByDeviceParamModel param);
+
+        IEnumerable<TransactionByLoginNameModel> GetTransactionByLoginName(TransactionByLoginNameParamModel param);
     }
 
     public class TransactionDataAccess : ITransactionDataAccess
@@ -386,6 +388,20 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 Items = repository.Fetch<TransactionHistoryByDeviceItemModel>(criteria),
                 TotalItem = criteria.TotalItem
             };
+        }
+
+        public IEnumerable<TransactionByLoginNameModel> GetTransactionByLoginName(TransactionByLoginNameParamModel param)
+        {
+            var criteria = new GetTransByLoginNameCriteria
+            {
+                LoginName = param.LoginName,
+                FromDate = param.FromDate,
+                ToDate = param.ToDate,
+                SubscriberID = param.SubscriberID,
+                BatchSize = param.BatchSize,
+            };
+
+            return repository.Fetch<TransactionByLoginNameModel>(criteria);
         }
     }
 }

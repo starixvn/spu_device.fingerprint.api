@@ -26,6 +26,7 @@
 		<Setting Key="DCS_DC_Transaction_GetHistoryByCustSubscriber" SpName="DCS_DC_Transaction_GetHistoryByCustSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
 		<Setting Key="DCS_DC_Transaction_GetLatestBySubscriber" SpName="DCS_DC_Transaction_GetLatestBySubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
 		<Setting Key="DCS_DC_Transaction_GetHistoryByDeviceSubscriber" SpName="DCS_DC_Transaction_GetHistoryByDeviceSubscriber" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
+		<Setting Key="DCS_DC_GetTransactionByLoginName" SpName="DCS_DC_GetTransactionByLoginName" DbName="CTSMain.DCS_DataCenter.ctsWeb" />
 	</Function>
 	<Function Name="RawTrans">
 		<Setting Key="DCS_DC_Transform_RawTrans_Insert" SpName="DCS_DC_Transform_RawTrans_Insert" DbName="CTSMain.DCS_DataCenter.ctsServiceAdmin"/>

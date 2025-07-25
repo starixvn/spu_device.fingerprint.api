@@ -53,6 +53,8 @@ namespace Device.FingerPrint.Features.Transaction.Services
         LatestTransactionResultModel GetLastestTransactionBySubscriber(LatestTransactionParamModel param);
 
         TransactionHistoryByDeviceResultModel GetTransactionHistoryByDevice(TransactionHistoryByDeviceParamModel param);
+
+        IEnumerable<TransactionByLoginNameModel> GetTransactionByLoginName(TransactionByLoginNameParamModel param);
     }
 
     public class TransactionService : ITransactionService
@@ -242,5 +244,11 @@ namespace Device.FingerPrint.Features.Transaction.Services
         {
             return transactionDataAccess.GetTransactionHistoryByDevice(param);
         }
+
+        public IEnumerable<TransactionByLoginNameModel> GetTransactionByLoginName(TransactionByLoginNameParamModel param)
+        {
+            return transactionDataAccess.GetTransactionByLoginName(param);
+        }
+
     }
 }
