@@ -138,6 +138,7 @@ namespace Device.FingerPrint.Features.Transaction.Services
                 MBTimezone = transaction.MBTimezone,
                 MBLanguage = transaction.MBLanguage,
                 MBCountry = transaction.MBCountry,
+                MBDeviceDetails = transaction.MBDeviceDetails
             });
         }
 
