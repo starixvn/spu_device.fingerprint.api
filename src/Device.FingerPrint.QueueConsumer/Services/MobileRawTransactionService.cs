@@ -50,6 +50,7 @@ namespace Device.FingerPrint.QueueConsumer.Services
                     MBLanguage = message.Mobile.SystemLanguage,
                     MBCountry = message.Mobile.Country,
                     MBSDKVersion = message.Mobile.SdkVersion,
+                    MBDeviceDetails = message.Mobile.DeviceDetails,
                 };
 
                 rawTransModel.FlaggedCode = GetFlaggedCode(message);
