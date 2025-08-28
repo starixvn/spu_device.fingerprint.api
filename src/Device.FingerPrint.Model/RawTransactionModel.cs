@@ -125,6 +125,8 @@ namespace Device.FingerPrint.Model
         public string MBLanguage { get; set; }
 
         public string MBCountry { get; set; }
+
+        public string MBDeviceDetails { get; set; }
     }
 
     public class ConvertBigInteger : ConverterBase

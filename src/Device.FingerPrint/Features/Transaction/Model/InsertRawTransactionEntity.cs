@@ -95,5 +95,7 @@ namespace Device.FingerPrint.Features.Transaction.Model
         public string MBLanguage { get; set; }
 
         public string MBCountry { get; set; }
+
+        public string MBDeviceDetails { get; set; }
     }
 }
