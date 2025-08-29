@@ -11,7 +11,7 @@ namespace Device.FingerPrint.QueueConsumer
     using Fanex.Logging.Extensions.AspNetCore;
     using Fanex.Logging.Extensions.Database;
     using Fanex.Logging.Sentry;
-    using MassTransit;
+    using MassTransit; 
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Diagnostics.HealthChecks;
     using Microsoft.AspNetCore.Hosting;
