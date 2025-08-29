@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-
-<Functions>
-  <Function Name="Fingerprint">
-    <Setting Key="FPS_FP_Transform_ClientTransaction_Insert" SpName="FPS_FP_Transform_ClientTransaction_Insert" DbName="MySQL.FPS_FingerPrint.fpsAPIAdmin"/>
-  </Function>
-</Functions>

@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-
-<Functions>
-    <Function Name="LogTrail">
-        <Setting Key="DCS_DT_Summary_LogTrail_Insert" SpName="DCS_DT_Summary_LogTrail_Insert" DbName="CTSMain.DCS_DataTrace.ctsServiceAdmin"/>
-    </Function>
-</Functions>

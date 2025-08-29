@@ -1,5 +1,0 @@
-# Pin versions and remove unused packages for better performance and reproducibility
-flask
-gunicorn
-flasgger
-# ...add other required packages with pinned versions...
