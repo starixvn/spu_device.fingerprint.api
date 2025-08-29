@@ -1,8 +1,9 @@
-﻿
+﻿using Microsoft.Extensions.Configuration;
+using System;
+using System.ComponentModel;
+
 namespace Device.FingerPrint.Gateway
 {
-    using System.ComponentModel;
-
     public interface IAppSettings
     {
 
@@ -33,7 +34,7 @@ namespace Device.FingerPrint.Gateway
 
         public AppSettings(IConfiguration configuration)
         {
-            this.configuration = configuration;
+            this.configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
 
             isUM = GetValue<bool>("IsUM");
 
@@ -62,11 +63,43 @@ namespace Device.FingerPrint.Gateway
             {
                 var value = configuration[key];
 
+                if (value == null)
+                {
+                    throw new InvalidCastException($"Key: {key}");
+                }
+
+                // For string types, allow empty strings
+                if (typeof(T) == typeof(string))
+                {
+                    return (T)(object)value;
+                }
+
                 var typeConverter = TypeDescriptor.GetConverter(typeof(T));
+
+                if (typeof(T) == typeof(bool))
+                {
+                    // Handle various boolean representations
+                    if (bool.TryParse(value, out bool boolResult))
+                    {
+                        return (T)(object)boolResult;
+                    }
+                    
+                    switch (value.ToLowerInvariant())
+                    {
+                        case "1":
+                        case "yes":
+                            return (T)(object)true;
+                        case "0":
+                        case "no":
+                            return (T)(object)false;
+                        default:
+                            throw new InvalidCastException($"Key: {key}");
+                    }
+                }
 
                 return (T)typeConverter.ConvertFromString(value);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!(ex is InvalidCastException))
             {
                 throw new InvalidCastException($"Key: {key}", ex);
             }

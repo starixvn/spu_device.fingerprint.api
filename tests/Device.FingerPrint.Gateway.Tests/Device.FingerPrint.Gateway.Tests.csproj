@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+
+		<IsPackable>false</IsPackable>
+		<IsTestProject>true</IsTestProject>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Fanex.Data" Version="4.3.4" />
+		<PackageReference Include="Fanex.Data.Repository" Version="4.3.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="coverlet.collector" Version="6.0.2">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+		<PackageReference Include="Moq" Version="4.20.70" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.0" />
+		<PackageReference Include="xunit" Version="2.8.1" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+			<PrivateAssets>all</PrivateAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Device.FingerPrint.Gateway\Device.FingerPrint.Gateway.csproj" />
+		<ProjectReference Include="..\..\src\Device.FingerPrint.Redis\Device.FingerPrint.Redis.csproj" />
+	</ItemGroup>
+
+</Project>
