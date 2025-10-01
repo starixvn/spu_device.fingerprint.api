@@ -40,82 +40,82 @@
         [HttpPost("f/p")]
         public void FingerPrint([FromBody] PortalParameter data)
         {
-            if (data != null)
-            {
-                var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
+            //if (data != null)
+            //{
+            //    var sessionKey = Utilities.ParseSessionKey(data.SessionKey, appSettings.RedisDatabase);
 
-                if (sessionKey != null && sessionKey.RedisDbIndex > -1)
-                {
-                    var headerModel = GetHeaderValue();
+            //    if (sessionKey != null && sessionKey.RedisDbIndex > -1)
+            //    {
+            //        var headerModel = GetHeaderValue();
 
-                    var keyValuePairs = new Dictionary<string, string>
-                                        {
-                                            { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
-                                            { RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode), data.Data },
-                                            { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonConvert.SerializeObject(headerModel) }
-                                        };
+            //        var keyValuePairs = new Dictionary<string, string>
+            //                            {
+            //                                { "CreatedTime", DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") },
+            //                                { RedisString.GetRedisKeyName(Model.RedisKey.FingerPrintEncode), data.Data },
+            //                                { RedisString.GetRedisKeyName(Model.RedisKey.Header), JsonConvert.SerializeObject(headerModel) }
+            //                            };
 
-                    var hashRedisEntry = keyValuePairs.Select(x => new HashEntry(x.Key, x.Value)).ToArray();
+            //        var hashRedisEntry = keyValuePairs.Select(x => new HashEntry(x.Key, x.Value)).ToArray();
 
-                    redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, hashRedisEntry, appSettings.RedisExpired);
-                }
-            }
+            //        redisMultiplexService.HashSetMultipleFieldsWithDbIndexAsync(sessionKey.RedisDbIndex, sessionKey.SessionKey, hashRedisEntry, appSettings.RedisExpired);
+            //    }
+            //}
         }
 
         [HttpGet("e/t")]
         public IActionResult GetEverTagging()
         {
-            var sesionKey = Request.Headers["Res-Ec-Y"].ToString();
-            var etagValue = GetEtagValue();
-            var result = sesionKey;
+            //var sesionKey = Request.Headers["Res-Ec-Y"].ToString();
+            //var etagValue = GetEtagValue();
+            //var result = sesionKey;
 
-            if (!string.IsNullOrEmpty(etagValue))
-            {
-                result = etagValue;
-            }
-            else
-            {
-                var ecValues = Request.Headers["Res-Ec-X"].ToString();
+            //if (!string.IsNullOrEmpty(etagValue))
+            //{
+            //    result = etagValue;
+            //}
+            //else
+            //{
+            //    var ecValues = Request.Headers["Res-Ec-X"].ToString();
 
-                var everTaggingValues = ecValues.Split(',');
+            //    var everTaggingValues = ecValues.Split(',');
 
-                if (everTaggingValues.Length > 1)
-                {
-                    foreach (var ec in everTaggingValues)
-                    {
-                        var sessionKey = Utilities.ParseSessionKey(ec, 0);
-                        if (sessionKey != null)
-                        {
-                            var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
+            //    if (everTaggingValues.Length > 1)
+            //    {
+            //        foreach (var ec in everTaggingValues)
+            //        {
+            //            var sessionKey = Utilities.ParseSessionKey(ec, 0);
+            //            if (sessionKey != null)
+            //            {
+            //                var ecKeyExisting = everTaggingRedisDB.KeyExists($"EverTagging:{ec}");
 
-                            if (ecKeyExisting)
-                            {
-                                result = ec;
+            //                if (ecKeyExisting)
+            //                {
+            //                    result = ec;
 
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            // LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
-                        }
-                    }
-                }
-                else if (everTaggingValues.Length == 1)
-                {
-                    result = everTaggingValues[0];
-                }
-            }
+            //                    break;
+            //                }
+            //            }
+            //            else
+            //            {
+            //                // LogService.Warn($"This is ever tagging that is not validated ec: {ec} + sk: {sesionKey}");
+            //            }
+            //        }
+            //    }
+            //    else if (everTaggingValues.Length == 1)
+            //    {
+            //        result = everTaggingValues[0];
+            //    }
+            //}
 
-            if (result != sesionKey)
-            {
-                everTaggingRedisDB.StringSetAsync($"RealTagging:{sesionKey}", result);
-                everTaggingRedisDB.KeyExpireAsync($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
-            }
+            //if (result != sesionKey)
+            //{
+            //    everTaggingRedisDB.StringSetAsync($"RealTagging:{sesionKey}", result);
+            //    everTaggingRedisDB.KeyExpireAsync($"RealTagging:{sesionKey}", TimeSpan.FromSeconds(3600));
+            //}
 
-            UpdateResponseHeaders(result);
+            //UpdateResponseHeaders(result);
 
-            return Ok(result);
+            return Ok();
         }
 
 
@@ -128,11 +128,11 @@
         [HttpPost("c/l/e")]
         public void ClientTransException([FromBody] ClientTransactionExceptionModel logsData)
         {
-            logsData.UserAgent = Request.Headers["User-Agent"];
-            logsData.RealIP = GetRealIp();
-            logsData.FakeIP = GetFakeIp();
+            //logsData.UserAgent = Request.Headers["User-Agent"];
+            //logsData.RealIP = GetRealIp();
+            //logsData.FakeIP = GetFakeIp();
 
-            clientTransactionService.InsertClientTransactionException(logsData);
+            //clientTransactionService.InsertClientTransactionException(logsData);
         }
 
         [HttpGet("whoami")]

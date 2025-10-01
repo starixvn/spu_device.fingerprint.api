@@ -27,19 +27,19 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [ETagFilter]
         public ActionResult FingerPrintScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
+            //var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
 
-            if (appSettings.Environment != "DEV")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.min.js";
-            }
+            //if (appSettings.Environment != "DEV")
+            //{
+            //    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.min.js";
+            //}
 
-            var bundleFile = new BundleFile(scriptPath);
+            //var bundleFile = new BundleFile(scriptPath);
 
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content))
-            {
-                return new JavascriptResult(bundleFile.Content);
-            }
+            //if (!string.IsNullOrWhiteSpace(bundleFile.Content))
+            //{
+            //    return new JavascriptResult(bundleFile.Content);
+            //}
 
             return new EmptyResult();
         }
@@ -48,23 +48,23 @@ namespace Device.Fingerprint.WebAPI.Controllers
         [ETagFilter]
         public ActionResult CryptScript()
         {
-            var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
-            var storageScriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
+            //var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
+            //var storageScriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.js";
 
-            if (appSettings.Environment != "DEV")
-            {
-                scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
-                storageScriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
-            }
+            //if (appSettings.Environment != "DEV")
+            //{
+            //    scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.min.js";
+            //    storageScriptPath = $"{environment.ContentRootPath}/Scripts/libs/newCookie.min.js";
+            //}
 
-            var bundleFile = new BundleFile(scriptPath);
-            var storageScriptFile = new BundleFile(storageScriptPath);
+            //var bundleFile = new BundleFile(scriptPath);
+            //var storageScriptFile = new BundleFile(storageScriptPath);
 
-            if (!string.IsNullOrWhiteSpace(bundleFile.Content) || !string.IsNullOrWhiteSpace(storageScriptFile.Content))
-            {
-                var combinedContent = $"{bundleFile.Content}\n{storageScriptFile.Content}";
-                return new JavascriptResult(combinedContent);
-            }
+            //if (!string.IsNullOrWhiteSpace(bundleFile.Content) || !string.IsNullOrWhiteSpace(storageScriptFile.Content))
+            //{
+            //    var combinedContent = $"{bundleFile.Content}\n{storageScriptFile.Content}";
+            //    return new JavascriptResult(combinedContent);
+            //}
 
             return new EmptyResult();
         }
