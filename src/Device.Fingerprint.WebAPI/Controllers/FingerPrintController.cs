@@ -23,8 +23,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             this.appSettings = appSettings;
         }
 
-        [HttpGet("s/f/p")]
-        [ETagFilter]
+        [HttpGet("s/f/p")]        
         public ActionResult FingerPrintScript()
         {
             //var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/gfp.js";
@@ -44,8 +43,7 @@ namespace Device.Fingerprint.WebAPI.Controllers
             return new EmptyResult();
         }
 
-        [HttpGet("s/c/r/t")]
-        [ETagFilter]
+        [HttpGet("s/c/r/t")]        
         public ActionResult CryptScript()
         {
             //var scriptPath = $"{environment.ContentRootPath}/Scripts/libs/encrypt.js";
